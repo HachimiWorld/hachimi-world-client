@@ -72,7 +72,7 @@ jobs:
           --arg name "$VERSION_NAME" \
           --argjson code $VERSION_CODE \
           --arg url "$DOWNLOAD_URL" \
-          --arg changelog "${{ github.event.pull_request.body }}"
+          --arg changelog "${{ github.event.pull_request.body }}" \
           '{
             version_name: $name,
             version_number: $code,
