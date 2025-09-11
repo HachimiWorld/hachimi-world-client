@@ -2,7 +2,7 @@ name: publish-version-test.yml
 on:
   pull_request:
     types: [closed]
-    branches: [ci/test] # touch
+    branches: [ci/test] # touch 2
 concurrency:
     group: compile-check-${{ github.ref }}
     cancel-in-progress: true
