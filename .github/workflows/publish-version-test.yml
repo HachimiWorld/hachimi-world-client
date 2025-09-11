@@ -69,11 +69,11 @@ jobs:
           # Prepare data
           JSON_DATA=$(jq -n \
           --arg name "$VERSION_NAME" \
-          --arg code "$VERSION_CODE" \
+          --argjson code $VERSION_CODE \
           --arg url "$DOWNLOAD_URL" \
           '{
             version_name: $name,
-            version_code: $code,
+            version_number: $code,
             url: $url,
             variant: "windows-test",
             release_time: (now | todateiso8601)
@@ -82,7 +82,7 @@ jobs:
           echo "Payload: $JSON_DATA"
           
           # Send webhook
-          curl -X POST \
+          curl --fail -X POST \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
           -d "$JSON_DATA" \
