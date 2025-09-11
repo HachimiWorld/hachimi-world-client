@@ -1,14 +1,15 @@
 name: publish-version-test.yml
 on:
-  push:
-    branches:
-      - ci/test
+  pull_request:
+    types: [closed]
+    branches: [ci/test]
 concurrency:
     group: compile-check-${{ github.ref }}
     cancel-in-progress: true
 jobs:
   build-windows:
     runs-on: windows-latest
+    if: github.event.pull_request.merged == true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -71,10 +72,12 @@ jobs:
           --arg name "$VERSION_NAME" \
           --argjson code $VERSION_CODE \
           --arg url "$DOWNLOAD_URL" \
+          --arg changelog "${{ github.event.pull_request.body }}"
           '{
             version_name: $name,
             version_number: $code,
             url: $url,
+            changelog: $changelog,
             variant: "windows-test",
             release_time: (now | todateiso8601)
           }')
