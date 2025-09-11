@@ -237,6 +237,7 @@ compose.desktop {
                     iconFile.set(rootProject.file("icons/icon.png"))
                 }
             }
+
             else -> {
                 nativeDistributions {
                     targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -298,4 +299,8 @@ buildkonfig {
         buildConfigField(Type.STRING, "APP_NAME", "基米天堂 Beta")
         buildConfigField(Type.STRING, "API_BASE_URL", props.getProperty("app.release.apiBaseUrl"))
     }
+}
+
+tasks.register("printVersions") {
+    println(gitVersionName.get() + " " + gitVersionCode.get() + " " + gitVersionNameShort.get())
 }

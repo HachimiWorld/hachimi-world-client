@@ -1,0 +1,89 @@
+name: publish-version-test.yml
+on:
+  push:
+    branches:
+      - dev
+concurrency:
+    group: compile-check-${{ github.ref }}
+    cancel-in-progress: true
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create local properties
+        run: |
+          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
+          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Get versions
+        shell: bash
+        run: |
+          VERSIONS=$(./gradlew printVersions --quiet)
+          VERSION_NAME=$(echo $VERSIONS | awk '{print $1}')
+          VERSION_CODE=$(echo $VERSIONS | awk '{print $2}')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+      - name: Build with Gradle
+        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpackage-logs
+          path: composeApp/build/compose/logs/
+      - name: Rename output
+        shell: bash
+        working-directory: composeApp/build/compose/binaries/main/msi/
+        run: |
+          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.msi
+          mv *.msi $FILE_NAME
+          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: composeApp/build/compose/binaries/main/msi/*.msi
+          compression-level: 0
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          endpoint: ${{ secrets.S3_ENDPOINT }}
+          aws_key_id: ${{ secrets.S3_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.S3_BUCKET }}
+          source_dir: composeApp/build/compose/binaries/main/msi/
+          destination_dir: distribution/windows/
+      - name: Send publish request
+        shell: bash
+        run: |
+          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/windows/$FILE_NAME"
+          # Prepare data
+          JSON_DATA=$(jq -n \
+          --arg name "$VERSION_NAME" \
+          --arg code "$VERSION_CODE" \
+          --arg url "$DOWNLOAD_URL" \
+          '{
+            version_name: $name,
+            version_code: $code,
+            url: $url,
+            variant: "windows-test,
+            release_time: (now | todateiso8601)
+          }')
+          echo "Sending webhook to PUBLISH_VERSION_URL"
+          echo "Payload: $JSON_DATA"
+          
+          # Send webhook
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
+          -d "$JSON_DATA" \
+          "$PUBLISH_VERSION_URL"
