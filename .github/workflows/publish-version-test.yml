@@ -75,7 +75,7 @@ jobs:
             version_name: $name,
             version_code: $code,
             url: $url,
-            variant: "windows-test,
+            variant: "windows-test",
             release_time: (now | todateiso8601)
           }')
           echo "Sending webhook to PUBLISH_VERSION_URL"
