@@ -2,7 +2,7 @@ name: publish-version-test.yml
 on:
   push:
     branches:
-      - dev
+      - ci/test
 concurrency:
     group: compile-check-${{ github.ref }}
     cancel-in-progress: true
