@@ -24,6 +24,8 @@ jobs:
           java-version: '21'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Get versions
         shell: bash
         run: |
@@ -32,8 +34,6 @@ jobs:
           VERSION_CODE=$(echo $VERSIONS | awk '{print $2}')
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -86,4 +86,4 @@ jobs:
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
           -d "$JSON_DATA" \
-          "$PUBLISH_VERSION_URL"
+          "${{ secrets.PUBLISH_VERSION_URL }}"
