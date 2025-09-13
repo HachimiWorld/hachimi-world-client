@@ -17,7 +17,7 @@ import world.hachimi.app.logging.Logger
 class MainViewModel(
     private val apiClient: ApiClient,
     private val global: GlobalStore
-): ViewModel(CoroutineScope(Dispatchers.IO)) {
+): ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var isLoading by mutableStateOf(false)
@@ -41,7 +41,7 @@ class MainViewModel(
     }
 
     private fun getRecommendSongs() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             isLoading = true
 
             try {

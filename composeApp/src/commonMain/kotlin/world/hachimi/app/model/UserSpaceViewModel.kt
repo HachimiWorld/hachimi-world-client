@@ -9,12 +9,12 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
-import io.github.vinceglb.filekit.source
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.io.buffered
+import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.module.UserModule
@@ -23,7 +23,7 @@ import world.hachimi.app.logging.Logger
 class UserSpaceViewModel(
     private val api: ApiClient,
     private val global: GlobalStore
-) : ViewModel(CoroutineScope(Dispatchers.IO)) {
+) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     var loading by mutableStateOf(false)
         private set
     var profile by mutableStateOf<UserModule.ProfileResp?>(null)
@@ -61,7 +61,7 @@ class UserSpaceViewModel(
                     global.alert("Image too large")
                     return@launch
                 }
-                val buffer = image.source().buffered()
+                val buffer = Buffer().apply { write(image.readBytes()) }
 
                 // 2. Upload
                 try {

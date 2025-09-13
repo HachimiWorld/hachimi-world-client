@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.browser.customtabs.CustomTabsIntent
-import java.io.File
 import androidx.core.net.toUri
+import io.github.vinceglb.filekit.PlatformFile
 
 
 class AndroidPlatform : Platform {
@@ -13,12 +13,12 @@ class AndroidPlatform : Platform {
     override val platformVersion: String = Build.VERSION.SDK_INT.toString()
     override val variant: String = "${BuildKonfig.BUILD_TYPE}-android"
 
-    override fun getCacheDir(): File {
-        return applicationContext.cacheDir
+    override fun getCacheDir(): PlatformFile {
+        return PlatformFile(applicationContext.cacheDir)
     }
 
-    override fun getDataDir(): File {
-        return applicationContext.filesDir
+    override fun getDataDir(): PlatformFile {
+        return PlatformFile(applicationContext.filesDir)
     }
 
     override fun openUrl(url: String) {

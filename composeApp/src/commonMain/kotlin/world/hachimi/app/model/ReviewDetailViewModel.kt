@@ -18,7 +18,7 @@ import world.hachimi.app.logging.Logger
 class ReviewDetailViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,
-) : ViewModel(CoroutineScope(Dispatchers.IO)) {
+) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var reviewId by mutableStateOf(0L)

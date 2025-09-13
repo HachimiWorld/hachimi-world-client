@@ -19,7 +19,7 @@ import world.hachimi.app.logging.Logger
 class RecentPlayViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
-): ViewModel(CoroutineScope(Dispatchers.IO)) {
+): ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var loading by mutableStateOf(false)

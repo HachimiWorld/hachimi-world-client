@@ -41,7 +41,7 @@ kotlin {
 
     jvm()
 
-    /*@OptIn(ExperimentalWasmDsl::class)
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("composeApp")
         browser {
@@ -58,8 +58,11 @@ kotlin {
                 }
             }
         }
+        compilerOptions {
+            freeCompilerArgs.add("-Xwasm-attach-js-exception")
+        }
         binaries.executable()
-    }*/
+    }
 
     sourceSets {
         androidMain.dependencies {
@@ -75,6 +78,7 @@ kotlin {
             implementation(libs.room.runtime)
 
             implementation(libs.ktor.client.cio)
+            implementation(libs.androidx.datastore.preferences)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -93,11 +97,12 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodelNavigation)
 
-            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.encoding)
             implementation(libs.ktor.serialization.kotlinx.json)
 
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
 
             implementation(libs.coil.compose)
@@ -107,7 +112,6 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.coil)
 
-            implementation(libs.androidx.datastore.preferences)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -121,11 +125,14 @@ kotlin {
             implementation(libs.ktor.client.cio)
             implementation(libs.logback)
 
-            implementation(libs.room.runtime)
-            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.androidx.datastore.preferences)
+//            implementation(libs.room.runtime)
+//            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.mp3spi)
             implementation(libs.jflac)
-
+        }
+        wasmJsMain.dependencies {
+            implementation(npm("howler", "2.2.4"))
         }
     }
 }
@@ -135,8 +142,8 @@ ksp {
 }
 
 dependencies {
-    add("kspJvm", libs.room.compiler)
-    add("kspAndroid", libs.room.compiler)
+//    add("kspJvm", libs.room.compiler)
+//    add("kspAndroid", libs.room.compiler)
 //    add("kspIosSimulatorArm64", libs.room.compiler)
 //    add("kspIosX64", libs.room.compiler)
 //    add("kspIosArm64", libs.room.compiler)

@@ -7,17 +7,10 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
-import java.util.Locale
 import kotlin.math.abs
 import kotlin.ranges.coerceIn
-import kotlin.text.format
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
-
-@Stable
-fun formatMMSS(minutes: Int, seconds: Int): String {
-    return "%02d:%02d".format(minutes, seconds)
-}
 
 @Composable
 fun formatTime(instant: Instant, distance: Boolean = false, thresholdDay: Int = 7, precise: Boolean = true): String {
@@ -89,6 +82,8 @@ fun formatDuration(duration: Duration, precise: Boolean, minUnit: DurationUnit =
         } else {
             "$daysAbs 天"
         }
+
+        else -> error("unreachable")
     }
 }
 
@@ -201,5 +196,6 @@ fun formatSongDuration(duration: Duration): String {
     val seconds = duration.inWholeSeconds
     val minutesPart = seconds / 60
     val secondsPart = seconds % 60
-    return "${minutesPart}:${String.format(Locale.US, "%02d", secondsPart)}"
+    val padding = if (secondsPart < 10) "0" else ""
+    return "${minutesPart}:${padding}$secondsPart"
 }

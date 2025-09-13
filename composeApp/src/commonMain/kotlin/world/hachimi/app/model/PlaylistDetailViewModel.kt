@@ -9,12 +9,12 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
-import io.github.vinceglb.filekit.source
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.io.buffered
+import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.module.PlaylistModule
@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 class PlaylistDetailViewModel(
     private val api: ApiClient,
     private val global: GlobalStore
-) : ViewModel(CoroutineScope(Dispatchers.IO)) {
+) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     var loading by mutableStateOf(false)
         private set
     var playlistId by mutableStateOf<Long?>(null)
@@ -142,8 +142,8 @@ class PlaylistDetailViewModel(
                     global.alert("Image too large")
                     return@launch
                 }
-                val buffer = image.source().buffered()
-
+                // TODO[opt]: Here might be a memory copy
+                val buffer = Buffer().apply { write(image.readBytes()) }
                 // 2. Upload
                 try {
                     coverUploading = true

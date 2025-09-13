@@ -1,5 +1,6 @@
 package world.hachimi.app
 
+import io.github.vinceglb.filekit.PlatformFile
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 import java.awt.Desktop
@@ -12,24 +13,26 @@ object JVMPlatform : Platform {
     override val variant: String = getVariant()
     private val appName = BuildKonfig.APP_PACKAGE_NAME
 
-    override fun getCacheDir(): File {
-        return when (hostOs) {
+    override fun getCacheDir(): PlatformFile {
+        val file = when (hostOs) {
             OS.Windows -> File(System.getenv("LOCALAPPDATA"), "/Cache")
             OS.MacOS -> File(System.getProperty("user.home"), "/Library/Caches")
             OS.Linux -> System.getProperty("XDG_DATA_HOME")?.let { File(it) }
                 ?: File(System.getProperty("user.home"), "/.local/cache")
             else -> error("Unsupported os: $hostOs")
         }.resolve(appName).also { if (!it.exists()) it.mkdirs() }
+        return PlatformFile(file)
     }
 
-    override fun getDataDir(): File {
-        return when (hostOs) {
+    override fun getDataDir(): PlatformFile {
+        val file = when (hostOs) {
             OS.Windows -> File(System.getenv("APPDATA"))
             OS.MacOS -> File(System.getProperty("user.home"), "/Library/Application Support")
             OS.Linux -> System.getProperty("XDG_DATA_HOME")?.let { File(it) }
                 ?: File(System.getProperty("user.home"), "/.local/share")
             else -> error("Unsupported os: $hostOs")
         }.resolve(appName).also { if (!it.exists()) it.mkdirs() }
+        return PlatformFile(file)
     }
 
     override fun openUrl(url: String) {

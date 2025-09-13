@@ -19,7 +19,7 @@ class SearchViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ): ViewModel(
-    CoroutineScope(Dispatchers.IO)
+    CoroutineScope(Dispatchers.Default)
 ) {
     var query by mutableStateOf("")
         private set

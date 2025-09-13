@@ -16,7 +16,7 @@ import world.hachimi.app.logging.Logger
 class PlaylistViewModel(
     private val api: ApiClient,
     private val global: GlobalStore
-) : ViewModel(CoroutineScope(Dispatchers.IO)) {
+) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     // Playlist related states
     // Store at here because the footer player is shared across multiple screens
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)

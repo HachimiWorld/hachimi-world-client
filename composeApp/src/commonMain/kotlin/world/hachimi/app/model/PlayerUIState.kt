@@ -35,7 +35,7 @@ class PlayerUIState() {
         private set
     var songCoverUrl by mutableStateOf<String?>(null)
         private set
-    var songDurationSecs by mutableStateOf(0)
+    var songDurationSecs by mutableStateOf(-1)
         private set
     var staff by mutableStateOf<List<Pair<String, String>>>(emptyList())
         private set

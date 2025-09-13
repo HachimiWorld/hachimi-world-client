@@ -84,7 +84,7 @@ class ApiClient(private val baseUrl: String) {
     }
 
     internal suspend inline fun <reified T> postWith(path: String, auth: Boolean = true, crossinline block: HttpRequestBuilder.() -> Unit): WebResult<T> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             if (auth) refreshToken()
 
             val url = buildUrl(path)
@@ -102,7 +102,7 @@ class ApiClient(private val baseUrl: String) {
     }
 
     internal suspend inline fun <reified T> post(path: String, body: Any, auth: Boolean = true): WebResult<T> =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             if (auth) refreshToken()
 
             val url = buildUrl(path)
@@ -120,7 +120,7 @@ class ApiClient(private val baseUrl: String) {
         }
 
     internal suspend inline fun <reified T> get(path: String, auth: Boolean = true): WebResult<T> =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             if (auth) refreshToken()
             val url = buildUrl(path)
             val requestId = generateRequestId()
@@ -134,7 +134,7 @@ class ApiClient(private val baseUrl: String) {
         }
 
     internal suspend inline fun <reified P, reified T> get(path: String, query: P, auth: Boolean = true): WebResult<T> =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             if (auth) refreshToken()
             val url = buildUrl(path)
             val requestId = generateRequestId()
@@ -157,7 +157,7 @@ class ApiClient(private val baseUrl: String) {
     //  after refreshing request be sent, before the responded token is set to state and be saved,
     //  any further requests will take the old used refresh-token, then cause 401 error.
     //  Update: This issue might be fixed by using `NonCancellable` context
-    internal suspend fun refreshToken() = withContext(Dispatchers.IO + NonCancellable) {
+    internal suspend fun refreshToken() = withContext(Dispatchers.Default + NonCancellable) {
         // Only execute once at the same time
         if (authLock.isLocked) {
             authLock.withLock { }

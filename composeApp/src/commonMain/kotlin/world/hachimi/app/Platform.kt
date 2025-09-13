@@ -1,13 +1,13 @@
 package world.hachimi.app
 
-import java.io.File
+import io.github.vinceglb.filekit.PlatformFile
 
 interface Platform {
     val name: String
     val platformVersion: String
     val variant: String
-    fun getCacheDir(): File
-    fun getDataDir(): File
+    fun getCacheDir(): PlatformFile
+    fun getDataDir(): PlatformFile
     fun openUrl(url: String)
 }
 

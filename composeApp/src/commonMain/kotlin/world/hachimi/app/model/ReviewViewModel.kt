@@ -19,7 +19,7 @@ import world.hachimi.app.nav.Route
 class ReviewViewModel(
     private val api: ApiClient,
     private val global: GlobalStore
-): ViewModel(CoroutineScope(Dispatchers.IO)) {
+): ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var loading by mutableStateOf(false)

@@ -10,8 +10,8 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.core.readBytes
 import io.ktor.utils.io.readAvailable
+import io.ktor.utils.io.readBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
+import kotlinx.io.readByteArray
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
@@ -41,6 +42,7 @@ import world.hachimi.app.player.Player
 import world.hachimi.app.player.SongItem
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
+import world.hachimi.app.storage.SongCache
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -50,7 +52,8 @@ import kotlin.time.Duration.Companion.seconds
 class GlobalStore(
     private val dataStore: MyDataStore,
     private val api: ApiClient,
-    private val player: Player
+    private val player: Player,
+    private val songCache: SongCache
 ) {
     var initialized by mutableStateOf(false)
     var darkMode by mutableStateOf<Boolean?>(null)
@@ -65,7 +68,7 @@ class GlobalStore(
 
     val playerState = PlayerUIState()
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.Default)
     val snackbarHostState = SnackbarHostState()
 
     val musicQueue = mutableStateListOf<MusicQueueItem>()
@@ -82,14 +85,14 @@ class GlobalStore(
     )
 
     fun initialize() {
-        scope.launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.Default) {
             coroutineScope {
                 launch { this@GlobalStore.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE) }
                 launch { loadLoginStatus() }
             }
             initialized = true
         }
-        scope.launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.Default) {
             player.addListener(object : Player.Listener {
                 override fun onEvent(event: PlayEvent) {
                     when (event) {
@@ -400,29 +403,29 @@ class GlobalStore(
                 playerState.hasSong = true
                 playerState.updateCurrentMillis(0L)
 
-                val coverBytes = async<ByteArray>(Dispatchers.IO) {
+                val coverBytes = async<ByteArray>(Dispatchers.Default) {
                     api.httpClient.get(data.coverUrl).bodyAsBytes()
                 }
                 val filename = data.audioUrl.substringAfterLast("/")
-                val cacheFile = getPlatform().getCacheDir()
-                    .resolve("song_caches").also {
-                        it.mkdirs()
+
+                val cache = songCache.get(filename)
+                val buffer = if (cache != null) {
+                    val buffer = Buffer()
+                    cache.use {
+                        it.transferTo(buffer)
                     }
-                    .resolve(filename)
-                val bytes = if (cacheFile.exists()) {
-                    cacheFile.readBytes()
+                    buffer
                 } else {
                     Logger.i("global", "Downloading")
                     playerState.downloadProgress = 0f
                     val downloadResponse = api.httpClient.get(data.audioUrl)
 
-                    val songBytes: ByteArray
                     val contentLength = downloadResponse.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-                    if (contentLength != null) {
+                    val buffer = if (contentLength != null) {
+                        val buffer = Buffer()
                         Logger.i("global", "Has content length")
                         playerState.downloadProgress = 0.01f
 
-                        val buffer = Buffer()
                         val channel = downloadResponse.bodyAsChannel()
                         var totalBytesRead = 0L
 
@@ -437,21 +440,20 @@ class GlobalStore(
                             val progress = totalBytesRead.toDouble() / contentLength.toDouble()
                             playerState.downloadProgress = progress.toFloat()
                         }
-
-                        songBytes = buffer.readBytes()
+                        buffer
                     } else {
                         // Oh, copy occurs here
-                        songBytes = downloadResponse.bodyAsBytes()
+                        downloadResponse.bodyAsChannel().readBuffer()
                     }
 
-                    cacheFile.writeBytes(songBytes)
-                    songBytes
+                    songCache.save(buffer, filename)
+                    buffer
                 }
                 player.prepare(SongItem(
                     id = data.id.toString(),
                     title = data.title,
                     artist = data.uploaderName,
-                    audioBytes = bytes,
+                    audioBytes = buffer.readByteArray(),
                     coverBytes = coverBytes.await(),
                 ), autoPlay = true)
 

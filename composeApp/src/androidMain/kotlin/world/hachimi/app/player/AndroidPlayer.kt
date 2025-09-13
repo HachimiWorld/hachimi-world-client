@@ -6,6 +6,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import io.github.vinceglb.filekit.AndroidFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import world.hachimi.app.getPlatform
@@ -94,7 +95,8 @@ class AndroidPlayer(
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
         // TODO[refactor]: This is a workaround to get uri. Consider to use network uri or other ways in the future.
         val audioFile = withContext(Dispatchers.IO) {
-            getPlatform().getCacheDir().resolve("playing").also {
+            val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
+            cacheDir.file.resolve("playing").also {
                 it.writeBytes(item.audioBytes)
             }
         }

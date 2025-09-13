@@ -154,6 +154,7 @@ fun ExpandedFooterPlayer() {
             Spacer(Modifier.height(12.dp))
 
             SongProgress(
+                modifier = Modifier.fillMaxWidth().widthIn(max = 800.dp),
                 durationMillis = playerState.songDurationSecs * 1000L,
                 currentMillis = playerState.currentMillis,
                 onProgressChange = {
