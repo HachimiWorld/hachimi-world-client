@@ -28,7 +28,7 @@ kotlin {
         }
     }
 
-    /*listOf(
+    listOf(
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
@@ -37,7 +37,7 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
-    }*/
+    }
 
     jvm()
 
@@ -98,7 +98,6 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodelNavigation)
 
-            implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.encoding)
             implementation(libs.ktor.serialization.kotlinx.json)
@@ -133,7 +132,13 @@ kotlin {
             implementation(libs.jflac)
         }
         wasmJsMain.dependencies {
+            implementation(libs.ktor.client.cio)
             implementation(npm("howler", "2.2.4"))
+        }
+        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach {
+            it.dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
         }
     }
 

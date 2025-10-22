@@ -24,7 +24,7 @@ fun currentSafeAreaInsets(): SafeAreaInsets {
     return when (remember { getCurrentPlatform() }) {
         Platform.MacOS -> SafeAreaInsets(top = 28.dp)
         Platform.Windows, Platform.Linux -> SafeAreaInsets()
-        Platform.Android -> {
+        Platform.Android, Platform.iOS -> {
             val density = LocalDensity.current
             val insets = WindowInsets.safeDrawing
             val direction = LocalLayoutDirection.current
@@ -50,7 +50,7 @@ fun Modifier.safeAreaPadding(): Modifier = this.then(
 )
 
 enum class Platform {
-    MacOS, Windows, Linux, Android, Web, Unknown
+    MacOS, Windows, Linux, Android, Web, iOS, Unknown
 }
 
 expect fun getCurrentPlatform(): Platform
