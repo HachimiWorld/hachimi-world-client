@@ -110,6 +110,7 @@ class PlayerService(
                     val currentPosition = player.currentPosition()
                     playerState.updateCurrentMillis(currentPosition)
                 }
+                playerState.isPlaying = player.isPlaying()
                 delay(100)
             }
         }

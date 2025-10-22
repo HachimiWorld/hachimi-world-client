@@ -37,6 +37,12 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+        iosTarget.compilations.getByName("main") {
+            // Add the NSKeyValueObserving interface so we can use KVO in kotlin native
+            // https://proandroiddev.com/leveraging-key-value-observing-kvo-in-kotlin-multiplatform-kmp-for-ios-231519e5c1ff
+            // FIXME: Enabling this will get KLIB resolver error
+//            val nskeyvalueobserving by cinterops.creating
+        }
     }
 
     jvm()
