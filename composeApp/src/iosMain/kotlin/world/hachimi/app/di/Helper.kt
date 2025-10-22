@@ -8,10 +8,10 @@ import world.hachimi.app.api.ApiClient
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.IosPlayer
 import world.hachimi.app.player.Player
-import world.hachimi.app.player.SongCacheImpl
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.MyDataStoreImpl
 import world.hachimi.app.storage.SongCache
+import world.hachimi.app.storage.SongCacheImpl
 
 fun initKoin() {
     val koin = startKoin {
