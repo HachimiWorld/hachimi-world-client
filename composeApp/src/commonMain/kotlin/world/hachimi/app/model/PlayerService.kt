@@ -546,7 +546,8 @@ class PlayerService(
             artist = metadata.uploaderName,
             audioBytes = audioBytes,
             coverBytes = coverBytes,
-            format = extension
+            format = extension,
+            durationSeconds = metadata.durationSeconds
         )
         return@coroutineScope item
     }

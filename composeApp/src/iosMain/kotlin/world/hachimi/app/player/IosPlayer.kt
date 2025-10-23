@@ -1,6 +1,5 @@
 package world.hachimi.app.player
 
-import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
@@ -15,10 +14,8 @@ import platform.AVFoundation.*
 import platform.CoreMedia.CMTimeCompare
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.*
-import platform.MediaPlayer.MPMediaItemPropertyArtist
-import platform.MediaPlayer.MPMediaItemPropertyTitle
-import platform.MediaPlayer.MPNowPlayingInfoCenter
-import platform.darwin.NSObject
+import platform.MediaPlayer.*
+import platform.UIKit.UIImage
 import world.hachimi.app.logging.Logger
 
 @OptIn(ExperimentalForeignApi::class)
@@ -28,6 +25,7 @@ class IosPlayer : Player {
     private var isPlayerReady = false
     private val listeners = mutableSetOf<Player.Listener>()
     private var timeObserverToken: Any? = null
+    val nowPlayingCenter = MPNowPlayingInfoCenter.defaultCenter()
 
     override suspend fun isPlaying(): Boolean {
         return player?.timeControlStatus == AVPlayerTimeControlStatusPlaying
@@ -101,35 +99,6 @@ class IosPlayer : Player {
         val playerItem = AVPlayerItem.playerItemWithURL(url)
         player?.replaceCurrentItemWithPlayerItem(playerItem)
 
-        val info = mapOf(
-            MPMediaItemPropertyTitle to item.title,
-            MPMediaItemPropertyArtist to item.artist,
-        )
-        MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = info as Map<Any?, *>?
-
-        if (autoPlay) player?.play()
-    }
-
-    override suspend fun isReady(): Boolean {
-        return isPlayerReady
-    }
-
-    override suspend fun release() {
-        timeObserverToken?.let { player?.removeTimeObserver(it) }
-        NSNotificationCenter.defaultCenter.removeObserver(this)
-        player?.pause()
-//        player?.removeObserver(timeControlObserver, "timeControlStatus")
-        player = null
-        isPlayerReady = false
-    }
-
-    override suspend fun initialize() {
-        val session = AVAudioSession.sharedInstance()
-        this.session = session
-        session.setCategory(category = AVAudioSessionCategoryPlayback, error = null)
-        session.setActive(true, null)
-        player = AVPlayer()
-
         NSNotificationCenter.defaultCenter.addObserverForName(
             AVPlayerItemDidPlayToEndTimeNotification,
             null,
@@ -156,6 +125,45 @@ class IosPlayer : Player {
                 else -> {}
             }
         }
+
+        val image = item.coverBytes?.usePinned {
+            UIImage(NSData.dataWithBytes(it.addressOf(0), item.coverBytes.size.toULong()))
+        }?.let {
+            MPMediaItemArtwork(it)
+        }
+
+        val info = mapOf(
+            MPMediaItemPropertyTitle to item.title,
+            MPMediaItemPropertyArtist to item.artist,
+            MPMediaItemPropertyPlaybackDuration to item.durationSeconds,
+            MPMediaItemPropertyArtwork to image
+        )
+
+        @Suppress("UNCHECKED_CAST")
+        nowPlayingCenter.nowPlayingInfo = info as Map<Any?, *>?
+
+        if (autoPlay) player?.play()
+    }
+
+    override suspend fun isReady(): Boolean {
+        return isPlayerReady
+    }
+
+    override suspend fun release() {
+        timeObserverToken?.let { player?.removeTimeObserver(it) }
+        NSNotificationCenter.defaultCenter.removeObserver(this)
+        player?.pause()
+//        player?.removeObserver(timeControlObserver, "timeControlStatus")
+        player = null
+        isPlayerReady = false
+    }
+
+    override suspend fun initialize() {
+        val session = AVAudioSession.sharedInstance()
+        this.session = session
+        session.setCategory(category = AVAudioSessionCategoryPlayback, error = null)
+        session.setActive(true, null)
+        player = AVPlayer()
 
         isPlayerReady = true
     }

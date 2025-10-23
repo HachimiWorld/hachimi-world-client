@@ -7,6 +7,7 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.IosPlayer
+import world.hachimi.app.player.IosPlayerServiceHelper
 import world.hachimi.app.player.Player
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.MyDataStoreImpl
@@ -19,6 +20,8 @@ fun initKoin() {
     }
     val global = koin.koin.get<GlobalStore>()
     global.initialize()
+    val iosPlayerServiceHelper = koin.koin.get<IosPlayerServiceHelper>()
+    iosPlayerServiceHelper.initialize()
 }
 
 val appModule = module {
@@ -27,5 +30,8 @@ val appModule = module {
     single<Player> { IosPlayer() }
     single<SongCache> { SongCacheImpl() }
     singleOf(::GlobalStore)
+    single<IosPlayerServiceHelper> {
+        IosPlayerServiceHelper(get<GlobalStore>().player)
+    }
     applyViewModels()
 }

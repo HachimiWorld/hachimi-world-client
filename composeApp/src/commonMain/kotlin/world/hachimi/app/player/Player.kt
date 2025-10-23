@@ -48,6 +48,7 @@ data class SongItem(
     val id: String,
     val title: String,
     val artist: String,
+    val durationSeconds: Int,
     val audioBytes: ByteArray,
     val coverBytes: ByteArray? = null,
     val format: String
