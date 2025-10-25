@@ -38,7 +38,7 @@ jobs:
 #          path: composeApp/build/compose/logs/
       - name: Build with xcodebuild
         working-directory: iosApp/
-        run: xcodebuild archive CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        run: xcodebuild archive PRODUCT_NAME=HachimiWorld CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - name: Get versions
         shell: bash
         run: |
@@ -53,7 +53,7 @@ jobs:
           FILE_NAME="hachimi-world-${VERSION_NAME}-${VERSION_CODE}-unsigned.ipa"
           echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
           mkdir -p build/Payload
-          cp -r build/Release-iphoneos/app.app/ build/Payload/
+          cp -r build/Release-iphoneos/HachimiWorld.app/ build/Payload/
           mkdir -p build/ipa
           zip -r "build/ipa/${FILE_NAME}" build/Payload
       - name: Upload a Build Artifact
