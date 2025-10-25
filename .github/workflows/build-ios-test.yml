@@ -7,7 +7,7 @@ concurrency:
   group: build-ios
   cancel-in-progress: true
 jobs:
-  build-macos:
+  build-ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,10 +46,9 @@ jobs:
         working-directory: iosApp/
         run: xcodebuild archive CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - name: Package IPA
+        working-directory: iosApp/
         run: |
-          SAFE_VERSION_NAME=$(echo "$VERSION_NAME" | sed 's/[^a-zA-Z0-9._-]//g')
-          SAFE_VERSION_CODE=$(echo "$VERSION_CODE" | sed 's/[^0-9]//g')
-          FILE_NAME="hachimi-world-${SAFE_VERSION_NAME}-${SAFE_VERSION_CODE}-unsigned.ipa"
+          FILE_NAME="hachimi-world-${VERSION_NAME}-${VERSION_CODE}-unsigned.ipa"
           echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
           mkdir -p build/Payload
           cp -r build/Release-iphoneos/app.app/ build/Payload/
