@@ -1,6 +1,8 @@
 name: Build iOS
 on:
   workflow_dispatch:
+  push:
+    branches: ["ci/test-ios"]
 concurrency:
   group: build-ios
   cancel-in-progress: true
