@@ -48,14 +48,14 @@ jobs:
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
       - name: Package IPA
-        working-directory: iosApp/
+        working-directory: iosApp/build
         run: |
           FILE_NAME="hachimi-world-${VERSION_NAME}-${VERSION_CODE}-unsigned.ipa"
           echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-          mkdir -p build/Payload
-          cp -r build/Release-iphoneos/HachimiWorld.app/ build/Payload/
-          mkdir -p build/ipa
-          zip -r "build/ipa/${FILE_NAME}" build/Payload
+          mkdir -p Payload
+          cp -r Release-iphoneos/HachimiWorld.app/ Payload/HachimiWorld.app
+          mkdir -p ipa
+          zip -r "ipa/${FILE_NAME}" Payload
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
         with:
