@@ -19,6 +19,8 @@ jobs:
           echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
           echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
           echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Set build flavor to release
+        run: printf "\n%s" "buildkonfig.flavor=release" >> gradle.properties
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -26,14 +28,17 @@ jobs:
           java-version: '21'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Compile Kotlin Framework
-        run: ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode -P buildkonfig.flavor=release
+#      - name: Compile Kotlin Framework
+#        run: ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode -P buildkonfig.flavor=release
 #      - name: Upload failure logs
 #        if: failure()
 #        uses: actions/upload-artifact@v4
 #        with:
 #          name: logs
 #          path: composeApp/build/compose/logs/
+      - name: Build with xcodebuild
+        working-directory: iosApp/
+        run: xcodebuild archive CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - name: Get versions
         shell: bash
         run: |
@@ -42,9 +47,6 @@ jobs:
           VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Build with xcodebuild
-        working-directory: iosApp/
-        run: xcodebuild archive CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - name: Package IPA
         working-directory: iosApp/
         run: |
