@@ -1,0 +1,105 @@
+name: Build iOS
+on:
+  workflow_dispatch:
+concurrency:
+  group: build-ios
+  cancel-in-progress: true
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create local properties
+        run: |
+          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
+          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
+          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Compile Kotlin Framework
+        run: ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode -P buildkonfig.flavor=release
+#      - name: Upload failure logs
+#        if: failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: logs
+#          path: composeApp/build/compose/logs/
+      - name: Get versions
+        shell: bash
+        run: |
+          VERSIONS=$(./gradlew printVersions --quiet)
+          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
+          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+      - name: Build with xcodebuild
+        working-directory: iosApp/
+        run: xcodebuild archive CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+      - name: Package IPA
+        run: |
+          SAFE_VERSION_NAME=$(echo "$VERSION_NAME" | sed 's/[^a-zA-Z0-9._-]//g')
+          SAFE_VERSION_CODE=$(echo "$VERSION_CODE" | sed 's/[^0-9]//g')
+          FILE_NAME="hachimi-world-${SAFE_VERSION_NAME}-${SAFE_VERSION_CODE}-unsigned.ipa"
+          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+          mkdir -p build/Payload
+          cp -r build/Release-iphoneos/app.app/ build/Payload/
+          mkdir -p build/ipa
+          zip -r "build/ipa/${FILE_NAME}" build/Payload
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: iosApp/build/ipa/*.ipa
+          compression-level: 0
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          endpoint: ${{ secrets.S3_ENDPOINT }}
+          aws_key_id: ${{ secrets.S3_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.S3_BUCKET }}
+          source_dir: iosApp/build/ipa/
+          destination_dir: distribution/ios/
+      - name: Send publish request
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "$PR_BODY" > changelog.txt
+          # Step 1: Replace \r\n with \n
+          sed 's/\r\n/\n/g' changelog.txt > changelog_tmp.txt
+          # Step 2: Replace standalone \r with \n
+          sed 's/\r/\n/g' changelog_tmp.txt > changelog_fixed.txt
+          mv changelog_fixed.txt changelog.txt
+          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/ios/$FILE_NAME"
+          # Prepare data
+          JSON_DATA=$(jq -n \
+          --arg name "$VERSION_NAME" \
+          --argjson code $VERSION_CODE \
+          --arg url "$DOWNLOAD_URL" \
+          --rawfile changelog changelog.txt \
+          '{
+            version_name: $name,
+            version_number: $code,
+            url: $url,
+            changelog: $changelog,
+            variant: "test-ios",
+            release_time: (now | todateiso8601)
+          }')
+          echo "Sending webhook to PUBLISH_VERSION_URL"
+          echo "Payload: $JSON_DATA"
+
+          # Send webhook
+          curl --fail -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
+          -d "$JSON_DATA" \
+          "${{ secrets.PUBLISH_VERSION_URL }}"
