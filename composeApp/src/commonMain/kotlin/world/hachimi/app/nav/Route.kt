@@ -23,8 +23,8 @@ sealed class Route {
                 val Default = MyArtwork
             }
 
-            object MyArtwork: CreationCenter()
-            object Publish: CreationCenter()
+            data object MyArtwork: CreationCenter()
+            data object Publish: CreationCenter()
         }
         data object CommitteeCenter: Root()
         sealed class ContributorCenter: Root() {
