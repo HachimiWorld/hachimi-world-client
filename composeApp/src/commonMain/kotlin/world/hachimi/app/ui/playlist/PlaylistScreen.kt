@@ -35,40 +35,44 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
         onDispose { vm.dispose() }
     }
     val global = koinInject<GlobalStore>()
-    Column(Modifier.fillMaxSize()) {
-        Text(modifier = Modifier.fillMaxWidth().padding(top = 24.dp, start = 24.dp), text = "我的歌单", style = MaterialTheme.typography.titleLarge)
+    BoxWithConstraints {
+        val maxWidth = maxWidth
+        Column(Modifier.fillMaxSize()) {
+            Text(modifier = Modifier.fillMaxWidth().padding(top = 24.dp, start = 24.dp), text = "我的歌单", style = MaterialTheme.typography.titleLarge)
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-        AnimatedContent(vm.initializeStatus, modifier = Modifier.weight(1f)) {
-            when (it) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-                InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
-                    if (vm.playlists.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("什么也没有")
-                    } else LazyVerticalGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        columns = GridCells.Adaptive(minSize = 160.dp),
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        itemsIndexed(vm.playlists, key = { index, item -> item.id }) { index, item ->
-                            PlaylistItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                coverUrl = item.coverUrl,
-                                title = item.name,
-                                songCount = item.songsCount,
-                                createTime = item.createTime,
-                                onEnter = {
-                                    global.nav.push(Route.Root.MyPlaylist.Detail(item.id))
-                                }
-                            )
+            AnimatedContent(vm.initializeStatus, modifier = Modifier.weight(1f)) {
+                when (it) {
+                    InitializeStatus.INIT -> LoadingPage()
+                    InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                    InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
+                        if (vm.playlists.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("什么也没有")
+                        } else LazyVerticalGrid(
+                            modifier = Modifier.fillMaxSize(),
+                            columns = if (maxWidth < 400.dp) GridCells.Adaptive(minSize = 120.dp)
+                            else GridCells.Adaptive(minSize = 160.dp),
+                            contentPadding = PaddingValues(horizontal = 24.dp),
+                            verticalArrangement = Arrangement.spacedBy(24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            itemsIndexed(vm.playlists, key = { index, item -> item.id }) { index, item ->
+                                PlaylistItem(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    coverUrl = item.coverUrl,
+                                    title = item.name,
+                                    songCount = item.songsCount,
+                                    createTime = item.createTime,
+                                    onEnter = {
+                                        global.nav.push(Route.Root.MyPlaylist.Detail(item.id))
+                                    }
+                                )
+                            }
                         }
-                    }
-                    if (vm.playlistIsLoading) {
-                        CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        if (vm.playlistIsLoading) {
+                            CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        }
                     }
                 }
             }
