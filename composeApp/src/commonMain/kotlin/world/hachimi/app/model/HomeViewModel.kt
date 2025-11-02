@@ -74,7 +74,7 @@ class HomeViewModel(
         try {
             val resp = api.songModule.recentV2()
             if (resp.ok) {
-                recentSongs = resp.ok().songs.take(10)
+                recentSongs = resp.ok().songs.take(12)
                 recentStatus = InitializeStatus.LOADED
             } else {
                 global.alert(resp.err().msg)
@@ -110,7 +110,7 @@ class HomeViewModel(
         withStatus(::recommendLoading, ::recommendStatus) {
             val resp = if (global.isLoggedIn) api.songModule.recommend() else api.songModule.recommendAnonymous()
             if (resp.ok) {
-                recommendSongs = resp.ok().songs.take(10)
+                recommendSongs = resp.ok().songs.take(12)
                 true
             } else {
                 global.alert(resp.err().msg)
