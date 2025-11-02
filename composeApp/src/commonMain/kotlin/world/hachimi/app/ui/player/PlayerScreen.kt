@@ -27,6 +27,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.WindowSize
+import kotlin.time.Clock
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -483,7 +484,9 @@ private fun rememberTestPlayerState(): PlayerUIState {
                     likeCount = 0,
                     externalLinks = listOf(
                         SongModule.ExternalLink("bilibili", "https://xxxxxxx")
-                    )
+                    ),
+                    createTime = Clock.System.now(),
+                    releaseTime = Clock.System.now(),
                 )
             )
             hasSong = true
