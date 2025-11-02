@@ -27,6 +27,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.util.calculateGridColumns
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -42,8 +43,7 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
     BoxWithConstraints {
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
-            columns = if (maxWidth < 400.dp) GridCells.Adaptive(minSize = 120.dp)
-            else GridCells.Adaptive(minSize = 160.dp),
+            columns = calculateGridColumns(maxWidth),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(24.dp)
