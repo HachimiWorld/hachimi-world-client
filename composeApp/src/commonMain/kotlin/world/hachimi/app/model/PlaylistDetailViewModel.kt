@@ -37,7 +37,7 @@ class PlaylistDetailViewModel(
     var editName by mutableStateOf("")
     var editDescription by mutableStateOf("")
     var editOperating by mutableStateOf(false)
-    var editPrivate by mutableStateOf(false)
+    var editPrivate by mutableStateOf(true)
 
     var coverUploading by mutableStateOf(false)
     var coverUploadingProgress by mutableStateOf(0f)
