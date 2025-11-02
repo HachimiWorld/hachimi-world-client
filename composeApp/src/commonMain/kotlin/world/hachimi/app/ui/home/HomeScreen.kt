@@ -3,11 +3,12 @@ package world.hachimi.app.ui.home
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -19,8 +20,10 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.HomeViewModel
 import world.hachimi.app.model.InitializeStatus
-import world.hachimi.app.model.MainViewModel
+import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
@@ -29,8 +32,22 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(vm: MainViewModel = koinViewModel()) {
-    val global = koinInject<GlobalStore>()
+fun HomeScreen(content: Route.Root.Home) {
+    AnimatedContent(content) { content ->
+        when (content) {
+            Route.Root.Home.Main -> HomeMainScreen()
+            Route.Root.Home.Recent -> RecentPublishScreen()
+            Route.Root.Home.Recommend -> RecommendScreen()
+            else -> DevelopingPage()
+        }
+    }
+}
+
+@Composable
+fun HomeMainScreen(
+    vm: HomeViewModel = koinViewModel(),
+    global: GlobalStore = koinInject()
+) {
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.unmount() }
@@ -38,89 +55,174 @@ fun HomeScreen(vm: MainViewModel = koinViewModel()) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val maxWidth = maxWidth
         AdaptivePullToRefreshBox(
-            isRefreshing = vm.initializeStatus != InitializeStatus.INIT && vm.isLoading,
-            onRefresh = {
-                vm.fakeRefresh()
-            },
+            isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
+            onRefresh = { vm.fakeRefresh() },
             screenWidth = maxWidth
         ) {
-            Column(Modifier.fillMaxSize()) {
-                Row(
-                    modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "最近发布", style = MaterialTheme.typography.titleLarge
-                    )
-                    if (maxWidth >= WindowSize.COMPACT) {
-                        IconButton(
-                            modifier = Modifier.padding(start = 8.dp),
-                            enabled = !vm.isLoading,
-                            onClick = { vm.fakeRefresh() }
-                        ) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                        }
-                    }
-
-                    Spacer(Modifier.weight(1f))
-
-                    Button(
-                        modifier = Modifier,
-                        onClick = { vm.playAllRecent() }
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play")
-                        Spacer(Modifier.width(8.dp))
-                        Text("播放全部")
-                    }
-                }
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                SegmentHeader("每日推荐", onMoreClick = {
+                    global.nav.push(Route.Root.Home.Recommend)
+                })
 
                 Spacer(Modifier.height(24.dp))
 
-                AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-                    when (it) {
-                        InitializeStatus.INIT -> LoadingPage()
-                        InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-                        InitializeStatus.LOADED -> {
-                            if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("空空如也")
-                            } else LazyVerticalGrid(
-                                modifier = Modifier.fillMaxSize(),
-                                columns = if (maxWidth < 400.dp) GridCells.Adaptive(minSize = 120.dp) else GridCells.Adaptive(
-                                    minSize = 160.dp
-                                ),
-                                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                                verticalArrangement = Arrangement.spacedBy(24.dp)
-                            ) {
-                                itemsIndexed(vm.songs, key = { index, item -> item.id }) { index, item ->
-                                    SongCard(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        coverUrl = item.coverUrl,
-                                        title = item.title,
-                                        subtitle = item.subtitle,
-                                        author = item.uploaderName,
-                                        tags = item.tags.map { it.name },
-                                        likeCount = item.likeCount,
-                                        playCount = item.playCount,
-                                        onClick = {
-                                            global.player.insertToQueue(
-                                                GlobalStore.MusicQueueItem(
-                                                    id = item.id,
-                                                    displayId = item.displayId,
-                                                    name = item.title,
-                                                    artist = item.uploaderName,
-                                                    duration = item.durationSeconds.seconds,
-                                                    coverUrl = item.coverUrl
-                                                ), true, false
-                                            )
-                                        },
+                LoadableContent(
+                    modifier = Modifier.fillMaxWidth().height(520.dp),
+                    initializeStatus = vm.recommendStatus,
+                    loading = vm.recommendLoading,
+                    onRefresh = { },
+                    onRetryClick = { vm.retryRecent() }
+                ) {
+                    if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("空空如也")
+                    } else LazyHorizontalGrid(
+                        modifier = Modifier.fillMaxWidth(),
+                        rows = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        items(vm.recommendSongs, key = { item -> item.id }) { item ->
+                            SongCard(
+                                modifier = Modifier.width(width = 180.dp),
+                                item = item,
+                                onClick = {
+                                    global.player.insertToQueue(
+                                        GlobalStore.MusicQueueItem(
+                                            id = item.id,
+                                            displayId = item.displayId,
+                                            name = item.title,
+                                            artist = item.uploaderName,
+                                            duration = item.durationSeconds.seconds,
+                                            coverUrl = item.coverUrl
+                                        ), true, false
                                     )
-                                }
-                            }
+                                },
+                            )
                         }
                     }
                 }
+
+                SegmentHeader("最近发布", onMoreClick = {
+                    global.nav.push(Route.Root.Home.Recent)
+                })
+
+                Spacer(Modifier.height(24.dp))
+
+                LoadableContent(
+                    modifier = Modifier.fillMaxWidth().height(520.dp),
+                    initializeStatus = vm.recentStatus,
+                    loading = vm.recentLoading,
+                    onRefresh = { },
+                    onRetryClick = { vm.retryRecent() }
+                ) {
+                    if (vm.recentSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("空空如也")
+                    } else LazyHorizontalGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        rows = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        items(vm.recentSongs, key = { item -> item.id }) { item ->
+                            SongCard(
+                                modifier = Modifier.width(width = 180.dp),
+                                item = item,
+                                onClick = {
+                                    global.player.insertToQueue(
+                                        GlobalStore.MusicQueueItem(
+                                            id = item.id,
+                                            displayId = item.displayId,
+                                            name = item.title,
+                                            artist = item.uploaderName,
+                                            duration = item.durationSeconds.seconds,
+                                            coverUrl = item.coverUrl
+                                        ), true, false
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+
+                SegmentHeader("本周热门", onMoreClick = {
+                    global.nav.push(Route.Root.Home.WeeklyTop)
+                })
+
+                Spacer(Modifier.height(24.dp))
+
+                SegmentHeader("小众宝藏", onMoreClick = {
+                    global.nav.push(Route.Root.Home.HiddenGem)
+                })
+                Spacer(Modifier.height(24.dp))
+
+
+                SegmentHeader("纯净哈基米", onMoreClick = {
+                    global.nav.push(Route.Root.Home.HiddenGem)
+                })
+                Spacer(Modifier.height(24.dp))
+
+                SegmentHeader("R&B 专区", onMoreClick = {
+                    global.nav.push(Route.Root.Home.HiddenGem)
+                })
+                Spacer(Modifier.height(24.dp))
+                SegmentHeader("R&B 专区", onMoreClick = {
+                    global.nav.push(Route.Root.Home.HiddenGem)
+                })
+                Spacer(Modifier.height(24.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun SegmentHeader(
+    text: String,
+    onMoreClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = text, style = MaterialTheme.typography.titleLarge)
+        /*if (maxWidth >= WindowSize.COMPACT) {
+            IconButton(
+                modifier = Modifier.padding(start = 8.dp),
+                enabled = !vm.isLoading,
+                onClick = { vm.fakeRefresh() }
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+            }
+        }*/
+
+        Spacer(Modifier.weight(1f))
+
+        TextButton(
+            modifier = Modifier,
+            onClick = onMoreClick
+        ) {
+            Text("更多")
+            Spacer(Modifier.width(8.dp))
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Play")
+        }
+    }
+}
+
+@Composable
+private fun LoadableContent(
+    loading: Boolean,
+    initializeStatus: InitializeStatus,
+    onRefresh: () -> Unit,
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    AnimatedContent(initializeStatus, modifier = modifier) {
+        when (it) {
+            InitializeStatus.INIT -> LoadingPage()
+            InitializeStatus.FAILED -> ReloadPage(onRetryClick)
+            InitializeStatus.LOADED -> content()
         }
     }
 }

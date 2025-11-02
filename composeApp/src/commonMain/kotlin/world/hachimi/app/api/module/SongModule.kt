@@ -32,6 +32,14 @@ class SongModule(
     suspend fun recentV2(): WebResult<RecentResp> = client.get("/song/recent_v2", true)
 
     @Serializable
+    data class RecommendResp(
+        val songs: List<PublicSongDetail>
+    )
+
+    suspend fun recommend(): WebResult<RecommendResp> = client.get("/song/recommend", true)
+    suspend fun recommendAnonymous(): WebResult<RecommendResp> = client.get("/song/recommend_anonymous", true)
+
+    @Serializable
     data class PublicSongDetail(
         val id: Long,
         val displayId: String,
