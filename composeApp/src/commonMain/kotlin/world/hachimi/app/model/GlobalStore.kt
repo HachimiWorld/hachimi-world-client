@@ -36,7 +36,7 @@ class GlobalStore(
     var initialized by mutableStateOf(false)
     var darkMode by mutableStateOf<Boolean?>(null)
         private set
-    val nav = Navigator(Route.Root.Home)
+    val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
         private set
     var userInfo by mutableStateOf<UserInfo?>(null)
@@ -123,7 +123,7 @@ class GlobalStore(
         dataStore.delete(PreferencesKeys.USER_AVATAR)
         dataStore.delete(PreferencesKeys.AUTH_ACCESS_TOKEN)
         dataStore.delete(PreferencesKeys.AUTH_REFRESH_TOKEN)
-        nav.replace(Route.Root.Home)
+        nav.replace(Route.Root.Home.Main)
         isLoggedIn = false
         userInfo = null
     }

@@ -19,7 +19,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class MainViewModel(
+class RecentPublishViewModel(
     private val apiClient: ApiClient,
     private val global: GlobalStore
 ): ViewModel(CoroutineScope(Dispatchers.Default)) {

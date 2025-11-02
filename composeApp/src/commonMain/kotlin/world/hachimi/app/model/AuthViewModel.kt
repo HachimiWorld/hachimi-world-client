@@ -141,7 +141,7 @@ class AuthViewModel(
                 if (resp.ok) {
                     dataStore.set(PreferencesKeys.USER_NAME, name)
                     global.setLoginUser(uid.toLong(), name, null, false)
-                    global.nav.replace(Route.Root.Home)
+                    global.nav.replace(Route.Root.Home.Main)
                 } else {
                     global.alert(resp.errData<CommonError>().msg)
                 }
@@ -155,7 +155,7 @@ class AuthViewModel(
     }
 
     fun skipProfile() {
-        global.nav.replace(Route.Root.Home)
+        global.nav.replace(Route.Root.Home.Main)
     }
 
     private suspend fun doLogin() {
@@ -188,7 +188,7 @@ class AuthViewModel(
                 dataStore.set(PreferencesKeys.USER_UID, profileData.uid)
                 dataStore.set(PreferencesKeys.USER_NAME, profileData.username)
                 global.setLoginUser(data.uid, data.username, profileData.avatarUrl, false)
-                global.nav.replace(Route.Root.Home)
+                global.nav.replace(Route.Root.Home.Main)
             } else {
                 global.alert(resp.errData<CommonError>().msg)
             }

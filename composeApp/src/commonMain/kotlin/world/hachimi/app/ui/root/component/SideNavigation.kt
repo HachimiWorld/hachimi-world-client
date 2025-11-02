@@ -28,9 +28,9 @@ fun SideNavigation(
             NavItem(
                 icon = Icons.Default.Home,
                 label = "主页",
-                selected = content == Route.Root.Home,
+                selected = content is Route.Root.Home,
                 onSelectedChange = {
-                    onChange(Route.Root.Home)
+                    onChange(Route.Root.Home.Main)
                 })
             NavItem(
                 icon = Icons.Default.FavoriteBorder,
@@ -132,7 +132,7 @@ private fun NavItem(
 @Composable
 private fun Preview() {
     PreviewTheme(background = true) {
-        SideNavigation(Route.Root.Home) {
+        SideNavigation(Route.Root.Home.Main) {
         }
     }
 }

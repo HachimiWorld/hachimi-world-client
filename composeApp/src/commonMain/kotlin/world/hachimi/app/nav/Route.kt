@@ -5,9 +5,15 @@ import world.hachimi.app.model.SearchViewModel
 sealed class Route {
     sealed class Root : Route() {
         companion object {
-            val Default = Home
+            val Default = Home.Main
         }
-        data object Home: Root()
+        sealed class Home: Root() {
+            data object Main: Home()
+            data object Recent: Home()
+            data object Recommend: Home()
+            data object WeeklyTop: Home()
+            data object HiddenGem: Home()
+        }
         data object RecentPlay: Root()
         data object RecentLike: Root()
         data object MySubscribe: Root()

@@ -40,7 +40,7 @@ fun RootScreen(routeContent: Route.Root) {
         content = {
             AnimatedContent(routeContent) { routeContent ->
                 when (routeContent) {
-                    Route.Root.Home -> HomeScreen()
+                    is Route.Root.Home -> HomeScreen(routeContent)
                     is Route.Root.Search -> SearchScreen(routeContent.query, routeContent.type)
                     Route.Root.RecentLike -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
                     Route.Root.RecentPlay -> if (global.isLoggedIn) RecentPlayScreen() else NeedLoginScreen()
