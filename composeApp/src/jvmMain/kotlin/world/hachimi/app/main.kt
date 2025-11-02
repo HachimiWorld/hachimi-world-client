@@ -20,6 +20,8 @@ import java.awt.Dimension
 
 fun main() {
     System.setProperty("apple.awt.application.appearance", "system")
+    System.setProperty("java.net.useSystemProxies", "true")
+
     val koin = startKoin {
         modules(appModule)
     }
