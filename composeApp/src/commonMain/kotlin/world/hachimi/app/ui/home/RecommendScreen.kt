@@ -68,7 +68,7 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
                             text = "每日推荐", style = MaterialTheme.typography.titleLarge
                         )
                         Text(
-                            text = "并非根据你的口味进行推荐。每日 6:00 刷新",
+                            text = "并非根据你的口味进行推荐",
                             style = MaterialTheme.typography.titleSmall
                         )
                     }

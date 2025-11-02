@@ -71,7 +71,7 @@ fun HomeMainScreen(
                     initializeStatus = vm.recommendStatus,
                     loading = vm.recommendLoading,
                     onRefresh = { },
-                    onRetryClick = { vm.retryRecent() }
+                    onRetryClick = { vm.retryRecommend() }
                 ) {
                     if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")

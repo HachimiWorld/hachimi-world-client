@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,14 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -67,14 +69,22 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val maxWidth = maxWidth
         AdaptivePullToRefreshBox(
-            isRefreshing = vm.initializeStatus != InitializeStatus.INIT && vm.isLoading,
+            isRefreshing = vm.initializeStatus != InitializeStatus.INIT && vm.refreshing,
             onRefresh = { vm.fakeRefresh() },
             screenWidth = maxWidth
         ) {
+            val state = rememberLazyGridState()
+            LaunchedEffect(state.canScrollForward) {
+                if (!vm.loading && !state.canScrollForward) {
+                    vm.loadMore()
+                }
+            }
+
             if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("空空如也")
             } else LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
+                state = state,
                 columns = calculateGridColumns(maxWidth),
                 contentPadding = PaddingValues(24.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
@@ -88,7 +98,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         if (maxWidth >= WindowSize.COMPACT) {
                             IconButton(
                                 modifier = Modifier.padding(start = 8.dp),
-                                enabled = !vm.isLoading,
+                                enabled = !vm.loading,
                                 onClick = { vm.fakeRefresh() }
                             ) {
                                 Icon(Icons.Default.Refresh, contentDescription = "Refresh")
@@ -107,29 +117,55 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         }
                     }
                 }
-                itemsIndexed(vm.songs, key = { index, item -> item.id }) { index, item ->
-                    SongCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        coverUrl = item.coverUrl,
-                        title = item.title,
-                        subtitle = item.subtitle,
-                        author = item.uploaderName,
-                        tags = item.tags.map { it.name },
-                        likeCount = item.likeCount,
-                        playCount = item.playCount,
-                        onClick = {
-                            global.player.insertToQueue(
-                                GlobalStore.MusicQueueItem(
-                                    id = item.id,
-                                    displayId = item.displayId,
-                                    name = item.title,
-                                    artist = item.uploaderName,
-                                    duration = item.durationSeconds.seconds,
-                                    coverUrl = item.coverUrl
-                                ), true, false
-                            )
-                        },
-                    )
+                vm.songs.fastForEach {
+                    item(
+                        span = { GridItemSpan(maxLineSpan) },
+                        contentType = "separator"
+                    ) {
+                        Text(it.date.toString(), style = MaterialTheme.typography.titleMedium)
+                    }
+                    items(items = it.songs, key = { it.id }) { item ->
+                        SongCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            coverUrl = item.coverUrl,
+                            title = item.title,
+                            subtitle = item.subtitle,
+                            author = item.uploaderName,
+                            tags = item.tags.map { it.name },
+                            likeCount = item.likeCount,
+                            playCount = item.playCount,
+                            onClick = {
+                                global.player.insertToQueue(
+                                    GlobalStore.MusicQueueItem(
+                                        id = item.id,
+                                        displayId = item.displayId,
+                                        name = item.title,
+                                        artist = item.uploaderName,
+                                        duration = item.durationSeconds.seconds,
+                                        coverUrl = item.coverUrl
+                                    ), true, false
+                                )
+                            },
+                        )
+                    }
+                }
+                if (vm.loading) {
+                    item(
+                        span = { GridItemSpan(maxLineSpan) },
+                        contentType = "loading_indicator"
+                    ) {
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+                if (!vm.hasMore) {
+                    item(
+                        span = { GridItemSpan(maxLineSpan) },
+                        contentType = "loading_indicator"
+                    ) {
+                        Text(text = "没有更多了", modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
+                    }
                 }
             }
         }
