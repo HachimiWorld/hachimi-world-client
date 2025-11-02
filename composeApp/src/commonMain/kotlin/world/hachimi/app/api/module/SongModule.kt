@@ -9,6 +9,7 @@ import kotlinx.io.Source
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.WebResult
+import kotlin.time.Instant
 
 class SongModule(
     private val client: ApiClient
@@ -29,7 +30,17 @@ class SongModule(
         val songs: List<PublicSongDetail>
     )
 
-    suspend fun recentV2(): WebResult<RecentResp> = client.get("/song/recent_v2", true)
+    /**
+     * @since 251102
+     */
+    @Serializable
+    data class RecentReq(
+        val cursor: Instant?,
+        val limit: Int,
+        val after: Boolean
+    )
+
+    suspend fun recentV2(req: RecentReq): WebResult<RecentResp> = client.get("/song/recent_v2", req, true)
 
     @Serializable
     data class RecommendResp(
@@ -58,7 +69,15 @@ class SongModule(
         val uploaderName: String,
         val playCount: Long,
         val likeCount: Long,
-        val externalLinks: List<ExternalLink>
+        val externalLinks: List<ExternalLink>,
+        /**
+         * @since 251102
+         */
+        val createTime: Instant,
+        /**
+         * @since 251102
+         */
+        val releaseTime: Instant,
     )
 
     @Serializable
