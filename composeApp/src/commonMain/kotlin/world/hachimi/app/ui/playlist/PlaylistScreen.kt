@@ -27,6 +27,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.playlist.components.PlaylistItem
+import world.hachimi.app.util.calculateGridColumns
 
 @Composable
 fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
@@ -51,8 +52,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                             Text("什么也没有")
                         } else LazyVerticalGrid(
                             modifier = Modifier.fillMaxSize(),
-                            columns = if (maxWidth < 400.dp) GridCells.Adaptive(minSize = 120.dp)
-                            else GridCells.Adaptive(minSize = 160.dp),
+                            columns = calculateGridColumns(maxWidth),
                             contentPadding = PaddingValues(horizontal = 24.dp),
                             verticalArrangement = Arrangement.spacedBy(24.dp),
                             horizontalArrangement = Arrangement.spacedBy(24.dp)

@@ -40,6 +40,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.calculateGridColumns
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -74,9 +75,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 Text("空空如也")
             } else LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
-                columns = if (maxWidth < 400.dp) GridCells.Adaptive(minSize = 120.dp) else GridCells.Adaptive(
-                    minSize = 160.dp
-                ),
+                columns = calculateGridColumns(maxWidth),
                 contentPadding = PaddingValues(24.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
