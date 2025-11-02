@@ -31,11 +31,12 @@ private const val TAG = "ApiClient"
 /**
  * Auto get refresh token
  */
-class ApiClient(private val baseUrl: String) {
+class ApiClient(
+    private val baseUrl: String,
+) {
     companion object {
-        const val VERSION: Int = 251014
+        const val VERSION: Int = 251102
     }
-
     @OptIn(ExperimentalSerializationApi::class)
     internal val json = Json {
         // Ignoring unknown keys increases the forward compatibility
