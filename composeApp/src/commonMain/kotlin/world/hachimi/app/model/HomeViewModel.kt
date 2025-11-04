@@ -26,12 +26,26 @@ class HomeViewModel(
     var refreshing by mutableStateOf(false)
         private set
     var recentSongs by mutableStateOf<List<SongModule.PublicSongDetail>>(emptyList())
+        private set
     var recentLoading by mutableStateOf(false)
         private set
     var recommendStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var recommendSongs by mutableStateOf<List<SongModule.PublicSongDetail>>(emptyList())
+        private set
     var recommendLoading by mutableStateOf(false)
+        private set
+    var hotStatus by mutableStateOf(InitializeStatus.INIT)
+        private set
+    var hotSongs by mutableStateOf<List<SongModule.PublicSongDetail>>(emptyList())
+        private set
+    var hotLoading by mutableStateOf(false)
+        private set
+    var pureStatus by mutableStateOf(InitializeStatus.INIT)
+        private set
+    var pureSongs by mutableStateOf<List<SongModule.SearchSongItem>>(emptyList())
+        private set
+    var pureLoading by mutableStateOf(false)
         private set
 
     private var lastRefreshTime: Instant = Clock.System.now()
@@ -51,6 +65,10 @@ class HomeViewModel(
             loadRecommend()
         }, async {
             loadRecent()
+        }, async {
+            loadHot()
+        }, async {
+            loadCategories()
         })
     }
 
@@ -89,6 +107,24 @@ class HomeViewModel(
         }
     }
 
+    fun retryHot() {
+        if (hotStatus == InitializeStatus.FAILED) {
+            hotStatus = InitializeStatus.INIT
+            viewModelScope.launch {
+                loadHot()
+            }
+        }
+    }
+
+    fun retryPure() {
+        if (pureStatus == InitializeStatus.FAILED) {
+            pureStatus = InitializeStatus.INIT
+            viewModelScope.launch {
+                loadCategories()
+            }
+        }
+    }
+
     suspend fun loadRecent() {
         recentLoading = true
         try {
@@ -113,6 +149,40 @@ class HomeViewModel(
             val resp = if (global.isLoggedIn) api.songModule.recommend() else api.songModule.recommendAnonymous()
             if (resp.ok) {
                 recommendSongs = resp.ok().songs.take(12)
+                true
+            } else {
+                global.alert(resp.err().msg)
+                false
+            }
+        }
+    }
+
+    suspend fun loadHot() {
+        withStatus(::hotLoading, ::hotStatus) {
+            val resp = api.songModule.hotWeekly()
+            if (resp.ok) {
+                hotSongs = resp.ok().songs.take(12)
+                true
+            } else {
+                global.alert(resp.err().msg)
+                false
+            }
+        }
+    }
+
+    suspend fun loadCategories() {
+        // Category
+        withStatus(::pureLoading, ::pureStatus) {
+            val resp = api.songModule.search(
+                SongModule.SearchReq(
+                    q = "",
+                    limit = 12,
+                    offset = null,
+                    filter = "tags = \"纯净哈基米\""
+                )
+            )
+            if (resp.ok) {
+                pureSongs = resp.ok().hits.take(12)
                 true
             } else {
                 global.alert(resp.err().msg)
