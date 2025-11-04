@@ -69,46 +69,6 @@ fun HomeMainScreen(
             screenWidth = maxWidth
         ) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                SegmentHeader("每日推荐", onMoreClick = {
-                    global.nav.push(Route.Root.Home.Recommend)
-                })
-                Spacer(Modifier.height(24.dp))
-                LoadableContent(
-                    modifier = Modifier.fillMaxWidth().height(520.dp),
-                    initializeStatus = vm.recommendStatus,
-                    loading = vm.recommendLoading,
-                    onRefresh = { },
-                    onRetryClick = { vm.retryRecommend() }
-                ) {
-                    if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("空空如也")
-                    } else LazyHorizontalGrid(
-                        modifier = Modifier.fillMaxWidth(),
-                        rows = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        items(vm.recommendSongs, key = { item -> item.id }) { item ->
-                            SongCard(
-                                modifier = Modifier.width(width = 180.dp),
-                                item = item,
-                                onClick = {
-                                    global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem(
-                                            id = item.id,
-                                            displayId = item.displayId,
-                                            name = item.title,
-                                            artist = item.uploaderName,
-                                            duration = item.durationSeconds.seconds,
-                                            coverUrl = item.coverUrl
-                                        ), true, false
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
 
                 SegmentHeader("最近发布", onMoreClick = {
                     global.nav.push(Route.Root.Home.Recent)
@@ -131,6 +91,47 @@ fun HomeMainScreen(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         items(vm.recentSongs, key = { item -> item.id }) { item ->
+                            SongCard(
+                                modifier = Modifier.width(width = 180.dp),
+                                item = item,
+                                onClick = {
+                                    global.player.insertToQueue(
+                                        GlobalStore.MusicQueueItem(
+                                            id = item.id,
+                                            displayId = item.displayId,
+                                            name = item.title,
+                                            artist = item.uploaderName,
+                                            duration = item.durationSeconds.seconds,
+                                            coverUrl = item.coverUrl
+                                        ), true, false
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+
+                SegmentHeader("每日推荐", onMoreClick = {
+                    global.nav.push(Route.Root.Home.Recommend)
+                })
+                Spacer(Modifier.height(24.dp))
+                LoadableContent(
+                    modifier = Modifier.fillMaxWidth().height(520.dp),
+                    initializeStatus = vm.recommendStatus,
+                    loading = vm.recommendLoading,
+                    onRefresh = { },
+                    onRetryClick = { vm.retryRecommend() }
+                ) {
+                    if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("空空如也")
+                    } else LazyHorizontalGrid(
+                        modifier = Modifier.fillMaxWidth(),
+                        rows = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        items(vm.recommendSongs, key = { item -> item.id }) { item ->
                             SongCard(
                                 modifier = Modifier.width(width = 180.dp),
                                 item = item,
