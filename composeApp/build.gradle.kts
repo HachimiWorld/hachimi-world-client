@@ -237,15 +237,14 @@ compose.desktop {
         when (flavor) {
             "release" -> nativeDistributions {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-                packageName = "基米天堂"
+                packageName = "Hachimi World"
                 packageVersion = gitVersionNameShort.get()
                 modules("jdk.unsupported", "java.naming")
 
                 windows {
-                    packageName = "Hachimi World"
                     upgradeUuid = "1544B476-25C9-4A01-705E-B374B14B2F1B"
                     perUserInstall = true
-                    dirChooser = true
+                    dirChooser = false
                     shortcut = true
                     menu = true
                     iconFile.set(rootProject.file("icons/icon.ico"))
@@ -262,32 +261,29 @@ compose.desktop {
                     iconFile.set(rootProject.file("icons/icon.png"))
                 }
             }
-            else -> {
-                nativeDistributions {
-                    targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-                    packageName = "基米天堂 Dev"
-                    packageVersion = gitVersionNameShort.get()
-                    modules("jdk.unsupported", "java.naming")
+            else -> nativeDistributions {
+                targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
+                packageName = "Hachimi World Dev"
+                packageVersion = gitVersionNameShort.get()
+                modules("jdk.unsupported", "java.naming")
 
-                    windows {
-                        packageName = "Hachimi World Dev"
-                        upgradeUuid = "8AD88FC9-A6A2-478D-9E80-FF735EE15785"
-                        perUserInstall = true
-                        dirChooser = true
-                        shortcut = true
-                        menu = true
-                        iconFile.set(rootProject.file("icons/icon.ico"))
-                    }
-                    macOS {
-                        packageName = "基米天堂 Dev"
-                        bundleID = "world.hachimi.app.dev"
-                        appCategory = "public.app-category.entertainment"
-                        iconFile.set(rootProject.file("icons/icon.icns"))
-                    }
-                    linux {
-                        packageName = "hachimi-world-dev" // Linux does not support Chinese characters
-                        iconFile.set(rootProject.file("icons/icon.png"))
-                    }
+                windows {
+                    upgradeUuid = "8AD88FC9-A6A2-478D-9E80-FF735EE15785"
+                    perUserInstall = true
+                    dirChooser = false
+                    shortcut = true
+                    menu = true
+                    iconFile.set(rootProject.file("icons/icon.ico"))
+                }
+                macOS {
+                    packageName = "基米天堂 Dev"
+                    bundleID = "world.hachimi.app.dev"
+                    appCategory = "public.app-category.entertainment"
+                    iconFile.set(rootProject.file("icons/icon.icns"))
+                }
+                linux {
+                    packageName = "hachimi-world-dev" // Linux does not support Chinese characters
+                    iconFile.set(rootProject.file("icons/icon.png"))
                 }
             }
         }
