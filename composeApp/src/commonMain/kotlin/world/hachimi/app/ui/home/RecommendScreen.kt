@@ -2,10 +2,9 @@ package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
@@ -97,16 +96,10 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
                     }
                 }
             }
-            itemsIndexed(vm.songs, key = { index, item -> item.id }) { index, item ->
+            items(vm.songs, key = { item -> item.id }) { item ->
                 SongCard(
                     modifier = Modifier.fillMaxWidth(),
-                    coverUrl = item.coverUrl,
-                    title = item.title,
-                    subtitle = item.subtitle,
-                    author = item.uploaderName,
-                    tags = item.tags.map { it.name },
-                    likeCount = item.likeCount,
-                    playCount = item.playCount,
+                    item = item,
                     onClick = {
                         global.player.insertToQueue(
                             GlobalStore.MusicQueueItem(

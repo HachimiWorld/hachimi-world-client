@@ -1,12 +1,7 @@
 package world.hachimi.app.ui.home
 
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -36,7 +31,6 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.WindowSize
-import kotlin.collections.emptyList
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -223,6 +217,7 @@ fun HomeMainScreen(
                                 tags = remember { emptyList<String>() },
                                 playCount = item.playCount,
                                 likeCount = item.likeCount,
+                                explicit = item.explicit,
                                 onClick = {
                                     global.player.insertToQueue(
                                         GlobalStore.MusicQueueItem(
