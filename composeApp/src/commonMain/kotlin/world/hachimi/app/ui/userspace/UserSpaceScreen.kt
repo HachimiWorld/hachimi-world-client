@@ -152,13 +152,7 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
             }
             items(vm.songs, key = { it.id }) { song ->
                 SongCard(
-                    coverUrl = song.coverUrl,
-                    title = song.title,
-                    subtitle = song.subtitle,
-                    author = song.uploaderName,
-                    tags = remember(song.tags) { song.tags.map { item -> item.name } },
-                    playCount = song.playCount,
-                    likeCount = song.likeCount,
+                    item = song,
                     onClick = {
                         global.player.insertToQueue(GlobalStore.MusicQueueItem(
                             id = song.id,

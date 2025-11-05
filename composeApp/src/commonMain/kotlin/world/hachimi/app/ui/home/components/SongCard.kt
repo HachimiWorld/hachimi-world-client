@@ -1,40 +1,22 @@
 package world.hachimi.app.ui.home.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explicit
 import androidx.compose.material.icons.filled.Headphones
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.MultiContentMeasurePolicy
-import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import world.hachimi.app.api.module.SongModule
-import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.theme.PreviewTheme
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun SongCard(
@@ -48,9 +30,10 @@ fun SongCard(
         title = item.title,
         subtitle = item.subtitle,
         author = item.uploaderName,
-        tags = item.tags.map { it.name },
+        tags = remember(item) { item.tags.map { it.name } },
         likeCount = item.likeCount,
         playCount = item.playCount,
+        explicit = item.explicit,
         onClick = onClick,
     )
 }
@@ -64,6 +47,7 @@ fun SongCard(
     tags: List<String>,
     playCount: Long,
     likeCount: Long,
+    explicit: Boolean?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -103,12 +87,16 @@ fun SongCard(
             }
 
             Column(Modifier.padding(vertical = 8.dp, horizontal = 12.dp)) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
+                Row(Modifier.fillMaxWidth()) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                    Icon(Icons.Default.Explicit, "Explicit", tint = MaterialTheme.colorScheme.onSurface)
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         modifier = Modifier.weight(1f),
@@ -182,12 +170,16 @@ fun SongCardInHorizontal(
                     }
                 }
                 Column(Modifier.padding(vertical = 8.dp, horizontal = 12.dp)) {
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
-                    )
+                    Row(Modifier.fillMaxWidth()) {
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1
+                        )
+                        Icon(Icons.Default.Explicit, "Explicit", tint = MaterialTheme.colorScheme.onSurface)
+                    }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             modifier = Modifier.weight(1f),
@@ -235,6 +227,7 @@ private fun Preview() {
             tags = listOf("Tag 1", "Tag 2"),
             playCount = 1000,
             likeCount = 100,
+            explicit = true,
             onClick = {}
         )
     }
@@ -254,6 +247,7 @@ private fun Preview2() {
                 tags = listOf("Tag 1", "Tag 2"),
                 playCount = 1000,
                 likeCount = 100,
+                explicit = false,
                 onClick = {}
             )
         }
