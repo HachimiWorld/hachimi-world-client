@@ -88,7 +88,7 @@ class SongModule(
         /**
          * @since 251105
          */
-        val explicit: Boolean? = null
+        val explicit: Boolean?
     )
 
     @Serializable
@@ -262,7 +262,7 @@ class SongModule(
         /**
          * @since 251105
          */
-        val explicit: Boolean? = null
+        val explicit: Boolean?
     )
 
     suspend fun search(req: SearchReq): WebResult<SearchResp> =
