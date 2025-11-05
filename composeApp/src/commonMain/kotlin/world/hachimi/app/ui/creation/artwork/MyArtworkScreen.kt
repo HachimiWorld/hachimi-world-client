@@ -1,8 +1,10 @@
 package world.hachimi.app.ui.creation.artwork
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
@@ -15,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlinx.datetime.LocalDateTime
 import kotlin.time.Instant
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -24,6 +27,7 @@ import world.hachimi.app.model.MyArtworkViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 
 @Composable
@@ -71,10 +75,8 @@ fun MyArtworkScreen(
                     }
                 } else LazyColumn(
                     state = scrollState,
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    itemsIndexed(vm.items, key = { _, item -> item.reviewId }) { index, item ->
+                    items(vm.items, key = { item -> item.reviewId }) { item ->
                         ArtworkItem(
                             modifier = Modifier.fillMaxWidth(),
                             coverUrl = item.coverUrl,
@@ -87,8 +89,8 @@ fun MyArtworkScreen(
                                 PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> "退回"
                                 else -> "未知"
                             },
-                            onEditClick = {
-                                // TODO
+                            onClick = {
+                                global.nav.push(Route.Root.CreationCenter.ReviewDetail(item.reviewId))
                             }
                         )
                     }
@@ -118,10 +120,10 @@ private fun ArtworkItem(
     subtitle: String,
     submitTime: Instant,
     status: String,
-    onEditClick: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    Row(modifier.clickable(onClick = onClick).padding(horizontal = 24.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Surface(Modifier.size(42.dp), MaterialTheme.shapes.small, LocalContentColor.current.copy(0.12f)) {
             AsyncImage(
                 modifier = Modifier.size(42.dp).clip(MaterialTheme.shapes.small),
@@ -132,13 +134,13 @@ private fun ArtworkItem(
         }
 
         Column(Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium)
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+            Text(text = title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "提交时间", style = MaterialTheme.typography.bodySmall)
-            Text(text = formatTime(submitTime, distance = true, precise = false), style = MaterialTheme.typography.bodySmall)
+            Text(text = formatTime(submitTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMD), style = MaterialTheme.typography.bodySmall)
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

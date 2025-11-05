@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.contributor.ReviewDetailScreen
 import world.hachimi.app.ui.creation.artwork.MyArtworkScreen
 import world.hachimi.app.ui.creation.publish.PublishScreen
 
@@ -16,6 +17,7 @@ fun CreationCenterScreen(
         when (child) {
             Route.Root.CreationCenter.MyArtwork -> MyArtworkScreen()
             Route.Root.CreationCenter.Publish -> PublishScreen()
+            is Route.Root.CreationCenter.ReviewDetail -> ReviewDetailScreen(child.reviewId)
         }
     }
 }
