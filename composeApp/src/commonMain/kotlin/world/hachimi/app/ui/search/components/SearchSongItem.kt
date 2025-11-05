@@ -25,7 +25,7 @@ fun SearchSongItem(
     onClick: () -> Unit = {},
 ) {
     Card(
-        modifier = modifier.height(80.dp),
+        modifier = modifier.height(100.dp),
         onClick = onClick
     ) {
         Row {
