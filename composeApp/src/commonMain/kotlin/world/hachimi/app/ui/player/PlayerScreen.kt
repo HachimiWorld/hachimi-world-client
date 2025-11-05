@@ -487,6 +487,7 @@ private fun rememberTestPlayerState(): PlayerUIState {
                     ),
                     createTime = Clock.System.now(),
                     releaseTime = Clock.System.now(),
+                    explicit = true
                 )
             )
             hasSong = true
