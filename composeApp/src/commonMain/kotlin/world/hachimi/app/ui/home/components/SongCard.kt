@@ -87,7 +87,7 @@ fun SongCard(
             }
 
             Column(Modifier.padding(vertical = 8.dp, horizontal = 12.dp)) {
-                Row(Modifier.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         modifier = Modifier.weight(1f),
                         text = title,
@@ -95,7 +95,13 @@ fun SongCard(
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1
                     )
-                    Icon(Icons.Default.Explicit, "Explicit", tint = MaterialTheme.colorScheme.onSurface)
+                    // Explicit mark
+                    if (explicit == true) Icon(
+                        imageVector = Icons.Default.Explicit,
+                        contentDescription = "Explicit",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
