@@ -2,7 +2,6 @@ package world.hachimi.app.ui.userspace
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -14,7 +13,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,9 +24,9 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
+import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.calculateGridColumns
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
@@ -154,14 +152,11 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
                 SongCard(
                     item = song,
                     onClick = {
-                        global.player.insertToQueue(GlobalStore.MusicQueueItem(
-                            id = song.id,
-                            displayId = song.displayId,
-                            name = song.title,
-                            artist = song.uploaderName,
-                            duration = song.durationSeconds.seconds,
-                            coverUrl = song.coverUrl
-                        ), true, false)
+                        global.player.insertToQueue(
+                            GlobalStore.MusicQueueItem.fromPublicDetail(song),
+                            true,
+                            false
+                        )
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

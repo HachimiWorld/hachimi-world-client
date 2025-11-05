@@ -22,12 +22,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPublishViewModel
+import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun RecentPublishScreen(
@@ -121,14 +121,9 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                             explicit = item.explicit,
                             onClick = {
                                 global.player.insertToQueue(
-                                    GlobalStore.MusicQueueItem(
-                                        id = item.id,
-                                        displayId = item.displayId,
-                                        name = item.title,
-                                        artist = item.uploaderName,
-                                        duration = item.durationSeconds.seconds,
-                                        coverUrl = item.coverUrl
-                                    ), true, false
+                                    GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                                    true,
+                                    false
                                 )
                             },
                         )
