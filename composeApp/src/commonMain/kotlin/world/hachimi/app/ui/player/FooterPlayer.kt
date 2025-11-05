@@ -36,6 +36,7 @@ import world.hachimi.app.ui.player.components.SongControl
 import world.hachimi.app.ui.player.components.SongProgress
 import world.hachimi.app.ui.player.components.VolumeControl
 import world.hachimi.app.ui.root.component.MusicQueue
+import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.singleLined
 import kotlin.random.Random
 
@@ -51,7 +52,7 @@ fun FooterPlayer() {
                 enter = expandVertically(expandFrom = Alignment.Top),
                 exit = shrinkVertically()
             ) {
-                if (maxWidth < 600.dp) {
+                if (maxWidth < WindowSize.MEDIUM) {
                     CompactFooterPlayer(Modifier.fillMaxWidth())
                 } else {
                     ExpandedFooterPlayer()
