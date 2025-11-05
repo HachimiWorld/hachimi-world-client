@@ -279,7 +279,8 @@ class UserSpaceViewModel(
                     name = it.title,
                     artist = it.uploaderName,
                     duration = it.durationSeconds.seconds,
-                    coverUrl = it.coverUrl
+                    coverUrl = it.coverUrl,
+                    explicit = it.explicit,
                 )
             })
             global.player.next()

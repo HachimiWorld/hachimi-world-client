@@ -81,7 +81,8 @@ class PlayerUIState() {
         val title: String,
         val author: String,
         val coverUrl: String,
-        val duration: Duration
+        val duration: Duration,
+        val explicit: Boolean?
     )
 
     fun updateCurrentMillis(milliseconds: Long) {

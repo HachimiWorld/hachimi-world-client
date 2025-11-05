@@ -93,13 +93,10 @@ class RecentPlayViewModel(
     }
 
     fun play(item: PlayHistoryModule.PlayHistoryItem) {
-        global.player.insertToQueue(GlobalStore.MusicQueueItem(
-            id = item.songInfo.id,
-            displayId = item.songInfo.displayId,
-            name = item.songInfo.title,
-            artist = item.songInfo.uploaderName,
-            duration = item.songInfo.durationSeconds.seconds,
-            coverUrl = item.songInfo.coverUrl
-        ), true, false)
+        global.player.insertToQueue(
+            GlobalStore.MusicQueueItem.fromPublicDetail(item.songInfo),
+            true,
+            false
+        )
     }
 }

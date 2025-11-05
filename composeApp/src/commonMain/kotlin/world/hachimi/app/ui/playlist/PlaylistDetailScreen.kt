@@ -143,7 +143,8 @@ fun PlaylistDetailScreen(
                                         name = song.title,
                                         artist = song.uploaderName,
                                         duration = song.durationSeconds.seconds,
-                                        coverUrl = song.coverUrl
+                                        coverUrl = song.coverUrl,
+                                        explicit = null // TODO(playlist): Get explicit info
                                     ), true, false
                                 )
                             },

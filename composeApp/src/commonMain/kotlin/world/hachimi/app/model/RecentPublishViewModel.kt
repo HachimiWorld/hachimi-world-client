@@ -148,16 +148,7 @@ class RecentPublishViewModel(
         viewModelScope.launch {
             val items = songs.flatMap {
                 it.songs
-            }.map {
-                GlobalStore.MusicQueueItem(
-                    id = it.id,
-                    displayId = it.displayId,
-                    name = it.title,
-                    artist = it.uploaderName,
-                    duration = it.durationSeconds.seconds,
-                    coverUrl = it.coverUrl
-                )
-            }
+            }.map { GlobalStore.MusicQueueItem.fromPublicDetail(it) }
             global.player.playAll(items)
         }
     }

@@ -119,7 +119,8 @@ class PlaylistDetailViewModel(
                     name = it.title,
                     artist = it.uploaderName,
                     duration = it.durationSeconds.seconds,
-                    coverUrl = it.coverUrl
+                    coverUrl = it.coverUrl,
+                    explicit = null // TODO: Get explicit from server
                 )
             }
             global.player.playAll(items)

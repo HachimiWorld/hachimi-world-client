@@ -124,11 +124,11 @@ private fun Preview() {
             {},
             remember {
                 listOf(
-                    GlobalStore.MusicQueueItem(0, "0", "Test Song 1", "Artist", 101.seconds, ""),
-                    GlobalStore.MusicQueueItem(1, "1", "Test Song 2", "Artist", 207.seconds, ""),
-                    GlobalStore.MusicQueueItem(2, "2", "Test Song 3", "Artist", 128.seconds, ""),
-                    GlobalStore.MusicQueueItem(3, "3", "Test Song 4", "Artist", 162.seconds, ""),
-                    GlobalStore.MusicQueueItem(4, "4", "Test Song 5", "Artist", 116.seconds, ""),
+                    GlobalStore.MusicQueueItem(0, "0", "Test Song 1", "Artist", 101.seconds, "", true),
+                    GlobalStore.MusicQueueItem(1, "1", "Test Song 2", "Artist", 207.seconds, "", false),
+                    GlobalStore.MusicQueueItem(2, "2", "Test Song 3", "Artist", 128.seconds, "", null),
+                    GlobalStore.MusicQueueItem(3, "3", "Test Song 4", "Artist", 162.seconds, "", true),
+                    GlobalStore.MusicQueueItem(4, "4", "Test Song 5", "Artist", 116.seconds, "", false),
                 )
             },
             null,

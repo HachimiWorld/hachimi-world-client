@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.*
+import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.VersionModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
@@ -23,6 +24,7 @@ import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Global shared data and logic. Can work without UI displaying
@@ -54,7 +56,8 @@ class GlobalStore(
         val name: String,
         val artist: String,
         val duration: Duration,
-        val coverUrl: String
+        val coverUrl: String,
+        val explicit: Boolean?
     )
 
     fun initialize() = scope.launch {
@@ -232,4 +235,28 @@ class GlobalStore(
         showUpdateDialog = false
         getPlatform().openUrl(newVersionInfo!!.url)
     }
+}
+
+fun GlobalStore.MusicQueueItem.Companion.fromPublicDetail(value: SongModule.PublicSongDetail): GlobalStore.MusicQueueItem {
+    return GlobalStore.MusicQueueItem(
+        id = value.id,
+        displayId = value.displayId,
+        name = value.title,
+        artist = value.uploaderName,
+        duration = value.durationSeconds.seconds,
+        coverUrl = value.coverUrl,
+        explicit = value.explicit
+    )
+}
+
+fun GlobalStore.MusicQueueItem.Companion.fromSearchSongItem(value: SongModule.SearchSongItem): GlobalStore.MusicQueueItem {
+    return GlobalStore.MusicQueueItem(
+        id = value.id,
+        displayId = value.displayId,
+        name = value.title,
+        artist = value.uploaderName,
+        duration = value.durationSeconds.seconds,
+        coverUrl = value.coverArtUrl,
+        explicit = value.explicit
+    )
 }

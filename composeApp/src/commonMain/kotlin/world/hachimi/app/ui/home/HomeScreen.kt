@@ -25,6 +25,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.HomeViewModel
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
@@ -90,14 +92,9 @@ fun HomeMainScreen(
                                 item = item,
                                 onClick = {
                                     global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem(
-                                            id = item.id,
-                                            displayId = item.displayId,
-                                            name = item.title,
-                                            artist = item.uploaderName,
-                                            duration = item.durationSeconds.seconds,
-                                            coverUrl = item.coverUrl
-                                        ), true, false
+                                        GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                                        true,
+                                        false
                                     )
                                 },
                             )
@@ -131,14 +128,9 @@ fun HomeMainScreen(
                                 item = item,
                                 onClick = {
                                     global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem(
-                                            id = item.id,
-                                            displayId = item.displayId,
-                                            name = item.title,
-                                            artist = item.uploaderName,
-                                            duration = item.durationSeconds.seconds,
-                                            coverUrl = item.coverUrl
-                                        ), true, false
+                                        GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                                        true,
+                                        false
                                     )
                                 },
                             )
@@ -172,14 +164,9 @@ fun HomeMainScreen(
                                 item = item,
                                 onClick = {
                                     global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem(
-                                            id = item.id,
-                                            displayId = item.displayId,
-                                            name = item.title,
-                                            artist = item.uploaderName,
-                                            duration = item.durationSeconds.seconds,
-                                            coverUrl = item.coverUrl
-                                        ), true, false
+                                        GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                                        true,
+                                        false
                                     )
                                 },
                             )
@@ -220,14 +207,9 @@ fun HomeMainScreen(
                                 explicit = item.explicit,
                                 onClick = {
                                     global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem(
-                                            id = item.id,
-                                            displayId = item.displayId,
-                                            name = item.title,
-                                            artist = item.uploaderName,
-                                            duration = item.durationSeconds.seconds,
-                                            coverUrl = item.coverArtUrl
-                                        ), true, false
+                                        GlobalStore.MusicQueueItem.fromSearchSongItem(item),
+                                        true,
+                                        false
                                     )
                                 },
                             )

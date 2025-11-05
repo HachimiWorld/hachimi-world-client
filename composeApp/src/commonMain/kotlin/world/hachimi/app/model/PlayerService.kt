@@ -149,7 +149,8 @@ class PlayerService(
                 title = item.name,
                 author = item.artist,
                 coverUrl = item.coverUrl,
-                duration = item.duration
+                duration = item.duration,
+                explicit = item.explicit
             ))
             playerState.fetchingMetadata = true
 
@@ -316,14 +317,7 @@ class PlayerService(
                     }
                 }
 
-                val item = MusicQueueItem(
-                    id = data.id,
-                    displayId = data.displayId,
-                    name = data.title,
-                    artist = data.uploaderName,
-                    duration = data.durationSeconds.seconds,
-                    coverUrl = data.coverUrl
-                )
+                val item = MusicQueueItem.fromPublicDetail(data)
 
                 insertToQueue(item, instantPlay, append).join()
             } catch (e: CancellationException) {
