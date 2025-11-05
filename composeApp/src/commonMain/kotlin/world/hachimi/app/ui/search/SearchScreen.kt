@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.search
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -34,8 +35,8 @@ fun SearchScreen(
         }
     }
 
-    Column {
-        if (vm.loading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    AnimatedContent(vm.loading) {loading ->
+        if (loading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         } else Content(vm, global)
     }
