@@ -16,12 +16,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.PublishModule.SongPublishReviewBrief.Companion.STATUS_PENDING
 import world.hachimi.app.getPlatform
+import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewDetailViewModel
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.formatSongDuration
@@ -48,11 +51,23 @@ fun ReviewDetailScreen(
 }
 
 @Composable
-private fun Content(vm: ReviewDetailViewModel) {
+private fun Content(
+    vm: ReviewDetailViewModel,
+    global: GlobalStore = koinInject()
+) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), Arrangement.spacedBy(16.dp)) {
         vm.data?.let { data ->
             Text("Review 详情", style = MaterialTheme.typography.titleLarge)
-            PropertyItem("投稿人", "${data.uploaderName} ${data.uploaderUid}")
+            PropertyItem(label = {
+                Text("投稿人")
+            }) {
+                Text(
+                    modifier = Modifier.clickable {
+                        global.nav.push(Route.Root.PublicUserSpace(data.uploaderUid))
+                    },
+                    text = "${data.uploaderName} ${data.uploaderUid}"
+                )
+            }
             PropertyItem("提交时间", formatTime(data.submitTime, distance = true, precise = false, thresholdDay = 3))
             PropertyItem(
                 "状态", when (data.status) {
