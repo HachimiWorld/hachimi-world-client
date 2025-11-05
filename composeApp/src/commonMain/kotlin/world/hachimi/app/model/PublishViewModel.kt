@@ -79,6 +79,7 @@ class PublishViewModel(
     )
 
     val externalLinks = mutableStateListOf<SongModule.ExternalLink>()
+    var explicit by mutableStateOf<Boolean?>(null)
     var publishedSongId by mutableStateOf<String?>(null)
         private set
     var showSuccessDialog by mutableStateOf(false)
@@ -420,7 +421,8 @@ class PublishViewModel(
                     tagIds = tags.map { it.id },
                     creationInfo = creationInfo,
                     productionCrew = crew,
-                    externalLinks = externalLinks
+                    externalLinks = externalLinks,
+                    explicit = explicit
                 )
             )
             if (resp.ok) {
@@ -554,6 +556,11 @@ class PublishViewModel(
                 global.alert("请填写二作信息")
                 return false
             }
+        }
+
+        if (explicit == null) {
+            global.alert("请选择是否包含露骨内容")
+            return false
         }
 
         return true
