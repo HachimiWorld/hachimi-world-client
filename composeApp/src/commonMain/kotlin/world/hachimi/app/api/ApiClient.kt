@@ -47,7 +47,14 @@ class ApiClient(
         // - Rename: Rename a field.
         // - Change primitive data type
         // - Change data type between primitive value, object, array
+
+        // Backward compatibility:
+        // - Add: When you read a field that is not present in the old data, should provide a default value.
+        //     Generally it is `null`. Set `explicitNulls` to false automatically get the backward compatibility by default for nullable field.
+        // - Delete: Do not read a field in the old data anymore. It's compatible by `ignoreUnknownKeys`
         ignoreUnknownKeys = true
+        explicitNulls = false
+
         prettyPrint = false
         namingStrategy = JsonNamingStrategy.SnakeCase
     }
