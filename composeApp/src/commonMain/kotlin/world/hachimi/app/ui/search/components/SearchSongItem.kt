@@ -1,24 +1,11 @@
 package world.hachimi.app.ui.search.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explicit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +38,28 @@ fun SearchSongItem(
             }
             Row(Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 8.dp)) {
                 Column(Modifier.weight(1f)) {
-                    Text(data.title, style = MaterialTheme.typography.bodyMedium)
-                    Text(data.subtitle, style = MaterialTheme.typography.bodySmall, color = LocalContentColor.current.copy(0.72f))
+
+                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = data.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            maxLines = 1
+                        )
+
+                        if (data.explicit == true) Icon(
+                            modifier = Modifier.padding(start = 8.dp).size(16.dp),
+                            imageVector = Icons.Default.Explicit,
+                            contentDescription = "Explicit",
+                            tint = LocalContentColor.current.copy(0.72f),
+                        )
+                    }
+
+                    Text(
+                        text = data.subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = LocalContentColor.current.copy(0.72f),
+                        maxLines = 1
+                    )
                     Spacer(Modifier.weight(1f))
                     Text(data.uploaderName, style = MaterialTheme.typography.labelSmall, color = LocalContentColor.current.copy(0.6f))
                 }
@@ -105,7 +112,8 @@ private fun Preview() {
             coverArtUrl = "",
             audioUrl = "",
             uploaderUid = 0,
-            uploaderName = "Author"
+            uploaderName = "Author",
+            explicit = true
         ))
     }
 }
