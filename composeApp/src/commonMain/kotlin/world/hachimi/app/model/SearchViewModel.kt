@@ -93,6 +93,7 @@ class SearchViewModel(
                             audioUrl = data.audioUrl,
                             uploaderUid = data.uploaderUid,
                             uploaderName = data.uploaderName,
+                            explicit = data.explicit
                         ))
                         searchProcessingTimeMs = 0
                     }
