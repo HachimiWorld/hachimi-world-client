@@ -38,7 +38,7 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.formatTime
 
 @Composable
-fun ReviewScreen(
+fun ReviewListScreen(
     vm: ReviewViewModel = koinViewModel()
 ) {
     DisposableEffect(vm) {
