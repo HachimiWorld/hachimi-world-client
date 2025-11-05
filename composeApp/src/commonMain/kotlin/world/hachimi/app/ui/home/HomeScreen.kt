@@ -22,18 +22,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.model.HomeViewModel
-import world.hachimi.app.model.InitializeStatus
-import world.hachimi.app.model.fromPublicDetail
-import world.hachimi.app.model.fromSearchSongItem
+import world.hachimi.app.model.*
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.WindowSize
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +38,7 @@ fun HomeScreen(content: Route.Root.Home) {
             Route.Root.Home.Main -> HomeMainScreen()
             Route.Root.Home.Recent -> RecentPublishScreen()
             Route.Root.Home.Recommend -> RecommendScreen()
+            Route.Root.Home.WeeklyHot -> WeeklyHotScreen()
             else -> DevelopingPage()
         }
     }
@@ -139,7 +135,7 @@ fun HomeMainScreen(
                 }
 
                 SegmentHeader("本周热门", onMoreClick = {
-                    global.nav.push(Route.Root.Home.WeeklyTop)
+                    global.nav.push(Route.Root.Home.WeeklyHot)
                 })
                 Spacer(Modifier.height(24.dp))
                 LoadableContent(

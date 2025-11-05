@@ -11,7 +11,7 @@ sealed class Route {
             data object Main: Home()
             data object Recent: Home()
             data object Recommend: Home()
-            data object WeeklyTop: Home()
+            data object WeeklyHot: Home()
             data object HiddenGem: Home()
         }
         data object RecentPlay: Root()
