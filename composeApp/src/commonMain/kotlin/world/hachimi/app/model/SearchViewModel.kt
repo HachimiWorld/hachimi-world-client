@@ -40,8 +40,10 @@ class SearchViewModel(
         private set
 
     fun mounted(query: String, searchType: SearchType) {
-        this.query = query
-        search()
+        if (this.query != query) {
+            this.query = query
+            search()
+        }
     }
 
     fun dispose() {
