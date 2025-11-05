@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloseFullscreen
+import androidx.compose.material.icons.filled.Explicit
 import androidx.compose.material.icons.filled.MusicVideo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.WindowSize
+import kotlin.math.exp
 import kotlin.time.Clock
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -348,11 +350,25 @@ private fun MetadataInfo(
     } else {
         info?.uploaderName
     } ?: ""
+    val explicit = if (playerState.fetchingMetadata) {
+        previewMetadata?.explicit
+    } else {
+        info?.explicit
+    }
 
-    Text(
-        text = displayedTitle,
-        style = MaterialTheme.typography.titleMedium
-    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = displayedTitle,
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        if (explicit == true) Icon(
+            modifier = Modifier.padding(start = 8.dp).size(16.dp),
+            imageVector = Icons.Default.Explicit,
+            contentDescription = "Explicit",
+            tint = LocalContentColor.current.copy(0.72f),
+        )
+    }
 
     if (!playerState.fetchingMetadata) {
         info?.subtitle?.let {

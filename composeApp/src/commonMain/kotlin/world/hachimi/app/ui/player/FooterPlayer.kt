@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Explicit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
@@ -67,7 +69,7 @@ fun CompactFooterPlayer(modifier: Modifier) {
     val displayedCover by remember { derivedStateOf { if (playerState.fetchingMetadata) playerState.previewMetadata?.coverUrl else playerState.songInfo?.coverUrl } }
     val displayedTitle by remember { derivedStateOf { if (playerState.fetchingMetadata) { playerState.previewMetadata?.title } else { playerState.songInfo?.title } ?: "" } }
     val displayedAuthor by remember { derivedStateOf { if (playerState.fetchingMetadata) { playerState.previewMetadata?.author } else { playerState.songInfo?.uploaderName } ?: "" } }
-
+    val explicit by remember { derivedStateOf { if (playerState.fetchingMetadata) playerState.previewMetadata?.explicit else playerState.songInfo?.explicit } }
     Box(modifier.clickable(onClick = { global.expandPlayer() })) {
         Surface(shadowElevation = 4.dp) {
             Column(Modifier.padding(bottom = currentSafeAreaInsets().bottom).padding(horizontal = 24.dp, vertical = 12.dp)) {
@@ -86,7 +88,15 @@ fun CompactFooterPlayer(modifier: Modifier) {
                     }
 
                     Column(Modifier.weight(1f).padding(horizontal = 16.dp)) {
-                        Text(displayedTitle, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(displayedTitle, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            if (explicit == true) Icon(
+                                imageVector = Icons.Default.Explicit,
+                                contentDescription = "Explicit",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp)
+                            )
+                        }
                         Spacer(Modifier.height(8.dp))
                         Text(displayedAuthor, style = MaterialTheme.typography.bodySmall, maxLines = 1)
                     }
@@ -185,6 +195,7 @@ fun ExpandedFooterPlayer() {
     val displayedCover by remember { derivedStateOf { if (playerState.fetchingMetadata) playerState.previewMetadata?.coverUrl else playerState.songInfo?.coverUrl } }
     val displayedTitle by remember { derivedStateOf { if (playerState.fetchingMetadata) { playerState.previewMetadata?.title } else { playerState.songInfo?.title } ?: "" } }
     val displayedAuthor by remember { derivedStateOf { if (playerState.fetchingMetadata) { playerState.previewMetadata?.author } else { playerState.songInfo?.uploaderName } ?: "" } }
+    val explicit by remember { derivedStateOf { if (playerState.fetchingMetadata) playerState.previewMetadata?.explicit else playerState.songInfo?.explicit } }
     var queueExpanded by remember { mutableStateOf(false) }
 
     // TODO[refactor](footer): I really should not write this garbage. Refactor later.
@@ -206,7 +217,15 @@ fun ExpandedFooterPlayer() {
         }
 
         Column(Modifier.padding(start = 16.dp).width(200.dp)) {
-            Text(displayedTitle, style = MaterialTheme.typography.bodyMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(displayedTitle, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (explicit == true) Icon(
+                    imageVector = Icons.Default.Explicit,
+                    contentDescription = "Explicit",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp)
+                )
+            }
             Text(displayedAuthor, style = MaterialTheme.typography.bodySmall)
         }
 
