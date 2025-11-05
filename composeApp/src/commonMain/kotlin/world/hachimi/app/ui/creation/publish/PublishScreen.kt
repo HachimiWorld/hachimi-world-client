@@ -349,6 +349,19 @@ fun PublishScreen(
                 }
             }
 
+            FormItem(
+                header = { Text("是否含有露骨内容*") },
+                subtitle = { Text("如果作品含有脏话、低俗、暴力等内容，尤其是儿童不宜内容，请务必正确标记") }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = vm.explicit == false, onClick = { vm.explicit = false })
+                    Text("全年龄", style = MaterialTheme.typography.labelLarge)
+
+                    RadioButton(selected = vm.explicit == true, onClick = { vm.explicit = true })
+                    Text("非全年龄", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+
             Button(onClick = { vm.publish() }, enabled = !vm.isOperating) {
                 Text("提交作品")
             }
