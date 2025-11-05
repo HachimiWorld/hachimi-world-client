@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
@@ -15,11 +16,11 @@ import kotlin.time.DurationUnit
 import kotlin.time.Instant
 
 @Composable
-fun formatTime(instant: Instant, distance: Boolean = false, thresholdDay: Int = 7, precise: Boolean = true): String {
+fun formatTime(instant: Instant, distance: Boolean = false, thresholdDay: Int = 7, precise: Boolean = true, fullFormat: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO): String {
     return remember(instant, distance, thresholdDay, precise) {
         val now = Clock.System.now()
         if (distance) {
-            formatDistance(time = instant, thresholdDay = thresholdDay, precise = precise, now = now)
+            formatDistance(time = instant, thresholdDay = thresholdDay, precise = precise, now = now, fullFormat = fullFormat)
         } else {
             val formatted = LocalDateTime.Formats.ISO.format(
                 instant.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -140,15 +141,24 @@ fun formatDistance(
     precise: Boolean,
     thresholdDay: Int = 7,
     now: Instant = Clock.System.now(),
-    timeZone: TimeZone = TimeZone.currentSystemDefault()
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    fullFormat: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO
 ): String {
     val distance = time - now
     return if (abs(distance.inWholeDays) <= thresholdDay) {
         formatDistance(distance, precise)
     } else {
         val local = time.toLocalDateTime(timeZone)
-        local.format(LocalDateTime.Formats.ISO)
+        local.format(fullFormat)
     }
+}
+
+val LocalDateTime.Formats.YMD get() = LocalDateTime.Format {
+    yearTwoDigits(1960)
+    char('/')
+    monthNumber()
+    char('/')
+    day()
 }
 
 private val ymdhms = LocalDateTime.Format {
