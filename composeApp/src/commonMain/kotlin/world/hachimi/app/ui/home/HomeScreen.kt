@@ -57,7 +57,7 @@ fun HomeMainScreen(
         vm.mounted()
         onDispose { vm.unmount() }
     }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED)) {
         val maxWidth = maxWidth
         AdaptivePullToRefreshBox(
             isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
