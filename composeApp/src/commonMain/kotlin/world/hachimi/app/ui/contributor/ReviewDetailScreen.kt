@@ -124,6 +124,13 @@ private fun Content(
                     else -> "未知"
                 }
             )
+            PropertyItem(
+                "含有露骨内容", when (data.explicit) {
+                    true -> "是"
+                    false -> "否"
+                    null -> "未标记"
+                }
+            )
             data.originInfos.fastForEach {
                 PropertyItem(
                     "原作类型", when (it.originType) {
