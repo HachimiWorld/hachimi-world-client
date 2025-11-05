@@ -10,7 +10,7 @@ import world.hachimi.app.nav.Route
 fun ContributorCenterScreen(child: Route.Root.ContributorCenter) {
     Box(Modifier.fillMaxSize()) {
         when (child) {
-            Route.Root.ContributorCenter.ReviewList -> ReviewScreen()
+            Route.Root.ContributorCenter.ReviewList -> ReviewListScreen()
             is Route.Root.ContributorCenter.ReviewDetail -> ReviewDetailScreen(child.reviewId)
         }
     }
