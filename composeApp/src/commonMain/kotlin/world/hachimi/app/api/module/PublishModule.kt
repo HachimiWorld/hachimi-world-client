@@ -74,7 +74,8 @@ class PublishModule(
         val productionCrew: List<SongModule.SongProductionCrew>,
         val creationType: Int,
         val originInfos: List<SongModule.CreationTypeInfo>,
-        val externalLink: List<SongModule.ExternalLink>
+        val externalLink: List<SongModule.ExternalLink>,
+        val explicit: Boolean? = null
     ) {
         companion object {
             const val CREATION_TYPE_ORIGINAL = 0

@@ -85,6 +85,10 @@ class SongModule(
          * @since 251102
          */
         val releaseTime: Instant,
+        /**
+         * @since 251105
+         */
+        val explicit: Boolean? = null
     )
 
     @Serializable
@@ -193,6 +197,10 @@ class SongModule(
         val creationInfo: CreationInfo,
         val productionCrew: List<ProductionItem>,
         val externalLinks: List<ExternalLink>,
+        /**
+         * @since 251105
+         */
+        val explicit: Boolean?
     ) {
         @Serializable
         data class CreationInfo (
@@ -250,7 +258,11 @@ class SongModule(
         val coverArtUrl: String,
         val audioUrl: String,
         val uploaderUid: Long,
-        val uploaderName: String
+        val uploaderName: String,
+        /**
+         * @since 251105
+         */
+        val explicit: Boolean? = null
     )
 
     suspend fun search(req: SearchReq): WebResult<SearchResp> =
