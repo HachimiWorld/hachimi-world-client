@@ -12,9 +12,7 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
@@ -100,8 +98,14 @@ class UserSpaceViewModel(
         myself = this.uid == global.userInfo?.uid
 
         viewModelScope.launch {
-            refreshProfile()
-            loadSongs()
+            awaitAll(
+                async {
+                    refreshProfile()
+                },
+                async {
+                    loadSongs()
+                }
+            )
             initializeStatus = InitializeStatus.LOADED
         }
     }
