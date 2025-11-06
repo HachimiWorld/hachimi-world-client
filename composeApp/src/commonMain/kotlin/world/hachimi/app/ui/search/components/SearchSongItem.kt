@@ -47,7 +47,7 @@ fun SearchSongItem(
                         )
 
                         if (data.explicit == true) Icon(
-                            modifier = Modifier.padding(start = 8.dp).size(16.dp),
+                            modifier = Modifier.padding(start = 8.dp).requiredSize(16.dp),
                             imageVector = Icons.Default.Explicit,
                             contentDescription = "Explicit",
                             tint = LocalContentColor.current.copy(0.72f),
