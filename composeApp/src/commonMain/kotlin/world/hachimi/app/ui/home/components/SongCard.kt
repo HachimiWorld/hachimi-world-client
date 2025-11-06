@@ -184,7 +184,8 @@ fun SongCardInHorizontal(
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1
                         )
-                        Icon(Icons.Default.Explicit, "Explicit", tint = MaterialTheme.colorScheme.onSurface)
+                        Icon(Icons.Default.Explicit, "Explicit", tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.requiredSize(16.dp))
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
