@@ -208,8 +208,7 @@ class JVMPlayer() : Player {
         }
     }
 
-    private fun linearToDb(volume: Float): Float =
-        20 * log10(volume.toDouble()).toFloat()
+    private fun linearToDb(volume: Float): Float = 20f * log10(volume)
 
     override suspend fun release() {
         // Do some cleanup work
