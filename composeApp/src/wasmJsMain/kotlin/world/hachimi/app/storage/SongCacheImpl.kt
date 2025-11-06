@@ -11,6 +11,13 @@ class SongCacheImpl : SongCache {
         prettyPrint = false
     }
 
+    override suspend fun delete(key: String) {
+    }
+
+    override suspend fun deleteMetadata(key: String) {
+        localStorage.removeItem("song_caches/${key}_metadata")
+    }
+
     override suspend fun get(key: String): SongCache.Item? {
         // TODO[feat](cache): Currently not supported on WASM.
         return null
