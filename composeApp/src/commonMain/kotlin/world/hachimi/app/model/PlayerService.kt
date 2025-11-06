@@ -465,6 +465,29 @@ class PlayerService(
             }
             coverBytes = cache.cover.readByteArray()
             audioBytes = buffer.readByteArray()
+            scope.launch {
+                try {
+                    Logger.i("global", "Downloading")
+                    val resp = api.songModule.detail(displayId)
+                    if (!resp.ok) {
+                        Logger.e("global", "Failed to refresh song metadata: ${resp.errData<CommonError>().msg}")
+                        return@launch
+                    }
+
+                    val data = resp.ok()
+                    if (cache.metadata != data) {
+                        Logger.i("global", "Metadata updated, invalidate cache")
+                        // If the audio file has updated, just invalidate the cache
+                        if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
+                            songCache.delete(displayId)
+                        }
+                        // Update the metadata
+                        songCache.saveMetadata(data)
+                    }
+                } catch (e: Throwable) {
+                    Logger.e("global", "Failed to refresh song metadata", e)
+                }
+            }
         } else {
             Logger.i("global", "Downloading")
             onProgress(0f)

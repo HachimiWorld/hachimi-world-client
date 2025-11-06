@@ -45,6 +45,15 @@ class SongCacheImpl : SongCache {
         metadataFile.writeText(json.encodeToString(item.metadata))
     }
 
+    override suspend fun delete(key: String) {
+        cacheDir.resolve(key).let { if (it.exists()) it.delete() }
+        cacheDir.resolve("${key}_cover").let { if (it.exists()) it.delete() }
+    }
+
+    override suspend fun deleteMetadata(key: String) {
+        cacheDir.resolve("${key}_metadata").let { if (it.exists()) it.delete() }
+    }
+
     override suspend fun getMetadata(key: String): SongDetailInfo? = withContext(Dispatchers.IO) {
         val metadataFile = cacheDir.resolve("${key}_metadata").takeIf { it.exists() } ?: return@withContext null
         try {

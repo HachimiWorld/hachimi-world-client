@@ -8,6 +8,8 @@ interface SongCache {
     suspend fun saveMetadata(item: SongDetailInfo)
     suspend fun get(key: String): Item?
     suspend fun save(item: Item)
+    suspend fun delete(key: String)
+    suspend fun deleteMetadata(key: String)
 
     data class Item(
         val key: String,
