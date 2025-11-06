@@ -12,6 +12,8 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
 import world.hachimi.app.logging.Logger
+import kotlin.math.log10
+import kotlin.math.pow
 import kotlin.time.measureTime
 
 class WasmPlayer : Player {
@@ -20,6 +22,8 @@ class WasmPlayer : Player {
     private var isReady = false
     private var isReadyMutex = Mutex()
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
+    private var rgDb = 0f
+    private var userVolume = 1f
 
     override suspend fun isPlaying(): Boolean {
         return if (isReady()) {
@@ -65,16 +69,21 @@ class WasmPlayer : Player {
     }
 
     override suspend fun getVolume(): Float {
-        if (isReady()) {
-            return howl!!.volume().toDouble().toFloat()
-        }
-        return 1f
+        return userVolume
     }
 
     override suspend fun setVolume(value: Float) {
-        if (isReady()) {
-            howl!!.volume(value.toDouble().toJsNumber())
-        }
+        this.userVolume = value
+        val volume = mixVolume(replayGain = rgDb, volume = value)
+        howl?.volume(volume.toDouble().toJsNumber())
+    }
+
+    private fun mixVolume(replayGain: Float, volume: Float): Float {
+        val volumeDb = 20f * log10(volume)
+        val totalDb = replayGain + volumeDb
+        val mixedVolume = (if (totalDb.isInfinite()) 0f else gainToMultiplier(totalDb)).coerceIn(0f, 1f)
+        Logger.d("player", "volume: $mixedVolume, gain: $totalDb, replay gain: $replayGain, user gain: $volumeDb")
+        return mixedVolume
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
@@ -114,6 +123,7 @@ class WasmPlayer : Player {
                 )
                 val howl = buildHowl(options)
                 this.howl = howl
+                rgDb = item.replayGainDB
                 setVolume(previousVolume)
                 isReadyMutex.withLock {
                     this.isReady = true
@@ -160,4 +170,6 @@ class WasmPlayer : Player {
     override suspend fun initialize() {
         // Do nothing because the WASM player does not need to be initialized
     }
+
+    private fun gainToMultiplier(db: Float) = 10f.pow(db / 20f)
 }
