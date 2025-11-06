@@ -33,7 +33,6 @@ import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
 import kotlin.random.Random
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 private val downloadHttpClient = HttpClient() {
@@ -541,7 +540,8 @@ class PlayerService(
             audioBytes = audioBytes,
             coverBytes = coverBytes,
             format = extension,
-            durationSeconds = metadata.durationSeconds
+            durationSeconds = metadata.durationSeconds,
+            replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
         )
         return@coroutineScope item
     }

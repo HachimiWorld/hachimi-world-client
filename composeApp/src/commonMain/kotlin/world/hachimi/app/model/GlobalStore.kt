@@ -38,6 +38,8 @@ class GlobalStore(
     var initialized by mutableStateOf(false)
     var darkMode by mutableStateOf<Boolean?>(null)
         private set
+    var enableLoudnessNormalization by mutableStateOf(true)
+        private set
     val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
         private set
@@ -63,7 +65,7 @@ class GlobalStore(
     fun initialize() = scope.launch {
         scope.launch(Dispatchers.Default) {
             coroutineScope {
-                launch { this@GlobalStore.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE) }
+                launch { loadSettings() }
                 launch { loadLoginStatus() }
             }
             initialized = true
@@ -83,6 +85,16 @@ class GlobalStore(
         } else {
             dataStore.set(PreferencesKeys.SETTINGS_DARK_MODE, darkMode)
         }
+    }
+
+    fun updateLoudnessNormalization(enabled: Boolean) = scope.launch {
+        this@GlobalStore.enableLoudnessNormalization = enabled
+        dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
+    }
+
+    private suspend fun loadSettings() {
+        this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
+        this.enableLoudnessNormalization = dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
     }
 
     private suspend fun loadLoginStatus() {
