@@ -1,5 +1,9 @@
 package world.hachimi.app.player
 
+import world.hachimi.app.logging.Logger
+import kotlin.math.log10
+import kotlin.math.pow
+
 /**
  * A player can work without UI
  */
@@ -29,6 +33,18 @@ interface Player {
 
     interface Listener {
         fun onEvent(event: PlayEvent)
+    }
+
+    companion object {
+        fun mixVolume(replayGain: Float, volume: Float): Float {
+            val volumeDb = 20f * log10(volume)
+            val totalDb = replayGain + volumeDb
+            val mixedVolume = (if (totalDb.isInfinite()) 0f else gainToMultiplier(totalDb)).coerceIn(0f, 1f)
+            Logger.d("player", "volume: $mixedVolume, gain: $totalDb, replay gain: $replayGain, user gain: $volumeDb")
+            return mixedVolume
+        }
+
+        fun gainToMultiplier(db: Float) = 10f.pow(db / 20f)
     }
 }
 

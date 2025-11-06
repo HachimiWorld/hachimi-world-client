@@ -17,6 +17,7 @@ import platform.Foundation.*
 import platform.MediaPlayer.*
 import platform.UIKit.UIImage
 import world.hachimi.app.logging.Logger
+import world.hachimi.app.player.Player.Companion.mixVolume
 
 @OptIn(ExperimentalForeignApi::class)
 class IosPlayer : Player {
@@ -26,6 +27,8 @@ class IosPlayer : Player {
     private val listeners = mutableSetOf<Player.Listener>()
     private var timeObserverToken: Any? = null
     val nowPlayingCenter = MPNowPlayingInfoCenter.defaultCenter()
+    private var replayGainDb: Float = 1f
+    private var userVolume = 1f
 
     override suspend fun isPlaying(): Boolean {
         return player?.timeControlStatus == AVPlayerTimeControlStatusPlaying
@@ -70,11 +73,13 @@ class IosPlayer : Player {
     }
 
     override suspend fun getVolume(): Float {
-        return player?.volume ?: 1f
+        return userVolume
     }
 
     override suspend fun setVolume(value: Float) {
-        player?.volume = value
+        this.userVolume = value
+        val volume = mixVolume(replayGain = replayGainDb, volume = value)
+        player?.volume = volume
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
@@ -98,6 +103,8 @@ class IosPlayer : Player {
 
         val playerItem = AVPlayerItem.playerItemWithURL(url)
         player?.replaceCurrentItemWithPlayerItem(playerItem)
+        replayGainDb = item.replayGainDB
+        setVolume(userVolume)
 
         NSNotificationCenter.defaultCenter.addObserverForName(
             AVPlayerItemDidPlayToEndTimeNotification,
