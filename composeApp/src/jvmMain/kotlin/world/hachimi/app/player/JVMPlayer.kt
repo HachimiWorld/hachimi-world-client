@@ -7,7 +7,9 @@ import kotlinx.coroutines.withContext
 import world.hachimi.app.logging.Logger
 import java.io.ByteArrayInputStream
 import javax.sound.sampled.*
-import kotlin.math.roundToInt
+import kotlin.math.log10
+import kotlin.math.max
+import kotlin.math.min
 
 
 class JVMPlayer() : Player {
@@ -185,10 +187,14 @@ class JVMPlayer() : Player {
             volumeControl?.value = value
         } else if (masterGainControl != null) {
             masterGainControl?.let {
-//                val db = ((it.maximum - it.minimum) * value + it.minimum).roundToInt().toFloat()
-                val db = ((0 - it.minimum) * value + it.minimum).roundToInt().toFloat()
-                masterGainControl?.value = db
-                Logger.d("player", "Set master gain: $db db")
+                val min: Float = it.minimum
+                val max: Float = 0f
+
+                // Convert volume (0.0 to 1.0) to dB gain (logarithmic)
+                var dB = (log10(volume.toDouble()) * 20).toFloat()
+                dB = max(min, min(max, dB)) // Clamp to valid range
+                masterGainControl?.value = dB
+                Logger.d("player", "Set master gain: $dB db")
             }
         }
     }
