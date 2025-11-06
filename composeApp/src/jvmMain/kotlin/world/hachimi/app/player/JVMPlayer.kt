@@ -8,8 +8,7 @@ import world.hachimi.app.logging.Logger
 import java.io.ByteArrayInputStream
 import javax.sound.sampled.*
 import kotlin.math.log10
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.pow
 
 
 class JVMPlayer() : Player {
@@ -22,6 +21,7 @@ class JVMPlayer() : Player {
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private val mutex = Mutex()
     private var volume: Float = 1f
+    private var replayGainDB: Float = 0f
 
     suspend fun prepare(uri: String, autoPlay: Boolean) {
         /*val bytes = withContext(Dispatchers.IO) {
@@ -117,9 +117,11 @@ class JVMPlayer() : Player {
                 clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
             } else null
 
+            replayGainDB = item.replayGainDB
             setVolume(volume)
             Logger.i("player", "volumeControl = $volumeControl")
             Logger.i("player", "masterGainControl = $masterGainControl")
+            Logger.i("player", "replayGain = $replayGainDB")
 
             ready = true
             this@JVMPlayer.clip = clip
@@ -172,9 +174,10 @@ class JVMPlayer() : Player {
             volumeControl?.value ?: 1f
         } else if (masterGainControl != null) {
             masterGainControl?.let {
-//                (it.value - it.minimum) / (it.maximum - it.minimum)
-                // The maximum gain could be +6 DB, should we make it available to users?
-                (it.value - it.minimum) / (0 - it.minimum)
+                // Convert dB back to linear volume (reverse of linearToDb)
+                val actualGain = it.value - replayGainDB
+                val volume = 10.0.pow(actualGain / 20.0).toFloat()
+                volume.coerceIn(0f, 1f)
             } ?: 1f
         } else {
             1f
@@ -185,19 +188,28 @@ class JVMPlayer() : Player {
         volume = value
         if (volumeControl != null) {
             volumeControl?.value = value
-        } else if (masterGainControl != null) {
-            masterGainControl?.let {
-                val min: Float = it.minimum
-                val max: Float = 0f
+            masterGainControl?.value = replayGainDB
+        } else {
+            masterGainControl?.let { control ->
+                if (value == 0f) {
+                    control.value = control.minimum
+                    Logger.d("player", "Mute")
+                } else {
+                    val min: Float = control.minimum
+                    val max: Float = 0f
 
-                // Convert volume (0.0 to 1.0) to dB gain (logarithmic)
-                var dB = (log10(volume.toDouble()) * 20).toFloat()
-                dB = max(min, min(max, dB)) // Clamp to valid range
-                masterGainControl?.value = dB
-                Logger.d("player", "Set master gain: $dB db")
+                    // Convert volume (0.0 to 1.0) to dB gain (logarithmic)
+                    val gain = linearToDb(value)
+                    val finalDB = (gain + replayGainDB).coerceIn(min, max)
+                    control.value = finalDB
+                    Logger.d("player", "Set master gain: $finalDB db")
+                }
             }
         }
     }
+
+    private fun linearToDb(volume: Float): Float =
+        20 * log10(volume.toDouble()).toFloat()
 
     override suspend fun release() {
         // Do some cleanup work
