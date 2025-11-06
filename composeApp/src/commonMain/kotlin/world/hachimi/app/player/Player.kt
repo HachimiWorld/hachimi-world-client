@@ -51,7 +51,8 @@ data class SongItem(
     val durationSeconds: Int,
     val audioBytes: ByteArray,
     val coverBytes: ByteArray? = null,
-    val format: String
+    val format: String,
+    val replayGainDB: Float
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

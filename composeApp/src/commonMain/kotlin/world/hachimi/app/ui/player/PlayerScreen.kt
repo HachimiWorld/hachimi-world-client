@@ -28,7 +28,6 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.WindowSize
-import kotlin.math.exp
 import kotlin.time.Clock
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -503,7 +502,8 @@ private fun rememberTestPlayerState(): PlayerUIState {
                     ),
                     createTime = Clock.System.now(),
                     releaseTime = Clock.System.now(),
-                    explicit = true
+                    explicit = true,
+                    gain = null
                 )
             )
             hasSong = true

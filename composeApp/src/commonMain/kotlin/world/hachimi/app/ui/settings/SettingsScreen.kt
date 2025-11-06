@@ -62,7 +62,11 @@ fun SettingsScreen() {
                 }
             }
         }
-
+        PropertyItem(label = { Text("音量均衡") }) {
+            Switch(globalStore.enableLoudnessNormalization, {
+                globalStore.updateLoudnessNormalization(it)
+            })
+        }
         PropertyItem(label = { Text("版本名") }) {
             Text(BuildKonfig.VERSION_NAME)
         }
