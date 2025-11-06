@@ -88,7 +88,11 @@ class SongModule(
         /**
          * @since 251105
          */
-        val explicit: Boolean?
+        val explicit: Boolean?,
+        /**
+         * @since 251106
+         */
+        val gain: Float?
     )
 
     @Serializable
