@@ -17,6 +17,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onFirstVisible
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -283,15 +284,10 @@ private fun LoadableContent(
     onDispose: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    // TODO[opt](home): Use visible check instead of side effect
-    DisposableEffect(Unit) {
-        onLoad()
-        onDispose { onDispose() }
-    }
     val slideOffset = with(LocalDensity.current) {
         32.dp.roundToPx()
     }
-    AnimatedContent(initializeStatus, modifier = modifier, transitionSpec = {
+    AnimatedContent(initializeStatus, modifier = modifier.onFirstVisible { onLoad() }, transitionSpec = {
         if (targetState == InitializeStatus.LOADED) {
             (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
                     slideInVertically(initialOffsetY = { slideOffset }, animationSpec = tween(220, delayMillis = 90)))
