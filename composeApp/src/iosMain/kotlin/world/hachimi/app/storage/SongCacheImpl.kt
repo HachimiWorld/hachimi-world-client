@@ -17,6 +17,7 @@ import world.hachimi.app.model.SongDetailInfo
 class SongCacheImpl : SongCache {
     private val json = Json {
         ignoreUnknownKeys = true
+        explicitNulls = false
         prettyPrint = false
     }
 
