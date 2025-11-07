@@ -27,7 +27,7 @@ class IosPlayer : Player {
     private val listeners = mutableSetOf<Player.Listener>()
     private var timeObserverToken: Any? = null
     val nowPlayingCenter = MPNowPlayingInfoCenter.defaultCenter()
-    private var replayGainDb: Float = 1f
+    private var replayGainDb: Float = 0f
     private var userVolume = 1f
 
     override suspend fun isPlaying(): Boolean {
