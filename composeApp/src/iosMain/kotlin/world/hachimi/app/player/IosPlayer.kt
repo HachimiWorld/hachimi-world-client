@@ -56,11 +56,15 @@ class IosPlayer : Player {
     }
 
     override suspend fun play() {
-        player?.play()
+        withContext(Dispatchers.Main) {
+            player?.play()
+        }
     }
 
     override suspend fun pause() {
-        player?.pause()
+        withContext(Dispatchers.Main) {
+            player?.pause()
+        }
     }
 
     override suspend fun seek(position: Long, autoStart: Boolean) {
@@ -79,7 +83,9 @@ class IosPlayer : Player {
     override suspend fun setVolume(value: Float) {
         this.userVolume = value
         val volume = mixVolume(replayGain = replayGainDb, volume = value)
-        player?.volume = volume
+        withContext(Dispatchers.Main) {
+            player?.volume = volume
+        }
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
@@ -122,7 +128,7 @@ class IosPlayer : Player {
         @Suppress("UNCHECKED_CAST")
         nowPlayingCenter.nowPlayingInfo = info as Map<Any?, *>?
 
-        if (autoPlay) player?.play()
+        if (autoPlay) play()
     }
 
     override suspend fun isReady(): Boolean {
@@ -138,9 +144,9 @@ class IosPlayer : Player {
         isPlayerReady = false
     }
 
-    override suspend fun initialize() {
+    override suspend fun initialize() = withContext(Dispatchers.Main) {
         val session = AVAudioSession.sharedInstance()
-        this.session = session
+        this@IosPlayer.session = session
         session.setCategory(category = AVAudioSessionCategoryPlayback, error = null)
         session.setActive(true, null)
         player = AVPlayer()
@@ -164,10 +170,12 @@ class IosPlayer : Player {
                     Logger.i("player", "Play event")
                     listeners.forEach { it.onEvent(PlayEvent.Play) }
                 }
+
                 AVPlayerTimeControlStatusPaused -> {
                     Logger.i("player", "Pause event")
                     listeners.forEach { it.onEvent(PlayEvent.Pause) }
                 }
+
                 else -> {}
             }
         }
