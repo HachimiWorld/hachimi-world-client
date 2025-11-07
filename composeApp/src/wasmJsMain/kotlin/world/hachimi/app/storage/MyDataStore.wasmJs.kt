@@ -38,21 +38,8 @@ actual class PreferenceKey<T : Any> {
     actual val name: String
     val clazz: KClass<T>
 
-    constructor(name: String, clazz: KClass<T>) {
+    actual constructor(name: String, clazz: KClass<T>) {
         this.name = name
         this.clazz = clazz
     }
-}
-
-actual object PreferencesKeys {
-    actual val USER_UID: PreferenceKey<Long> = PreferenceKey("user_uid", Long::class)
-    actual val USER_NAME: PreferenceKey<String> = PreferenceKey("user_name", String::class)
-    actual val USER_AVATAR: PreferenceKey<String> = PreferenceKey("user_avatar", String::class)
-    actual val AUTH_ACCESS_TOKEN: PreferenceKey<String> = PreferenceKey("auth_access_token", String::class)
-    actual val AUTH_REFRESH_TOKEN: PreferenceKey<String> = PreferenceKey("auth_refresh_token", String::class)
-    actual val SETTINGS_DARK_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_dark_mode", Boolean::class)
-    actual val SETTINGS_LOUDNESS_NORMALIZATION: PreferenceKey<Boolean> = PreferenceKey("settings_loudness_normalization", Boolean::class)
-    actual val SETTINGS_KIDS_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_kids_mode", Boolean::class)
-    actual val PLAYER_VOLUME: PreferenceKey<Float> = PreferenceKey("player_volume", Float::class)
-    actual val PLAYER_MUSIC_QUEUE: PreferenceKey<String> = PreferenceKey("player_music_queue", String::class)
 }

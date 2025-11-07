@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlin.reflect.KClass
 
 actual class PreferenceKey<T: Any> {
     actual val name: String
@@ -13,19 +14,22 @@ actual class PreferenceKey<T: Any> {
         this.name = name
         this.key = key
     }
-}
 
-actual object PreferencesKeys {
-    actual val USER_UID: PreferenceKey<Long> = PreferenceKey("user_uid", longPreferencesKey("user_uid"))
-    actual val USER_NAME: PreferenceKey<String> = PreferenceKey("user_name", stringPreferencesKey("user_name"))
-    actual val USER_AVATAR: PreferenceKey<String> = PreferenceKey("user_avatar", stringPreferencesKey("user_avatar"))
-    actual val AUTH_ACCESS_TOKEN: PreferenceKey<String> = PreferenceKey("auth_access_token", stringPreferencesKey("auth_access_token"))
-    actual val AUTH_REFRESH_TOKEN: PreferenceKey<String> = PreferenceKey("auth_refresh_token", stringPreferencesKey("auth_refresh_token"))
-    actual val SETTINGS_DARK_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_dark_mode", booleanPreferencesKey("settings_dark_mode"))
-    actual val SETTINGS_LOUDNESS_NORMALIZATION: PreferenceKey<Boolean> = PreferenceKey("settings_loudness_normalization", booleanPreferencesKey("settings_loudness_normalization"))
-    actual val SETTINGS_KIDS_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_kids_mode", booleanPreferencesKey("settings_kids_mode"))
-    actual val PLAYER_VOLUME: PreferenceKey<Float> = PreferenceKey("player_volume", floatPreferencesKey("player_volume"))
-    actual val PLAYER_MUSIC_QUEUE: PreferenceKey<String> = PreferenceKey("player_music_queue", stringPreferencesKey("player_music_queue"))
+    @Suppress("UNCHECKED_CAST")
+    actual constructor(name: String, clazz: KClass<T>) : this(
+        name = name,
+        key = when (clazz) {
+            Byte::class -> intPreferencesKey(name)
+            Short::class -> intPreferencesKey(name)
+            Int::class -> intPreferencesKey(name)
+            Long::class -> longPreferencesKey(name)
+            Boolean::class -> booleanPreferencesKey(name)
+            String::class -> stringPreferencesKey(name)
+            Float::class -> floatPreferencesKey(name)
+            Double::class -> doublePreferencesKey(name)
+            else -> error("Unsupported preference type $clazz")
+        } as Preferences.Key<T>
+    )
 }
 
 class MyDataStoreImpl(
