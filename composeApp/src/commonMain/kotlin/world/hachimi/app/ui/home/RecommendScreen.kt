@@ -39,7 +39,7 @@ fun RecommendScreen(
     AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { })
+            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
             InitializeStatus.LOADED -> Content(vm, global)
         }
     }
