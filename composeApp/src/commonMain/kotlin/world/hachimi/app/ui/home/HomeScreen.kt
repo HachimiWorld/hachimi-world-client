@@ -71,7 +71,8 @@ fun HomeMainScreen(
                     initializeStatus = vm.recentStatus,
                     loading = vm.recentLoading,
                     onRefresh = { },
-                    onRetryClick = { vm.retryRecent() }
+                    onRetryClick = { vm.retryRecent() },
+                    onMounted = { vm.mountRecent() }
                 ) {
                     if (vm.recentSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")
@@ -107,7 +108,8 @@ fun HomeMainScreen(
                     initializeStatus = vm.recommendStatus,
                     loading = vm.recommendLoading,
                     onRefresh = { },
-                    onRetryClick = { vm.retryRecommend() }
+                    onRetryClick = { vm.retryRecommend() },
+                    onMounted = { vm.mountRecommend() }
                 ) {
                     if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")
@@ -143,7 +145,8 @@ fun HomeMainScreen(
                     initializeStatus = vm.hotStatus,
                     loading = vm.hotLoading,
                     onRefresh = { },
-                    onRetryClick = { vm.retryHot() }
+                    onRetryClick = { vm.retryHot() },
+                    onMounted = { vm.mountHot() }
                 ) {
                     if (vm.hotSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")
@@ -170,48 +173,66 @@ fun HomeMainScreen(
                     }
                 }
 
-                SegmentHeader("纯净哈基米专区", onMoreClick = {
-                    global.nav.push(Route.Root.Home.HiddenGem)
-                })
-                Spacer(Modifier.height(24.dp))
-                LoadableContent(
-                    modifier = Modifier.fillMaxWidth().height(520.dp),
-                    initializeStatus = vm.pureStatus,
-                    loading = vm.pureLoading,
-                    onRefresh = { },
-                    onRetryClick = { vm.retryPure() }
-                ) {
-                    if (vm.pureSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("空空如也")
-                    } else LazyHorizontalGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        rows = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        items(vm.pureSongs, key = { item -> item.id }) { item ->
-                            SongCard(
-                                modifier = Modifier.width(width = 180.dp),
-                                coverUrl = item.coverArtUrl,
-                                title = item.title,
-                                subtitle = item.subtitle,
-                                author = item.uploaderName,
-                                tags = remember { emptyList<String>() },
-                                playCount = item.playCount,
-                                likeCount = item.likeCount,
-                                explicit = item.explicit,
-                                onClick = {
-                                    global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem.fromSearchSongItem(item),
-                                        true,
-                                        false
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
+                CategorySegment(category = "纯净哈基米")
+                CategorySegment(category = "古典")
+                CategorySegment(category = "原曲不使用")
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategorySegment(
+    category: String,
+    global: GlobalStore = koinInject(),
+    vm: HomeViewModel = koinViewModel()
+) {
+    SegmentHeader("${category}专区", onMoreClick = {
+        global.nav.push(Route.Root.Home.HiddenGem)
+    })
+    Spacer(Modifier.height(24.dp))
+    val state = vm.categoryState[category]
+    val status = state?.status?.value ?: InitializeStatus.INIT
+    val loading = state?.loading?.value ?: false
+    LoadableContent(
+        modifier = Modifier.fillMaxWidth().height(520.dp),
+        initializeStatus = status,
+        loading = loading,
+        onRefresh = { },
+        onRetryClick = { vm.retryCategory(category) },
+        onMounted = { vm.mountCategory(category) }
+    ) {
+        val songs = state?.songs?.value ?: emptyList()
+        if (songs.isEmpty()){
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("空空如也")
+            }
+        } else LazyHorizontalGrid(
+            modifier = Modifier.fillMaxSize(),
+            rows = GridCells.Fixed(2),
+            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            items(songs, key = { item -> item.id }) { item ->
+                SongCard(
+                    modifier = Modifier.width(width = 180.dp),
+                    coverUrl = item.coverArtUrl,
+                    title = item.title,
+                    subtitle = item.subtitle,
+                    author = item.uploaderName,
+                    tags = remember { emptyList<String>() },
+                    playCount = item.playCount,
+                    likeCount = item.likeCount,
+                    explicit = item.explicit,
+                    onClick = {
+                        global.player.insertToQueue(
+                            GlobalStore.MusicQueueItem.fromSearchSongItem(item),
+                            true,
+                            false
+                        )
+                    },
+                )
             }
         }
     }
@@ -257,8 +278,14 @@ private fun LoadableContent(
     onRefresh: () -> Unit,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onMounted: () -> Unit,
+    onDispose: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
+    DisposableEffect(Unit) {
+        onMounted()
+        onDispose { onDispose() }
+    }
     val slideOffset = with(LocalDensity.current) {
         32.dp.roundToPx()
     }
