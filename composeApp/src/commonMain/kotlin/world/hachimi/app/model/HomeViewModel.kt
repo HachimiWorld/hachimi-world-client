@@ -1,11 +1,12 @@
 package world.hachimi.app.model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
@@ -41,12 +42,14 @@ class HomeViewModel(
         private set
     var hotLoading by mutableStateOf(false)
         private set
-    var pureStatus by mutableStateOf(InitializeStatus.INIT)
-        private set
-    var pureSongs by mutableStateOf<List<SongModule.SearchSongItem>>(emptyList())
-        private set
-    var pureLoading by mutableStateOf(false)
-        private set
+
+    val categoryState = mutableStateMapOf<String, CategoryState>()
+
+    data class CategoryState(
+        val status: MutableState<InitializeStatus>,
+        val songs: MutableState<List<SongModule.SearchSongItem>>,
+        val loading: MutableState<Boolean>
+    )
 
     private var lastRefreshTime: Instant = Clock.System.now()
 
@@ -61,15 +64,46 @@ class HomeViewModel(
     }
 
     private fun init() = viewModelScope.launch {
-        awaitAll(async {
-            loadRecommend()
-        }, async {
-            loadRecent()
-        }, async {
-            loadHot()
-        }, async {
-            loadCategories()
-        })
+        // Do nothing
+    }
+
+    fun mountRecommend() {
+        if (recommendStatus == InitializeStatus.INIT) {
+            viewModelScope.launch {
+                loadRecommend()
+            }
+        }
+    }
+
+    fun mountRecent() {
+        if (recentStatus == InitializeStatus.INIT) {
+            viewModelScope.launch {
+                loadRecent()
+            }
+        }
+    }
+
+    fun mountHot() {
+        if (hotStatus == InitializeStatus.INIT) {
+            viewModelScope.launch {
+                loadHot()
+            }
+        }
+    }
+
+    fun mountCategory(category: String) {
+        val state = categoryState.getOrPut(category) {
+            CategoryState(
+                mutableStateOf(InitializeStatus.INIT),
+                mutableStateOf(emptyList()),
+                mutableStateOf(false)
+            )
+        }
+        if (state.status.value == InitializeStatus.INIT) {
+            viewModelScope.launch {
+                loadCategory(category)
+            }
+        }
     }
 
     fun fakeRefresh() {
@@ -116,11 +150,12 @@ class HomeViewModel(
         }
     }
 
-    fun retryPure() {
-        if (pureStatus == InitializeStatus.FAILED) {
-            pureStatus = InitializeStatus.INIT
+    fun retryCategory(category: String) {
+        val state = categoryState[category] ?: return
+        if (state.status.value == InitializeStatus.FAILED) {
+            state.status.value = InitializeStatus.INIT
             viewModelScope.launch {
-                loadCategories()
+                loadCategory(category)
             }
         }
     }
@@ -170,19 +205,20 @@ class HomeViewModel(
         }
     }
 
-    suspend fun loadCategories() {
+    suspend fun loadCategory(category: String) {
+        val state = categoryState[category] ?: return
         // Category
-        withStatus(::pureLoading, ::pureStatus) {
+        withStatus(state.loading::value, state.status::value) {
             val resp = api.songModule.search(
                 SongModule.SearchReq(
                     q = "",
                     limit = 12,
                     offset = null,
-                    filter = "tags = \"纯净哈基米\""
+                    filter = "tags = \"$category\""
                 )
             )
             if (resp.ok) {
-                pureSongs = resp.ok().hits.take(12)
+                state.songs.value = resp.ok().hits.take(12)
                 true
             } else {
                 global.alert(resp.err().msg)
