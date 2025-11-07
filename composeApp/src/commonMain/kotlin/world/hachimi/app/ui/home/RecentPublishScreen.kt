@@ -13,10 +13,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -28,6 +31,8 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
+import world.hachimi.app.util.formatDaysDistance
+import kotlin.time.Clock
 
 @Composable
 fun RecentPublishScreen(
@@ -106,7 +111,13 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         span = { GridItemSpan(maxLineSpan) },
                         contentType = "separator"
                     ) {
-                        Text(it.date.toString(), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = remember(it.date) {
+                                val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+                                val daysOffset = today.toEpochDays() - it.date.toEpochDays()
+                                formatDaysDistance(daysOffset.toInt()) ?: it.date.toString()
+                            },
+                            style = MaterialTheme.typography.titleMedium)
                     }
                     items(items = it.songs, key = { it.id }) { item ->
                         SongCard(
