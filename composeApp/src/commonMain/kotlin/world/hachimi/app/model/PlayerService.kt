@@ -43,6 +43,8 @@ private val downloadHttpClient = HttpClient() {
     }
 }
 
+private val TAG = "PlayerService"
+
 /**
  * TODO(player): There are too fucking many racing conditions here. I think I should totally rewrite this.
  */
@@ -116,7 +118,7 @@ class PlayerService(
         }
         scope.launch {
             player.initialize()
-            Logger.i("player", "Inner player initialized")
+            Logger.i(TAG, "Inner player initialized")
             restorePlayerState()
         }
     }
@@ -193,13 +195,13 @@ class PlayerService(
                         api.playHistoryModule.touchAnonymous(songId)
                     }
                 } catch (e: Throwable) {
-                    Logger.e("player", "Failed to touch song", e)
+                    Logger.e(TAG, "Failed to touch song", e)
                 }
             }
         } catch (_: CancellationException) {
-            Logger.i("player", "Preparing cancelled")
+            Logger.i(TAG, "Preparing cancelled")
         } catch (e: Throwable) {
-            Logger.e("player", "Failed to play song", e)
+            Logger.e(TAG, "Failed to play song", e)
             global.alert(e.message)
         } finally {
             playerMutex.withLock {
@@ -217,7 +219,7 @@ class PlayerService(
     fun playSongInQueue(id: Long, instantPlay: Boolean = true) = scope.launch {
         if (playPrepareJob?.isActive == true) {
             // We don't use cancelAndJoin because we want the operation to be instant
-            Logger.d("player", "Cancel prepare job")
+            Logger.d(TAG, "Cancel prepare job")
             playPrepareJob?.cancel()
         }
         val song = queueMutex.withLock {
@@ -230,7 +232,7 @@ class PlayerService(
         }
         if (song != null) {
             playPrepareJob = scope.launch {
-                Logger.d("playSongInQueue", "Playing song $song")
+                Logger.d(TAG, "playSongInQueue: Playing song $song")
 
                 val maxAttempts = 5
                 var attempt = 0
@@ -324,7 +326,7 @@ class PlayerService(
                 val cache = songCache.getMetadata(songDisplayId)
 
                 if (cache != null) {
-                    Logger.i("global", "Cache hit")
+                    Logger.i(TAG, "Cache hit")
                 }
 
                 val data = cache ?: run {
@@ -345,10 +347,10 @@ class PlayerService(
                 insertToQueue(item, instantPlay, append).join()
             } catch (e: CancellationException) {
                 // Do nothing, it's just cancelled
-                Logger.i("player", "Cancelled")
+                Logger.i(TAG, "Cancelled")
             } catch (e: Throwable) {
                 global.alert(e.message)
-                Logger.e("global", "Failed to insert song to music queue", e)
+                Logger.e(TAG, "Failed to insert song to music queue", e)
             } finally {
                 fetchMetadataJob = null
                 playerState.fetchingMetadata = false
@@ -485,7 +487,7 @@ class PlayerService(
         val audioBytes: ByteArray
 
         if (cache != null) {
-            Logger.i("global", "Cache hit")
+            Logger.i(TAG, "Cache hit")
             val buffer = Buffer()
             metadata = cache.metadata
             onMetadata(cache.metadata)
@@ -497,16 +499,16 @@ class PlayerService(
             audioBytes = buffer.readByteArray()
             scope.launch {
                 try {
-                    Logger.i("global", "Downloading")
+                    Logger.i(TAG, "Downloading")
                     val resp = api.songModule.detail(displayId)
                     if (!resp.ok) {
-                        Logger.e("global", "Failed to refresh song metadata: ${resp.errData<CommonError>().msg}")
+                        Logger.e(TAG, "Failed to refresh song metadata: ${resp.errData<CommonError>().msg}")
                         return@launch
                     }
 
                     val data = resp.ok()
                     if (cache.metadata != data) {
-                        Logger.i("global", "Metadata updated, invalidate cache")
+                        Logger.i(TAG, "Metadata updated, invalidate cache")
                         // If the audio file has updated, just invalidate the cache
                         if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
                             songCache.delete(displayId)
@@ -515,11 +517,11 @@ class PlayerService(
                         songCache.saveMetadata(data)
                     }
                 } catch (e: Throwable) {
-                    Logger.e("global", "Failed to refresh song metadata", e)
+                    Logger.e(TAG, "Failed to refresh song metadata", e)
                 }
             }
         } else {
-            Logger.i("global", "Downloading")
+            Logger.i(TAG, "Downloading")
             onProgress(0f)
             val data = songCache.getMetadata(displayId) ?: run {
                 val resp = api.songModule.detail(displayId)
@@ -547,11 +549,11 @@ class PlayerService(
             if (getPlatform().name == "wasm") {
                 val resp = api.httpClient.head(data.audioUrl)
                 headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
-                Logger.i("global", "Head content length: $headContentLength bytes")
+                Logger.i(TAG, "Head content length: $headContentLength bytes")
             }
             val buffer = statement.execute { resp ->
                 val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-                Logger.i("global", "Content length: $contentLength bytes")
+                Logger.i(TAG, "Content length: $contentLength bytes")
 
                 val bestContentLength = contentLength ?: headContentLength
                 val channel = resp.body<ByteReadChannel>()
@@ -567,7 +569,7 @@ class PlayerService(
                     }
                     buffer
                 } else {
-                    Logger.i("global", "Content-Length not found, progress is disabled")
+                    Logger.i(TAG, "Content-Length not found, progress is disabled")
                     channel.readBuffer()
                 }
 
@@ -630,7 +632,7 @@ class PlayerService(
     }
 
     fun next() = scope.launch {
-        Logger.i("player", "next clicked")
+        Logger.i(TAG, "next clicked")
         if (shuffleMode) {
             queueMutex.withLock {
                 val index = if (shuffleIndex >= shuffledQueue.lastIndex) {
@@ -708,14 +710,14 @@ class PlayerService(
         player.setVolume(volume)
 
         val data = dataStore.get(PreferencesKeys.PLAYER_MUSIC_QUEUE) ?: run {
-            Logger.i("global", "Music queue was not found")
+            Logger.i(TAG, "Music queue was not found")
             return
         }
 
         val result = try {
             Json.decodeFromString<PlayerStatePersistence>(data)
         } catch (e: Throwable) {
-            Logger.w("global", "Failed to restore music queue", e)
+            Logger.w(TAG, "Failed to restore music queue", e)
             return
         }
 
