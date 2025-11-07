@@ -1,12 +1,11 @@
 import com.android.SdkConstants
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
-import java.util.Properties
-import kotlin.apply
-import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
+import java.util.*
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -139,6 +138,7 @@ kotlin {
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.cio)
+            implementation(libs.kotlinx.browser)
             implementation(npm("howler", "2.2.4"))
         }
         listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach {
