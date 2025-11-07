@@ -23,6 +23,7 @@ actual object PreferencesKeys {
     actual val AUTH_REFRESH_TOKEN: PreferenceKey<String> = PreferenceKey("auth_refresh_token", stringPreferencesKey("auth_refresh_token"))
     actual val SETTINGS_DARK_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_dark_mode", booleanPreferencesKey("settings_dark_mode"))
     actual val SETTINGS_LOUDNESS_NORMALIZATION: PreferenceKey<Boolean> = PreferenceKey("settings_loudness_normalization", booleanPreferencesKey("settings_loudness_normalization"))
+    actual val SETTINGS_KIDS_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_kids_mode", booleanPreferencesKey("settings_kids_mode"))
     actual val PLAYER_VOLUME: PreferenceKey<Float> = PreferenceKey("player_volume", floatPreferencesKey("player_volume"))
     actual val PLAYER_MUSIC_QUEUE: PreferenceKey<String> = PreferenceKey("player_music_queue", stringPreferencesKey("player_music_queue"))
 }

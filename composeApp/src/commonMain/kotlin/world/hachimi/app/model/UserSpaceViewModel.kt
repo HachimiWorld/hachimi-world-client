@@ -276,7 +276,7 @@ class UserSpaceViewModel(
     fun playAll() {
         if (songs.isEmpty()) return
         viewModelScope.launch {
-            global.player.replaceQueue(songs.map {
+            global.player.playAll(songs.map {
                 GlobalStore.MusicQueueItem(
                     id = it.id,
                     displayId = it.displayId,
@@ -287,7 +287,6 @@ class UserSpaceViewModel(
                     explicit = it.explicit,
                 )
             })
-            global.player.next()
         }
     }
 }

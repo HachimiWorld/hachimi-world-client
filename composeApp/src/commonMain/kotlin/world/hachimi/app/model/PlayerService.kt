@@ -61,6 +61,7 @@ class PlayerService(
 
     @Deprecated("deprecated")
     private val playHistory = mutableListOf<PlayHistory>()
+
     // Indicate the current playing cursor in play history, used to remember the play order in shuffle mode
     private var historyCursor = -1
 
@@ -142,15 +143,17 @@ class PlayerService(
 
         try {
             playerState.downloadProgress = 0f
-            playerState.updatePreviewMetadata(PlayerUIState.PreviewMetadata(
-                id = item.id,
-                displayId = item.displayId,
-                title = item.name,
-                author = item.artist,
-                coverUrl = item.coverUrl,
-                duration = item.duration,
-                explicit = item.explicit
-            ))
+            playerState.updatePreviewMetadata(
+                PlayerUIState.PreviewMetadata(
+                    id = item.id,
+                    displayId = item.displayId,
+                    title = item.name,
+                    author = item.artist,
+                    coverUrl = item.coverUrl,
+                    duration = item.duration,
+                    explicit = item.explicit
+                )
+            )
             playerState.fetchingMetadata = true
 
             val item = getSongItemCacheable(
@@ -238,7 +241,8 @@ class PlayerService(
     fun queuePrevious() = scope.launch {
         val targetSong = queueMutex.withLock {
             if (musicQueue.isNotEmpty()) {
-                val currentSongId = if (playerState.fetchingMetadata) playerState.previewMetadata?.id else playerState.songInfo?.id
+                val currentSongId =
+                    if (playerState.fetchingMetadata) playerState.previewMetadata?.id else playerState.songInfo?.id
 
                 val currentIndex = musicQueue.indexOfFirst {
                     it.id == currentSongId
@@ -262,7 +266,8 @@ class PlayerService(
         val targetSong = queueMutex.withLock {
             if (musicQueue.isNotEmpty()) {
                 // Get current song index (including the fetching/buffering)
-                val currentSongId = if (playerState.fetchingMetadata) playerState.previewMetadata?.id else playerState.songInfo?.id
+                val currentSongId =
+                    if (playerState.fetchingMetadata) playerState.previewMetadata?.id else playerState.songInfo?.id
 
                 val currentIndex = musicQueue.indexOfFirst {
                     it.id == currentSongId
@@ -342,6 +347,12 @@ class PlayerService(
         instantPlay: Boolean,
         append: Boolean
     ) = scope.launch {
+        if (item.explicit == true && global.kidsMode) {
+            if (!global.askKidsPlay()) {
+                return@launch
+            }
+        }
+
         player.pause()
 
         queueMutex.withLock {
@@ -378,8 +389,8 @@ class PlayerService(
         }
     }
 
-    fun playAll(items: List<MusicQueueItem>) = scope.launch {
-        replaceQueue(items)
+    fun playAll(items: List<MusicQueueItem>, filterExplicit: Boolean = global.kidsMode) = scope.launch {
+        replaceQueue(if (filterExplicit) items.filter { it.explicit != true } else items)
         next()
     }
 

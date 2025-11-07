@@ -67,6 +67,11 @@ fun SettingsScreen() {
                 globalStore.updateLoudnessNormalization(it)
             })
         }
+        PropertyItem(label = { Text("宝宝模式") }) {
+            Switch(globalStore.kidsMode, {
+                globalStore.updateKidsMode(it)
+            })
+        }
         PropertyItem(label = { Text("版本名") }) {
             Text(BuildKonfig.VERSION_NAME)
         }
