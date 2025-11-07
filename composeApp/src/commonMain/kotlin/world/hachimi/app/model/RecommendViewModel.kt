@@ -53,4 +53,11 @@ class RecommendViewModel(
         }
     }
 
+    fun retry() {
+        if (initializeStatus == InitializeStatus.FAILED) {
+            initializeStatus = InitializeStatus.INIT
+            init()
+        }
+    }
+
 }
