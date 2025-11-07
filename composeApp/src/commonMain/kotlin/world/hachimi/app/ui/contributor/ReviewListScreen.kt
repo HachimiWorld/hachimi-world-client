@@ -2,22 +2,10 @@ package world.hachimi.app.ui.contributor
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -27,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import kotlin.time.Instant
+import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PublishModule
@@ -35,7 +23,9 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewViewModel
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
+import kotlin.time.Instant
 
 @Composable
 fun ReviewListScreen(
@@ -142,7 +132,7 @@ private fun Item(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "提交时间", style = MaterialTheme.typography.bodySmall)
             Text(
-                text = formatTime(submitTime, distance = true, precise = false),
+                text = formatTime(submitTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMD),
                 style = MaterialTheme.typography.bodySmall
             )
         }
