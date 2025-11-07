@@ -231,7 +231,26 @@ class PlayerService(
         if (song != null) {
             playPrepareJob = scope.launch {
                 Logger.d("playSongInQueue", "Playing song $song")
-                play(song, instantPlay)
+
+                val maxAttempts = 5
+                var attempt = 0
+                var delay = 1000L // Start with 1 second delay
+                while (attempt < maxAttempts) {
+                    try {
+                        play(song, instantPlay)
+                        break
+                    } catch (e: Exception) {
+                        attempt++
+                        if (attempt == maxAttempts) {
+                            throw e
+                        }
+                        // Add jitter by randomizing delay by ±30%
+                        val jitter = (delay * 0.7 + Random.nextFloat() * (delay * 0.6)).toLong()
+                        delay *= 2 // Exponential backoff
+                        Logger.w("player", "Retry attempt $attempt after ${jitter}ms delay", e)
+                        delay(jitter)
+                    }
+                }
                 savePlayerState()
             }
         }
