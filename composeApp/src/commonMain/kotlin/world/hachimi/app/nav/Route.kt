@@ -13,6 +13,7 @@ sealed class Route {
             data object Recommend: Home()
             data object WeeklyHot: Home()
             data object HiddenGem: Home()
+            data class Category(val category: String): Home()
         }
         data object RecentPlay: Root()
         data object RecentLike: Root()
