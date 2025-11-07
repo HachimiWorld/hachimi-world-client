@@ -13,8 +13,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
-import kotlin.math.log10
-import kotlin.math.pow
+import world.hachimi.app.player.Player.Companion.mixVolume
 
 class AndroidPlayer(
     private val controllerFuture: ListenableFuture<MediaController>
@@ -23,8 +22,8 @@ class AndroidPlayer(
     private var ready = false
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var initialized = MutableStateFlow<Boolean>(false)
-    private var rgDb = 0f               // ReplayGain from tags
-    private var userDb = 0f             // Manual volume slider (0 dB = 100 %)
+    private var replayGainDb: Float = 0f
+    private var userVolume = 1f
 
     init {
         Logger.i("player", "Waiting for MediaController")
@@ -91,13 +90,12 @@ class AndroidPlayer(
         }
     }
 
-    override suspend fun getVolume(): Float = withContext(Dispatchers.Main) {
-        controller!!.volume
-    }
+    override suspend fun getVolume(): Float = userVolume
 
     override suspend fun setVolume(value: Float) = withContext(Dispatchers.Main) {
-        userDb = 20f * log10(value)
-        updatePlayerVolume()
+        userVolume = value
+        val volume = mixVolume(replayGain = replayGainDb, volume = value)
+        controller?.volume = volume
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
@@ -130,9 +128,10 @@ class AndroidPlayer(
             .setUri(audioUri)
             .setMediaMetadata(metadata)
             .build()
+        replayGainDb = item.replayGainDB
+        setVolume(userVolume)
+
         withContext(Dispatchers.Main) {
-            rgDb = item.replayGainDB
-            updatePlayerVolume()
             controller?.setMediaItem(mediaItem)
             if (autoPlay) {
                 controller?.play()
@@ -159,13 +158,4 @@ class AndroidPlayer(
     override suspend fun initialize() {
         initialized.first { initialized -> initialized }
     }
-
-    private fun updatePlayerVolume() {
-        val totalDb = rgDb + userDb
-        val mixedVolume = (if (totalDb.isInfinite()) 0f else gainToMultiplier(totalDb)).coerceIn(0f, 1f)
-        controller?.volume = mixedVolume
-        Logger.d("player", "Update volume: $mixedVolume, gain: $totalDb, replay gain: $rgDb, user gain: $userDb")
-    }
-
-    private fun gainToMultiplier(db: Float) = 10f.pow(db / 20f)
 }
