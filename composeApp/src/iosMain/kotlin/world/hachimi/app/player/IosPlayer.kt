@@ -106,33 +106,6 @@ class IosPlayer : Player {
         replayGainDb = item.replayGainDB
         setVolume(userVolume)
 
-        NSNotificationCenter.defaultCenter.addObserverForName(
-            AVPlayerItemDidPlayToEndTimeNotification,
-            null,
-            null
-        ) { _ ->
-            Logger.i("player", "End")
-            listeners.forEach { it.onEvent(PlayEvent.End) }
-        }
-
-        NSNotificationCenter.defaultCenter.addObserverForName(
-            AVPlayerRateDidChangeNotification,
-            null,
-            null
-        ) { _ ->
-            when (player?.timeControlStatus) {
-                AVPlayerTimeControlStatusPlaying -> {
-                    Logger.i("player", "Play")
-                    listeners.forEach { it.onEvent(PlayEvent.Play) }
-                }
-                AVPlayerTimeControlStatusPaused -> {
-                    Logger.i("player", "Pause")
-                    listeners.forEach { it.onEvent(PlayEvent.Pause) }
-                }
-                else -> {}
-            }
-        }
-
         val image = item.coverBytes?.usePinned {
             UIImage(NSData.dataWithBytes(it.addressOf(0), item.coverBytes.size.toULong()))
         }?.let {
@@ -171,6 +144,33 @@ class IosPlayer : Player {
         session.setCategory(category = AVAudioSessionCategoryPlayback, error = null)
         session.setActive(true, null)
         player = AVPlayer()
+
+        NSNotificationCenter.defaultCenter.addObserverForName(
+            AVPlayerItemDidPlayToEndTimeNotification,
+            null,
+            null
+        ) { _ ->
+            Logger.i("player", "End event")
+            listeners.forEach { it.onEvent(PlayEvent.End) }
+        }
+
+        NSNotificationCenter.defaultCenter.addObserverForName(
+            AVPlayerRateDidChangeNotification,
+            null,
+            null
+        ) { _ ->
+            when (player?.timeControlStatus) {
+                AVPlayerTimeControlStatusPlaying -> {
+                    Logger.i("player", "Play event")
+                    listeners.forEach { it.onEvent(PlayEvent.Play) }
+                }
+                AVPlayerTimeControlStatusPaused -> {
+                    Logger.i("player", "Pause event")
+                    listeners.forEach { it.onEvent(PlayEvent.Pause) }
+                }
+                else -> {}
+            }
+        }
 
         isPlayerReady = true
     }
