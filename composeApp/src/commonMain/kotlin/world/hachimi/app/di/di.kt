@@ -20,4 +20,5 @@ fun Module.applyViewModels() {
     viewModelOf(::RecommendViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::WeeklyHotViewModel)
+    viewModelOf(::CategorySongsViewModel)
 }

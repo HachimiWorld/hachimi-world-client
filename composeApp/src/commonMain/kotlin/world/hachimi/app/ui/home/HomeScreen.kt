@@ -39,6 +39,7 @@ fun HomeScreen(content: Route.Root.Home) {
             Route.Root.Home.Recent -> RecentPublishScreen()
             Route.Root.Home.Recommend -> RecommendScreen()
             Route.Root.Home.WeeklyHot -> WeeklyHotScreen()
+            is Route.Root.Home.Category -> CategorySongsScreen(content.category)
             else -> DevelopingPage()
         }
     }
@@ -72,7 +73,7 @@ fun HomeMainScreen(
                     loading = vm.recentLoading,
                     onRefresh = { },
                     onRetryClick = { vm.retryRecent() },
-                    onMounted = { vm.mountRecent() }
+                    onLoad = { vm.mountRecent() }
                 ) {
                     if (vm.recentSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")
@@ -109,7 +110,7 @@ fun HomeMainScreen(
                     loading = vm.recommendLoading,
                     onRefresh = { },
                     onRetryClick = { vm.retryRecommend() },
-                    onMounted = { vm.mountRecommend() }
+                    onLoad = { vm.mountRecommend() }
                 ) {
                     if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")
@@ -146,7 +147,7 @@ fun HomeMainScreen(
                     loading = vm.hotLoading,
                     onRefresh = { },
                     onRetryClick = { vm.retryHot() },
-                    onMounted = { vm.mountHot() }
+                    onLoad = { vm.mountHot() }
                 ) {
                     if (vm.hotSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("空空如也")
@@ -188,7 +189,7 @@ private fun CategorySegment(
     vm: HomeViewModel = koinViewModel()
 ) {
     SegmentHeader("${category}专区", onMoreClick = {
-        global.nav.push(Route.Root.Home.HiddenGem)
+        global.nav.push(Route.Root.Home.Category(category))
     })
     Spacer(Modifier.height(24.dp))
     val state = vm.categoryState[category]
@@ -200,7 +201,7 @@ private fun CategorySegment(
         loading = loading,
         onRefresh = { },
         onRetryClick = { vm.retryCategory(category) },
-        onMounted = { vm.mountCategory(category) }
+        onLoad = { vm.mountCategory(category) }
     ) {
         val songs = state?.songs?.value ?: emptyList()
         if (songs.isEmpty()){
@@ -278,12 +279,13 @@ private fun LoadableContent(
     onRefresh: () -> Unit,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onMounted: () -> Unit,
+    onLoad: () -> Unit,
     onDispose: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
+    // TODO[opt](home): Use visible check instead of side effect
     DisposableEffect(Unit) {
-        onMounted()
+        onLoad()
         onDispose { onDispose() }
     }
     val slideOffset = with(LocalDensity.current) {
