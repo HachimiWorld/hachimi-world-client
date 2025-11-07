@@ -32,8 +32,6 @@ import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
 import kotlin.random.Random
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 private val downloadHttpClient = HttpClient() {
     install(HttpTimeout) {
@@ -61,20 +59,8 @@ class PlayerService(
     private var shuffledQueue = emptyList<MusicQueueItem>()
     private var shuffleIndex = -1
 
-    @Deprecated("deprecated")
-    private val playHistory = mutableListOf<PlayHistory>()
-
-    // Indicate the current playing cursor in play history, used to remember the play order in shuffle mode
-    private var historyCursor = -1
-
     var shuffleMode by mutableStateOf(false)
     var repeatMode by mutableStateOf(false)
-
-    data class PlayHistory(
-        val songId: Long,
-        val playTime: Instant
-    )
-
     private val queueMutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default)
 
@@ -129,80 +115,96 @@ class PlayerService(
     /**
      * This is only for play current song. Not interested in the music queue.
      */
-    private suspend fun play(item: MusicQueueItem, instantPlay: Boolean) = coroutineScope {
+    private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int) = coroutineScope {
         player.pause()
-        val sign = Random.nextInt()
-
         playerMutex.withLock {
             playerJobSign = sign
-
-            // If the played song is a new one, add to play history
-            if (historyCursor == playHistory.lastIndex) {
-                playHistory.add(PlayHistory(item.id, Clock.System.now()))
-                historyCursor += 1
-            }
         }
 
-        try {
-            playerState.downloadProgress = 0f
-            playerState.updatePreviewMetadata(
-                PlayerUIState.PreviewMetadata(
-                    id = item.id,
-                    displayId = item.displayId,
-                    title = item.name,
-                    author = item.artist,
-                    coverUrl = item.coverUrl,
-                    duration = item.duration,
-                    explicit = item.explicit
-                )
-            )
-            playerState.fetchingMetadata = true
-
-            val item = getSongItemCacheable(
+        playerState.downloadProgress = 0f
+        playerState.updatePreviewMetadata(
+            PlayerUIState.PreviewMetadata(
+                id = item.id,
                 displayId = item.displayId,
-                onMetadata = { songInfo ->
-                    playerMutex.withLock {
-                        if (playerJobSign == sign) {
-                            playerState.updateSongInfo(songInfo)
-                            playerState.fetchingMetadata = false
-                            playerState.hasSong = true
-                            playerState.updateCurrentMillis(0L)
-                        }
-                    }
-                },
-                onProgress = { progress ->
-                    playerMutex.withLock {
-                        if (playerJobSign == sign) {
-                            playerState.buffering = true
-                            playerState.downloadProgress = progress
-                        }
-                    }
-                }
+                title = item.name,
+                author = item.artist,
+                coverUrl = item.coverUrl,
+                duration = item.duration,
+                explicit = item.explicit
             )
+        )
+        playerState.fetchingMetadata = true
 
-            if (playerJobSign == sign) {
-                player.prepare(item, autoPlay = instantPlay)
-            }
-
-            // Touch in the global scope
-            scope.launch {
-                try {
-                    val songId = item.id.toLong()
-                    // Touch playing
-                    if (global.isLoggedIn) {
-                        api.playHistoryModule.touch(songId)
-                    } else {
-                        api.playHistoryModule.touchAnonymous(songId)
+        val item = getSongItemCacheable(
+            displayId = item.displayId,
+            onMetadata = { songInfo ->
+                playerMutex.withLock {
+                    if (playerJobSign == sign) {
+                        playerState.updateSongInfo(songInfo)
+                        playerState.fetchingMetadata = false
+                        playerState.hasSong = true
+                        playerState.updateCurrentMillis(0L)
                     }
-                } catch (e: Throwable) {
-                    Logger.e(TAG, "Failed to touch song", e)
+                }
+            },
+            onProgress = { progress ->
+                playerMutex.withLock {
+                    if (playerJobSign == sign) {
+                        playerState.buffering = true
+                        playerState.downloadProgress = progress
+                    }
                 }
             }
-        } catch (_: CancellationException) {
-            Logger.i(TAG, "Preparing cancelled")
-        } catch (e: Throwable) {
-            Logger.e(TAG, "Failed to play song", e)
-            global.alert(e.message)
+        )
+
+        if (playerJobSign == sign) {
+            player.prepare(item, autoPlay = instantPlay)
+        }
+
+        // Touch in the global scope
+        scope.launch {
+            try {
+                val songId = item.id.toLong()
+                // Touch playing
+                if (global.isLoggedIn) {
+                    api.playHistoryModule.touch(songId)
+                } else {
+                    api.playHistoryModule.touchAnonymous(songId)
+                }
+            } catch (e: Throwable) {
+                Logger.e(TAG, "Failed to touch song", e)
+            }
+        }
+    }
+
+    private suspend fun playWithRetry(maxAttempts: Int = 5, item: MusicQueueItem, instantPlay: Boolean) {
+        var attempt = 0
+        var delay = 1000L // Start with 1 second delay
+        var lastError: Throwable? = null
+        val sign = Random.nextInt()
+
+        try {
+            while (attempt < maxAttempts) {
+                try {
+                    play(item, instantPlay, sign)
+                    return
+                } catch (_: CancellationException) {
+                    // It's canceled, do not retry anymore
+                    Logger.i(TAG, "Preparing cancelled")
+                    return
+                } catch (e: Throwable) {
+                    lastError = e
+                    attempt++
+                    if (attempt == maxAttempts) {
+                        break
+                    }
+                    // Add jitter by randomizing delay by ±30%
+                    val jitter = (delay * 0.7 + Random.nextFloat() * (delay * 0.6)).toLong()
+                    delay *= 2 // Exponential backoff
+                    Logger.w("player", "Retry attempt $attempt after ${jitter}ms delay", e)
+                    delay(jitter)
+                }
+            }
         } finally {
             playerMutex.withLock {
                 if (playerJobSign == sign) {
@@ -211,8 +213,10 @@ class PlayerService(
                 }
             }
         }
-    }
 
+        Logger.e(TAG, "Failed to play song", lastError)
+        global.alert("播放失败：${lastError?.message}")
+    }
 
     private var playPrepareJob: Job? = null
 
@@ -233,26 +237,7 @@ class PlayerService(
         if (song != null) {
             playPrepareJob = scope.launch {
                 Logger.d(TAG, "playSongInQueue: Playing song $song")
-
-                val maxAttempts = 5
-                var attempt = 0
-                var delay = 1000L // Start with 1 second delay
-                while (attempt < maxAttempts) {
-                    try {
-                        play(song, instantPlay)
-                        break
-                    } catch (e: Exception) {
-                        attempt++
-                        if (attempt == maxAttempts) {
-                            throw e
-                        }
-                        // Add jitter by randomizing delay by ±30%
-                        val jitter = (delay * 0.7 + Random.nextFloat() * (delay * 0.6)).toLong()
-                        delay *= 2 // Exponential backoff
-                        Logger.w("player", "Retry attempt $attempt after ${jitter}ms delay", e)
-                        delay(jitter)
-                    }
-                }
+                playWithRetry(5, song, instantPlay)
                 savePlayerState()
             }
         }
@@ -602,8 +587,6 @@ class PlayerService(
     }
 
     fun previous() = scope.launch {
-        if (playHistory.isEmpty()) return@launch
-
         if (shuffleMode) {
             queueMutex.withLock {
                 val index = if (shuffleIndex <= 0) {
