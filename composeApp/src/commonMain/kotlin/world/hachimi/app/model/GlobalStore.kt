@@ -9,6 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.BuildKonfig
@@ -23,6 +25,9 @@ import world.hachimi.app.player.Player
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -39,6 +44,8 @@ class GlobalStore(
     var darkMode by mutableStateOf<Boolean?>(null)
         private set
     var enableLoudnessNormalization by mutableStateOf(true)
+        private set
+    var kidsMode by mutableStateOf(false)
         private set
     val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
@@ -246,6 +253,35 @@ class GlobalStore(
     fun confirmUpgrade() {
         showUpdateDialog = false
         getPlatform().openUrl(newVersionInfo!!.url)
+    }
+
+    fun updateKidsMode(it: Boolean) {
+        kidsMode = it
+        scope.launch {
+            dataStore.set(PreferencesKeys.SETTINGS_KIDS_MODE, it)
+        }
+    }
+
+    var showKidsDialog by mutableStateOf(false)
+        private set
+
+    private val kidsContMutex = Mutex()
+    private var kidsCont: Continuation<Boolean>? = null
+
+    suspend fun askKidsPlay(): Boolean {
+        return kidsContMutex.withLock {
+            showKidsDialog = true
+            val result = suspendCoroutine<Boolean> { cont ->
+                kidsCont = cont
+            }
+            kidsCont = null
+            result
+        }
+    }
+
+    fun confirmKidsPlay(choice: Boolean) {
+        showKidsDialog = false
+        kidsCont?.resume(choice)
     }
 }
 
