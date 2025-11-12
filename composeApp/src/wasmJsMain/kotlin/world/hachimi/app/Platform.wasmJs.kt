@@ -8,6 +8,8 @@ class WasmPlatform : Platform {
     // Get chrome or wasm virtual machine version
     override val platformVersion: String = "1"
     override val variant: String = "${BuildKonfig.BUILD_TYPE}-wasm"
+    override val userAgent: String = "HachimiWorld-wasm/${BuildKonfig.VERSION_NAME} (${window.navigator.userAgent}; ${window.navigator.platform})"
+
     override fun getCacheDir(): PlatformFile {
         TODO()
     }

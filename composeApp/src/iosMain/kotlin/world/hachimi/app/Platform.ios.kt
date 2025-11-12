@@ -1,19 +1,15 @@
 package world.hachimi.app
 
 import io.github.vinceglb.filekit.PlatformFile
-import platform.Foundation.NSCachesDirectory
-import platform.Foundation.NSDocumentDirectory
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSURL
-import platform.Foundation.NSUserDomainMask
-import platform.UIKit.UIDevice
+import platform.Foundation.*
 import platform.UIKit.UIApplication
-import world.hachimi.app.logging.Logger
+import platform.UIKit.UIDevice
 
 class IOSPlatform : Platform {
     override val name: String = "ios"
     override val platformVersion: String = UIDevice.currentDevice.systemVersion
     override val variant: String = "${BuildKonfig.BUILD_TYPE}-ios"
+    override val userAgent: String = "HachimiWorld-ios/${BuildKonfig.VERSION_NAME} (${UIDevice.currentDevice.model}; ${UIDevice.currentDevice.systemName})"
 
     override fun getCacheDir(): PlatformFile {
         val paths = NSFileManager.defaultManager.URLsForDirectory(
