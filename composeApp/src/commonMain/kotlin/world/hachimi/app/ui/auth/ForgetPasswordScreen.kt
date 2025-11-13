@@ -123,7 +123,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                         onClick = { vm.submit() },
                         enabled = enabled && !vm.operating
                     ) {
-                        Text("登录")
+                        Text("确定")
                     }
                 }
             }
