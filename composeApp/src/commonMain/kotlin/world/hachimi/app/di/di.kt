@@ -8,7 +8,7 @@ fun Module.applyViewModels() {
     viewModelOf(::RecentPublishViewModel)
     viewModelOf(::AuthViewModel)
     viewModelOf(::PublishViewModel)
-    viewModelOf(::MyArtworkViewModel)
+    viewModelOf(::MyPRViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::UserSpaceViewModel)
     viewModelOf(::PlaylistViewModel)
@@ -21,4 +21,5 @@ fun Module.applyViewModels() {
     viewModelOf(::HomeViewModel)
     viewModelOf(::WeeklyHotViewModel)
     viewModelOf(::CategorySongsViewModel)
+    viewModelOf(::PublishedTabViewModel)
 }

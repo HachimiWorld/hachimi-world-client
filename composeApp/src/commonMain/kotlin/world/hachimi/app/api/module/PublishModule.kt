@@ -33,11 +33,14 @@ class PublishModule(
         val submitTime: Instant,
         val reviewTime: Instant?,
         val status: Int,
+        val type: Int
     ) {
         companion object {
             const val STATUS_PENDING = 0
             const val STATUS_APPROVED = 1
             const val STATUS_REJECTED = 2
+            const val TYPE_CREATION = 0
+            const val TYPE_MODIFICATION = 1
         }
     }
 

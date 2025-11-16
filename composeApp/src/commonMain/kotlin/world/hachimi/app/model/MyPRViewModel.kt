@@ -15,7 +15,7 @@ import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
-class MyArtworkViewModel(
+class MyPRViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
