@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,17 +17,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.datetime.LocalDateTime
-import kotlin.time.Instant
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.MyArtworkViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
+import kotlin.time.Instant
 
 @Composable
 fun MyArtworkScreen(
@@ -50,9 +50,9 @@ fun MyArtworkScreen(
 
     AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
         when(it) {
-            MyArtworkViewModel.InitializeStatus.INIT -> LoadingPage()
-            MyArtworkViewModel.InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.refresh()} )
-            MyArtworkViewModel.InitializeStatus.LOADED -> Column {
+            InitializeStatus.INIT -> LoadingPage()
+            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry()} )
+            InitializeStatus.LOADED -> Column {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(24.dp),
                     verticalAlignment = Alignment.CenterVertically) {
@@ -77,8 +77,9 @@ fun MyArtworkScreen(
                     state = scrollState,
                 ) {
                     items(vm.items, key = { item -> item.reviewId }) { item ->
-                        ArtworkItem(
+                        ReviewItem(
                             modifier = Modifier.fillMaxWidth(),
+                            id = item.reviewId,
                             coverUrl = item.coverUrl,
                             title = item.title,
                             subtitle = item.subtitle,
@@ -114,7 +115,8 @@ fun MyArtworkScreen(
 }
 
 @Composable
-private fun ArtworkItem(
+private fun ReviewItem(
+    id: Long,
     coverUrl: String,
     title: String,
     subtitle: String,
@@ -134,7 +136,11 @@ private fun ArtworkItem(
         }
 
         Column(Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                Spacer(Modifier.width(8.dp))
+                Text(text = "#$id", style = MaterialTheme.typography.labelSmall)
+            }
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
         }
 

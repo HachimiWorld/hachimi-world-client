@@ -21,11 +21,6 @@ class MyArtworkViewModel(
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
-
-    enum class InitializeStatus {
-        INIT, LOADED, FAILED
-    }
-
     var loading by mutableStateOf(false)
         private set
     var total by mutableStateOf(0L)
@@ -51,6 +46,13 @@ class MyArtworkViewModel(
 
     fun dispose() {
 
+    }
+
+    fun retry() {
+        if (initializeStatus == InitializeStatus.FAILED) {
+            initializeStatus = InitializeStatus.INIT
+            refresh()
+        }
     }
 
     fun refresh() = viewModelScope.launch {
