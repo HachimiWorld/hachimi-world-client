@@ -105,4 +105,56 @@ class PublishModule(
 
     suspend fun reviewApprove(req: ApproveReviewReq): WebResult<Unit> =
         client.post("/publish/review/approve", req)
+
+    @Serializable
+    data class ChangeJmidReq(
+        val songId: Long,
+        val oldJmid: String,
+        val newJmid: String,
+    )
+
+    suspend fun changeJmid(req: ChangeJmidReq): WebResult<Unit> =
+        client.post("/publish/change_jmid", req)
+
+    @Serializable
+    data class JmidCheckPReq(
+        val jmidPrefix: String,
+    )
+
+    @Serializable
+    data class JmidCheckPResp(
+        val result: Boolean,
+    )
+
+    suspend fun jmidCheckPrefix(req: JmidCheckPReq): WebResult<JmidCheckPResp> =
+        client.get("/publish/jmid/check_prefix", req)
+
+    @Serializable
+    data class JmidCheckReq(
+        val jmid: String,
+    )
+
+    @Serializable
+    data class JmidCheckResp(
+        val result: Boolean,
+    )
+
+    suspend fun jmidCheck(req: JmidCheckReq): WebResult<JmidCheckResp> =
+        client.get("/publish/jmid/check", req)
+
+    @Serializable
+    data class JmidMineResp(
+        val jmidPrefix: String?,
+    )
+
+    suspend fun jmidMine(): WebResult<JmidMineResp> =
+        client.get("/publish/jmid/mine")
+
+    @Serializable
+    data class JmidNextResp(
+        val jmid: String
+    )
+
+    suspend fun jmidGetNext(): WebResult<JmidNextResp> =
+        client.get("/publish/jmid/get_next")
 }
