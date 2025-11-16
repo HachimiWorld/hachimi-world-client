@@ -114,7 +114,7 @@ class PublishViewModel(
         private set
     var initJmidSupportText by mutableStateOf<String?>(null)
         private set
-
+    var showPrefixInactiveDialog by mutableStateOf(false)
     private fun clearInput() {
         title = ""
         subtitle = ""
@@ -161,14 +161,20 @@ class PublishViewModel(
                     val jmid = data.ok().jmid
                     val (prefix, number) = parseJmid(jmid) ?: return@launch global.alert("获取可用基米ID失败")
                     jmidPrefix = prefix
-                    jmidNumber = number
-                    jmidValid = true
+                    updateJmidNumber(number)
                 } else {
                     val err = data.err()
-                    if (err.code == "jmid_prefix_not_specified") {
-                        // Do nothing
-                    } else {
-                        global.alert(data.err().msg)
+                    when (err.code) {
+                        "jmid_prefix_not_specified" -> {
+                            // Do nothing
+                        }
+                        "jmid_prefix_inactive" -> {
+                            showPrefixInactiveDialog = true
+                            return@launch
+                        }
+                        else -> {
+                            global.alert(data.err().msg)
+                        }
                     }
                 }
             } catch (e: Throwable) {

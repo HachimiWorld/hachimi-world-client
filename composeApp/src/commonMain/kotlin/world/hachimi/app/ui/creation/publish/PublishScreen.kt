@@ -18,11 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import coil3.compose.AsyncImage
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.getPlatform
+import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PublishViewModel
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.creation.publish.components.InitJmidDialog
+import world.hachimi.app.ui.creation.publish.components.PrefixInactiveDialog
 import world.hachimi.app.ui.creation.publish.components.TagEdit
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
@@ -31,6 +34,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun PublishScreen(
     vm: PublishViewModel = koinViewModel(),
+    global: GlobalStore = koinInject()
 ) {
     DisposableEffect(vm) {
         vm.mounted()
@@ -430,6 +434,12 @@ fun PublishScreen(
         valid = vm.initJmidValid,
         supportText = vm.initJmidSupportText,
         onConfirm = vm::confirmInitJmid
+    )
+    if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
+        onExit = {
+            vm.showPrefixInactiveDialog = false
+            global.nav.back()
+        }
     )
 }
 
