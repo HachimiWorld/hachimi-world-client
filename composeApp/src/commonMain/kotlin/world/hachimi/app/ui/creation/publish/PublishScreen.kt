@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,12 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import coil3.compose.AsyncImage
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.getPlatform
-import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PublishViewModel
 import world.hachimi.app.ui.creation.publish.components.FormItem
+import world.hachimi.app.ui.creation.publish.components.InitJmidDialog
 import world.hachimi.app.ui.creation.publish.components.TagEdit
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
@@ -33,9 +30,13 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun PublishScreen(
-    vm: PublishViewModel = koinViewModel()
+    vm: PublishViewModel = koinViewModel(),
 ) {
-    val global = koinInject<GlobalStore>()
+    DisposableEffect(vm) {
+        vm.mounted()
+        onDispose { vm.dispose() }
+    }
+
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Column(
             modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 700.dp).padding(24.dp),
@@ -97,6 +98,42 @@ fun PublishScreen(
                             if (vm.coverImageUploadProgress == 0f || vm.coverImageUploadProgress == 1f) CircularProgressIndicator()
                             else CircularProgressIndicator(progress = { vm.coverImageUploadProgress })
                         }
+                    }
+                }
+            }
+
+            FormItem(
+                header = { Text("基米ID*") }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val prefix = vm.jmidPrefix
+                    if (prefix == null) {
+                        TextButton(onClick = { vm.showJmidDialog() }) {
+                            Text("设置前缀")
+                        }
+                    } else {
+                        TextField(
+                            modifier = Modifier.width(300.dp),
+                            value = vm.jmidNumber ?: "",
+                            onValueChange = vm::updateJmidNumber,
+                            singleLine = true,
+                            leadingIcon = {
+                                Text(
+                                    modifier = Modifier.padding(start = 24.dp),
+                                    text = "JM - $prefix - "
+                                )
+                            },
+                            trailingIcon = {
+                                when(vm.jmidValid) {
+                                    true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = MaterialTheme.colorScheme.primary)
+                                    false -> Icon(Icons.Default.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
+                                    null -> if (vm.jmidNumber != null) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.dp)
+                                }
+                            },
+                            supportingText = {
+                                Text(vm.jmidSupportText ?: "")
+                            }
+                        )
                     }
                 }
             }
@@ -385,6 +422,15 @@ fun PublishScreen(
 
     AddStaffDialog(vm)
     AddExternalLinkDialog(vm)
+
+    if (vm.showInitJmidDialog) InitJmidDialog(
+        onDismissRequest = vm::cancelInitJmid,
+        value = vm.initJmidInput,
+        onValueChange = vm::updateInitJmidInput,
+        valid = vm.initJmidValid,
+        supportText = vm.initJmidSupportText,
+        onConfirm = vm::confirmInitJmid
+    )
 }
 
 @Composable
