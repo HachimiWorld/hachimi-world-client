@@ -22,4 +22,5 @@ fun Module.applyViewModels() {
     viewModelOf(::WeeklyHotViewModel)
     viewModelOf(::CategorySongsViewModel)
     viewModelOf(::PublishedTabViewModel)
+    viewModelOf(::ArtworkDetailViewModel)
 }

@@ -34,6 +34,7 @@ sealed class Route {
             data object Publish: CreationCenter()
             data class ReviewDetail(val reviewId: Long): CreationCenter()
             data class ArtworkDetail(val songId: Long): CreationCenter()
+            data class Modify(val songId: Long): CreationCenter()
         }
         data object CommitteeCenter: Root()
         sealed class ContributorCenter: Root() {
