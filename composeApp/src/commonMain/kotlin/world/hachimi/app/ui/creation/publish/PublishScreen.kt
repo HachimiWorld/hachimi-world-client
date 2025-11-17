@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,10 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PublishViewModel
-import world.hachimi.app.ui.creation.publish.components.FormItem
-import world.hachimi.app.ui.creation.publish.components.InitJmidDialog
-import world.hachimi.app.ui.creation.publish.components.PrefixInactiveDialog
-import world.hachimi.app.ui.creation.publish.components.TagEdit
+import world.hachimi.app.ui.creation.publish.components.*
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
@@ -116,27 +115,12 @@ fun PublishScreen(
                             Text("设置前缀")
                         }
                     } else {
-                        TextField(
-                            modifier = Modifier.width(300.dp),
-                            value = vm.jmidNumber ?: "",
-                            onValueChange = vm::updateJmidNumber,
-                            singleLine = true,
-                            leadingIcon = {
-                                Text(
-                                    modifier = Modifier.padding(start = 24.dp),
-                                    text = "JM - $prefix - "
-                                )
-                            },
-                            trailingIcon = {
-                                when(vm.jmidValid) {
-                                    true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = MaterialTheme.colorScheme.primary)
-                                    false -> Icon(Icons.Default.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
-                                    null -> if (vm.jmidNumber != null) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.dp)
-                                }
-                            },
-                            supportingText = {
-                                Text(vm.jmidSupportText ?: "")
-                            }
+                        JmidTextField(
+                            jmidNumber = vm.jmidNumber,
+                            jmidPrefix = prefix,
+                            valid = vm.jmidValid,
+                            supportText = vm.jmidSupportText,
+                            onNumberChange = vm::updateJmidNumber
                         )
                     }
                 }
