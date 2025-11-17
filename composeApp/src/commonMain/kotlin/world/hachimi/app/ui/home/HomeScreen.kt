@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.*
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.DevelopingPage
@@ -63,121 +64,90 @@ fun HomeMainScreen(
             screenWidth = maxWidth
         ) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-
-                SegmentHeader("最近发布", onMoreClick = {
-                    global.nav.push(Route.Root.Home.Recent)
-                })
-                Spacer(Modifier.height(24.dp))
-                LoadableContent(
-                    modifier = Modifier.fillMaxWidth().height(520.dp),
-                    initializeStatus = vm.recentStatus,
+                Segment(
+                    label = "最近发布",
+                    status = vm.recentStatus,
                     loading = vm.recentLoading,
-                    onRefresh = { },
-                    onRetryClick = { vm.retryRecent() },
-                    onLoad = { vm.mountRecent() }
-                ) {
-                    if (vm.recentSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("空空如也")
-                    } else LazyHorizontalGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        rows = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        items(vm.recentSongs, key = { item -> item.id }) { item ->
-                            SongCard(
-                                modifier = Modifier.width(width = 180.dp),
-                                item = item,
-                                onClick = {
-                                    global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem.fromPublicDetail(item),
-                                        true,
-                                        false
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
+                    items = vm.recentSongs,
+                    onMoreClick = { global.nav.push(Route.Root.Home.Recent) },
+                    onLoad = vm::mountRecent,
+                    onRefresh = {},
+                    onRetryClick = vm::retryRecent
+                )
 
-                SegmentHeader("每日推荐", onMoreClick = {
-                    global.nav.push(Route.Root.Home.Recommend)
-                })
-                Spacer(Modifier.height(24.dp))
-                LoadableContent(
-                    modifier = Modifier.fillMaxWidth().height(520.dp),
-                    initializeStatus = vm.recommendStatus,
+                Segment(
+                    label = "每日推荐",
+                    status = vm.recommendStatus,
                     loading = vm.recommendLoading,
-                    onRefresh = { },
-                    onRetryClick = { vm.retryRecommend() },
-                    onLoad = { vm.mountRecommend() }
-                ) {
-                    if (vm.recommendSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("空空如也")
-                    } else LazyHorizontalGrid(
-                        modifier = Modifier.fillMaxWidth(),
-                        rows = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        items(vm.recommendSongs, key = { item -> item.id }) { item ->
-                            SongCard(
-                                modifier = Modifier.width(width = 180.dp),
-                                item = item,
-                                onClick = {
-                                    global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem.fromPublicDetail(item),
-                                        true,
-                                        false
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
+                    items = vm.recommendSongs,
+                    onMoreClick = { global.nav.push(Route.Root.Home.Recommend) },
+                    onLoad = vm::mountRecommend,
+                    onRefresh = {},
+                    onRetryClick = vm::retryRecommend
+                )
 
-                SegmentHeader("本周热门", onMoreClick = {
-                    global.nav.push(Route.Root.Home.WeeklyHot)
-                })
-                Spacer(Modifier.height(24.dp))
-                LoadableContent(
-                    modifier = Modifier.fillMaxWidth().height(520.dp),
-                    initializeStatus = vm.hotStatus,
+                Segment(
+                    label = "本周热门",
+                    status = vm.hotStatus,
                     loading = vm.hotLoading,
-                    onRefresh = { },
-                    onRetryClick = { vm.retryHot() },
-                    onLoad = { vm.mountHot() }
-                ) {
-                    if (vm.hotSongs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("空空如也")
-                    } else LazyHorizontalGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        rows = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        items(vm.hotSongs, key = { item -> item.id }) { item ->
-                            SongCard(
-                                modifier = Modifier.width(width = 180.dp),
-                                item = item,
-                                onClick = {
-                                    global.player.insertToQueue(
-                                        GlobalStore.MusicQueueItem.fromPublicDetail(item),
-                                        true,
-                                        false
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
+                    items = vm.hotSongs,
+                    onMoreClick = { global.nav.push(Route.Root.Home.WeeklyHot) },
+                    onLoad = vm::mountHot,
+                    onRefresh = {},
+                    onRetryClick = vm::retryHot
+                )
 
                 CategorySegment(category = "纯净哈基米")
                 CategorySegment(category = "古典")
                 CategorySegment(category = "原曲不使用")
+            }
+        }
+    }
+}
+
+@Composable
+private fun Segment(
+    label: String,
+    status: InitializeStatus,
+    loading: Boolean,
+    items: List<SongModule.PublicSongDetail>,
+    onMoreClick: () -> Unit,
+    onLoad: () -> Unit,
+    onRefresh: () -> Unit,
+    onRetryClick: () -> Unit,
+    global: GlobalStore = koinInject()
+) {
+    SegmentHeader(text = label, onMoreClick = onMoreClick, onLoad = onLoad)
+    Spacer(Modifier.height(24.dp))
+    LoadableContent(
+        modifier = Modifier.fillMaxWidth().height(520.dp),
+        initializeStatus = status,
+        loading = loading,
+        onRefresh = onRefresh,
+        onRetryClick = onRetryClick,
+        onLoad = {}
+    ) {
+        if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("空空如也")
+        } else LazyHorizontalGrid(
+            modifier = Modifier.fillMaxSize(),
+            rows = GridCells.Fixed(2),
+            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            items(items = items, key = { it.id }) { item ->
+                SongCard(
+                    modifier = Modifier.width(width = 180.dp),
+                    item = item,
+                    onClick = {
+                        global.player.insertToQueue(
+                            GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                            true,
+                            false
+                        )
+                    },
+                )
             }
         }
     }
@@ -189,7 +159,9 @@ private fun CategorySegment(
     global: GlobalStore = koinInject(),
     vm: HomeViewModel = koinViewModel()
 ) {
-    SegmentHeader("${category}专区", onMoreClick = {
+    SegmentHeader("${category}专区", onLoad = {
+        vm.mountCategory(category)
+    }, onMoreClick = {
         global.nav.push(Route.Root.Home.Category(category))
     })
     Spacer(Modifier.height(24.dp))
@@ -202,10 +174,10 @@ private fun CategorySegment(
         loading = loading,
         onRefresh = { },
         onRetryClick = { vm.retryCategory(category) },
-        onLoad = { vm.mountCategory(category) }
+        onLoad = { }
     ) {
         val songs = state?.songs?.value ?: emptyList()
-        if (songs.isEmpty()){
+        if (songs.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("空空如也")
             }
@@ -244,9 +216,10 @@ private fun CategorySegment(
 private fun SegmentHeader(
     text: String,
     onMoreClick: () -> Unit,
+    onLoad: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp),
+        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp).onFirstVisible { onLoad() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = text, style = MaterialTheme.typography.titleLarge)
