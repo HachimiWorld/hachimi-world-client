@@ -1,12 +1,9 @@
 package world.hachimi.app.ui.creation.artwork
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,8 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
-import world.hachimi.app.model.GlobalStore
 
 
 private enum class Tab(
@@ -27,13 +22,12 @@ private enum class Tab(
 
 @Composable
 fun MyArtworkScreen() {
-    val global = koinInject<GlobalStore>()
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
 
     Column(Modifier.fillMaxSize()) {
         val scope = rememberCoroutineScope()
 
-        PrimaryTabRow(selectedTabIndex = pagerState.currentPage, modifier = Modifier.fillMaxWidth().widthIn(max = 300.dp)) {
+        SecondaryTabRow(selectedTabIndex = pagerState.currentPage, modifier = Modifier.padding(top = 16.dp).widthIn(max = 300.dp).fillMaxWidth()) {
             Tab.entries.forEachIndexed { index, tab ->
                 Tab(
                     selected = pagerState.currentPage == index,
