@@ -6,9 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
@@ -38,9 +38,9 @@ class ReviewViewModel(
 
     fun mounted() {
         if (initializeStatus == InitializeStatus.INIT) {
-            refresh()
+            load()
         } else {
-            refresh()
+            load()
         }
     }
 
@@ -50,44 +50,56 @@ class ReviewViewModel(
 
     fun retry() {
         initializeStatus = InitializeStatus.INIT
-        refresh()
+        load()
     }
 
-    fun refresh() = viewModelScope.launch {
-        loading = true
-        try {
-            val resp = api.publishModule.reviewPageContributor(PublishModule.PageReq(currentPage.toLong(), pageSize.toLong()))
-            if (resp.ok) {
-                val data = resp.ok()
-                isContributor = true
-                total = data.total
-                items.clear()
-                items.addAll(data.data)
-                totalPage = (total / pageSize).toInt() + if (total % pageSize > 0) 1 else 0
-                initializeStatus = InitializeStatus.LOADED
-            } else {
-                val data = resp.err()
-                if (data.code == "permission_denied") {
-                    isContributor = false
-                    initializeStatus = InitializeStatus.LOADED
-                } else {
-                    global.alert(data.msg)
-                    initializeStatus = InitializeStatus.FAILED
+    private var loadingJob: Job? = null
+    private val loadingMutex = Mutex()
+
+    fun load() = viewModelScope.launch {
+        loadingMutex.withLock {
+            loadingJob?.cancelAndJoin()
+            loadingJob = launch {
+                loading = true
+                try {
+                    val resp = api.publishModule.reviewPageContributor(PublishModule.PageReq(currentPage.toLong(), pageSize.toLong()))
+                    if (resp.ok) {
+                        val data = resp.ok()
+                        isContributor = true
+                        total = data.total
+                        items.clear()
+                        items.addAll(data.data)
+                        totalPage = (total / pageSize).toInt() + if (total % pageSize > 0) 1 else 0
+                    } else {
+                        val data = resp.err()
+                        if (data.code == "permission_denied") {
+                            isContributor = false
+                        } else {
+                            global.alert(data.msg)
+                            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                            return@launch
+                        }
+                    }
+                } catch (_: CancellationException) {
+                    return@launch
+                } catch (e: Throwable) {
+                    Logger.e("review", "Failed to fetch review", e)
+                    global.alert(e.message)
+                    if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                    return@launch
+                } finally {
+                    loading = false
                 }
+
+                if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
             }
-        } catch (e: Throwable) {
-            Logger.e("review", "Failed to fetch review", e)
-            global.alert(e.message)
-            initializeStatus = InitializeStatus.FAILED
-        } finally {
-            loading = false
         }
     }
 
     fun goToPage(pageIndex: Int) {
         currentPage = pageIndex
         items.clear()
-        refresh()
+        load()
     }
 
     fun detail(item: PublishModule.SongPublishReviewBrief) {

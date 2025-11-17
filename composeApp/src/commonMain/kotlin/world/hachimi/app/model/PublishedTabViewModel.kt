@@ -33,12 +33,23 @@ class PublishedTabViewModel(
 
     fun mounted() {
         if (initializeStatus == InitializeStatus.INIT) {
+            // Init
+            load()
+        } else {
+            // Refresh
             load()
         }
     }
 
     fun dispose() {
 
+    }
+
+    fun retry() {
+        if (initializeStatus == InitializeStatus.FAILED) {
+            initializeStatus = InitializeStatus.INIT
+            load()
+        }
     }
 
     fun load() {
