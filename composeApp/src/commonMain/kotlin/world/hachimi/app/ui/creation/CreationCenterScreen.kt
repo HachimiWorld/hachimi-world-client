@@ -17,8 +17,8 @@ fun CreationCenterScreen(
     AnimatedContent(child, modifier = Modifier.fillMaxSize()) { child ->
         when (child) {
             Route.Root.CreationCenter.MyArtwork -> MyArtworkScreen()
-            Route.Root.CreationCenter.Publish -> PublishScreen()
-            is Route.Root.CreationCenter.Modify -> PublishScreen()
+            Route.Root.CreationCenter.Publish -> PublishScreen(null)
+            is Route.Root.CreationCenter.Modify -> PublishScreen(child.songId)
             is Route.Root.CreationCenter.ReviewDetail -> ReviewDetailScreen(child.reviewId)
             is Route.Root.CreationCenter.ArtworkDetail -> ArtworkDetailScreen(child.songId)
         }
