@@ -9,6 +9,31 @@ class PublishModule(
     private val client: ApiClient
 ) {
     @Serializable
+    data class ModifyReq(
+        val songId: Long,
+        val songTempId: String?,
+        val coverTempId: String?,
+        val title: String,
+        val subtitle: String,
+        val description: String,
+        val lyrics: String,
+        val tagIds: List<Long>,
+        val creationInfo: SongModule.PublishReq.CreationInfo,
+        val productionCrew: List<SongModule.PublishReq.ProductionItem>,
+        val externalLinks: List<SongModule.ExternalLink>,
+        val explicit: Boolean,
+        val comment: String?,
+    )
+
+    @Serializable
+    data class ModifyResp(
+        val reviewId: Long
+    )
+
+    suspend fun modify(req: ModifyReq): WebResult<ModifyResp> =
+        client.post("/publish/modify", req)
+
+    @Serializable
     data class PageReq(
         val pageIndex: Long,
         val pageSize: Long,
