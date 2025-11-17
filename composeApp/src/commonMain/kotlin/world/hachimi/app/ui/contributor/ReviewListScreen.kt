@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -71,15 +72,16 @@ private fun Content(vm: ReviewViewModel) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn {
                 itemsIndexed(vm.items, key = { _, item -> item.reviewId }) { index, item ->
-                    Item(
+                    ReviewItem(
                         modifier = Modifier.fillMaxWidth(),
                         coverUrl = item.coverUrl,
                         title = item.title,
                         subtitle = item.subtitle,
-                        artist = item.artist,
                         submitTime = item.submitTime,
                         status = item.status,
-                        onClick = { vm.detail(item) }
+                        onClick = { vm.detail(item) },
+                        id = item.reviewId,
+                        type = item.type
                     )
                 }
             }
@@ -100,18 +102,19 @@ private fun Content(vm: ReviewViewModel) {
 }
 
 @Composable
-private fun Item(
+private fun ReviewItem(
+    id: Long,
     coverUrl: String,
     title: String,
     subtitle: String,
-    artist: String,
     submitTime: Instant,
     status: Int,
+    type: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier.clickable(onClick = onClick).padding(vertical = 12.dp),
+        modifier.clickable(onClick = onClick).padding(horizontal = 24.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -125,20 +128,36 @@ private fun Item(
         }
 
         Column(Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium)
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                Spacer(Modifier.width(8.dp))
+                Text(text = "#$id", style = MaterialTheme.typography.labelSmall)
+            }
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "类型", style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = when (type) {
+                    PublishModule.SongPublishReviewBrief.TYPE_CREATION -> "发布"
+                    PublishModule.SongPublishReviewBrief.TYPE_MODIFICATION -> "编辑"
+                    else -> "未知"
+                }, style = MaterialTheme.typography.bodySmall
+            )
+
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "提交时间", style = MaterialTheme.typography.bodySmall)
             Text(
-                text = formatTime(submitTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMD),
-                style = MaterialTheme.typography.bodySmall
+                text = formatTime(
+                    submitTime,
+                    distance = true,
+                    precise = false,
+                    fullFormat = LocalDateTime.Formats.YMD
+                ), style = MaterialTheme.typography.bodySmall
             )
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "作者", style = MaterialTheme.typography.bodySmall)
-            Text(text = artist, style = MaterialTheme.typography.bodySmall)
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -149,18 +168,13 @@ private fun Item(
                     PublishModule.SongPublishReviewBrief.STATUS_APPROVED -> "通过"
                     PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> "退回"
                     else -> "未知"
-                }, style = MaterialTheme.typography.bodySmall
+                }, style = MaterialTheme.typography.bodySmall,
+                color = when (status) {
+                    PublishModule.SongPublishReviewBrief.STATUS_PENDING -> Color.Yellow.copy(alpha = 0.7f)
+                    PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> MaterialTheme.colorScheme.error
+                    else -> LocalContentColor.current
+                }
             )
         }
-
-        /*Box {
-            var expanded by remember { mutableStateOf(false) }
-            TextButton(onClick = { expanded = true }) {
-                Text("操作")
-            }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(text = { Text("编辑") }, onClick = onEditClick)
-            }
-        }*/
     }
 }
