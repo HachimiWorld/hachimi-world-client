@@ -5,9 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloseFullscreen
-import androidx.compose.material.icons.filled.Explicit
-import androidx.compose.material.icons.filled.MusicVideo
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +24,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.SongDetailInfo
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.insets.safeAreaPadding
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.WindowSize
@@ -104,7 +103,7 @@ fun CompactPlayerScreen(
         info?.displayId
     } ?: ""
 
-    Column(Modifier.systemBarsPadding()) {
+    Column(Modifier.safeAreaPadding()) {
         Box(Modifier.fillMaxWidth().weight(1f)) {
             val lyricsAlpha by animateFloatAsState(if (displayingLyrics) 1f else 0f)
             Column(
@@ -148,7 +147,7 @@ fun CompactPlayerScreen(
                     interactionSource = null,
                     onClick = { displayingLyrics = false },
                     enabled = displayingLyrics
-                ).padding(horizontal = 24.dp),
+                ).padding(start = 24.dp, end = 24.dp, top = 48.dp),
                 currentLine = playerState.currentLyricsLine,
                 lines = playerState.lyricsLines,
                 fadeColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -156,10 +155,27 @@ fun CompactPlayerScreen(
             )
 
             IconButton(
-                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp),
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 32.dp, top = 8.dp),
                 onClick = onShrinkClick
             ) {
-                Icon(Icons.Default.CloseFullscreen, "Shrink")
+                Icon(Icons.Default.Close, "Shrink")
+            }
+            var share by remember { mutableStateOf(false) }
+            IconButton(
+                modifier = Modifier.align(Alignment.TopEnd).padding(end = 32.dp, top = 8.dp),
+                onClick = { share = true }
+            ) {
+                Icon(Icons.Default.Share, "Share")
+            }
+            if (share) {
+                info?.let { info ->
+                    ShareDialog(
+                        onDismissRequest = { share = false },
+                        jmid = info.displayId,
+                        title = info.title,
+                        author = info.uploaderName,
+                    )
+                }
             }
         }
 
@@ -231,7 +247,7 @@ fun ExpandedPlayerScreen(
     } ?: ""
     val displayedCover = if (playerState.fetchingMetadata) previewMetadata?.coverUrl else info?.coverUrl
 
-    Box {
+    Box(Modifier.safeAreaPadding()) {
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().weight(1f).padding(32.dp)) {
                 Column(Modifier.fillMaxHeight().weight(1f), verticalArrangement = Arrangement.Center) {
@@ -309,10 +325,28 @@ fun ExpandedPlayerScreen(
         }
 
         IconButton(
-            modifier = Modifier.align(Alignment.TopEnd).padding(16.dp),
+            modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
             onClick = onShrinkClick
         ) {
             Icon(Icons.Default.CloseFullscreen, "Shrink")
+        }
+
+        var share by remember { mutableStateOf(false) }
+        IconButton(
+            modifier = Modifier.align(Alignment.TopEnd).padding(16.dp),
+            onClick = { share = true }
+        ) {
+            Icon(Icons.Default.Share, "Share")
+        }
+        if (share) {
+            info?.let { info ->
+                ShareDialog(
+                    onDismissRequest = { share = false },
+                    jmid = info.displayId,
+                    title = info.title,
+                    author = info.uploaderName,
+                )
+            }
         }
     }
 }
