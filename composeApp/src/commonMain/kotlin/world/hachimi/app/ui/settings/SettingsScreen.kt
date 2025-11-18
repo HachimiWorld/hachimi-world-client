@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -79,11 +80,10 @@ fun SettingsScreen() {
             Text(BuildKonfig.VERSION_CODE.toString())
         }
         PropertyItem(label = { Text("反馈与建议") }) {
-            TextButton(onClick = {
-                getPlatform().openUrl("https://github.com/HachimiWorld/hachimi-world-client/discussions")
-            }) {
-                Text("GitHub")
-            }
+            LinkButton("GitHub", "https://github.com/HachimiWorld/hachimi-world-client/discussions")
+        }
+        PropertyItem(label = { Text("官方网站") }) {
+            LinkButton("hachimi.world", "https://hachimi.world")
         }
     }
 }
@@ -102,5 +102,23 @@ private fun PropertyItem(
         CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
             content()
         }
+    }
+}
+
+@Composable
+private fun LinkButton(
+    text: String,
+    url: String
+) {
+    TextButton(onClick = {
+        getPlatform().openUrl(url)
+    }) {
+        Text(text)
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            modifier = Modifier.size(14.dp),
+            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+            contentDescription = "Open in browser"
+        )
     }
 }
