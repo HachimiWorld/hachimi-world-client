@@ -17,8 +17,10 @@ fun ShareDialog(
     author: String
 ) {
     val ctx = LocalPlatformContext.current
-    val text = "分享哈基米音乐《$title》by $author - 基米天堂（复制到浏览器访问）\n" +
-            "https://hachimi.world/song/$jmid"
+    val text = remember(jmid) {
+        "分享哈基米音乐《$title》by $author - 基米天堂（复制到浏览器访问）\n" +
+                "https://hachimi.world/song/${jmid.lowercase()}"
+    }
     var copied by remember { mutableStateOf(false) }
 
     AlertDialog(
