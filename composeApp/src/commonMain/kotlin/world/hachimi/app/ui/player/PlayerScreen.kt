@@ -5,7 +5,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Explicit
+import androidx.compose.material.icons.filled.MusicVideo
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -325,15 +328,15 @@ fun ExpandedPlayerScreen(
         }
 
         IconButton(
-            modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+            modifier = Modifier.align(Alignment.TopStart).padding(vertical = 16.dp, horizontal = 32.dp),
             onClick = onShrinkClick
         ) {
-            Icon(Icons.Default.CloseFullscreen, "Shrink")
+            Icon(Icons.Default.Close, "Shrink")
         }
 
         var share by remember { mutableStateOf(false) }
         IconButton(
-            modifier = Modifier.align(Alignment.TopEnd).padding(16.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(vertical = 16.dp, horizontal = 32.dp),
             onClick = { share = true }
         ) {
             Icon(Icons.Default.Share, "Share")
