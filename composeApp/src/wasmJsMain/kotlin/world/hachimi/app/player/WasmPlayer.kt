@@ -120,16 +120,21 @@ class WasmPlayer : Player {
                     this.isReady = true
                 }
 
-                val metadata = MediaMetadata(MediaMetadataInit(
-                    title = item.title,
-                    artist = item.artist,
-                    artwork = (coverUrl?.let {
-                        arrayOf(MediaImage(src = it))
-                    } ?: emptyArray()).toJsArray()
-                ))
-                navigator.mediaSession?.let {
-                    Logger.d("player", "set metadata: $metadata")
-                    it.metadata = metadata
+                try {
+                    val metadata = MediaMetadata(
+                        MediaMetadataInit(
+                            title = item.title,
+                        artist = item.artist,
+                        artwork = (coverUrl?.let {
+                            arrayOf(MediaImage(src = it))
+                        } ?: emptyArray()).toJsArray()
+                    ))
+                    navigator.mediaSession?.let {
+                        Logger.d("player", "set metadata: $metadata")
+                        it.metadata = metadata
+                    }
+                } catch (e: Throwable) {
+                    Logger.e("player", "Failed to set metadata", e)
                 }
 
                 if (autoPlay) howl.play()
