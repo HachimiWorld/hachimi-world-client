@@ -15,6 +15,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.util.fastForEach
@@ -129,8 +130,9 @@ fun CompactPlayerScreen(
 
                 AnimatedContent(lyricsLine.value, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                     Text(
-                        modifier = Modifier.fillMaxWidth().wrapContentWidth(),
-                        text = it ?: ""
+                        modifier = Modifier.fillMaxWidth(),
+                        text = it ?: "",
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
