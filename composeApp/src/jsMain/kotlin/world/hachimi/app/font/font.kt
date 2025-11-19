@@ -30,9 +30,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.readByteArray
 import org.khronos.webgl.ArrayBuffer
-import org.khronos.webgl.Int8Array
 import org.koin.compose.koinInject
-import org.w3c.fetch.Response
 import org.w3c.files.Blob
 import org.w3c.files.FileReader
 import world.hachimi.app.BuildKonfig
@@ -42,9 +40,6 @@ import world.hachimi.app.ui.theme.AppTheme
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.Promise
-import kotlin.time.TimeSource
-import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
-import kotlin.wasm.unsafe.withScopedMemoryAllocator
 
 @Composable
 actual fun WithFont(
@@ -193,15 +188,17 @@ actual fun WithFont(
     }
 }
 
-external interface DOMException : JsAny {
+enum class FontLoadError {
+    NotSupported, PermissionDenied
+}
+
+/*external interface DOMException : JsAny {
     val code: String
     val message: String
     val name: String
 }
 
-enum class FontLoadError {
-    NotSupported, PermissionDenied
-}
+
 
 @Composable
 internal fun returnsNullable(): Any? = null
@@ -234,6 +231,21 @@ internal fun jsInt8ArrayToKotlinByteArray(x: Int8Array): ByteArray {
     }
 }
 
+
+
+external interface PermissionStatus : JsAny {
+    val name: String
+    val state: String
+}
+
+fun handlePermission(): Promise<PermissionStatus> = js(
+    """
+  navigator.permissions.query({ name: "local-fonts" })
+"""
+)
+
+fun queryLocalFonts(): Promise<JsArray<FontData>> = js("window.queryLocalFonts()")*/
+
 external class FontData : JsAny {
     val postscriptName: String
     val fullName: String
@@ -255,19 +267,6 @@ suspend fun FontData.readArrayBuffer(): ArrayBuffer {
     val buffer = reader.result as ArrayBuffer
     return buffer
 }
-
-external interface PermissionStatus : JsAny {
-    val name: String
-    val state: String
-}
-
-fun handlePermission(): Promise<PermissionStatus> = js(
-    """
-  navigator.permissions.query({ name: "local-fonts" })
-"""
-)
-
-fun queryLocalFonts(): Promise<JsArray<FontData>> = js("window.queryLocalFonts()")
 
 private val preferredCJKFontFamilies = linkedSetOf("Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Noto Sans CJK");
 private val preferredEmojiFontFamilies = linkedSetOf("Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji");
@@ -307,6 +306,7 @@ data class LoadedLocalFont(
     val data: ArrayBuffer,
 )
 
+/*
 private suspend fun queryLocalFontMap(): Map<String, List<FontData>> {
     val fonts = try {
         queryLocalFonts().await<JsArray<FontData>>().toList()
@@ -316,6 +316,7 @@ private suspend fun queryLocalFontMap(): Map<String, List<FontData>> {
     val fontMap = fonts.groupBy { it.family }
     return fontMap
 }
+
 
 private suspend fun loadLocalCJKFonts(): List<LoadedLocalFont> {
     val mark = TimeSource.Monotonic.markNow()
@@ -381,6 +382,7 @@ suspend fun loadFonts(enableEmoji: Boolean): FontFamily {
     Logger.d("Font", "Fonts loaded successfully")
     return fontFamily
 }
+*/
 
 private val fullFontUrl = BuildKonfig.ASSETS_BASE_URL + "/fonts/MiSansVF.ttf"
 private val fullFontSize = 20_093_424L // MiSansVF.ttf file size

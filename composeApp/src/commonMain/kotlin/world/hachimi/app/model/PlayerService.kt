@@ -542,7 +542,7 @@ class PlayerService(
             //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
             var headContentLength: Long? = null
             // Workaround for wasm, we can use HEAD request to get the content length
-            if (getPlatform().name == "wasm") {
+            if (getPlatform().name.startsWith("Web")) {
                 val resp = api.httpClient.head(data.audioUrl)
                 headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
                 Logger.i(TAG, "Head content length: $headContentLength bytes")

@@ -73,6 +73,9 @@ fun SettingsScreen() {
                 globalStore.updateKidsMode(it)
             })
         }
+        PropertyItem(label = { Text("客户端类型") }) {
+            Text(getPlatform().name)
+        }
         PropertyItem(label = { Text("版本名") }) {
             Text(BuildKonfig.VERSION_NAME)
         }

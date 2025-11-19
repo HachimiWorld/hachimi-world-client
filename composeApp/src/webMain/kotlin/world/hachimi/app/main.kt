@@ -17,6 +17,8 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.WasmPlayerHelper
 import world.hachimi.app.ui.App
 import world.hachimi.app.util.parseJmid
+import kotlin.js.ExperimentalWasmJsInterop
+import kotlin.js.toJsString
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalWasmJsInterop::class)
 fun main() {
@@ -48,7 +50,7 @@ fun main() {
 
     val previousBackStack = mutableStateOf(global.nav.backStack.toList())
     val nav = global.nav
-    ComposeViewport(document.body!!) {
+    ComposeViewport {
         LaunchedEffect(Unit) {
             document.querySelector("#loading")?.remove()
         }

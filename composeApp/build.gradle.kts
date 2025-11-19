@@ -46,6 +46,15 @@ kotlin {
 
     jvm()
 
+    js {
+        browser()
+        binaries.executable()
+        compilerOptions {
+            // https://kotlinlang.slack.com/archives/C3PQML5NU/p1758188562782809?thread_ts=1758060473.617919&cid=C3PQML5NU
+            target = "es2015"
+        }
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("composeApp")
@@ -65,6 +74,8 @@ kotlin {
         }
         compilerOptions {
             freeCompilerArgs.add("-Xwasm-attach-js-exception")
+            // https://kotlinlang.slack.com/archives/C3PQML5NU/p1758188562782809?thread_ts=1758060473.617919&cid=C3PQML5NU
+            target = "es2015"
         }
         binaries.executable()
     }
@@ -136,7 +147,7 @@ kotlin {
             implementation(libs.mp3spi)
             implementation(libs.jflac)
         }
-        wasmJsMain.dependencies {
+        webMain.dependencies {
             implementation(libs.ktor.client.cio)
             implementation(libs.kotlinx.browser)
             implementation(npm("howler", "2.2.4"))
@@ -238,7 +249,12 @@ compose.desktop {
             "release" -> nativeDistributions {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
                 packageName = "Hachimi World"
+                description = "A community-driven open-source meme culture music community."
+                vendor = "Hachimi World, NPO"
+                copyright = "© 2025 Hachimi World Open Source Project"
                 packageVersion = gitVersionNameShort.get()
+                licenseFile = project.file("LICENSE")
+
                 modules("jdk.unsupported", "java.naming")
 
                 windows {
