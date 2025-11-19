@@ -225,6 +225,10 @@ android {
             }
             resValue("string", "app_name", "@string/app_name_base")
         }
+        create("beta") {
+            isMinifyEnabled = true
+            applicationIdSuffix = ".dev"
+        }
         debug {
             applicationIdSuffix = ".dev"
 //            resValue("string", "app_name", "@string/app_name_dev")
@@ -253,7 +257,7 @@ compose.desktop {
                 vendor = "Hachimi World, NPO"
                 copyright = "© 2025 Hachimi World Open Source Project"
                 packageVersion = gitVersionNameShort.get()
-                licenseFile = project.file("LICENSE")
+                licenseFile = rootProject.file("LICENSE")
 
                 modules("jdk.unsupported", "java.naming")
 
