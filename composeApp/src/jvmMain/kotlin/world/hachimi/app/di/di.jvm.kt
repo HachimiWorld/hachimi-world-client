@@ -21,7 +21,7 @@ val appModule = module {
     single { ApiClient(BuildKonfig.API_BASE_URL) }
     single { getPreferencesDataStore() }
     single<MyDataStore> { MyDataStoreImpl(get()) }
-    single<Player> { JVMPlayer() }
+    single<Player> { JVMPlayer(get()) }
     single<SongCache> { SongCacheImpl() }
 
     singleOf(::GlobalStore)

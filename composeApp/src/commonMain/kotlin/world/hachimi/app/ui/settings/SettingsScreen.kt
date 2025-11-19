@@ -68,6 +68,28 @@ fun SettingsScreen() {
                 globalStore.updateLoudnessNormalization(it)
             })
         }
+        PropertyItem(label = { Text("淡入淡出") }) {
+            Switch(globalStore.enableFadeInFadeOut, {
+                globalStore.updateFadeInFadeOut(it)
+            })
+        }
+        if (globalStore.enableFadeInFadeOut) {
+            PropertyItem(label = { Text("淡入淡出时长") }) {
+                Column(Modifier.width(200.dp)) {
+                    Text(
+                        text = "${globalStore.fadeDuration / 1000} 秒",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Slider(
+                        value = globalStore.fadeDuration.toFloat(),
+                        onValueChange = { globalStore.updateFadeDuration(it.toLong()) },
+                        valueRange = 1000f..10000f,
+                        steps = 9
+                    )
+                }
+            }
+        }
         PropertyItem(label = { Text("宝宝模式") }) {
             Switch(globalStore.kidsMode, {
                 globalStore.updateKidsMode(it)

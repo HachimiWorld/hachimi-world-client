@@ -55,7 +55,7 @@ class WasmPlayer : Player {
         }
     }
 
-    override suspend fun pause() {
+    override suspend fun pause(fade: Boolean) {
         if (isReady()) {
             howl!!.pause()
         }
@@ -79,7 +79,7 @@ class WasmPlayer : Player {
         howl?.volume(volume.toDouble().toJsNumber())
     }
 
-    override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
+    override suspend fun prepare(item: SongItem, autoPlay: Boolean, fade: Boolean) {
         mutex.withLock {
             val time = measureTime {
                 val previousVolume = getVolume()

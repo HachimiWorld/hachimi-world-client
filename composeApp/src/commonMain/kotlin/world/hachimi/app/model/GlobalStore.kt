@@ -45,6 +45,10 @@ class GlobalStore(
         private set
     var enableLoudnessNormalization by mutableStateOf(true)
         private set
+    var enableFadeInFadeOut by mutableStateOf(false)
+        private set
+    var fadeDuration by mutableStateOf(3000L)
+        private set
     var kidsMode by mutableStateOf(false)
         private set
     val nav = Navigator(Route.Root.Home.Main)
@@ -99,9 +103,21 @@ class GlobalStore(
         dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
     }
 
+    fun updateFadeInFadeOut(enabled: Boolean) = scope.launch {
+        this@GlobalStore.enableFadeInFadeOut = enabled
+        dataStore.set(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT, enabled)
+    }
+
+    fun updateFadeDuration(duration: Long) = scope.launch {
+        this@GlobalStore.fadeDuration = duration
+        dataStore.set(PreferencesKeys.SETTINGS_FADE_DURATION, duration)
+    }
+
     private suspend fun loadSettings() {
         this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
         this.enableLoudnessNormalization = dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
+        this.enableFadeInFadeOut = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+        this.fadeDuration = dataStore.get(PreferencesKeys.SETTINGS_FADE_DURATION) ?: 3000L
     }
 
     private suspend fun loadLoginStatus() {

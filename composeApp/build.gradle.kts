@@ -185,8 +185,9 @@ val gitVersionCode = providers.exec {
 
 val gitVersionName = providers.exec {
     commandLine("git", "describe", "--tags", "--match", "v[0-9]*")
+    isIgnoreExitValue = true
 }.standardOutput.asText.map {
-    it.trim().trimStart('v') // Remove prefix 'vx.x.x'
+    if (it.isBlank()) "1.0.0" else it.trim().trimStart('v')
 }
 
 val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }

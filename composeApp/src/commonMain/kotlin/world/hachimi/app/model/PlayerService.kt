@@ -63,6 +63,7 @@ class PlayerService(
     var repeatMode by mutableStateOf(false)
     private val queueMutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default)
+    private var isTransitioning = false
 
     init {
         scope.launch(Dispatchers.Default) {
@@ -71,7 +72,9 @@ class PlayerService(
                     when (event) {
                         PlayEvent.End -> {
                             playerState.isPlaying = false
-                            autoNext()
+                            if (!isTransitioning) {
+                                autoNext()
+                            }
                         }
 
                         is PlayEvent.Error -> {
@@ -84,6 +87,7 @@ class PlayerService(
 
                         PlayEvent.Play -> {
                             playerState.isPlaying = true
+                            isTransitioning = false
                         }
 
                         is PlayEvent.Seek -> {
@@ -97,8 +101,20 @@ class PlayerService(
                 if (player.isPlaying()) {
                     val currentPosition = player.currentPosition()
                     playerState.updateCurrentMillis(currentPosition)
+
+                    if (global.enableFadeInFadeOut && !isTransitioning) {
+                        val duration = playerState.songInfo?.durationSeconds?.toLong() ?: 0L
+                        if (duration > 0) {
+                            val remaining = (duration * 1000L) - currentPosition
+                            if (remaining <= global.fadeDuration && remaining > 500) {
+                                Logger.i(TAG, "Auto cross-fade triggered")
+                                isTransitioning = true
+                                autoNext()
+                            }
+                        }
+                    }
                 }
-                playerState.isPlaying = player.isPlaying()
+                // playerState.isPlaying = player.isPlaying()
                 delay(100)
             }
         }
@@ -115,8 +131,8 @@ class PlayerService(
     /**
      * This is only for play current song. Not interested in the music queue.
      */
-    private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int) = coroutineScope {
-        player.pause()
+    private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int, fade: Boolean) = coroutineScope {
+        player.pause(fade)
         playerMutex.withLock {
             playerJobSign = sign
         }
@@ -159,7 +175,7 @@ class PlayerService(
         )
 
         if (playerJobSign == sign) {
-            player.prepare(item, autoPlay = instantPlay)
+            player.prepare(item, autoPlay = instantPlay, fade = fade)
         }
 
         // Touch in the global scope
@@ -178,7 +194,7 @@ class PlayerService(
         }
     }
 
-    private suspend fun playWithRetry(maxAttempts: Int = 5, item: MusicQueueItem, instantPlay: Boolean) {
+    private suspend fun playWithRetry(maxAttempts: Int = 5, item: MusicQueueItem, instantPlay: Boolean, fade: Boolean) {
         var attempt = 0
         var delay = 1000L // Start with 1 second delay
         var lastError: Throwable? = null
@@ -187,7 +203,7 @@ class PlayerService(
         try {
             while (attempt < maxAttempts) {
                 try {
-                    play(item, instantPlay, sign)
+                    play(item, instantPlay, sign, fade)
                     return
                 } catch (_: CancellationException) {
                     // It's canceled, do not retry anymore
@@ -221,7 +237,7 @@ class PlayerService(
 
     private var playPrepareJob: Job? = null
 
-    fun playSongInQueue(id: Long, instantPlay: Boolean = true) = scope.launch {
+    fun playSongInQueue(id: Long, instantPlay: Boolean = true, fade: Boolean = false) = scope.launch {
         if (playPrepareJob?.isActive == true) {
             // We don't use cancelAndJoin because we want the operation to be instant
             Logger.d(TAG, "Cancel prepare job")
@@ -238,14 +254,14 @@ class PlayerService(
         if (song != null) {
             playPrepareJob = scope.launch {
                 Logger.d(TAG, "playSongInQueue: Playing song $song")
-                playWithRetry(5, song, instantPlay)
+                playWithRetry(5, song, instantPlay, fade)
                 savePlayerState()
             }
         }
     }
 
     // TODO[refactor](player): Should queue be a builtin feature in player? To make GlobalStore more clear
-    fun queuePrevious() = scope.launch {
+    fun queuePrevious(fade: Boolean = false) = scope.launch {
         val targetSong = queueMutex.withLock {
             if (musicQueue.isNotEmpty()) {
                 val currentSongId =
@@ -265,11 +281,11 @@ class PlayerService(
             return@withLock null
         }
         targetSong?.let {
-            playSongInQueue(it.id)
+            playSongInQueue(it.id, fade = fade)
         }
     }
 
-    fun queueNext() = scope.launch {
+    fun queueNext(fade: Boolean = false) = scope.launch {
         val targetSong = queueMutex.withLock {
             if (musicQueue.isNotEmpty()) {
                 // Get current song index (including the fetching/buffering)
@@ -291,7 +307,7 @@ class PlayerService(
         }
 
         targetSong?.let {
-            playSongInQueue(it.id)
+            playSongInQueue(it.id, fade = fade)
         }
     }
 
@@ -427,8 +443,10 @@ class PlayerService(
         // TODO: Redownload, if the song download failed
         if (!playerState.fetchingMetadata && !playerState.buffering) {
             if (player.isPlaying()) {
+                playerState.isPlaying = false
                 player.pause()
             } else {
+                playerState.isPlaying = true
                 player.play()
             }
         }
@@ -597,7 +615,7 @@ class PlayerService(
         return@coroutineScope item
     }
 
-    fun previous() = scope.launch {
+    fun previous(fade: Boolean = false) = scope.launch {
         if (shuffleMode) {
             queueMutex.withLock {
                 val index = if (shuffleIndex <= 0) {
@@ -607,7 +625,7 @@ class PlayerService(
                 }
                 val song = shuffledQueue[index]
                 shuffleIndex = index
-                playSongInQueue(song.id)
+                playSongInQueue(song.id, fade = fade)
             }
             /*// Play the previously played song, (not a song in music queue)
             val index = if (historyCursor > 0) {
@@ -621,11 +639,11 @@ class PlayerService(
             playSongInQueue(previousSong.songId)*/
         } else {
             // Play previous song in the queue
-            queuePrevious()
+            queuePrevious(fade)
         }
     }
 
-    fun next() = scope.launch {
+    fun next(fade: Boolean = false) = scope.launch {
         Logger.i(TAG, "next clicked")
         if (shuffleMode) {
             queueMutex.withLock {
@@ -636,7 +654,7 @@ class PlayerService(
                 }
                 val song = shuffledQueue[index]
                 shuffleIndex = index
-                playSongInQueue(song.id)
+                playSongInQueue(song.id, fade = fade)
             }
 
             /*if (historyCursor >= playHistory.lastIndex) {
@@ -652,7 +670,7 @@ class PlayerService(
                 historyCursor += 1
             }*/
         } else {
-            queueNext()
+            queueNext(fade)
         }
     }
 
@@ -665,10 +683,10 @@ class PlayerService(
         if (repeatMode) {
             // Just play this song
             playerState.songInfo?.id?.let {
-                playSongInQueue(it).join()
+                playSongInQueue(it, fade = true).join()
             }
         } else {
-            next()
+            next(fade = true)
         }
     }
 

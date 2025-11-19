@@ -13,7 +13,7 @@ interface Player {
     suspend fun currentPosition(): Long
 
     suspend fun play()
-    suspend fun pause()
+    suspend fun pause(fade: Boolean = true)
     suspend fun seek(position: Long, autoStart: Boolean = false)
 
     suspend fun getVolume(): Float
@@ -23,7 +23,7 @@ interface Player {
      * Download from URL and prepare to play
      * Might throw Exception
      */
-    suspend fun prepare(item: SongItem, autoPlay: Boolean = false)
+    suspend fun prepare(item: SongItem, autoPlay: Boolean = false, fade: Boolean = true)
     suspend fun isReady(): Boolean
 
     suspend fun release()

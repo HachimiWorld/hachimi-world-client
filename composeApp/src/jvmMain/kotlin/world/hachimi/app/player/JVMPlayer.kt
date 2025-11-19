@@ -1,6 +1,12 @@
 package world.hachimi.app.player
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -9,9 +15,15 @@ import java.io.ByteArrayInputStream
 import javax.sound.sampled.*
 import kotlin.math.log10
 import kotlin.math.pow
+import kotlin.math.exp
 
 
-class JVMPlayer() : Player {
+import world.hachimi.app.storage.MyDataStore
+import world.hachimi.app.storage.PreferencesKeys
+
+class JVMPlayer(
+    private val dataStore: MyDataStore
+) : Player {
     private var clip: Clip = AudioSystem.getLine(DataLine.Info(Clip::class.java, null)) as Clip
     private var volumeControl: FloatControl? = null
     private var masterGainControl: FloatControl? = null
@@ -23,6 +35,103 @@ class JVMPlayer() : Player {
     private var volume: Float = 1f
     private var replayGainDB: Float = 0f
 
+    private var fadeMultiplier = 1f
+    private var fadeJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private fun applyVolume() {
+        applyVolumeToControls(volumeControl, masterGainControl, replayGainDB, fadeMultiplier)
+    }
+
+    private fun applyVolumeToControls(
+        volControl: FloatControl?,
+        gainControl: FloatControl?,
+        replayGain: Float,
+        multiplier: Float
+    ) {
+        val effectiveVolume = volume * multiplier
+        if (volControl != null) {
+            volControl.value = effectiveVolume
+            gainControl?.value = replayGain
+        } else {
+            gainControl?.let { control ->
+                if (effectiveVolume == 0f) {
+                    control.value = control.minimum
+                } else {
+                    val min: Float = control.minimum
+                    val max: Float = 0f
+
+                    // Convert volume (0.0 to 1.0) to dB gain (logarithmic)
+                    val gain = linearToDb(effectiveVolume)
+                    val finalDB = (gain + replayGain).coerceIn(min, max)
+                    control.value = finalDB
+                }
+            }
+        }
+    }
+
+    private fun startFadeOut(
+        clip: Clip,
+        volControl: FloatControl?,
+        gainControl: FloatControl?,
+        replayGain: Float,
+        startMultiplier: Float
+    ) {
+        scope.launch {
+            val duration = dataStore.get(PreferencesKeys.SETTINGS_FADE_DURATION) ?: 3000L
+            val startTime = System.currentTimeMillis()
+            val start = startMultiplier
+
+            while (true) {
+                val elapsed = System.currentTimeMillis() - startTime
+                if (elapsed >= duration) {
+                    break
+                }
+                val t = elapsed.toFloat() / duration
+                val m = 12f
+                val easing = 1f / (1f + exp(-m * (t - 0.5f)))
+                val multiplier = start * (1f - easing)
+
+                applyVolumeToControls(volControl, gainControl, replayGain, multiplier)
+                delay(16)
+            }
+            clip.stop()
+            clip.close()
+        }
+    }
+
+    private fun startFade(target: Float, onFinish: (() -> Unit)? = null) {
+        fadeJob?.cancel()
+        fadeJob = scope.launch {
+            val enabled = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+            if (!enabled) {
+                fadeMultiplier = target
+                applyVolume()
+                onFinish?.invoke()
+                return@launch
+            }
+
+            val duration = dataStore.get(PreferencesKeys.SETTINGS_FADE_DURATION) ?: 3000L
+            val start = fadeMultiplier
+            val startTime = System.currentTimeMillis()
+            while (true) {
+                val elapsed = System.currentTimeMillis() - startTime
+                if (elapsed >= duration) {
+                    fadeMultiplier = target
+                    applyVolume()
+                    onFinish?.invoke()
+                    break
+                }
+                val t = elapsed.toFloat() / duration
+                val m = 12f
+                val easing = 1f / (1f + exp(-m * (t - 0.5f)))
+                fadeMultiplier = start + (target - start) * easing
+                applyVolume()
+                delay(16)
+            }
+        }
+    }
+
     suspend fun prepare(uri: String, autoPlay: Boolean) {
         /*val bytes = withContext(Dispatchers.IO) {
             val uri = URI.create(uri).toURL()
@@ -31,9 +140,20 @@ class JVMPlayer() : Player {
         prepare(bytes, autoPlay)*/
     }
 
-    override suspend fun prepare(item: SongItem, autoPlay: Boolean): Unit = withContext(Dispatchers.IO) {
+    override suspend fun prepare(item: SongItem, autoPlay: Boolean, fade: Boolean): Unit = withContext(Dispatchers.IO) {
         mutex.withLock {
-            clip.close()
+            // If there is a current clip playing, fade it out and close it later
+            if (ready && clip.isRunning) {
+                val isFadeEnabled = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+                if (isFadeEnabled && fade) {
+                    startFadeOut(clip, volumeControl, masterGainControl, replayGainDB, fadeMultiplier)
+                } else {
+                    clip.stop()
+                    clip.close()
+                }
+            } else {
+                clip.close()
+            }
 
             ready = false
             val stream = withContext(Dispatchers.IO) {
@@ -117,7 +237,12 @@ class JVMPlayer() : Player {
                 clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
             } else null
 
+            fadeJob?.cancel()
             replayGainDB = item.replayGainDB
+            
+            val isFadeEnabled = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+            fadeMultiplier = if (isFadeEnabled && autoPlay && fade) 0f else 1f
+            
             setVolume(volume)
             Logger.i("player", "volumeControl = $volumeControl")
             Logger.i("player", "masterGainControl = $masterGainControl")
@@ -151,12 +276,20 @@ class JVMPlayer() : Player {
     override suspend fun play() {
         if (ready) {
             clip.start()
+            startFade(1f)
         }
     }
 
-    override suspend fun pause() {
+    override suspend fun pause(fade: Boolean) {
         if (ready) {
-            clip.stop()
+            if (fade) {
+                startFade(0f) {
+                    clip.stop()
+                }
+            } else {
+                fadeJob?.cancel()
+                clip.stop()
+            }
         }
     }
 
@@ -186,31 +319,13 @@ class JVMPlayer() : Player {
 
     override suspend fun setVolume(value: Float) {
         volume = value
-        if (volumeControl != null) {
-            volumeControl?.value = value
-            masterGainControl?.value = replayGainDB
-        } else {
-            masterGainControl?.let { control ->
-                if (value == 0f) {
-                    control.value = control.minimum
-                    Logger.d("player", "Mute")
-                } else {
-                    val min: Float = control.minimum
-                    val max: Float = 0f
-
-                    // Convert volume (0.0 to 1.0) to dB gain (logarithmic)
-                    val gain = linearToDb(value)
-                    val finalDB = (gain + replayGainDB).coerceIn(min, max)
-                    control.value = finalDB
-                    Logger.d("player", "Set master gain: $finalDB db")
-                }
-            }
-        }
+        applyVolume()
     }
 
     private fun linearToDb(volume: Float): Float = 20f * log10(volume)
 
     override suspend fun release() {
+        scope.cancel()
         // Do some cleanup work
         try {
             clip.stop()

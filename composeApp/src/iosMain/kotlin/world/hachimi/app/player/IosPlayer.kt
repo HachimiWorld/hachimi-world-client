@@ -61,7 +61,7 @@ class IosPlayer : Player {
         }
     }
 
-    override suspend fun pause() {
+    override suspend fun pause(fade: Boolean) {
         withContext(Dispatchers.Main) {
             player?.pause()
         }
@@ -88,7 +88,7 @@ class IosPlayer : Player {
         }
     }
 
-    override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
+    override suspend fun prepare(item: SongItem, autoPlay: Boolean, fade: Boolean) {
         // Write bytes to a temporary file
         val url = withContext(Dispatchers.IO) {
             val tempDir = NSFileManager.defaultManager.temporaryDirectory
