@@ -219,7 +219,7 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             if (System.getenv("IS_CI") == "true") {
                 signingConfig = signingConfigs.getByName("release")
             }
