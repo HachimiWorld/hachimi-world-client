@@ -70,17 +70,17 @@ class GlobalStore(
     )
 
     fun initialize() = scope.launch {
-        scope.launch(Dispatchers.Default) {
+        launch(Dispatchers.Default) {
             coroutineScope {
                 launch { loadSettings() }
                 launch { loadLoginStatus() }
             }
             initialized = true
         }
-        scope.launch {
+        launch {
             checkMinApiVersion()
         }
-        scope.launch {
+        launch {
             checkUpdate()
         }
     }

@@ -3,8 +3,8 @@
 package world.hachimi.app.player
 
 import howler.Howl
+import howler.HowlOptions
 import howler.buildHowl
-import howler.buildHowlerOptions
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.khronos.webgl.toUint8Array
@@ -13,6 +13,8 @@ import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.Player.Companion.mixVolume
+import kotlin.js.*
+import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.time.measureTime
 
 class WasmPlayer : Player {
@@ -95,7 +97,7 @@ class WasmPlayer : Player {
                 val coverUrl = coverBlob?.let { URL.createObjectURL(it) }
 
                 Logger.d("player", "URL: $url")
-                val options = buildHowlerOptions(
+                val options = HowlOptions(
                     src = listOf(url.toJsString()).toJsArray(),
                     format = listOf("mp3".toJsString(), "flac".toJsString()).toJsArray(),
                     html5 = true.toJsBoolean(), // Set this to true to enable the Media Session API
@@ -120,16 +122,21 @@ class WasmPlayer : Player {
                     this.isReady = true
                 }
 
-                val metadata = MediaMetadata(MediaMetadataInit(
-                    title = item.title,
-                    artist = item.artist,
-                    artwork = (coverUrl?.let {
-                        arrayOf(MediaImage(src = it))
-                    } ?: emptyArray()).toJsArray()
-                ))
-                navigator.mediaSession?.let {
-                    Logger.d("player", "set metadata: $metadata")
-                    it.metadata = metadata
+                try {
+                    val metadata = MediaMetadata(
+                        MediaMetadataInit(
+                            title = item.title,
+                        artist = item.artist,
+                        artwork = (coverUrl?.let {
+                            arrayOf(MediaImage(src = it))
+                        } ?: emptyArray()).toJsArray()
+                    ))
+                    navigator.mediaSession?.let {
+                        Logger.d("player", "set metadata: $metadata")
+                        it.metadata = metadata
+                    }
+                } catch (e: Throwable) {
+                    Logger.e("player", "Failed to set metadata", e)
                 }
 
                 if (autoPlay) howl.play()

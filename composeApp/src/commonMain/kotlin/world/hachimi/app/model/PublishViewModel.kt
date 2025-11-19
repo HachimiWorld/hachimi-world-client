@@ -1,7 +1,6 @@
 package world.hachimi.app.model
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
@@ -18,21 +17,55 @@ import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
+import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.util.LrcParser
+import world.hachimi.app.util.parseJmid
+import world.hachimi.app.util.singleLined
 import kotlin.random.Random
 
 class PublishViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
+    enum class Type {
+        CREATE, EDIT
+    }
+
+    data class CrewItem(
+        val role: String,
+        val uid: Long?,
+        val name: String?,
+    )
+
+    enum class LyricsType {
+        LRC, TEXT, NONE
+    }
+
+    var initializeStatus by mutableStateOf(InitializeStatus.INIT)
+        private set
+
+    var type by mutableStateOf(Type.CREATE)
+        private set
+    var songId by mutableStateOf<Long?>(null)
+        private set
+
     var title by mutableStateOf("")
     var subtitle by mutableStateOf("")
-    val tags = mutableStateListOf<SongModule.TagItem>()
+    var jmidPrefix by mutableStateOf<String?>(null)
+        private set
+    var jmidNumber by mutableStateOf<String?>(null)
+        private set
+    var jmidValid by mutableStateOf<Boolean?>(null)
+        private set
+    var jmidSupportText by mutableStateOf<String?>(null)
+        private set
+    var tags by mutableStateOf<List<SongModule.TagItem>>(emptyList())
+        private set
     var description by mutableStateOf("")
-    var lyricsType by mutableStateOf(0)
+    var lyricsType by mutableStateOf<LyricsType>(LyricsType.LRC)
     var lyrics by mutableStateOf("")
 
     var creationType by mutableStateOf(1)
@@ -51,6 +84,8 @@ class PublishViewModel(
         private set
     var coverImage by mutableStateOf<PlatformFile?>(null)
         private set
+    var coverImageUrl by mutableStateOf<String?>(null)
+        private set
     private var coverTempId: String? = null
 
     var audioUploadProgress by mutableStateOf(0f)
@@ -62,23 +97,15 @@ class PublishViewModel(
         private set
     var audioUploaded by mutableStateOf(false)
     private var audioTempId: String? = null
+    var audioUrl by mutableStateOf<String?>(null)
+        private set
 
     var isOperating by mutableStateOf(false)
 
-    val staffs = mutableStateListOf<CrewItem>()
-
-    /*    data class TagItem(
-            val id: Long,
-            val label: String
-        )
-        */
-    data class CrewItem(
-        val role: String,
-        val uid: Long?,
-        val name: String?,
-    )
-
-    val externalLinks = mutableStateListOf<SongModule.ExternalLink>()
+    var staffs by mutableStateOf<List<CrewItem>>(emptyList())
+        private set
+    var externalLinks by mutableStateOf<List<SongModule.ExternalLink>>(emptyList())
+        private set
     var explicit by mutableStateOf<Boolean?>(null)
     var publishedSongId by mutableStateOf<String?>(null)
         private set
@@ -95,31 +122,201 @@ class PublishViewModel(
     var showAddExternalLinkDialog by mutableStateOf(false)
         private set
 
+    var showInitJmidDialog by mutableStateOf(false)
+        private set
+    var initJmidInput by mutableStateOf("")
+        private set
+    var initJmidValid by mutableStateOf<Boolean?>(null)
+        private set
+    var initJmidSupportText by mutableStateOf<String?>(null)
+        private set
+    var showPrefixInactiveDialog by mutableStateOf(false)
+
+    var loading by mutableStateOf(false)
+        private set
+
+    private var originData: SongModule.PublicSongDetail? = null
+
     private fun clearInput() {
         title = ""
         subtitle = ""
-        tags.clear()
+
+        jmidPrefix = null
+        jmidValid = null
+        jmidNumber = null
+        jmidSupportText = null
+
+        tags = emptyList()
         description = ""
+        lyricsType = LyricsType.LRC
         lyrics = ""
 
         creationType = 0
         originId = ""
         originTitle = ""
+        originArtist = ""
         originLink = ""
         deriveId = ""
         deriveTitle = ""
+        deriveArtist = ""
         deriveLink = ""
 
         coverImage = null
         coverTempId = null
+        coverImageUrl = null
 
         audioFileName = ""
         audioDurationSecs = 0
         audioUploaded = false
         audioTempId = null
+        audioUrl = null
 
-        staffs.clear()
-        externalLinks.clear()
+        staffs = emptyList()
+        externalLinks = emptyList()
+        explicit = null
+    }
+
+    fun mounted(songId: Long?) {
+        if (this.songId != songId) {
+            // Initialize or change
+            this.songId = songId
+            init()
+        } else {
+            // Refresh, actually init
+            init()
+        }
+    }
+
+    fun dispose() {
+
+    }
+
+    fun retry() {
+        if (initializeStatus == InitializeStatus.FAILED) {
+            init()
+        }
+    }
+
+    private fun init() {
+        initializeStatus = InitializeStatus.INIT
+        clearInput()
+        if (songId != null) {
+            // Edit
+            type = Type.EDIT
+            loadOriginData()
+        } else {
+            // Create
+            type = Type.CREATE
+            loadNextJmid()
+        }
+    }
+
+    private fun loadOriginData() {
+        loading = true
+        viewModelScope.launch {
+            val data = try {
+                val resp = api.songModule.detailById(songId!!)
+                if (resp.ok) {
+                    resp.ok()
+                } else {
+                    global.alert(resp.err().msg)
+                    if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                    return@launch
+                }
+            } catch (e: Throwable) {
+                Logger.e("publish", "Failed to get origin data", e)
+                global.alert(e.message)
+                if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                return@launch
+            } finally {
+                loading = false
+            }
+
+            originData = data
+
+            coverImageUrl = data.coverUrl
+            audioUrl = data.audioUrl
+
+            title = data.title
+            subtitle = data.subtitle
+
+            tags = data.tags
+            description = data.description
+
+            // Lyrics
+            lyricsType = if (data.lyrics.isEmpty()) {
+                LyricsType.NONE
+            } else {
+                try {
+                    LrcParser.parse(data.lyrics)
+                    LyricsType.LRC
+                } catch (_: Throwable) {
+                    LyricsType.TEXT
+                }
+            }
+            lyrics = data.lyrics
+
+            // Origin infos
+            creationType = data.creationType
+            val origin1 = data.originInfos.find { it.originType == 0 }
+            originId = origin1?.songDisplayId ?: ""
+            originTitle = origin1?.title ?: ""
+            originArtist = origin1?.artist ?: ""
+            originLink = origin1?.url ?: ""
+            val origin2 = data.originInfos.find { it.originType == 1 }
+            deriveId = origin2?.songDisplayId ?: ""
+            deriveTitle = origin2?.title ?: ""
+            deriveArtist = origin2?.artist ?: ""
+            deriveLink = origin2?.url ?: ""
+
+            // Staff
+            staffs = data.productionCrew.map {
+                CrewItem(it.role, it.uid, it.personName)
+            }
+
+            // External links
+            externalLinks = data.externalLinks
+            explicit = data.explicit
+
+            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
+        }
+    }
+
+    private fun loadNextJmid() {
+        // Get the next jmid or popup a dialog
+        viewModelScope.launch {
+            try {
+                val data = api.publishModule.jmidGetNext()
+                if (data.ok) {
+                    val jmid = data.ok().jmid
+                    val (prefix, number) = parseJmid(jmid) ?: return@launch global.alert("获取可用基米ID失败")
+                    jmidPrefix = prefix
+                    updateJmidNumber(number)
+                } else {
+                    val err = data.err()
+                    when (err.code) {
+                        "jmid_prefix_not_specified" -> {
+                            // Do nothing
+                        }
+                        "jmid_prefix_inactive" -> {
+                            showPrefixInactiveDialog = true
+                            return@launch
+                        }
+                        else -> {
+                            global.alert(data.err().msg)
+                            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                            return@launch
+                        }
+                    }
+                }
+            } catch (e: Throwable) {
+                Logger.e("publish", "Failed to get jmid prefix", e)
+                global.alert(e.message)
+                return@launch
+            }
+
+            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
+        }
     }
 
     fun setAudioFile() {
@@ -306,7 +503,7 @@ class PublishViewModel(
         viewModelScope.launch {
             val candidate = tagCandidates.find { item -> item.name == label }
             if (candidate != null) {
-                tags.add(candidate)
+                tags += candidate
                 clearTagInput()
             } else {
                 // Create new tag
@@ -320,7 +517,7 @@ class PublishViewModel(
                     )
                     if (resp.ok) {
                         val item = SongModule.TagItem(resp.ok().id, label, null)
-                        tags.add(item)
+                        tags += item
                         clearTagInput()
                     } else {
                         global.alert(resp.err().msg)
@@ -340,24 +537,33 @@ class PublishViewModel(
             global.alert("标签已存在")
             return
         }
-        tags.add(item)
+        tags += item
         clearTagInput()
     }
 
     fun removeTag(index: Int) {
-        tags.removeAt(index)
+        tags = tags.toMutableList().also {
+            it.removeAt(index)
+        }.toList()
     }
 
     fun addLink(platform: String, link: String) {
-        externalLinks.add(SongModule.ExternalLink(platform, link))
+        externalLinks += SongModule.ExternalLink(platform, link)
     }
 
     fun removeLink(index: Int) {
-        externalLinks.removeAt(index)
+        externalLinks = externalLinks.toMutableList().also {
+            it.removeAt(index)
+        }
     }
 
     fun publish() = viewModelScope.launch {
-        if (!validateInputs()) return@launch
+        val checkPass = if (type == Type.CREATE) {
+            checkInputForCreate()
+        } else {
+            checkInputForEdit()
+        }
+        if (!checkPass) return@launch
 
         try {
             isOperating = true
@@ -367,36 +573,14 @@ class PublishViewModel(
                 originInfo = if (creationType > 0) SongModule.CreationTypeInfo(
                     songDisplayId = originId.takeIf { it.isNotBlank() },
                     title = originTitle.takeIf { it.isNotBlank() },
-                    url = originLink.takeIf { it.isNotBlank() }?.also {
-                        try {
-                            val url = Url(it)
-                            if (url.protocolOrNull != URLProtocol.HTTPS)  {
-                                global.alert("请填写 HTTPS 的原作链接，请勿使用 HTTP")
-                                return@launch
-                            }
-                        } catch (_: URLParserException) {
-                            global.alert("请填写正确的 HTTPS 格式的原作链接 https://xxxx")
-                            return@launch
-                        }
-                    },
+                    url = originLink.takeIf { it.isNotBlank() },
                     artist = originArtist.takeIf { it.isNotBlank() },
                     originType = 0
                 ) else null,
                 derivativeInfo = if (creationType > 1) SongModule.CreationTypeInfo(
                     songDisplayId = deriveId.takeIf { it.isNotBlank() },
                     title = deriveTitle.takeIf { it.isNotBlank() },
-                    url = deriveLink.takeIf { it.isNotBlank() }?.also {
-                        try {
-                            val url = Url(it)
-                            if (url.protocolOrNull != URLProtocol.HTTPS)  {
-                                global.alert("请填写 HTTPS 的原作链接，请勿使用 HTTP")
-                                return@launch
-                            }
-                        } catch (_: URLParserException) {
-                            global.alert("请填写正确的 HTTPS 格式的原作链接 https://xxxx")
-                            return@launch
-                        }
-                    },
+                    url = deriveLink.takeIf { it.isNotBlank() },
                     artist = deriveArtist.takeIf { it.isNotBlank() },
                     originType = 1
                 ) else null
@@ -410,29 +594,60 @@ class PublishViewModel(
                 )
             }
 
-            val resp = api.songModule.publish(
-                SongModule.PublishReq(
-                    songTempId = audioTempId!!,
-                    coverTempId = coverTempId!!,
-                    title = title,
-                    subtitle = subtitle,
-                    description = description,
-                    lyrics = lyrics.takeIf { lyricsType != 2 } ?: "",
-                    tagIds = tags.map { it.id },
-                    creationInfo = creationInfo,
-                    productionCrew = crew,
-                    externalLinks = externalLinks,
-                    explicit = explicit
+            val lyrics = lyrics.takeIf { lyricsType != LyricsType.NONE } ?: ""
+            val tagIds = tags.map { it.id }
+
+            if (type == Type.CREATE) {
+                val resp = api.songModule.publish(
+                    SongModule.PublishReq(
+                        songTempId = audioTempId!!,
+                        coverTempId = coverTempId!!,
+                        title = title,
+                        subtitle = subtitle,
+                        description = description,
+                        lyrics = lyrics,
+                        tagIds = tagIds,
+                        creationInfo = creationInfo,
+                        productionCrew = crew,
+                        externalLinks = externalLinks,
+                        explicit = explicit,
+                        jmid = "JM-${jmidPrefix!!}-${jmidNumber!!}",
+                        comment = null,
+                    )
                 )
-            )
-            if (resp.ok) {
-                val data = resp.okData<SongModule.PublishResp>()
-                publishedSongId = data.songDisplayId
-                showSuccessDialog = true
-                clearInput()
+                if (resp.ok) {
+                    val data = resp.ok()
+                    publishedSongId = data.songDisplayId
+                    showSuccessDialog = true
+                    clearInput()
+                } else {
+                    val data = resp.errData<CommonError>()
+                    global.alert(data.msg)
+                }
             } else {
-                val data = resp.errData<CommonError>()
-                global.alert(data.msg)
+                val resp = api.publishModule.modify(
+                    PublishModule.ModifyReq(
+                        songId = songId!!,
+                        songTempId = audioTempId,
+                        coverTempId = coverTempId,
+                        title = title,
+                        subtitle = subtitle,
+                        description = description,
+                        lyrics = lyrics,
+                        tagIds = tagIds,
+                        creationInfo = creationInfo,
+                        productionCrew = crew,
+                        externalLinks = externalLinks,
+                        explicit = explicit!!,
+                        comment = null
+                    )
+                )
+                if (resp.ok) {
+                    showSuccessDialog = true
+                    clearInput()
+                } else {
+                    global.alert(resp.err().msg)
+                }
             }
         } catch (e: Throwable) {
             Logger.e("creation", "Failed to publish song", e)
@@ -488,17 +703,19 @@ class PublishViewModel(
                 }
             }
 
-            staffs.add(CrewItem(addStaffRole, addStaffUid.toLongOrNull(), addStaffName))
+            staffs += CrewItem(addStaffRole, addStaffUid.toLongOrNull(), addStaffName)
             addStaffOperating = false
             showAddStaffDialog = false
         }
     }
 
     fun removeStaff(index: Int) {
-        staffs.removeAt(index)
+        staffs = staffs.toMutableList().also {
+            it.removeAt(index)
+        }
     }
 
-    private fun validateInputs(): Boolean {
+    private fun checkInputForCreate(): Boolean {
         if (audioTempId == null) {
             global.alert("请选择音频文件")
             return false
@@ -509,6 +726,19 @@ class PublishViewModel(
             return false
         }
 
+        if (jmidPrefix == null || jmidNumber == null) {
+            global.alert("请设置基米ID")
+            return false
+        }
+
+        return checkInputsCommon()
+    }
+
+    private fun checkInputForEdit(): Boolean {
+        return checkInputsCommon()
+    }
+
+    private fun checkInputsCommon(): Boolean {
         if (title.isBlank()) {
             global.alert("请填写标题")
             return false
@@ -525,16 +755,20 @@ class PublishViewModel(
         if (description.isBlank()) {
             // Do nothing
         }
+        if (description.length > 500) {
+            global.alert("简介过长")
+            return false
+        }
 
-        if (lyricsType != 2 && lyrics.isBlank()) {
+        if (lyricsType != LyricsType.NONE && lyrics.isBlank()) {
             global.alert("请填写歌词")
             return false
         }
 
-        if (lyricsType == 0) {
+        if (lyricsType == LyricsType.LRC) {
             val lines = try {
                 LrcParser.parse(lyrics)
-            } catch (e: Throwable) {
+            } catch (_: Throwable) {
                 global.alert("请填写正确的 LRC 格式歌词")
                 return false
             }
@@ -558,6 +792,21 @@ class PublishViewModel(
             }
         }
 
+        listOf(originLink, deriveLink).forEach {
+            if (it.isNotEmpty()) {
+                try {
+                    val url = Url(it)
+                    if (url.protocolOrNull != URLProtocol.HTTPS) {
+                        global.alert("请填写 HTTPS 的原作链接，请勿使用 HTTP")
+                        return false
+                    }
+                } catch (_: URLParserException) {
+                    global.alert("请填写正确的 HTTPS 格式的原作链接 https://xxxx")
+                    return false
+                }
+            }
+        }
+
         if (explicit == null) {
             global.alert("请选择是否包含露骨内容")
             return false
@@ -572,5 +821,120 @@ class PublishViewModel(
 
     fun closeAddExternalLinkDialog() {
         showAddExternalLinkDialog = false
+    }
+
+    fun showJmidDialog() {
+        showInitJmidDialog = true
+    }
+
+    private var checkJmidPrefixJob: Job? = null
+    private val checkJmidPrefixMutex = Mutex()
+
+    fun updateInitJmidInput(input: String) {
+        initJmidValid = null
+        initJmidSupportText = null
+        val mappedInput = input.singleLined().uppercase()
+        initJmidInput = mappedInput
+
+        if (Regex("[A-Z]{3,4}").matches(mappedInput)) {
+            viewModelScope.launch {
+                checkJmidPrefixMutex.withLock {
+                    checkJmidPrefixJob?.cancelAndJoin()
+                    checkJmidPrefixJob = launch {
+                        delay(500)
+                        try {
+                            val resp = api.publishModule.jmidCheckPrefix(PublishModule.JmidCheckPReq(mappedInput))
+                            if (mappedInput == initJmidInput) {
+                                if (resp.ok) {
+                                    if (resp.ok().result) {
+                                        initJmidValid = true
+                                        initJmidSupportText = null
+                                    } else {
+                                        initJmidValid = true
+                                        initJmidSupportText = "该前缀已被使用，如被抢占请联系维护者"
+                                    }
+                                } else {
+                                    initJmidValid = false
+                                    initJmidSupportText = resp.err().msg
+                                }
+                            }
+                        } catch (e: Throwable) {
+                            Logger.e("publish", "Failed to check jmid", e)
+                            initJmidValid = false
+                            initJmidSupportText = e.message
+                        }
+                    }
+                }
+            }
+        } else {
+            initJmidSupportText = "请填写 3 到 4 位字母"
+            initJmidValid = false
+        }
+    }
+
+    fun confirmInitJmid() {
+        jmidPrefix = initJmidInput
+        showInitJmidDialog = false
+
+        initJmidInput = ""
+        initJmidValid = null
+        initJmidSupportText = null
+    }
+
+    fun cancelInitJmid() {
+        showInitJmidDialog = false
+    }
+
+    private var checkJmidJob: Job? = null
+    private val checkJmidMutex = Mutex()
+
+    fun updateJmidNumber(number: String) {
+        jmidValid = null
+        jmidSupportText = null
+        val mappedInput = number.singleLined()
+        jmidNumber = mappedInput
+        val prefix = jmidPrefix ?: run {
+            // unreachable
+            jmidSupportText = "未设置基米ID前缀"
+            jmidValid = false
+            return
+        }
+
+        val jmidFull = "JM-$prefix-$mappedInput"
+
+        if (Regex("\\d{3}").matches(mappedInput)) {
+            viewModelScope.launch {
+                checkJmidMutex.withLock {
+                    checkJmidJob?.cancelAndJoin()
+                    checkJmidJob = launch {
+                        delay(500)
+                        try {
+                            val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
+                            if (jmidNumber == mappedInput) {
+                                if (resp.ok) {
+                                    if (resp.ok().result) {
+                                        jmidValid = true
+                                        jmidSupportText = null
+                                    } else {
+                                        jmidValid = false
+                                        jmidSupportText = "该基米ID已被使用"
+                                    }
+                                } else {
+                                    jmidValid = false
+                                    jmidSupportText = resp.err().msg
+                                }
+                            }
+                        } catch (e: Throwable) {
+                            Logger.e("publish", "Failed to check jmid", e)
+                            jmidValid = false
+                            jmidSupportText = e.message
+                        }
+                    }
+                }
+            }
+        } else {
+            jmidValid = false
+            jmidSupportText = "数字段必须为 3 位，如 001"
+        }
     }
 }

@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.creation.publish
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -24,26 +24,46 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishViewModel
-import world.hachimi.app.ui.creation.publish.components.FormItem
-import world.hachimi.app.ui.creation.publish.components.TagEdit
+import world.hachimi.app.model.PublishViewModel.LyricsType
+import world.hachimi.app.model.PublishViewModel.Type
+import world.hachimi.app.ui.component.LoadingPage
+import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.creation.publish.components.*
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun PublishScreen(
-    vm: PublishViewModel = koinViewModel()
+    songId: Long?,
+    vm: PublishViewModel = koinViewModel(),
+    global: GlobalStore = koinInject()
 ) {
-    val global = koinInject<GlobalStore>()
+    DisposableEffect(vm, songId) {
+        vm.mounted(songId)
+        onDispose { vm.dispose() }
+    }
+    AnimatedContent(vm.initializeStatus) {
+        when(it) {
+            InitializeStatus.INIT -> LoadingPage()
+            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.LOADED -> Content(vm, global)
+        }
+    }
+}
+
+@Composable
+private fun Content(vm: PublishViewModel, global: GlobalStore) {
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Column(
             modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 700.dp).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text("发布作品", style = MaterialTheme.typography.headlineSmall)
+            Text(if (vm.type == Type.CREATE) "发布作品" else  "编辑作品", style = MaterialTheme.typography.titleLarge)
 
-            Text(
+            if (vm.type == Type.CREATE) Text(
                 "尊重劳动成果，请勿搬运作品。暂不收录时长或结构明显短于 TV Size 的作品。",
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -56,8 +76,15 @@ fun PublishScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    if (vm.type == Type.EDIT) Button(onClick = {
+                        getPlatform().openUrl(vm.audioUrl!!)
+                    }) {
+                        Text("下载音频")
+                    }
+
                     Button(onClick = { vm.setAudioFile() }, enabled = !vm.audioUploading) {
-                        Text("选择文件")
+                        if (vm.type == Type.EDIT) Text("更改音频")
+                        else Text("选择文件")
                     }
 
                     if (vm.audioUploading) {
@@ -86,17 +113,42 @@ fun PublishScreen(
                     enabled = !vm.coverImageUploading
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        AsyncImage(
+                        if (vm.type == Type.EDIT) AsyncImage(
+                            model = vm.coverImage ?: vm.coverImageUrl,
+                            contentDescription = "Cover Image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        ) else AsyncImage(
                             model = vm.coverImage,
                             contentDescription = "Cover Image",
                             modifier = Modifier.fillMaxSize(),
-                            filterQuality = FilterQuality.Medium,
                             contentScale = ContentScale.Crop
                         )
                         if (vm.coverImageUploading) {
                             if (vm.coverImageUploadProgress == 0f || vm.coverImageUploadProgress == 1f) CircularProgressIndicator()
                             else CircularProgressIndicator(progress = { vm.coverImageUploadProgress })
                         }
+                    }
+                }
+            }
+
+            if (vm.type == Type.CREATE) FormItem(
+                header = { Text("基米ID*") }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val prefix = vm.jmidPrefix
+                    if (prefix == null) {
+                        TextButton(onClick = { vm.showJmidDialog() }) {
+                            Text("设置前缀")
+                        }
+                    } else {
+                        JmidTextField(
+                            jmidNumber = vm.jmidNumber,
+                            jmidPrefix = prefix,
+                            valid = vm.jmidValid,
+                            supportText = vm.jmidSupportText,
+                            onNumberChange = vm::updateJmidNumber
+                        )
                     }
                 }
             }
@@ -155,30 +207,29 @@ fun PublishScreen(
                 }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = vm.lyricsType == 0, onClick = { vm.lyricsType = 0 })
-                    Text("LRC歌词", style = MaterialTheme.typography.labelLarge)
-
-                    RadioButton(selected = vm.lyricsType == 1, onClick = { vm.lyricsType = 1 })
-                    Text("文本歌词", style = MaterialTheme.typography.labelLarge)
-
-                    RadioButton(selected = vm.lyricsType == 2, onClick = { vm.lyricsType = 2 })
-                    Text("不填写", style = MaterialTheme.typography.labelLarge)
+                    LyricsType.entries.forEach {
+                        RadioButton(selected = vm.lyricsType == it, onClick = { vm.lyricsType = it })
+                        Text(
+                            text = when (it) {
+                                LyricsType.LRC -> "LRC歌词"
+                                LyricsType.TEXT -> "文本歌词"
+                                LyricsType.NONE -> "不填写"
+                            },
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 }
 
-                if (vm.lyricsType == 2) {
+                if (vm.lyricsType == LyricsType.NONE) {
                     Text("强烈建议至少使用文本歌词", color = MaterialTheme.colorScheme.error)
                 }
 
-                if (vm.lyricsType != 2) OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = vm.lyrics,
-                    onValueChange = { vm.lyrics = it },
-                    minLines = 8,
-                    maxLines = 8,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace
+                if (vm.lyricsType != LyricsType.NONE) {
+                    LrcTextField(
+                        value = vm.lyrics,
+                        onValueChange = { vm.lyrics = it }
                     )
-                )
+                }
             }
 
             FormItem(
@@ -371,10 +422,18 @@ fun PublishScreen(
     if (vm.showSuccessDialog) AlertDialog(
         onDismissRequest = { vm.closeDialog() },
         title = {
-            Text("作品提交成功")
+            if (vm.type == Type.CREATE) {
+                Text("作品提交成功")
+            } else {
+                Text("编辑提交成功")
+            }
         },
         text = {
-            Text("你的作品编号为：${vm.publishedSongId}。首次发布需要确认您是该作品的作者，请留意相关视频平台的私信。目前由原始贡献者人工审核，可能会很慢，请耐心等待或主动联系我们，感谢您的理解！")
+            if (vm.type == Type.CREATE) {
+                Text("你的作品编号为：${vm.publishedSongId}。首次发布需要确认您是该作品的作者，请留意相关视频平台的私信。目前由原始贡献者人工审核，可能会很慢，请耐心等待或主动联系我们，感谢您的理解！")
+            } else {
+                Text("更改提交成功，请等待审核或主动联系")
+            }
         },
         confirmButton = {
             TextButton(onClick = { vm.closeDialog() }) {
@@ -385,6 +444,35 @@ fun PublishScreen(
 
     AddStaffDialog(vm)
     AddExternalLinkDialog(vm)
+
+    if (vm.showInitJmidDialog) InitJmidDialog(
+        onDismissRequest = vm::cancelInitJmid,
+        value = vm.initJmidInput,
+        onValueChange = vm::updateInitJmidInput,
+        valid = vm.initJmidValid,
+        supportText = vm.initJmidSupportText,
+        onConfirm = vm::confirmInitJmid
+    )
+    if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
+        onExit = {
+            vm.showPrefixInactiveDialog = false
+            global.nav.back()
+        }
+    )
+}
+
+@Composable
+private fun LrcTextField(value: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = value,
+        onValueChange = onValueChange,
+        minLines = 8,
+        maxLines = 8,
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
+            fontFamily = FontFamily.Monospace
+        )
+    )
 }
 
 @Composable

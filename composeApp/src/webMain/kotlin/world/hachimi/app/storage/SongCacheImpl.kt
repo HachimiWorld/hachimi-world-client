@@ -39,6 +39,6 @@ class SongCacheImpl : SongCache {
     }
 
     override suspend fun saveMetadata(item: SongDetailInfo) {
-        localStorage.setItem("song_caches/${item.displayId}_metadata", json.encodeToString(item))
+        localStorage.setItem("song_caches/${item.id}_metadata", json.encodeToString(item))
     }
 }

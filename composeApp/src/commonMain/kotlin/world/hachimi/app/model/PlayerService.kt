@@ -136,7 +136,8 @@ class PlayerService(
         playerState.fetchingMetadata = true
 
         val item = getSongItemCacheable(
-            displayId = item.displayId,
+            songId = item.id,
+            jmid = item.displayId,
             onMetadata = { songInfo ->
                 playerMutex.withLock {
                     if (playerJobSign == sign) {
@@ -308,27 +309,18 @@ class PlayerService(
         fetchMetadataJob = scope.launch {
             playerState.fetchingMetadata = true
             try {
-                val cache = songCache.getMetadata(songDisplayId)
-
-                if (cache != null) {
-                    Logger.i(TAG, "Cache hit")
-                }
-
-                val data = cache ?: run {
-                    val resp = api.songModule.detail(songDisplayId)
-                    if (resp.ok) {
-                        val data = resp.ok<SongModule.PublicSongDetail>()
-                        songCache.saveMetadata(data)
-                        data
-                    } else {
-                        val err = resp.errData<CommonError>()
-                        global.alert(err.msg)
-                        return@launch
-                    }
+                val resp = api.songModule.detail(songDisplayId)
+                val data = if (resp.ok) {
+                    val data = resp.ok<SongModule.PublicSongDetail>()
+                    songCache.saveMetadata(data)
+                    data
+                } else {
+                    val err = resp.errData<CommonError>()
+                    global.alert(err.msg)
+                    return@launch
                 }
 
                 val item = MusicQueueItem.fromPublicDetail(data)
-
                 insertToQueue(item, instantPlay, append).join()
             } catch (e: CancellationException) {
                 // Do nothing, it's just cancelled
@@ -462,11 +454,15 @@ class PlayerService(
     }
 
     private suspend fun getSongItemCacheable(
-        displayId: String,
+        songId: Long,
+        jmid: String,
         onMetadata: suspend (SongDetailInfo) -> Unit,
         onProgress: suspend (Float) -> Unit
     ): SongItem = coroutineScope {
-        val cache = songCache.get(displayId)
+        val cacheFromId = songCache.get(songId.toString())
+        val cacheFromJmid = songCache.get(jmid)
+        val cache = cacheFromId ?: cacheFromJmid
+
         val metadata: SongDetailInfo
         val coverBytes: ByteArray
         val audioBytes: ByteArray
@@ -482,10 +478,24 @@ class PlayerService(
             }
             coverBytes = cache.cover.readByteArray()
             audioBytes = buffer.readByteArray()
+
+            if (cacheFromId == null && cacheFromJmid != null) {
+                // Migrate to id
+                Logger.i(TAG, "Migrating cache from jmid to id")
+                songCache.save(SongCache.Item(
+                    key = songId.toString(),
+                    metadata = metadata,
+                    audio = Buffer().also { it.write(audioBytes) },
+                    cover = Buffer().also { it.write(coverBytes) }
+                ))
+                songCache.delete(jmid)
+            }
+
+            // Get the latest data and update the cache
             scope.launch {
                 try {
                     Logger.i(TAG, "Downloading")
-                    val resp = api.songModule.detail(displayId)
+                    val resp = api.songModule.detailById(songId)
                     if (!resp.ok) {
                         Logger.e(TAG, "Failed to refresh song metadata: ${resp.errData<CommonError>().msg}")
                         return@launch
@@ -496,7 +506,8 @@ class PlayerService(
                         Logger.i(TAG, "Metadata updated, invalidate cache")
                         // If the audio file has updated, just invalidate the cache
                         if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
-                            songCache.delete(displayId)
+                            songCache.delete(songId.toString())
+                            songCache.delete(jmid)
                         }
                         // Update the metadata
                         songCache.saveMetadata(data)
@@ -508,8 +519,8 @@ class PlayerService(
         } else {
             Logger.i(TAG, "Downloading")
             onProgress(0f)
-            val data = songCache.getMetadata(displayId) ?: run {
-                val resp = api.songModule.detail(displayId)
+            val data = songCache.getMetadata(songId.toString()) ?: run {
+                val resp = api.songModule.detailById(songId)
                 if (!resp.ok) error(resp.errData<CommonError>().msg)
                 resp.ok()
             }
@@ -531,7 +542,7 @@ class PlayerService(
             //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
             var headContentLength: Long? = null
             // Workaround for wasm, we can use HEAD request to get the content length
-            if (getPlatform().name == "wasm") {
+            if (getPlatform().name.startsWith("Web")) {
                 val resp = api.httpClient.head(data.audioUrl)
                 headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
                 Logger.i(TAG, "Head content length: $headContentLength bytes")
@@ -562,7 +573,7 @@ class PlayerService(
             }
             coverBytes = coverBytesAsync.await()
             val cacheItem = SongCache.Item(
-                key = displayId,
+                key = songId.toString(),
                 metadata = data,
                 audio = buffer.copy(),
                 cover = Buffer().also { it.write(coverBytes) }

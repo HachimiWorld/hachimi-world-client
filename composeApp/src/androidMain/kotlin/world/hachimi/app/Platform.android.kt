@@ -12,6 +12,7 @@ class AndroidPlatform : Platform {
     override val name: String = "Android"
     override val platformVersion: String = Build.VERSION.SDK_INT.toString()
     override val variant: String = "${BuildKonfig.BUILD_TYPE}-android"
+    override val userAgent: String = "HachimiWorld-android/${BuildKonfig.VERSION_NAME} (${Build.MANUFACTURER}; ${Build.MODEL}; ${Build.VERSION.RELEASE})"
 
     override fun getCacheDir(): PlatformFile {
         return PlatformFile(applicationContext.cacheDir)

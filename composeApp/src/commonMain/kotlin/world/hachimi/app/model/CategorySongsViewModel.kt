@@ -25,12 +25,10 @@ class CategorySongsViewModel(
     private var category: String? = null
 
     fun mounted(category: String) {
-        if (category == this.category) {
-            if (initializeStatus == InitializeStatus.INIT) {
-                init()
-            }
-        } else {
+        if (category != this.category) {
             this.category = category
+            init()
+        } else {
             init()
         }
     }
@@ -40,6 +38,7 @@ class CategorySongsViewModel(
     }
 
     fun init() = viewModelScope.launch {
+        initializeStatus = InitializeStatus.INIT
         loading = true
         try {
             val resp = api.songModule.search(SongModule.SearchReq(
@@ -68,7 +67,6 @@ class CategorySongsViewModel(
 
     fun retry() {
         if (initializeStatus == InitializeStatus.FAILED) {
-            initializeStatus = InitializeStatus.INIT
             init()
         }
     }

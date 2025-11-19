@@ -2,6 +2,7 @@ package world.hachimi.app.api
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.compression.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -18,6 +19,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import world.hachimi.app.api.module.*
+import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -35,8 +37,9 @@ class ApiClient(
     private val baseUrl: String,
 ) {
     companion object {
-        const val VERSION: Int = 251106
+        const val VERSION: Int = 251119
     }
+
     @OptIn(ExperimentalSerializationApi::class)
     internal val json = Json {
         // Ignoring unknown keys increases the forward compatibility
@@ -65,6 +68,9 @@ class ApiClient(
         }
         install(ContentNegotiation) {
             json(json)
+        }
+        install(UserAgent) {
+            agent = getPlatform().userAgent
         }
         install(HttpCache)
     }
@@ -185,8 +191,6 @@ class ApiClient(
                     val expiration = claims.getValue("exp").jsonPrimitive.long // In seconds
                     val now = Clock.System.now()
                     val expDate = Instant.fromEpochSeconds(expiration)
-
-                    Logger.d(TAG, "refreshToken: Token exp time: ${expDate}, now: $now")
 
                     if (now >= expDate) {
                         Logger.d(TAG, "Access token expired, refreshing token")

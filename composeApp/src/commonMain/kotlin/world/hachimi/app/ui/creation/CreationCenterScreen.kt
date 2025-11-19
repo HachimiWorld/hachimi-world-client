@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.contributor.ReviewDetailScreen
 import world.hachimi.app.ui.creation.artwork.MyArtworkScreen
+import world.hachimi.app.ui.creation.artworkdetail.ArtworkDetailScreen
 import world.hachimi.app.ui.creation.publish.PublishScreen
 
 @Composable
@@ -16,8 +17,10 @@ fun CreationCenterScreen(
     AnimatedContent(child, modifier = Modifier.fillMaxSize()) { child ->
         when (child) {
             Route.Root.CreationCenter.MyArtwork -> MyArtworkScreen()
-            Route.Root.CreationCenter.Publish -> PublishScreen()
+            Route.Root.CreationCenter.Publish -> PublishScreen(null)
+            is Route.Root.CreationCenter.Modify -> PublishScreen(child.songId)
             is Route.Root.CreationCenter.ReviewDetail -> ReviewDetailScreen(child.reviewId)
+            is Route.Root.CreationCenter.ArtworkDetail -> ArtworkDetailScreen(child.songId)
         }
     }
 }

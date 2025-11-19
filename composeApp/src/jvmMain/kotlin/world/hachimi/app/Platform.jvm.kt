@@ -2,6 +2,7 @@ package world.hachimi.app
 
 import io.github.vinceglb.filekit.PlatformFile
 import org.jetbrains.skiko.OS
+import org.jetbrains.skiko.hostArch
 import org.jetbrains.skiko.hostOs
 import java.awt.Desktop
 import java.io.File
@@ -11,6 +12,8 @@ object JVMPlatform : Platform {
     override val name: String = "JVM"
     override val platformVersion: String = System.getProperty("java.version")
     override val variant: String = getVariant()
+    override val userAgent: String = "HachimiWorld-jvm/${BuildKonfig.VERSION_NAME} (${hostFullName})"
+
     private val appName = BuildKonfig.APP_PACKAGE_NAME
 
     override fun getCacheDir(): PlatformFile {
@@ -52,4 +55,8 @@ private fun getVariant(): String {
         else -> "unknown"
     }
     return "$type-$platform"
+}
+
+internal val hostFullName by lazy {
+    "${System.getProperty("os.name")}, ${System.getProperty("os.version")}, ${hostArch.id}"
 }

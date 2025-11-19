@@ -3,6 +3,13 @@
 package world.hachimi.app.player
 
 import world.hachimi.app.model.PlayerService
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.ExperimentalWasmJsInterop
+import kotlin.js.JsAny
+import kotlin.js.JsArray
+import kotlin.js.definedExternally
+import kotlin.js.js
+import kotlin.js.toJsArray
 
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/MediaMetadata/MediaMetadata

@@ -6,6 +6,7 @@ interface Platform {
     val name: String
     val platformVersion: String
     val variant: String
+    val userAgent: String
     fun getCacheDir(): PlatformFile
     fun getDataDir(): PlatformFile
     fun openUrl(url: String)

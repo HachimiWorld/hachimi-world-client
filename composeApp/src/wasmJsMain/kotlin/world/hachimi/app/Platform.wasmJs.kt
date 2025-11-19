@@ -4,10 +4,12 @@ import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.browser.window
 
 class WasmPlatform : Platform {
-    override val name: String = "wasm"
+    override val name: String = "Web/Wasm"
     // Get chrome or wasm virtual machine version
     override val platformVersion: String = "1"
     override val variant: String = "${BuildKonfig.BUILD_TYPE}-wasm"
+    override val userAgent: String = "HachimiWorld-wasm/${BuildKonfig.VERSION_NAME} (${window.navigator.userAgent}; ${window.navigator.platform})"
+
     override fun getCacheDir(): PlatformFile {
         TODO()
     }

@@ -8,36 +8,49 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.font.WithFont
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.WasmPlayerHelper
 import world.hachimi.app.ui.App
+import world.hachimi.app.util.parseJmid
+import kotlin.js.ExperimentalWasmJsInterop
+import kotlin.js.toJsString
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalWasmJsInterop::class)
 fun main() {
+    val playIntent = getPlayIntent()
     val koin = startKoin {
         modules(appModule)
     }
 
     val global = koin.koin.get<GlobalStore>()
-    global.initialize()
     val wasmPlayerHelper = koin.koin.get<WasmPlayerHelper>()
-    wasmPlayerHelper.initialize()
+
+    GlobalScope.launch {
+        global.initialize().join()
+
+        wasmPlayerHelper.initialize()
+
+        playIntent?.let { jmid ->
+            global.player.insertToQueueWithFetch(jmid, true, false)
+            global.expandPlayer()
+        }
+    }
 
     window.addEventListener("popstate") {
         it.preventDefault()
         global.nav.back()
     }
 
-    if (window.location.hash.isEmpty()) {
-        window.history.pushState(null, "", "#/")
-    }
+    window.history.pushState(null, "", "#/")
 
     val previousBackStack = mutableStateOf(global.nav.backStack.toList())
     val nav = global.nav
-    ComposeViewport(document.body!!) {
+    ComposeViewport {
         LaunchedEffect(Unit) {
             document.querySelector("#loading")?.remove()
         }
@@ -64,4 +77,16 @@ fun main() {
             }
         }
     }
+}
+
+
+private fun getPlayIntent(): String? {
+    // https://hachimi.world/app/#/song/jm-abcd-123
+    val hash = window.location.hash
+    if (hash.startsWith("#/song/")) {
+        val segment = hash.substringAfter("#/song/")
+        val (prefix, number) = parseJmid(segment.uppercase()) ?: return null
+        return "JM-$prefix-$number"
+    }
+    return null
 }

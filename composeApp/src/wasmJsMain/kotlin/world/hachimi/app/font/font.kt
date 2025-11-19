@@ -4,10 +4,7 @@ package world.hachimi.app.font
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
@@ -50,7 +47,7 @@ import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
 
 @Composable
-fun WithFont(
+actual fun WithFont(
     content: @Composable () -> Unit
 ) {
     val fontsLoaded = remember { mutableStateOf(false) }
@@ -102,9 +99,9 @@ fun WithFont(
                     url = minFontUrl,
                     size = minFontSize,
                     onProgress = { a, b ->
-                    bytesRead = a
-                    bytesTotal = b
-                })
+                        bytesRead = a
+                        bytesTotal = b
+                    })
                 fontFamilyResolver.preload(minFontFamily)
                 fontsLoaded.value = true
             } catch (e: Throwable) {
@@ -132,8 +129,31 @@ fun WithFont(
             }
         }
     }
+
     if (fontsLoaded.value) {
-        content()
+        Box(Modifier.fillMaxSize()) {
+            key(fullFontLoaded) {
+                content()
+            }
+
+            val global = koinInject<GlobalStore>()
+            val darkMode = global.darkMode ?: isSystemInDarkTheme()
+            AppTheme(darkTheme = darkMode) {
+                if (!fullFontLoaded) {
+                    val bytesTotal = fullBytesTotal
+                    if (bytesTotal != null) {
+                        val animatedProgress = animateFloatAsState(targetValue = bytesTotal.let {
+                            (fullBytesRead.toFloat() / it.toFloat()).coerceIn(0f, 1f)
+                        })
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            progress = { animatedProgress.value })
+                    } else {
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                    }
+                }
+            }
+        }
     } else {
         val global = koinInject<GlobalStore>()
         val darkMode = global.darkMode ?: isSystemInDarkTheme()
@@ -152,7 +172,7 @@ fun WithFont(
                                 })
                                 CircularProgressIndicator(progress = { animatedProgress.value })
 
-                                Text("${formatBytes(bytesRead)} / ${ formatBytes(bytesTotal) }")
+                                Text("${formatBytes(bytesRead)} / ${formatBytes(bytesTotal)}")
                             } else {
                                 CircularProgressIndicator()
 

@@ -136,6 +136,14 @@ class SongModule(
         client.get("/song/detail", DetailReq(displayId), false)
 
     @Serializable
+    data class DetailByIdReq(
+        val id: Long,
+    )
+
+    suspend fun detailById(id: Long): WebResult<PublicSongDetail> =
+        client.get("/song/detail_by_id", DetailByIdReq(id), false)
+
+    @Serializable
     data class UploadImageResp(
         val tempId: String
     )
@@ -204,7 +212,15 @@ class SongModule(
         /**
          * @since 251105
          */
-        val explicit: Boolean?
+        val explicit: Boolean?,
+        /**
+         * @since 251114, should be required in new client.
+         */
+        val jmid: String?,
+        /**
+         * @since 251114
+         */
+        val comment: String?,
     ) {
         @Serializable
         data class CreationInfo (

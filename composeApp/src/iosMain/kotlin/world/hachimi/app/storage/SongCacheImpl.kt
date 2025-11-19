@@ -75,7 +75,7 @@ class SongCacheImpl : SongCache {
     }
 
     override suspend fun saveMetadata(item: SongDetailInfo) = withContext(Dispatchers.IO) {
-        val metadataFile = cacheDir.resolve("${item.displayId}_metadata")
+        val metadataFile = cacheDir.resolve("${item.id}_metadata")
         metadataFile.writeString(json.encodeToString(item))
     }
 }

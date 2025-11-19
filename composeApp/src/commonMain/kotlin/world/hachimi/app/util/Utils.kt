@@ -20,3 +20,17 @@ fun isValidHttpsUrl(content: String): Boolean {
  * TextField with `singleLine = true` could be bypassed by pasting multiline text.
  */
 fun String.singleLined() = replace('\n', ' ').replace('\r', ' ')
+
+/**
+ * Parse pattern JM-ABCD-123 to `("ABCD", "123")`
+ */
+fun parseJmid(input: String): Pair<String, String>? {
+    val displayIdPattern = "^(?:JM-)?([A-Z]{3,4})-?(\\d{3})$".toRegex()
+    val matchResult = displayIdPattern.find(input)
+    if (matchResult != null) {
+        val part1 = matchResult.groupValues[1]
+        val part2 = matchResult.groupValues[2]
+        return part1 to part2
+    }
+    return null
+}
