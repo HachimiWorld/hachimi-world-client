@@ -37,7 +37,7 @@ class ApiClient(
     private val baseUrl: String,
 ) {
     companion object {
-        const val VERSION: Int = 251106
+        const val VERSION: Int = 251119
     }
 
     @OptIn(ExperimentalSerializationApi::class)
