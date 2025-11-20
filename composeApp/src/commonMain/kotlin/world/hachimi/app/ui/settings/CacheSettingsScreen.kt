@@ -71,22 +71,24 @@ fun CacheSettingsScreen() {
             OutlinedTextField(
                 value = maxCacheSizeInput,
                 onValueChange = {
-                    maxCacheSizeInput = it
-                    val value = it.toFloatOrNull()
-                    if (value != null && value > 0) {
-                        val valueBytes = (value * 1024 * 1024 * 1024).toLong()
-                        val maxAllowedBytes = minOf(
-                            50L * 1024 * 1024 * 1024, // 50GB
-                            freeSpace + cacheSize
-                        )
+                    if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d{0,2}$"))) {
+                        maxCacheSizeInput = it
+                        val value = it.toFloatOrNull()
+                        if (value != null && value > 0) {
+                            val valueBytes = (value * 1024 * 1024 * 1024).toLong()
+                            val maxAllowedBytes = minOf(
+                                50L * 1024 * 1024 * 1024, // 50GB
+                                freeSpace + cacheSize
+                            )
 
-                        if (valueBytes <= maxAllowedBytes) {
-                            errorText = null
+                            if (valueBytes <= maxAllowedBytes) {
+                                errorText = null
+                            } else {
+                                errorText = "输入值超过最大限制 (${formatSize(maxAllowedBytes)})"
+                            }
                         } else {
-                            errorText = "输入值超过最大限制 (${formatSize(maxAllowedBytes)})"
+                            errorText = if (it.isNotEmpty()) "请输入有效的数字" else null
                         }
-                    } else {
-                        errorText = "请输入有效的数字"
                     }
                 },
                 label = { Text("最大缓存大小 (GB)") },
