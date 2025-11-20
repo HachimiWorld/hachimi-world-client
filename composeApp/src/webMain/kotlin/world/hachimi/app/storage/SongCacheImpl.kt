@@ -41,4 +41,24 @@ class SongCacheImpl : SongCache {
     override suspend fun saveMetadata(item: SongDetailInfo) {
         localStorage.setItem("song_caches/${item.id}_metadata", json.encodeToString(item))
     }
+
+    override suspend fun clear() {
+        // Not supported
+    }
+
+    override suspend fun getSize(): Long {
+        return 0L
+    }
+
+    override suspend fun trim(maxSize: Long) {
+        // Not supported
+    }
+
+    override suspend fun getFreeSpace(): Long {
+        return Long.MAX_VALUE
+    }
+
+    override suspend fun getTotalSpace(): Long {
+        return Long.MAX_VALUE
+    }
 }

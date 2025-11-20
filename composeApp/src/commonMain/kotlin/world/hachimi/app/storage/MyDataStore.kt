@@ -25,6 +25,7 @@ object PreferencesKeys {
     val SETTINGS_KIDS_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_kids_mode", Boolean::class)
     val SETTINGS_FADE_IN_FADE_OUT: PreferenceKey<Boolean> = PreferenceKey("settings_fade_in_fade_out", Boolean::class)
     val SETTINGS_FADE_DURATION: PreferenceKey<Long> = PreferenceKey("settings_fade_duration", Long::class)
+    val SETTINGS_CACHE_SIZE_GB: PreferenceKey<Float> = PreferenceKey("settings_cache_size_gb", Float::class)
     val PLAYER_VOLUME: PreferenceKey<Float> = PreferenceKey("player_volume", Float::class)
     val PLAYER_MUSIC_QUEUE: PreferenceKey<String> = PreferenceKey("player_music_queue", String::class)
 }

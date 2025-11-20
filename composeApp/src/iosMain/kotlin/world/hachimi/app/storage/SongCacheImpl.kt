@@ -78,4 +78,35 @@ class SongCacheImpl : SongCache {
         val metadataFile = cacheDir.resolve("${item.id}_metadata")
         metadataFile.writeString(json.encodeToString(item))
     }
+
+    override suspend fun clear() = withContext(Dispatchers.IO) {
+        val fileManager = NSFileManager.defaultManager
+        val contents = fileManager.contentsOfDirectoryAtURL(cacheDir.nsUrl, null, null, null)
+        contents?.forEach {
+            val url = it as? platform.Foundation.NSURL
+            if (url != null) {
+                fileManager.removeItemAtURL(url, null)
+            }
+        }
+        Unit
+    }
+
+    override suspend fun getSize(): Long = withContext(Dispatchers.IO) {
+        // TODO: Implement size calculation for iOS
+        0L
+    }
+
+    override suspend fun trim(maxSize: Long) {
+        // TODO: Implement trim for iOS
+    }
+
+    override suspend fun getFreeSpace(): Long {
+        // TODO: Implement getFreeSpace for iOS
+        return Long.MAX_VALUE
+    }
+
+    override suspend fun getTotalSpace(): Long {
+        // TODO: Implement getTotalSpace for iOS
+        return Long.MAX_VALUE
+    }
 }

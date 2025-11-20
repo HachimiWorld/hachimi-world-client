@@ -90,6 +90,11 @@ fun SettingsScreen() {
                 }
             }
         }
+        PropertyItem(label = { Text("缓存设置") }) {
+            TextButton(onClick = { globalStore.nav.push(world.hachimi.app.nav.Route.Root.CacheSettings) }) {
+                Text("管理缓存")
+            }
+        }
         PropertyItem(label = { Text("宝宝模式") }) {
             Switch(globalStore.kidsMode, {
                 globalStore.updateKidsMode(it)

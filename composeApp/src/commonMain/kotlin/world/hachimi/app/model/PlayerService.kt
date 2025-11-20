@@ -64,6 +64,7 @@ class PlayerService(
     private val queueMutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default)
     private var isTransitioning = false
+    private var isPlayingLocalFile = false
 
     init {
         scope.launch(Dispatchers.Default) {
@@ -115,7 +116,7 @@ class PlayerService(
                     }
                 }
 
-                if (player.isStreamingSupported() && playerState.hasSong) {
+                if (player.isStreamingSupported() && playerState.hasSong && !isPlayingLocalFile) {
                     val buffered = player.bufferedPosition()
                     val duration = playerState.songInfo?.durationSeconds?.times(1000L) ?: 1L
                     if (duration > 0) {
@@ -184,6 +185,7 @@ class PlayerService(
         )
 
         if (playerJobSign == sign) {
+            isPlayingLocalFile = item.audioBytes.isNotEmpty()
             player.prepare(item, autoPlay = instantPlay, fade = fade)
         }
 
@@ -532,7 +534,7 @@ class PlayerService(
                     if (cache.metadata != data) {
                         Logger.i(TAG, "Metadata updated, invalidate cache")
                         // If the audio file has updated, just invalidate the cache
-                        if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
+                        if (cache.metadata.coverUrl != data.coverUrl) {
                             songCache.delete(songId.toString())
                             songCache.delete(jmid)
                         }
@@ -543,6 +545,32 @@ class PlayerService(
                     Logger.e(TAG, "Failed to refresh song metadata", e)
                 }
             }
+            
+            // If we have cache, we construct SongItem with audioBytes.
+            // Even if streaming is supported, we prefer local file if available.
+            // However, SongItem needs to know if it should use audioUrl or audioBytes.
+            // If audioBytes is provided, Player implementations usually use it (or write to temp file).
+            // If we want to use local file, we should NOT provide audioUrl, or provide it but Player should prefer bytes/file.
+            // Let's check Player implementations.
+            // AndroidPlayer: uses audioUrl if not null, else writes bytes to file.
+            // So if we provide audioUrl, it will stream.
+            // We want to use cache if available.
+            // So we should pass null as audioUrl if we have cache.
+            
+            val filename = metadata.audioUrl.substringAfterLast("/")
+            val extension = filename.substringAfterLast(".")
+            val item = SongItem(
+                id = metadata.id.toString(),
+                title = metadata.title,
+                artist = metadata.uploaderName,
+                audioBytes = audioBytes,
+                coverBytes = coverBytes,
+                format = extension,
+                durationSeconds = metadata.durationSeconds,
+                replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f,
+                audioUrl = null // Force use local bytes
+            )
+            return@coroutineScope item
         } else {
             Logger.i(TAG, "Downloading")
             onProgress(0f)
@@ -560,10 +588,52 @@ class PlayerService(
             }
 
             if (player.isStreamingSupported()) {
+                // Check if we have cache
+                if (cache != null) {
+                    Logger.i(TAG, "Streaming supported but cache hit, using cache")
+                    // If we have cache, we can use it directly even if streaming is supported
+                    // But we need to make sure the cache is valid
+                    // The logic above already handles cache hit, so we don't need to do anything here
+                    // Wait, if cache hit, we returned early.
+                    // So if we are here, it means cache miss.
+                }
+                
                 Logger.i(TAG, "Streaming supported, skipping download")
                 audioBytes = ByteArray(0)
                 coverBytes = coverBytesAsync.await()
                 songCache.saveMetadata(data)
+                
+                // Start background download for caching
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        val maxCacheSizeGB = dataStore.get(PreferencesKeys.SETTINGS_CACHE_SIZE_GB) ?: 1.0f
+                        val maxCacheSizeBytes = (maxCacheSizeGB * 1024 * 1024 * 1024).toLong()
+
+                        Logger.i(TAG, "Starting background download for caching: $songId")
+                        val statement = downloadHttpClient.prepareGet(data.audioUrl)
+                        val buffer = statement.execute { resp ->
+                            val channel = resp.body<ByteReadChannel>()
+                            val buffer = Buffer()
+                            while (!channel.exhausted()) {
+                                val chunk = channel.readRemaining(1024 * 8)
+                                chunk.transferTo(buffer)
+                            }
+                            buffer
+                        }
+                        
+                        val cacheItem = SongCache.Item(
+                            key = songId.toString(),
+                            metadata = data,
+                            audio = buffer,
+                            cover = Buffer().also { it.write(coverBytes) }
+                        )
+                        songCache.save(cacheItem)
+                        songCache.trim(maxCacheSizeBytes)
+                        Logger.i(TAG, "Background download finished: $songId")
+                    } catch (e: Throwable) {
+                        Logger.e(TAG, "Background download failed", e)
+                    }
+                }
             } else {
                 // Do not use HttpCache plugin because it will affect the progress (Bugs)
                 val statement = downloadHttpClient.prepareGet(data.audioUrl)

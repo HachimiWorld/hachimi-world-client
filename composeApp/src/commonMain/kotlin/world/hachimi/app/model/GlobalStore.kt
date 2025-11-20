@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
  * Global shared data and logic. Can work without UI displaying
  */
 class GlobalStore(
-    private val dataStore: MyDataStore,
+    val dataStore: MyDataStore,
     private val api: ApiClient,
     private val innerPlayer: Player,
     songCache: SongCache
