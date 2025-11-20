@@ -550,54 +550,61 @@ class PlayerService(
                 api.httpClient.get(data.coverUrl).bodyAsBytes()
             }
 
-            // Do not use HttpCache plugin because it will affect the progress (Bugs)
-            val statement = downloadHttpClient.prepareGet(data.audioUrl)
+            if (player.isStreamingSupported()) {
+                Logger.i(TAG, "Streaming supported, skipping download")
+                audioBytes = ByteArray(0)
+                coverBytes = coverBytesAsync.await()
+                songCache.saveMetadata(data)
+            } else {
+                // Do not use HttpCache plugin because it will affect the progress (Bugs)
+                val statement = downloadHttpClient.prepareGet(data.audioUrl)
 
-            // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
-            //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
-            //  https://youtrack.jetbrains.com/issue/KTOR-8377/JS-WASM-response-doesnt-contain-the-Content-Length-header-in-a-browser
-            //  KTOR-7934 JS/WASM fails with "IllegalStateException: Content-Length mismatch" on requesting gzipped content
-            //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
-            var headContentLength: Long? = null
-            // Workaround for wasm, we can use HEAD request to get the content length
-            if (getPlatform().name.startsWith("Web")) {
-                val resp = api.httpClient.head(data.audioUrl)
-                headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
-                Logger.i(TAG, "Head content length: $headContentLength bytes")
-            }
-            val buffer = statement.execute { resp ->
-                val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-                Logger.i(TAG, "Content length: $contentLength bytes")
-
-                val bestContentLength = contentLength ?: headContentLength
-                val channel = resp.body<ByteReadChannel>()
-
-                val buffer = if (bestContentLength != null) {
-                    val buffer = Buffer()
-                    var count = 0L
-                    while (!channel.exhausted()) {
-                        val chunk = channel.readRemaining(1024 * 8)
-                        count += chunk.transferTo(buffer)
-                        val progress = count.toFloat() / bestContentLength
-                        onProgress(progress.coerceIn(0f, 1f))
-                    }
-                    buffer
-                } else {
-                    Logger.i(TAG, "Content-Length not found, progress is disabled")
-                    channel.readBuffer()
+                // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
+                //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
+                //  https://youtrack.jetbrains.com/issue/KTOR-8377/JS-WASM-response-doesnt-contain-the-Content-Length-header-in-a-browser
+                //  KTOR-7934 JS/WASM fails with "IllegalStateException: Content-Length mismatch" on requesting gzipped content
+                //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
+                var headContentLength: Long? = null
+                // Workaround for wasm, we can use HEAD request to get the content length
+                if (getPlatform().name.startsWith("Web")) {
+                    val resp = api.httpClient.head(data.audioUrl)
+                    headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
+                    Logger.i(TAG, "Head content length: $headContentLength bytes")
                 }
+                val buffer = statement.execute { resp ->
+                    val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
+                    Logger.i(TAG, "Content length: $contentLength bytes")
 
-                buffer
+                    val bestContentLength = contentLength ?: headContentLength
+                    val channel = resp.body<ByteReadChannel>()
+
+                    val buffer = if (bestContentLength != null) {
+                        val buffer = Buffer()
+                        var count = 0L
+                        while (!channel.exhausted()) {
+                            val chunk = channel.readRemaining(1024 * 8)
+                            count += chunk.transferTo(buffer)
+                            val progress = count.toFloat() / bestContentLength
+                            onProgress(progress.coerceIn(0f, 1f))
+                        }
+                        buffer
+                    } else {
+                        Logger.i(TAG, "Content-Length not found, progress is disabled")
+                        channel.readBuffer()
+                    }
+
+                    buffer
+                }
+                coverBytes = coverBytesAsync.await()
+                val cacheItem = SongCache.Item(
+                    key = songId.toString(),
+                    metadata = data,
+                    audio = buffer.copy(),
+                    cover = Buffer().also { it.write(coverBytes) }
+                )
+                audioBytes = buffer.readByteArray()
+                songCache.save(cacheItem)
             }
-            coverBytes = coverBytesAsync.await()
-            val cacheItem = SongCache.Item(
-                key = songId.toString(),
-                metadata = data,
-                audio = buffer.copy(),
-                cover = Buffer().also { it.write(coverBytes) }
-            )
-            audioBytes = buffer.readByteArray()
-            songCache.save(cacheItem)
         }
 
         val filename = metadata.audioUrl.substringAfterLast("/")
@@ -610,7 +617,8 @@ class PlayerService(
             coverBytes = coverBytes,
             format = extension,
             durationSeconds = metadata.durationSeconds,
-            replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+            replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f,
+            audioUrl = metadata.audioUrl
         )
         return@coroutineScope item
     }

@@ -1,5 +1,6 @@
 package world.hachimi.app.player
 
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -159,15 +160,21 @@ class AndroidPlayer(
         applyVolume()
     }
 
+    override suspend fun isStreamingSupported(): Boolean = true
+
     override suspend fun prepare(item: SongItem, autoPlay: Boolean, fade: Boolean) {
         // TODO[refactor]: This is a workaround to get uri. Consider to use network uri or other ways in the future.
-        val audioFile = withContext(Dispatchers.IO) {
-            val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
-            cacheDir.file.resolve("playing.${item.format}").also {
-                it.writeBytes(item.audioBytes)
+        val audioUri = if (item.audioUrl != null) {
+            Uri.parse(item.audioUrl)
+        } else {
+            val audioFile = withContext(Dispatchers.IO) {
+                val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
+                cacheDir.file.resolve("playing.${item.format}").also {
+                    it.writeBytes(item.audioBytes)
+                }
             }
+            audioFile.toUri()
         }
-        val audioUri = audioFile.toUri()
 
 
         /*val coverFile = item.coverBytes?.let { bytes ->

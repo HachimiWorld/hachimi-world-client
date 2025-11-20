@@ -19,6 +19,8 @@ interface Player {
     suspend fun getVolume(): Float
     suspend fun setVolume(value: Float)
 
+    suspend fun isStreamingSupported(): Boolean = false
+
     /**
      * Download from URL and prepare to play
      * Might throw Exception
@@ -68,7 +70,8 @@ data class SongItem(
     val audioBytes: ByteArray,
     val coverBytes: ByteArray? = null,
     val format: String,
-    val replayGainDB: Float
+    val replayGainDB: Float,
+    val audioUrl: String? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
