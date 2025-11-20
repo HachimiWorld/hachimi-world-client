@@ -114,6 +114,15 @@ class PlayerService(
                         }
                     }
                 }
+
+                if (player.isStreamingSupported() && playerState.hasSong) {
+                    val buffered = player.bufferedPosition()
+                    val duration = playerState.songInfo?.durationSeconds?.times(1000L) ?: 1L
+                    if (duration > 0) {
+                        playerState.downloadProgress = (buffered.toFloat() / duration).coerceIn(0f, 1f)
+                    }
+                }
+
                 // playerState.isPlaying = player.isPlaying()
                 delay(100)
             }

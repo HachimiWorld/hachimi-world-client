@@ -11,6 +11,7 @@ interface Player {
     suspend fun isPlaying(): Boolean
     suspend fun isEnd(): Boolean
     suspend fun currentPosition(): Long
+    suspend fun bufferedPosition(): Long = 0L
 
     suspend fun play()
     suspend fun pause(fade: Boolean = true)

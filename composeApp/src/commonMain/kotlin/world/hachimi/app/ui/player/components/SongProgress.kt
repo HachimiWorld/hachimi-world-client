@@ -31,6 +31,7 @@ fun SongProgress(
     currentMillis: Long,
     onProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    bufferedProgress: Float = 0f,
 ) {
     var isDragging by remember { mutableStateOf(false) }
     val playingProgress = (currentMillis.toDouble() / durationMillis).toFloat().coerceIn(0f, 1f)
@@ -78,6 +79,10 @@ fun SongProgress(
                     }
                 }
         ) {
+            Box(
+                Modifier.fillMaxWidth(bufferedProgress).height(6.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f), CircleShape)
+            )
             val progress = if (isDragging) draggingProgress else animatedPlayingProgress
             Box(Modifier.fillMaxWidth(progress).height(6.dp).background(MaterialTheme.colorScheme.primary, CircleShape))
         }

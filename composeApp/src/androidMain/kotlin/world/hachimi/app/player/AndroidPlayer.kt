@@ -128,6 +128,10 @@ class AndroidPlayer(
         controller!!.currentPosition
     }
 
+    override suspend fun bufferedPosition(): Long = withContext(Dispatchers.Main) {
+        controller?.bufferedPosition ?: 0L
+    }
+
     override suspend fun play() = withContext(Dispatchers.Main) {
         controller!!.play()
         startFade(1f)

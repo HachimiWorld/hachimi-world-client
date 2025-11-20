@@ -12,7 +12,10 @@ import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
 import platform.AVFoundation.*
 import platform.CoreMedia.CMTimeCompare
+import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
+import platform.CoreMedia.CMTimeRangeGetEnd
+import platform.CoreMedia.CMTimeRangeValue
 import platform.Foundation.*
 import platform.MediaPlayer.*
 import platform.UIKit.UIImage
@@ -53,6 +56,15 @@ class IosPlayer : Player {
             }
             millis.toLong()
         } ?: -1
+    }
+
+    override suspend fun bufferedPosition(): Long {
+        val ranges = player?.currentItem?.loadedTimeRanges
+        val first = ranges?.firstOrNull() as? NSValue ?: return 0L
+        val range = first.CMTimeRangeValue
+        val end = CMTimeRangeGetEnd(range)
+        val seconds = CMTimeGetSeconds(end)
+        return (seconds * 1000).toLong()
     }
 
     override suspend fun play() {

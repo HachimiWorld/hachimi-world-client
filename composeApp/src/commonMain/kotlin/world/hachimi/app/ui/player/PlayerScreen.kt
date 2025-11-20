@@ -220,7 +220,8 @@ fun CompactPlayerScreen(
                 } else {
                     playerState.currentMillis
                 },
-                onProgressChange = onProgressChange
+                onProgressChange = onProgressChange,
+                bufferedProgress = playerState.downloadProgress
             )
         }
     }
@@ -322,7 +323,8 @@ fun ExpandedPlayerScreen(
                     } else {
                         playerState.currentMillis
                     },
-                    onProgressChange = onProgressChange
+                    onProgressChange = onProgressChange,
+                    bufferedProgress = playerState.downloadProgress
                 )
             }
         }
