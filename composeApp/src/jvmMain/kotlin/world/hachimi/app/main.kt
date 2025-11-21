@@ -1,10 +1,10 @@
 package world.hachimi.app
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import hachimiworld.composeapp.generated.resources.Res
@@ -18,6 +18,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import java.awt.Dimension
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     System.setProperty("apple.awt.application.appearance", "system")
     System.setProperty("java.net.useSystemProxies", "true")
@@ -30,15 +31,14 @@ fun main() {
     global.initialize()
 
     application {
-        Window(
+        SwingWindow(
             onCloseRequest = ::exitApplication,
             title = if (hostOs == OS.MacOS) "" else BuildKonfig.APP_NAME,
             state = WindowState(
                 size = DpSize(1200.dp, 800.dp)
             ),
-            icon = painterResource(Res.drawable.icon_vector)
-        ) {
-            LaunchedEffect(Unit) {
+            icon = painterResource(Res.drawable.icon_vector),
+            init = { window ->
                 window.minimumSize = Dimension(360, 700)
                 if (hostOs == OS.MacOS) {
                     with(window.rootPane) {
@@ -47,6 +47,7 @@ fun main() {
                     }
                 }
             }
+        ) {
             if (global.initialized) {
                 App()
             } else {
