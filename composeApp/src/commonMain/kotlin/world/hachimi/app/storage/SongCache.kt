@@ -10,6 +10,11 @@ interface SongCache {
     suspend fun save(item: Item)
     suspend fun delete(key: String)
     suspend fun deleteMetadata(key: String)
+    suspend fun clear()
+    suspend fun getSize(): Long
+    suspend fun trim(maxSize: Long)
+    suspend fun getFreeSpace(): Long
+    suspend fun getTotalSpace(): Long
 
     data class Item(
         val key: String,

@@ -52,6 +52,7 @@ sealed class Route {
         data object UserSpace: Root()
         data class PublicUserSpace(val userId: Long): Root()
         data object Settings: Root()
+        data object CacheSettings: Root()
     }
     data class Auth(val initialLogin: Boolean = true) : Route()
     data object ForgetPassword: Route()

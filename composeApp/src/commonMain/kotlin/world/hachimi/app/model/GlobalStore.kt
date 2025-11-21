@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
  * Global shared data and logic. Can work without UI displaying
  */
 class GlobalStore(
-    private val dataStore: MyDataStore,
+    val dataStore: MyDataStore,
     private val api: ApiClient,
     private val innerPlayer: Player,
     songCache: SongCache
@@ -44,6 +44,10 @@ class GlobalStore(
     var darkMode by mutableStateOf<Boolean?>(null)
         private set
     var enableLoudnessNormalization by mutableStateOf(true)
+        private set
+    var enableFadeInFadeOut by mutableStateOf(false)
+        private set
+    var fadeDuration by mutableStateOf(3000L)
         private set
     var kidsMode by mutableStateOf(false)
         private set
@@ -99,9 +103,21 @@ class GlobalStore(
         dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
     }
 
+    fun updateFadeInFadeOut(enabled: Boolean) = scope.launch {
+        this@GlobalStore.enableFadeInFadeOut = enabled
+        dataStore.set(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT, enabled)
+    }
+
+    fun updateFadeDuration(duration: Long) = scope.launch {
+        this@GlobalStore.fadeDuration = duration
+        dataStore.set(PreferencesKeys.SETTINGS_FADE_DURATION, duration)
+    }
+
     private suspend fun loadSettings() {
         this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
         this.enableLoudnessNormalization = dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
+        this.enableFadeInFadeOut = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+        this.fadeDuration = dataStore.get(PreferencesKeys.SETTINGS_FADE_DURATION) ?: 3000L
     }
 
     private suspend fun loadLoginStatus() {
