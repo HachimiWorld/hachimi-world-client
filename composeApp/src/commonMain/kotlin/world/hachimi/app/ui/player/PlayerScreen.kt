@@ -14,13 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.util.fastForEach
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.GlobalStore
@@ -30,6 +29,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.insets.safeAreaPadding
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.PlatformBackHandler
 import world.hachimi.app.util.WindowSize
 import kotlin.time.Clock
 
@@ -37,7 +37,7 @@ import kotlin.time.Clock
 @Composable
 fun PlayerScreen() {
     val global: GlobalStore = koinInject()
-    BackHandler {
+    PlatformBackHandler {
         global.shrinkPlayer()
     }
     BoxWithConstraints {
