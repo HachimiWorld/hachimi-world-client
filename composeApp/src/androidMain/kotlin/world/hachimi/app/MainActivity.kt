@@ -1,5 +1,6 @@
 package world.hachimi.app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -14,6 +15,11 @@ import world.hachimi.app.ui.App
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Force the 3-button navigation bar to be transparent
+            // See: https://developer.android.com/develop/ui/views/layout/edge-to-edge#create-transparent
+            window.isNavigationBarContrastEnforced = false
+        }
         super.onCreate(savedInstanceState)
 
         FileKit.init(this)
