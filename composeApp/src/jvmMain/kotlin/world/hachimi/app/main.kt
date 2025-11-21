@@ -1,6 +1,8 @@
 package world.hachimi.app
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.unit.DpSize
@@ -16,6 +18,8 @@ import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
+import world.hachimi.app.ui.theme.backgroundDark
+import world.hachimi.app.ui.theme.backgroundLight
 import java.awt.Dimension
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -48,6 +52,12 @@ fun main() {
                 }
             }
         ) {
+            val dark = global.darkMode ?: isSystemInDarkTheme()
+            LaunchedEffect(dark) {
+                val bg = if (dark) backgroundDark else backgroundLight
+                window.background = java.awt.Color(bg.red, bg.green, bg.blue, bg.alpha)
+            }
+
             if (global.initialized) {
                 App()
             } else {
