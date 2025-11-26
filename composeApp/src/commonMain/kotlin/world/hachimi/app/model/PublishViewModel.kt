@@ -850,7 +850,7 @@ class PublishViewModel(
                                         initJmidValid = true
                                         initJmidSupportText = null
                                     } else {
-                                        initJmidValid = true
+                                        initJmidValid = false
                                         initJmidSupportText = "该前缀已被使用，如被抢占请联系维护者"
                                     }
                                 } else {
