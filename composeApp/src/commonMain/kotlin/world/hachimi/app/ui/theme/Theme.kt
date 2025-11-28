@@ -1,14 +1,14 @@
 package world.hachimi.app.ui.theme
 /*import android.app.Activity
 import android.os.Build*/
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.darkColorScheme
 /*import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.Typography*/
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
@@ -272,11 +272,13 @@ fun AppTheme(
         darkTheme -> darkScheme
         else -> lightScheme
     }
-
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
-        content = content
+        content = {
+            SystemAppearance(darkTheme)
+            content()
+        }
     )
 }
 
@@ -304,3 +306,6 @@ fun PreviewTheme(
         content = content
     )
 }
+
+@Composable
+internal expect fun SystemAppearance(darkTheme: Boolean)
