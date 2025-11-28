@@ -1,6 +1,6 @@
 package world.hachimi.app.ui
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -28,28 +28,37 @@ import world.hachimi.app.ui.theme.AppTheme
 
 val LocalDarkMode = compositionLocalOf { false }
 
+val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope> { error("not provided") }
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("not provided") }
+
+enum class SharedTransitionKeys {
+    Cover, Bounds
+}
+
 @Composable
 fun App() {
     setupCoil()
 
     val global = koinInject<GlobalStore>()
     val rootDestination = global.nav.backStack.last()
-
     val darkMode = global.darkMode ?: isSystemInDarkTheme()
+
     CompositionLocalProvider(LocalDarkMode provides darkMode) {
         AppTheme(darkTheme = LocalDarkMode.current) {
             Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 Box(Modifier.fillMaxSize()) {
-                    when(rootDestination) {
-                        is Root -> RootScreen(rootDestination)
-                        is Auth -> AuthScreen(rootDestination.initialLogin)
-                        is ForgetPassword -> ForgetPasswordScreen()
+                    SharedTransitionLayout {
+                        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                            Content(rootDestination)
+                            AnimatedVisibility(global.playerExpanded, enter = slideInVertically(initialOffsetY = { it }), exit = slideOutVertically(targetOffsetY = { it })) {
+                                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                    PlayerScreen()
+                                }
+                            }
+                        }
                     }
-
-                    AnimatedVisibility(visible = global.playerExpanded, modifier = Modifier.fillMaxSize()) {
-                        PlayerScreen()
-                    }
-
                     SnackbarHost(
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
                         hostState = global.snackbarHostState,
@@ -63,6 +72,16 @@ fun App() {
                 onConfirm = { global.confirmKidsPlay(true) }
             )
         }
+    }
+}
+
+
+@Composable
+private fun Content(rootDestination: Any) {
+    when (rootDestination) {
+        is Root -> RootScreen(rootDestination)
+        is Auth -> AuthScreen(rootDestination.initialLogin)
+        is ForgetPassword -> ForgetPasswordScreen()
     }
 }
 

@@ -26,6 +26,9 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.SongDetailInfo
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalAnimatedVisibilityScope
+import world.hachimi.app.ui.LocalSharedTransitionScope
+import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.insets.safeAreaPadding
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -41,41 +44,51 @@ fun PlayerScreen() {
         global.shrinkPlayer()
     }
     BoxWithConstraints {
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceVariant) {
-            if (maxWidth < WindowSize.MEDIUM) {
-                CompactPlayerScreen(
-                    playerState = global.player.playerState,
-                    onShrinkClick = { global.shrinkPlayer() },
-                    onPlayOrPauseClick = { global.player.playOrPause() },
-                    onPreviousClick = { global.player.previous() },
-                    onNextClick = { global.player.next() },
-                    onProgressChange = { global.player.setSongProgress(it) },
-                    onNavToAuthor = { uid ->
-                        global.shrinkPlayer()
-                        global.nav.push(Route.Root.PublicUserSpace(uid))
-                    },
-                    shuffle = global.player.shuffleMode,
-                    repeat = global.player.repeatMode,
-                    onShuffleChange = { global.player.updateShuffleMode(it) },
-                    onRepeatChange = { global.player.updateRepeatMode(it) }
-                )
-            } else {
-                ExpandedPlayerScreen(
-                    playerState = global.player.playerState,
-                    onShrinkClick = { global.shrinkPlayer() },
-                    onPlayOrPauseClick = { global.player.playOrPause() },
-                    onPreviousClick = { global.player.previous() },
-                    onNextClick = { global.player.next() },
-                    onProgressChange = { global.player.setSongProgress(it) },
-                    onNavToAuthor = { uid ->
-                        global.shrinkPlayer()
-                        global.nav.push(Route.Root.PublicUserSpace(uid))
-                    },
-                    shuffle = global.player.shuffleMode,
-                    repeat = global.player.repeatMode,
-                    onShuffleChange = { global.player.updateShuffleMode(it) },
-                    onRepeatChange = { global.player.updateRepeatMode(it) }
-                )
+        with(LocalSharedTransitionScope.current) {
+            Surface(
+                modifier = Modifier
+                    .sharedBounds(
+                        rememberSharedContentState(SharedTransitionKeys.Bounds),
+                        LocalAnimatedVisibilityScope.current
+                    )
+                    .fillMaxSize(),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                if (maxWidth < WindowSize.MEDIUM) {
+                    CompactPlayerScreen(
+                        playerState = global.player.playerState,
+                        onShrinkClick = { global.shrinkPlayer() },
+                        onPlayOrPauseClick = { global.player.playOrPause() },
+                        onPreviousClick = { global.player.previous() },
+                        onNextClick = { global.player.next() },
+                        onProgressChange = { global.player.setSongProgress(it) },
+                        onNavToAuthor = { uid ->
+                            global.shrinkPlayer()
+                            global.nav.push(Route.Root.PublicUserSpace(uid))
+                        },
+                        shuffle = global.player.shuffleMode,
+                        repeat = global.player.repeatMode,
+                        onShuffleChange = { global.player.updateShuffleMode(it) },
+                        onRepeatChange = { global.player.updateRepeatMode(it) }
+                    )
+                } else {
+                    ExpandedPlayerScreen(
+                        playerState = global.player.playerState,
+                        onShrinkClick = { global.shrinkPlayer() },
+                        onPlayOrPauseClick = { global.player.playOrPause() },
+                        onPreviousClick = { global.player.previous() },
+                        onNextClick = { global.player.next() },
+                        onProgressChange = { global.player.setSongProgress(it) },
+                        onNavToAuthor = { uid ->
+                            global.shrinkPlayer()
+                            global.nav.push(Route.Root.PublicUserSpace(uid))
+                        },
+                        shuffle = global.player.shuffleMode,
+                        repeat = global.player.repeatMode,
+                        onShuffleChange = { global.player.updateShuffleMode(it) },
+                        onRepeatChange = { global.player.updateRepeatMode(it) }
+                    )
+                }
             }
         }
     }
@@ -117,11 +130,15 @@ fun CompactPlayerScreen(
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                     JmidLabel(displayedId, Modifier.align(Alignment.Start))
                     Spacer(Modifier.height(8.dp))
-                    Album(
-                        modifier = Modifier.fillMaxWidth(),
-                        coverUrl = if (playerState.fetchingMetadata) previewMetadata?.coverUrl else info?.coverUrl,
-                        onClick = { displayingLyrics = true },
-                    )
+                    with(LocalSharedTransitionScope.current) {
+                        Album(
+                            modifier = Modifier
+                                .sharedElement(rememberSharedContentState(SharedTransitionKeys.Cover), LocalAnimatedVisibilityScope.current)
+                                .fillMaxWidth(),
+                            coverUrl = if (playerState.fetchingMetadata) previewMetadata?.coverUrl else info?.coverUrl,
+                            onClick = { displayingLyrics = true },
+                        )
+                    }
                     Spacer(Modifier.height(16.dp))
                     MetadataInfo(playerState, onNavToAuthor)
                 }
@@ -262,11 +279,16 @@ fun ExpandedPlayerScreen(
                         BoxWithConstraints(Modifier.wrapContentSize()) {
                             val size = min(maxHeight * 0.7f, maxWidth)
 
-                            Album(
-                                coverUrl = displayedCover,
-                                onClick = {},
-                                modifier = Modifier.size(size)
-                            )
+                            with(LocalSharedTransitionScope.current) {
+                                Album(
+                                    modifier = Modifier
+                                        .sharedElement(rememberSharedContentState(SharedTransitionKeys.Cover), LocalAnimatedVisibilityScope.current)
+                                        .size(size),
+                                    coverUrl = displayedCover,
+                                    onClick = {}
+                                )
+                            }
+
                         }
 
                         Spacer(Modifier.height(16.dp))
@@ -366,6 +388,7 @@ private fun JmidLabel(
         color = LocalContentColor.current.copy(0.7f)
     )
 }
+
 @Composable
 private fun MetadataInfo(
     playerState: PlayerUIState,
