@@ -43,7 +43,11 @@ fun main() {
 
     window.addEventListener("popstate") {
         it.preventDefault()
-        global.nav.back()
+        if (global.playerExpanded) {
+            global.shrinkPlayer()
+        } else {
+            global.nav.back()
+        }
     }
 
     window.history.pushState(null, "", "#/")
