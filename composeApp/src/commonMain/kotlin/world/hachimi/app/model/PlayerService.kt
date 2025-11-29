@@ -63,6 +63,8 @@ class PlayerService(
     var repeatMode by mutableStateOf(false)
     private val queueMutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default)
+    private var isTransitioning = false
+    private var isPlayingLocalFile = false
 
     init {
         scope.launch(Dispatchers.Default) {
@@ -71,7 +73,9 @@ class PlayerService(
                     when (event) {
                         PlayEvent.End -> {
                             playerState.isPlaying = false
-                            autoNext()
+                            if (!isTransitioning) {
+                                autoNext()
+                            }
                         }
 
                         is PlayEvent.Error -> {
@@ -84,6 +88,7 @@ class PlayerService(
 
                         PlayEvent.Play -> {
                             playerState.isPlaying = true
+                            isTransitioning = false
                         }
 
                         is PlayEvent.Seek -> {
@@ -97,8 +102,29 @@ class PlayerService(
                 if (player.isPlaying()) {
                     val currentPosition = player.currentPosition()
                     playerState.updateCurrentMillis(currentPosition)
+
+                    if (global.enableFadeInFadeOut && !isTransitioning) {
+                        val duration = playerState.songInfo?.durationSeconds?.toLong() ?: 0L
+                        if (duration > 0) {
+                            val remaining = (duration * 1000L) - currentPosition
+                            if (remaining <= global.fadeDuration && remaining > 500) {
+                                Logger.i(TAG, "Auto cross-fade triggered")
+                                isTransitioning = true
+                                autoNext()
+                            }
+                        }
+                    }
                 }
-                playerState.isPlaying = player.isPlaying()
+
+                if (player.isStreamingSupported() && playerState.hasSong && !isPlayingLocalFile) {
+                    val buffered = player.bufferedPosition()
+                    val duration = playerState.songInfo?.durationSeconds?.times(1000L) ?: 1L
+                    if (duration > 0) {
+                        playerState.downloadProgress = (buffered.toFloat() / duration).coerceIn(0f, 1f)
+                    }
+                }
+
+                // playerState.isPlaying = player.isPlaying()
                 delay(100)
             }
         }
@@ -115,8 +141,8 @@ class PlayerService(
     /**
      * This is only for play current song. Not interested in the music queue.
      */
-    private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int) = coroutineScope {
-        player.pause()
+    private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int, fade: Boolean) = coroutineScope {
+        player.pause(fade)
         playerMutex.withLock {
             playerJobSign = sign
         }
@@ -159,7 +185,8 @@ class PlayerService(
         )
 
         if (playerJobSign == sign) {
-            player.prepare(item, autoPlay = instantPlay)
+            isPlayingLocalFile = item.audioBytes.isNotEmpty()
+            player.prepare(item, autoPlay = instantPlay, fade = fade)
         }
 
         // Touch in the global scope
@@ -178,7 +205,7 @@ class PlayerService(
         }
     }
 
-    private suspend fun playWithRetry(maxAttempts: Int = 5, item: MusicQueueItem, instantPlay: Boolean) {
+    private suspend fun playWithRetry(maxAttempts: Int = 5, item: MusicQueueItem, instantPlay: Boolean, fade: Boolean) {
         var attempt = 0
         var delay = 1000L // Start with 1 second delay
         var lastError: Throwable? = null
@@ -187,7 +214,7 @@ class PlayerService(
         try {
             while (attempt < maxAttempts) {
                 try {
-                    play(item, instantPlay, sign)
+                    play(item, instantPlay, sign, fade)
                     return
                 } catch (_: CancellationException) {
                     // It's canceled, do not retry anymore
@@ -221,7 +248,7 @@ class PlayerService(
 
     private var playPrepareJob: Job? = null
 
-    fun playSongInQueue(id: Long, instantPlay: Boolean = true) = scope.launch {
+    fun playSongInQueue(id: Long, instantPlay: Boolean = true, fade: Boolean = false) = scope.launch {
         if (playPrepareJob?.isActive == true) {
             // We don't use cancelAndJoin because we want the operation to be instant
             Logger.d(TAG, "Cancel prepare job")
@@ -238,14 +265,14 @@ class PlayerService(
         if (song != null) {
             playPrepareJob = scope.launch {
                 Logger.d(TAG, "playSongInQueue: Playing song $song")
-                playWithRetry(5, song, instantPlay)
+                playWithRetry(5, song, instantPlay, fade)
                 savePlayerState()
             }
         }
     }
 
     // TODO[refactor](player): Should queue be a builtin feature in player? To make GlobalStore more clear
-    fun queuePrevious() = scope.launch {
+    fun queuePrevious(fade: Boolean = false) = scope.launch {
         val targetSong = queueMutex.withLock {
             if (musicQueue.isNotEmpty()) {
                 val currentSongId =
@@ -265,11 +292,11 @@ class PlayerService(
             return@withLock null
         }
         targetSong?.let {
-            playSongInQueue(it.id)
+            playSongInQueue(it.id, fade = fade)
         }
     }
 
-    fun queueNext() = scope.launch {
+    fun queueNext(fade: Boolean = false) = scope.launch {
         val targetSong = queueMutex.withLock {
             if (musicQueue.isNotEmpty()) {
                 // Get current song index (including the fetching/buffering)
@@ -291,7 +318,7 @@ class PlayerService(
         }
 
         targetSong?.let {
-            playSongInQueue(it.id)
+            playSongInQueue(it.id, fade = fade)
         }
     }
 
@@ -427,8 +454,10 @@ class PlayerService(
         // TODO: Redownload, if the song download failed
         if (!playerState.fetchingMetadata && !playerState.buffering) {
             if (player.isPlaying()) {
+                playerState.isPlaying = false
                 player.pause()
             } else {
+                playerState.isPlaying = true
                 player.play()
             }
         }
@@ -505,7 +534,7 @@ class PlayerService(
                     if (cache.metadata != data) {
                         Logger.i(TAG, "Metadata updated, invalidate cache")
                         // If the audio file has updated, just invalidate the cache
-                        if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
+                        if (cache.metadata.coverUrl != data.coverUrl) {
                             songCache.delete(songId.toString())
                             songCache.delete(jmid)
                         }
@@ -516,6 +545,32 @@ class PlayerService(
                     Logger.e(TAG, "Failed to refresh song metadata", e)
                 }
             }
+            
+            // If we have cache, we construct SongItem with audioBytes.
+            // Even if streaming is supported, we prefer local file if available.
+            // However, SongItem needs to know if it should use audioUrl or audioBytes.
+            // If audioBytes is provided, Player implementations usually use it (or write to temp file).
+            // If we want to use local file, we should NOT provide audioUrl, or provide it but Player should prefer bytes/file.
+            // Let's check Player implementations.
+            // AndroidPlayer: uses audioUrl if not null, else writes bytes to file.
+            // So if we provide audioUrl, it will stream.
+            // We want to use cache if available.
+            // So we should pass null as audioUrl if we have cache.
+            
+            val filename = metadata.audioUrl.substringAfterLast("/")
+            val extension = filename.substringAfterLast(".")
+            val item = SongItem(
+                id = metadata.id.toString(),
+                title = metadata.title,
+                artist = metadata.uploaderName,
+                audioBytes = audioBytes,
+                coverBytes = coverBytes,
+                format = extension,
+                durationSeconds = metadata.durationSeconds,
+                replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f,
+                audioUrl = null // Force use local bytes
+            )
+            return@coroutineScope item
         } else {
             Logger.i(TAG, "Downloading")
             onProgress(0f)
@@ -532,54 +587,103 @@ class PlayerService(
                 api.httpClient.get(data.coverUrl).bodyAsBytes()
             }
 
-            // Do not use HttpCache plugin because it will affect the progress (Bugs)
-            val statement = downloadHttpClient.prepareGet(data.audioUrl)
-
-            // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
-            //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
-            //  https://youtrack.jetbrains.com/issue/KTOR-8377/JS-WASM-response-doesnt-contain-the-Content-Length-header-in-a-browser
-            //  KTOR-7934 JS/WASM fails with "IllegalStateException: Content-Length mismatch" on requesting gzipped content
-            //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
-            var headContentLength: Long? = null
-            // Workaround for wasm, we can use HEAD request to get the content length
-            if (getPlatform().name.startsWith("Web")) {
-                val resp = api.httpClient.head(data.audioUrl)
-                headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
-                Logger.i(TAG, "Head content length: $headContentLength bytes")
-            }
-            val buffer = statement.execute { resp ->
-                val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-                Logger.i(TAG, "Content length: $contentLength bytes")
-
-                val bestContentLength = contentLength ?: headContentLength
-                val channel = resp.body<ByteReadChannel>()
-
-                val buffer = if (bestContentLength != null) {
-                    val buffer = Buffer()
-                    var count = 0L
-                    while (!channel.exhausted()) {
-                        val chunk = channel.readRemaining(1024 * 8)
-                        count += chunk.transferTo(buffer)
-                        val progress = count.toFloat() / bestContentLength
-                        onProgress(progress.coerceIn(0f, 1f))
-                    }
-                    buffer
-                } else {
-                    Logger.i(TAG, "Content-Length not found, progress is disabled")
-                    channel.readBuffer()
+            if (player.isStreamingSupported()) {
+                // Check if we have cache
+                if (cache != null) {
+                    Logger.i(TAG, "Streaming supported but cache hit, using cache")
+                    // If we have cache, we can use it directly even if streaming is supported
+                    // But we need to make sure the cache is valid
+                    // The logic above already handles cache hit, so we don't need to do anything here
+                    // Wait, if cache hit, we returned early.
+                    // So if we are here, it means cache miss.
                 }
+                
+                Logger.i(TAG, "Streaming supported, skipping download")
+                audioBytes = ByteArray(0)
+                coverBytes = coverBytesAsync.await()
+                songCache.saveMetadata(data)
+                
+                // Start background download for caching
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        val maxCacheSizeGB = dataStore.get(PreferencesKeys.SETTINGS_CACHE_SIZE_GB) ?: 1.0f
+                        val maxCacheSizeBytes = (maxCacheSizeGB * 1024 * 1024 * 1024).toLong()
 
-                buffer
+                        Logger.i(TAG, "Starting background download for caching: $songId")
+                        val statement = downloadHttpClient.prepareGet(data.audioUrl)
+                        val buffer = statement.execute { resp ->
+                            val channel = resp.body<ByteReadChannel>()
+                            val buffer = Buffer()
+                            while (!channel.exhausted()) {
+                                val chunk = channel.readRemaining(1024 * 8)
+                                chunk.transferTo(buffer)
+                            }
+                            buffer
+                        }
+                        
+                        val cacheItem = SongCache.Item(
+                            key = songId.toString(),
+                            metadata = data,
+                            audio = buffer,
+                            cover = Buffer().also { it.write(coverBytes) }
+                        )
+                        songCache.save(cacheItem)
+                        songCache.trim(maxCacheSizeBytes)
+                        Logger.i(TAG, "Background download finished: $songId")
+                    } catch (e: Throwable) {
+                        Logger.e(TAG, "Background download failed", e)
+                    }
+                }
+            } else {
+                // Do not use HttpCache plugin because it will affect the progress (Bugs)
+                val statement = downloadHttpClient.prepareGet(data.audioUrl)
+
+                // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
+                //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
+                //  https://youtrack.jetbrains.com/issue/KTOR-8377/JS-WASM-response-doesnt-contain-the-Content-Length-header-in-a-browser
+                //  KTOR-7934 JS/WASM fails with "IllegalStateException: Content-Length mismatch" on requesting gzipped content
+                //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
+                var headContentLength: Long? = null
+                // Workaround for wasm, we can use HEAD request to get the content length
+                if (getPlatform().name.startsWith("Web")) {
+                    val resp = api.httpClient.head(data.audioUrl)
+                    headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
+                    Logger.i(TAG, "Head content length: $headContentLength bytes")
+                }
+                val buffer = statement.execute { resp ->
+                    val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
+                    Logger.i(TAG, "Content length: $contentLength bytes")
+
+                    val bestContentLength = contentLength ?: headContentLength
+                    val channel = resp.body<ByteReadChannel>()
+
+                    val buffer = if (bestContentLength != null) {
+                        val buffer = Buffer()
+                        var count = 0L
+                        while (!channel.exhausted()) {
+                            val chunk = channel.readRemaining(1024 * 8)
+                            count += chunk.transferTo(buffer)
+                            val progress = count.toFloat() / bestContentLength
+                            onProgress(progress.coerceIn(0f, 1f))
+                        }
+                        buffer
+                    } else {
+                        Logger.i(TAG, "Content-Length not found, progress is disabled")
+                        channel.readBuffer()
+                    }
+
+                    buffer
+                }
+                coverBytes = coverBytesAsync.await()
+                val cacheItem = SongCache.Item(
+                    key = songId.toString(),
+                    metadata = data,
+                    audio = buffer.copy(),
+                    cover = Buffer().also { it.write(coverBytes) }
+                )
+                audioBytes = buffer.readByteArray()
+                songCache.save(cacheItem)
             }
-            coverBytes = coverBytesAsync.await()
-            val cacheItem = SongCache.Item(
-                key = songId.toString(),
-                metadata = data,
-                audio = buffer.copy(),
-                cover = Buffer().also { it.write(coverBytes) }
-            )
-            audioBytes = buffer.readByteArray()
-            songCache.save(cacheItem)
         }
 
         val filename = metadata.audioUrl.substringAfterLast("/")
@@ -592,12 +696,13 @@ class PlayerService(
             coverBytes = coverBytes,
             format = extension,
             durationSeconds = metadata.durationSeconds,
-            replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+            replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f,
+            audioUrl = metadata.audioUrl
         )
         return@coroutineScope item
     }
 
-    fun previous() = scope.launch {
+    fun previous(fade: Boolean = false) = scope.launch {
         if (shuffleMode) {
             queueMutex.withLock {
                 val index = if (shuffleIndex <= 0) {
@@ -607,7 +712,7 @@ class PlayerService(
                 }
                 val song = shuffledQueue[index]
                 shuffleIndex = index
-                playSongInQueue(song.id)
+                playSongInQueue(song.id, fade = fade)
             }
             /*// Play the previously played song, (not a song in music queue)
             val index = if (historyCursor > 0) {
@@ -621,11 +726,11 @@ class PlayerService(
             playSongInQueue(previousSong.songId)*/
         } else {
             // Play previous song in the queue
-            queuePrevious()
+            queuePrevious(fade)
         }
     }
 
-    fun next() = scope.launch {
+    fun next(fade: Boolean = false) = scope.launch {
         Logger.i(TAG, "next clicked")
         if (shuffleMode) {
             queueMutex.withLock {
@@ -636,7 +741,7 @@ class PlayerService(
                 }
                 val song = shuffledQueue[index]
                 shuffleIndex = index
-                playSongInQueue(song.id)
+                playSongInQueue(song.id, fade = fade)
             }
 
             /*if (historyCursor >= playHistory.lastIndex) {
@@ -652,7 +757,7 @@ class PlayerService(
                 historyCursor += 1
             }*/
         } else {
-            queueNext()
+            queueNext(fade)
         }
     }
 
@@ -665,10 +770,10 @@ class PlayerService(
         if (repeatMode) {
             // Just play this song
             playerState.songInfo?.id?.let {
-                playSongInQueue(it).join()
+                playSongInQueue(it, fade = true).join()
             }
         } else {
-            next()
+            next(fade = true)
         }
     }
 

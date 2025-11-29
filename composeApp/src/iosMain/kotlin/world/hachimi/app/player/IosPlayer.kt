@@ -12,7 +12,10 @@ import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
 import platform.AVFoundation.*
 import platform.CoreMedia.CMTimeCompare
+import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
+import platform.CoreMedia.CMTimeRangeGetEnd
+import platform.CoreMedia.CMTimeRangeValue
 import platform.Foundation.*
 import platform.MediaPlayer.*
 import platform.UIKit.UIImage
@@ -55,13 +58,22 @@ class IosPlayer : Player {
         } ?: -1
     }
 
+    override suspend fun bufferedPosition(): Long {
+        val ranges = player?.currentItem?.loadedTimeRanges
+        val first = ranges?.firstOrNull() as? NSValue ?: return 0L
+        val range = first.CMTimeRangeValue
+        val end = CMTimeRangeGetEnd(range)
+        val seconds = CMTimeGetSeconds(end)
+        return (seconds * 1000).toLong()
+    }
+
     override suspend fun play() {
         withContext(Dispatchers.Main) {
             player?.play()
         }
     }
 
-    override suspend fun pause() {
+    override suspend fun pause(fade: Boolean) {
         withContext(Dispatchers.Main) {
             player?.pause()
         }
@@ -88,22 +100,29 @@ class IosPlayer : Player {
         }
     }
 
-    override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
-        // Write bytes to a temporary file
-        val url = withContext(Dispatchers.IO) {
-            val tempDir = NSFileManager.defaultManager.temporaryDirectory
-            val tempFile =
-                tempDir.URLByAppendingPathComponent("temp_audio.${item.format}") ?: error("Could not create temp file")
+    override suspend fun isStreamingSupported(): Boolean = true
 
-            item.audioBytes.usePinned { pinned ->
-                NSFileManager.defaultManager.createFileAtPath(
-                    tempFile.path!!,
-                    NSData.dataWithBytes(pinned.addressOf(0), item.audioBytes.size.toULong()),
-                    null
-                )
+    override suspend fun prepare(item: SongItem, autoPlay: Boolean, fade: Boolean) {
+        // Write bytes to a temporary file
+        val url = if (item.audioUrl != null) {
+            NSURL.URLWithString(item.audioUrl)!!
+        } else {
+            withContext(Dispatchers.IO) {
+                val tempDir = NSFileManager.defaultManager.temporaryDirectory
+                val tempFile =
+                    tempDir.URLByAppendingPathComponent("temp_audio.${item.format}")
+                        ?: error("Could not create temp file")
+
+                item.audioBytes.usePinned { pinned ->
+                    NSFileManager.defaultManager.createFileAtPath(
+                        tempFile.path!!,
+                        NSData.dataWithBytes(pinned.addressOf(0), item.audioBytes.size.toULong()),
+                        null
+                    )
+                }
+                val url = NSURL.fileURLWithPath(tempFile.path!!)
+                url
             }
-            val url = NSURL.fileURLWithPath(tempFile.path!!)
-            url
         }
         Logger.i("player", "temp url: ${url.absoluteString}")
 

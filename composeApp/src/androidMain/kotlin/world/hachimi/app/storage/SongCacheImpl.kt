@@ -72,4 +72,46 @@ class SongCacheImpl : SongCache {
         val metadataFile = cacheDir.resolve("${item.id}_metadata")
         metadataFile.writeText(json.encodeToString(item))
     }
+
+    override suspend fun clear() = withContext(Dispatchers.IO) {
+        cacheDir.deleteRecursively()
+        cacheDir.mkdirs()
+        Unit
+    }
+
+    override suspend fun getSize(): Long = withContext(Dispatchers.IO) {
+        cacheDir.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
+    }
+
+    override suspend fun trim(maxSize: Long) = withContext(Dispatchers.IO) {
+        if (getSize() <= maxSize) return@withContext
+
+        val files = cacheDir.listFiles() ?: return@withContext
+        val audioFiles = files.filter { !it.name.endsWith("_cover") && !it.name.endsWith("_metadata") }
+        val sortedAudioFiles = audioFiles.sortedBy { it.lastModified() }
+
+        var currentSize = getSize()
+        for (file in sortedAudioFiles) {
+            if (currentSize <= maxSize) break
+            val key = file.name
+            val cover = cacheDir.resolve("${key}_cover")
+            val metadata = cacheDir.resolve("${key}_metadata")
+
+            val sizeFreed = file.length() + (if (cover.exists()) cover.length() else 0) + (if (metadata.exists()) metadata.length() else 0)
+
+            file.delete()
+            if (cover.exists()) cover.delete()
+            if (metadata.exists()) metadata.delete()
+
+            currentSize -= sizeFreed
+        }
+    }
+
+    override suspend fun getFreeSpace(): Long = withContext(Dispatchers.IO) {
+        cacheDir.freeSpace
+    }
+
+    override suspend fun getTotalSpace(): Long = withContext(Dispatchers.IO) {
+        cacheDir.totalSpace
+    }
 }

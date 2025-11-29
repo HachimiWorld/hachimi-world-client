@@ -31,7 +31,7 @@ val appModule = module {
         val context = androidContext()
         val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-        AndroidPlayer(controllerFuture)
+        AndroidPlayer(controllerFuture, get())
     }
     single<SongCache> { SongCacheImpl() }
 

@@ -11,19 +11,22 @@ interface Player {
     suspend fun isPlaying(): Boolean
     suspend fun isEnd(): Boolean
     suspend fun currentPosition(): Long
+    suspend fun bufferedPosition(): Long = 0L
 
     suspend fun play()
-    suspend fun pause()
+    suspend fun pause(fade: Boolean = true)
     suspend fun seek(position: Long, autoStart: Boolean = false)
 
     suspend fun getVolume(): Float
     suspend fun setVolume(value: Float)
 
+    suspend fun isStreamingSupported(): Boolean = false
+
     /**
      * Download from URL and prepare to play
      * Might throw Exception
      */
-    suspend fun prepare(item: SongItem, autoPlay: Boolean = false)
+    suspend fun prepare(item: SongItem, autoPlay: Boolean = false, fade: Boolean = true)
     suspend fun isReady(): Boolean
 
     suspend fun release()
@@ -68,7 +71,8 @@ data class SongItem(
     val audioBytes: ByteArray,
     val coverBytes: ByteArray? = null,
     val format: String,
-    val replayGainDB: Float
+    val replayGainDB: Float,
+    val audioUrl: String? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

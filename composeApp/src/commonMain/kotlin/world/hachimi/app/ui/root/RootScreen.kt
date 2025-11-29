@@ -23,6 +23,7 @@ import world.hachimi.app.ui.recentplay.RecentPlayScreen
 import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.root.component.TopAppBar
 import world.hachimi.app.ui.search.SearchScreen
+import world.hachimi.app.ui.settings.CacheSettingsScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 
@@ -51,6 +52,7 @@ fun RootScreen(routeContent: Route.Root) {
                     is Route.Root.ContributorCenter -> if (global.isLoggedIn) ContributorCenterScreen(routeContent) else NeedLoginScreen()
                     Route.Root.UserSpace -> UserSpaceScreen(null)
                     Route.Root.Settings -> SettingsScreen()
+                    Route.Root.CacheSettings -> CacheSettingsScreen()
                     is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
                 }
             }

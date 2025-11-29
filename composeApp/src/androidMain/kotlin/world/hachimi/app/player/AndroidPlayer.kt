@@ -1,5 +1,6 @@
 package world.hachimi.app.player
 
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -14,9 +15,20 @@ import kotlinx.coroutines.withContext
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.Player.Companion.mixVolume
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.cancel
+import kotlin.math.exp
+
+import world.hachimi.app.storage.MyDataStore
+import world.hachimi.app.storage.PreferencesKeys
 
 class AndroidPlayer(
-    private val controllerFuture: ListenableFuture<MediaController>
+    private val controllerFuture: ListenableFuture<MediaController>,
+    private val dataStore: MyDataStore
 ) : Player {
     private var controller: MediaController? = null
     private var ready = false
@@ -24,6 +36,47 @@ class AndroidPlayer(
     private var initialized = MutableStateFlow<Boolean>(false)
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
+
+    private var fadeMultiplier = 1f
+    private var fadeJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    private fun applyVolume() {
+        val volume = mixVolume(replayGain = replayGainDb, volume = userVolume)
+        controller?.volume = volume * fadeMultiplier
+    }
+
+    private fun startFade(target: Float, onFinish: (() -> Unit)? = null) {
+        fadeJob?.cancel()
+        fadeJob = scope.launch {
+            val enabled = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+            if (!enabled) {
+                fadeMultiplier = target
+                applyVolume()
+                onFinish?.invoke()
+                return@launch
+            }
+
+            val duration = dataStore.get(PreferencesKeys.SETTINGS_FADE_DURATION) ?: 3000L
+            val start = fadeMultiplier
+            val startTime = System.currentTimeMillis()
+            while (true) {
+                val elapsed = System.currentTimeMillis() - startTime
+                if (elapsed >= duration) {
+                    fadeMultiplier = target
+                    applyVolume()
+                    onFinish?.invoke()
+                    break
+                }
+                val t = elapsed.toFloat() / duration
+                val m = 12f
+                val easing = 1f / (1f + exp(-m * (t - 0.5f)))
+                fadeMultiplier = start + (target - start) * easing
+                applyVolume()
+                delay(16)
+            }
+        }
+    }
 
     init {
         Logger.i("player", "Waiting for MediaController")
@@ -75,12 +128,26 @@ class AndroidPlayer(
         controller!!.currentPosition
     }
 
-    override suspend fun play() = withContext(Dispatchers.Main) {
-        controller!!.play()
+    override suspend fun bufferedPosition(): Long = withContext(Dispatchers.Main) {
+        controller?.bufferedPosition ?: 0L
     }
 
-    override suspend fun pause() = withContext(Dispatchers.Main) {
-        controller!!.pause()
+    override suspend fun play() = withContext(Dispatchers.Main) {
+        controller!!.play()
+        startFade(1f)
+    }
+
+    override suspend fun pause(fade: Boolean) {
+        withContext(Dispatchers.Main) {
+            if (fade) {
+                startFade(0f) {
+                    controller?.pause()
+                }
+            } else {
+                fadeJob?.cancel()
+                controller?.pause()
+            }
+        }
     }
 
     override suspend fun seek(position: Long, autoStart: Boolean) = withContext(Dispatchers.Main) {
@@ -94,19 +161,24 @@ class AndroidPlayer(
 
     override suspend fun setVolume(value: Float) = withContext(Dispatchers.Main) {
         userVolume = value
-        val volume = mixVolume(replayGain = replayGainDb, volume = value)
-        controller?.volume = volume
+        applyVolume()
     }
 
-    override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
+    override suspend fun isStreamingSupported(): Boolean = true
+
+    override suspend fun prepare(item: SongItem, autoPlay: Boolean, fade: Boolean) {
         // TODO[refactor]: This is a workaround to get uri. Consider to use network uri or other ways in the future.
-        val audioFile = withContext(Dispatchers.IO) {
-            val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
-            cacheDir.file.resolve("playing.${item.format}").also {
-                it.writeBytes(item.audioBytes)
+        val audioUri = if (item.audioUrl != null) {
+            Uri.parse(item.audioUrl)
+        } else {
+            val audioFile = withContext(Dispatchers.IO) {
+                val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
+                cacheDir.file.resolve("playing.${item.format}").also {
+                    it.writeBytes(item.audioBytes)
+                }
             }
+            audioFile.toUri()
         }
-        val audioUri = audioFile.toUri()
 
 
         /*val coverFile = item.coverBytes?.let { bytes ->
@@ -128,13 +200,29 @@ class AndroidPlayer(
             .setUri(audioUri)
             .setMediaMetadata(metadata)
             .build()
-        replayGainDb = item.replayGainDB
-        setVolume(userVolume)
-
+        
+        val isFadeEnabled = dataStore.get(PreferencesKeys.SETTINGS_FADE_IN_FADE_OUT) ?: false
+        
+        if (isFadeEnabled && fade) {
+            val isPlaying = withContext(Dispatchers.Main) { controller?.isPlaying == true }
+            if (isPlaying) {
+                withContext(Dispatchers.Main) { startFade(0f) }
+                val duration = dataStore.get(PreferencesKeys.SETTINGS_FADE_DURATION) ?: 3000L
+                delay(duration)
+            }
+        }
+        
         withContext(Dispatchers.Main) {
+            fadeJob?.cancel()
+            replayGainDb = item.replayGainDB
+            
+            fadeMultiplier = if (isFadeEnabled && autoPlay && fade) 0f else 1f
+            
+            setVolume(userVolume)
+
             controller?.setMediaItem(mediaItem)
             if (autoPlay) {
-                controller?.play()
+                play()
             }
         }
     }
@@ -144,6 +232,7 @@ class AndroidPlayer(
     }
 
     override suspend fun release(): Unit = withContext(Dispatchers.Main) {
+        scope.cancel()
         controller?.release()
     }
 
