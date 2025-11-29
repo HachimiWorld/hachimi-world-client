@@ -128,6 +128,8 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.coil)
 
+            implementation(libs.haze)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -247,7 +249,7 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "world.hachimi.app.MainKt"
-
+        jvmArgs += listOf("-Xmx300M")
         val flavor = project.findProperty("buildkonfig.flavor")
         when (flavor) {
             "release" -> nativeDistributions {
