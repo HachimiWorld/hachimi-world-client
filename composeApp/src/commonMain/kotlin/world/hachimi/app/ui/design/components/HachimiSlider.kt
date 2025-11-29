@@ -10,7 +10,6 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -47,11 +46,6 @@ fun HachimiSlider(
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
 
-    BoxWithConstraints(
-        modifier = modifier,
-        propagateMinConstraints = true) {
-        println(constraints)
-    }
     Canvas(
         modifier = modifier
             .defaultMinSize(minHeight = 6.dp, minWidth = 100.dp)
