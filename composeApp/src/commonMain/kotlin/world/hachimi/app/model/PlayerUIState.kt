@@ -1,5 +1,6 @@
 package world.hachimi.app.model
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -60,6 +61,28 @@ class PlayerUIState() {
         private set
 
     var volume by mutableStateOf<Float>(1f)
+
+
+    val displayedCover by derivedStateOf { if (fetchingMetadata) previewMetadata?.coverUrl else songInfo?.coverUrl }
+    val displayedTitle by derivedStateOf { if (fetchingMetadata) { previewMetadata?.title } else { songInfo?.title } ?: "" }
+    val displayedAuthor by derivedStateOf { if (fetchingMetadata) { previewMetadata?.author } else { songInfo?.uploaderName } ?: "" }
+    val displayedDurationMillis by derivedStateOf {
+        if (fetchingMetadata) {
+            previewMetadata?.duration?.inWholeMilliseconds
+        } else {
+            songInfo?.durationSeconds?.let {
+                it * 1000L
+            }
+        } ?: -1L
+    }
+    val displayedCurrentMillis by derivedStateOf {
+        if (fetchingMetadata) {
+            0L
+        } else {
+            currentMillis
+        }
+    }
+    val explicit by derivedStateOf { if (fetchingMetadata) previewMetadata?.explicit else songInfo?.explicit }
 
     private var lrcSegments: List<TimedLyricsSegment> = emptyList()
 
