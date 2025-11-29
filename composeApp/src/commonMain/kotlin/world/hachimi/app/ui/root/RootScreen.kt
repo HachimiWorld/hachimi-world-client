@@ -1,12 +1,16 @@
 package world.hachimi.app.ui.root
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
@@ -16,7 +20,9 @@ import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.home.HomeScreen
+import world.hachimi.app.ui.player.ExpandedFooterPlayer2
 import world.hachimi.app.ui.player.FooterPlayer
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
@@ -126,13 +132,25 @@ private fun ExpandedScreen(
         TopAppBar(global, {})
 
         Row(Modifier.weight(1f).fillMaxWidth()) {
-            Box(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(300.dp)) {
+            Box(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(200.dp)) {
                 navigationContent()
             }
             Spacer(Modifier.width(24.dp))
-            Box(Modifier.weight(1f).fillMaxHeight()) { content() }
-        }
 
-        FooterPlayer()
+            val hazeState = rememberHazeState()
+
+            Box(Modifier.weight(1f).fillMaxHeight()) {
+                Box(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
+                    content()
+                }
+                ExpandedFooterPlayer2(
+                    Modifier
+                        .fillMaxSize()
+                        .wrapContentHeight(Alignment.Bottom)
+                        .padding(24.dp),
+                    hazeState
+                )
+            }
+        }
     }
 }
