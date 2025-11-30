@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
@@ -29,7 +30,9 @@ fun HachimiSlider(
     modifier: Modifier,
     progress: () -> Float,
     onProgressChange: (Float) -> Unit,
-    applyMode: SliderChangeApplyMode = SliderChangeApplyMode.End
+    applyMode: SliderChangeApplyMode = SliderChangeApplyMode.End,
+    trackColor: Color = HachimiTheme.colorScheme.outline,
+    barColor: Color = HachimiTheme.colorScheme.primary,
 ) {
     val animatedPlayingProgress by animateFloatAsState(
         targetValue = progress().coerceIn(0f..1f),
@@ -40,8 +43,6 @@ fun HachimiSlider(
     val scope = rememberCoroutineScope()
     var isDragging by remember { mutableStateOf(false) }
 
-    val trackColor = HachimiTheme.colorScheme.outline
-    val barColor = HachimiTheme.colorScheme.primary
     val progress = if (isDragging) draggingProgress else animatedPlayingProgress
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
