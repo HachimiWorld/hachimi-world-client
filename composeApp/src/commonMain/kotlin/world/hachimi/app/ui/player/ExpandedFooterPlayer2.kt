@@ -7,8 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -19,7 +17,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
@@ -46,8 +43,7 @@ import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.*
-import world.hachimi.app.util.formatSongDuration
-import kotlin.time.Duration.Companion.milliseconds
+import world.hachimi.app.ui.player.components.PlayerProgress
 
 @Composable
 fun ExpandedFooterPlayer2(
@@ -346,48 +342,6 @@ private fun PlayPauseButton(
     }
 }
 
-private val labelTypography = TextStyle(
-    fontWeight = FontWeight.Medium,
-    fontSize = 12.sp,
-    lineHeight = 16.sp
-)
-
-@Composable
-private fun PlayerProgress(
-    durationMillis: Long,
-    currentMillis: Long,
-    onProgressChange: (Float) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val playingProgress = (currentMillis.toDouble() / durationMillis).toFloat().coerceIn(0f, 1f)
-
-    Column(modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = formatSongDuration(currentMillis.milliseconds),
-                style = labelTypography,
-            )
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = formatSongDuration(durationMillis.milliseconds),
-                style = labelTypography
-            )
-        }
-
-        Spacer(Modifier.height(2.dp))
-
-        HachimiSlider(
-            modifier = Modifier.fillMaxWidth().height(6.dp),
-            progress = { playingProgress },
-            onProgressChange = onProgressChange
-        )
-    }
-}
-
-
 @Composable
 private fun VolumeControl(
     modifier: Modifier,
@@ -410,7 +364,9 @@ private fun VolumeControl(
             modifier = Modifier.fillMaxWidth().height(6.dp),
             progress = { volume },
             onProgressChange = onVolumeChange,
-            applyMode = SliderChangeApplyMode.Immediate
+            applyMode = SliderChangeApplyMode.Immediate,
+            trackColor = HachimiTheme.colorScheme.outline,
+            barColor = HachimiTheme.colorScheme.primary
         )
     }
 }
@@ -448,43 +404,6 @@ private fun FunctionButtons(
         }
         HachimiIconButton(onClick = onOpenInFullClick) {
             Icon(Icons.Default.OpenInFull, "Open In Full")
-        }
-    }
-}
-
-@Composable
-private fun HachimiIconButton(
-    onClick: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Box(
-        modifier = Modifier.size(28.dp)
-            .clip(CircleShape)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(Modifier.size(20.dp)) {
-            content()
-        }
-    }
-}
-
-@Composable
-private fun HachimiIconToggleButton(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    content: @Composable () -> Unit
-) {
-    Box(
-        modifier = Modifier.size(28.dp)
-            .clip(CircleShape)
-            .toggleable(checked, onValueChange = onCheckedChange),
-        contentAlignment = Alignment.Center
-    ) {
-        CompositionLocalProvider(LocalContentColor provides if (checked) HachimiTheme.colorScheme.primary else HachimiTheme.colorScheme.onSurface) {
-            Box(Modifier.size(20.dp)) {
-                content()
-            }
         }
     }
 }
