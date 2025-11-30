@@ -70,7 +70,7 @@ class JVMPlayer() : Player {
                 null
             }
 
-            if (clip == null) {
+            if (clip == null || !clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 Logger.i("player", "Raw format is unsupported, fallback to PCM 16bit")
                 // Target format is not supported, try fallback to PCM 16bit format
                 val fallbackFormat = AudioFormat( // 16bit, signed-int PCM, with original sampleRate
