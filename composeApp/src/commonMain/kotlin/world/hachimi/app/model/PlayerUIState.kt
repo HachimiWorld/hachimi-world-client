@@ -82,6 +82,13 @@ class PlayerUIState() {
             currentMillis
         }
     }
+    val displayedJmid by derivedStateOf {
+        if (fetchingMetadata) {
+            previewMetadata?.displayId
+        } else {
+            songInfo?.displayId
+        } ?: ""
+    }
     val explicit by derivedStateOf { if (fetchingMetadata) previewMetadata?.explicit else songInfo?.explicit }
 
     private var lrcSegments: List<TimedLyricsSegment> = emptyList()
