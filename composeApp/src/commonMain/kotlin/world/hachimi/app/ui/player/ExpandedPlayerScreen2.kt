@@ -43,17 +43,14 @@ import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
-import world.hachimi.app.ui.component.AmbientChip
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.DiffusionBackground
 import world.hachimi.app.ui.design.components.HollowIconToggleButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
-import world.hachimi.app.ui.player.components.AmbientUserChip
-import world.hachimi.app.ui.player.components.InfoTabContent
-import world.hachimi.app.ui.player.components.Lyrics2
-import world.hachimi.app.ui.player.components.PlayerProgress
+import world.hachimi.app.ui.player.components.*
+import world.hachimi.app.util.isValidHttpsUrl
 import kotlin.math.roundToInt
 
 @Composable
@@ -404,11 +401,12 @@ private fun BriefInfo(
                     )
                 }
 
-                pvLink?.let {
+                pvLink?.takeIf { isValidHttpsUrl(it) }?.let {
                     Spacer(Modifier.weight(1f))
-                    PVChip(it, onClick = {
-                        getPlatform().openUrl(it)
-                    })
+                    AmbientPVChip(
+                        platform = it,
+                        onClick = { getPlatform().openUrl(it) }
+                    )
                 }
             }
 
@@ -468,19 +466,5 @@ private fun PagerButtons(
             icon = Icons.AutoMirrored.Outlined.Chat,
             "Lyrics"
         )
-    }
-}
-
-@Composable
-private fun PVChip(
-    link: String,
-    onClick: () -> Unit
-) {
-    AmbientChip(onClick = onClick) {
-        Row {
-            Icon(Icons.Default.MusicVideo, "PV")
-            Spacer(Modifier.width(4.dp))
-            Icon(Icons.Filled.ArrowOutward, "Open in new tab", tint = LocalContentColor.current.copy(0.6f))
-        }
     }
 }
