@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,10 +47,7 @@ import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.DiffusionBackground
-import world.hachimi.app.ui.design.components.HollowIconToggleButton
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.util.isValidHttpsUrl
@@ -82,11 +78,11 @@ fun ExpandedPlayerScreen2(
                     placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
                 )
             )
-            ShrinkButton(
-                modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top),
-                onClick = global::shrinkPlayer
-            )
             CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
+                ShrinkButton(
+                    modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopEnd),
+                    onClick = global::shrinkPlayer
+                )
                 Content(global, uiState)
             }
         }
@@ -170,11 +166,8 @@ private fun Content(
 
 @Composable
 private fun ShrinkButton(modifier: Modifier, onClick: () -> Unit) {
-    IconButton(
-        modifier = modifier,
-        onClick = onClick
-    ) {
-        Icon(Icons.Default.Close, "Close")
+    HachimiIconButton(modifier = modifier, onClick = onClick) {
+        Icon(Icons.Default.CloseFullscreen, "Close")
     }
 }
 

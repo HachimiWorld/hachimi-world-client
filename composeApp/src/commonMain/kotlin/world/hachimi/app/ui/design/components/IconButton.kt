@@ -16,10 +16,11 @@ import world.hachimi.app.ui.design.HachimiTheme
 @Composable
 fun HachimiIconButton(
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     Box(
-        modifier = Modifier.size(28.dp)
+        modifier = modifier.size(28.dp)
             .clip(CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
