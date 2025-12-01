@@ -25,6 +25,7 @@ private val labelTypography = TextStyle(
 fun PlayerProgress(
     durationMillis: Long,
     currentMillis: Long,
+    bufferingProgress: Float = 0f,
     onProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     trackColor: Color = HachimiTheme.colorScheme.outline,
@@ -54,6 +55,7 @@ fun PlayerProgress(
             modifier = Modifier.fillMaxWidth().height(6.dp),
             progress = { playingProgress },
             onProgressChange = onProgressChange,
+            trackProgress = { bufferingProgress },
             trackColor = trackColor,
             barColor = barColor
         )

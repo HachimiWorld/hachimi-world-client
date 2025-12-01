@@ -30,6 +30,7 @@ fun HachimiSlider(
     modifier: Modifier,
     progress: () -> Float,
     onProgressChange: (Float) -> Unit,
+    trackProgress: () -> Float = { 1f },
     applyMode: SliderChangeApplyMode = SliderChangeApplyMode.End,
     trackColor: Color = HachimiTheme.colorScheme.outline,
     barColor: Color = HachimiTheme.colorScheme.primary,
@@ -84,7 +85,7 @@ fun HachimiSlider(
         drawRoundRect(
             color = trackColor,
             topLeft = Offset(0f, 2.dp.toPx()),
-            size = Size(size.width, 2.dp.toPx()),
+            size = Size(size.width * trackProgress(), 2.dp.toPx()),
             cornerRadius = CornerRadius(2.dp.toPx())
         )
 

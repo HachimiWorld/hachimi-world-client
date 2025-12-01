@@ -94,9 +94,12 @@ private fun Content(
     global: GlobalStore,
     uiState: PlayerUIState
 ) {
+    var currentPage by remember { mutableStateOf(Page.Lyrics) }
+    val scrollState = rememberLazyListState() // Keep the scroll state between pages
+    var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
+    var coverSize by remember { mutableStateOf(IntSize.Zero) }
+
     Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-        var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
-        var coverSize by remember { mutableStateOf(IntSize.Zero) }
         LeftPane(
             modifier = Modifier.weight(1f).fillMaxHeight(),
             header = {
@@ -115,7 +118,8 @@ private fun Content(
                     modifier = Modifier/*.border(1.dp, Color.Yellow)*/
                         .padding(top = 12.dp),
                     global = global,
-                    uiState = uiState
+                    hideInfo = currentPage == Page.Info,
+                    uiState = uiState,
                 )
             },
             onCoverLayout = { topLeft, size ->
@@ -124,8 +128,6 @@ private fun Content(
             }
         )
         Box(Modifier.weight(1f)) {
-            var currentPage by remember { mutableStateOf(Page.Lyrics) }
-            val scrollState = rememberLazyListState() // Keep the scroll state between pages
             AnimatedContent(
                 targetState = currentPage,
                 transitionSpec = rememberTabTransitionSpec()
@@ -286,6 +288,7 @@ private fun Cover(
 private fun Footer(
     global: GlobalStore,
     uiState: PlayerUIState,
+    hideInfo: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(modifier) {
@@ -293,6 +296,7 @@ private fun Footer(
             durationMillis = uiState.displayedDurationMillis,
             currentMillis = uiState.displayedCurrentMillis,
             onProgressChange = { global.player.setSongProgress(it) },
+            bufferingProgress = uiState.downloadProgress,
             trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
             barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f)
         )
@@ -308,8 +312,11 @@ private fun Footer(
         val interactionSource = remember { MutableInteractionSource() }
         Box(Modifier.weight(1f).hoverable(interactionSource)) {
             val hovered by interactionSource.collectIsHoveredAsState()
-            Crossfade(hovered) { hovered ->
-                if (hovered) Controls(
+
+            val showControl = hideInfo || hovered
+
+            Crossfade(showControl) { showControl ->
+                if (showControl) Controls(
                     modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
                     playing = uiState.isPlaying,
                     onPreviousClick = { global.player.previous() },
