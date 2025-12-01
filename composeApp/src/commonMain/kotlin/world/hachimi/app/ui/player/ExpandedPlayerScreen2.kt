@@ -3,8 +3,12 @@ package world.hachimi.app.ui.player
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -78,80 +82,88 @@ fun ExpandedPlayerScreen2(
                     placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
                 )
             )
+            ShrinkButton(
+                modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top),
+                onClick = global::shrinkPlayer
+            )
             CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
-                ShrinkButton(
-                    modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top),
-                    onClick = global::shrinkPlayer
-                )
+                Content(global, uiState)
+            }
+        }
+    }
+}
 
-                Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                    var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
-                    var coverSize by remember { mutableStateOf(IntSize.Zero) }
-                    LeftPane(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        header = {
-                            JmidLabel(
-                                Modifier/*.border(1.dp, Color.Yellow)*/
-                                    .wrapContentHeight(align = Alignment.Bottom)
-                                    .padding(bottom = 6.dp),
-                                uiState.displayedJmid
+@Composable
+private fun Content(
+    global: GlobalStore,
+    uiState: PlayerUIState
+) {
+    Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
+        var coverSize by remember { mutableStateOf(IntSize.Zero) }
+        LeftPane(
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            header = {
+                JmidLabel(
+                    Modifier/*.border(1.dp, Color.Yellow)*/
+                        .wrapContentHeight(align = Alignment.Bottom)
+                        .padding(bottom = 6.dp),
+                    uiState.displayedJmid
+                )
+            },
+            cover = {
+                Cover(model = uiState.displayedCover)
+            },
+            footer = {
+                Footer(
+                    modifier = Modifier/*.border(1.dp, Color.Yellow)*/
+                        .padding(top = 12.dp),
+                    global = global,
+                    uiState = uiState
+                )
+            },
+            onCoverLayout = { topLeft, size ->
+                coverTopLeft = topLeft
+                coverSize = size
+            }
+        )
+        Box(Modifier.weight(1f)) {
+            var currentPage by remember { mutableStateOf(Page.Lyrics) }
+            val scrollState = rememberLazyListState() // Keep the scroll state between pages
+            AnimatedContent(
+                targetState = currentPage,
+                transitionSpec = rememberTabTransitionSpec()
+            ) { page ->
+                when (page) {
+                    Page.Info -> InfoTabContent(
+                        modifier = Modifier.fillMaxSize()
+                            .wrapContentWidth()
+                            .widthIn(max = 400.dp),
+                        uiState = uiState,
+                        contentPadding = with(LocalDensity.current) {
+                            PaddingValues(
+                                top = coverTopLeft.y.toDp(),
+                                bottom = coverTopLeft.y.toDp()
                             )
-                        },
-                        cover = {
-                            Cover(model = uiState.displayedCover)
-                        },
-                        footer = {
-                            Footer(
-                                modifier = Modifier/*.border(1.dp, Color.Yellow)*/
-                                    .padding(top = 12.dp),
-                                global = global,
-                                uiState = uiState
-                            )
-                        },
-                        onCoverLayout = { topLeft, size ->
-                            coverTopLeft = topLeft
-                            coverSize = size
                         }
                     )
-                    Box(Modifier.weight(1f)) {
-                        var currentPage by remember { mutableStateOf(Page.Lyrics) }
-                        val scrollState = rememberLazyListState() // Keep the scroll state between pages
-                        AnimatedContent(
-                            targetState = currentPage,
-                            transitionSpec = rememberTabTransitionSpec()
-                        ) { page ->
-                            when (page) {
-                                Page.Info -> InfoTabContent(
-                                    modifier = Modifier.fillMaxSize()
-                                        .wrapContentWidth()
-                                        .widthIn(max = 400.dp),
-                                    uiState = uiState,
-                                    contentPadding = with(LocalDensity.current) {
-                                        PaddingValues(
-                                            top = coverTopLeft.y.toDp(),
-                                            bottom = coverTopLeft.y.toDp()
-                                        )
-                                    }
-                                )
-                                Page.Queue -> Box(Modifier.fillMaxSize())
-                                Page.Lyrics -> Lyrics2(
-                                    modifier = Modifier.fillMaxSize().padding(end = 64.dp),
-                                    lazyListState = scrollState,
-                                    supportTimedLyrics = uiState.timedLyricsEnabled,
-                                    currentLine = uiState.currentLyricsLine,
-                                    lines = uiState.lyricsLines,
-                                    loading = uiState.fetchingMetadata,
-                                )
-                            }
-                        }
-                        PagerButtons(
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(32.dp),
-                            currentPage = currentPage,
-                            onPageSelect = { currentPage = it }
-                        )
-                    }
+
+                    Page.Queue -> Box(Modifier.fillMaxSize())
+                    Page.Lyrics -> Lyrics2(
+                        modifier = Modifier.fillMaxSize().padding(end = 64.dp),
+                        lazyListState = scrollState,
+                        supportTimedLyrics = uiState.timedLyricsEnabled,
+                        currentLine = uiState.currentLyricsLine,
+                        lines = uiState.lyricsLines,
+                        loading = uiState.fetchingMetadata,
+                    )
                 }
             }
+            PagerButtons(
+                modifier = Modifier.align(Alignment.BottomEnd).padding(32.dp),
+                currentPage = currentPage,
+                onPageSelect = { currentPage = it }
+            )
         }
     }
 }
@@ -291,25 +303,37 @@ private fun Footer(
             trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
             barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f)
         )
-        Controls(
-            modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
-            playing = uiState.isPlaying,
-            onPreviousClick = { global.player.previous() },
-            onPlayOrPauseClick = { global.player.playOrPause() },
-            onNextClick = { global.player.next() },
-            onAddToPlaylistClick = {
-                // TODO:
-            }
-        )
-        BriefInfo(
-            modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
-            title = uiState.displayedTitle,
-            subtitle = uiState.readySongInfo?.subtitle,
-            description = uiState.readySongInfo?.description,
+
+        Spacer(Modifier.height(8.dp))
+
+        AuthorAndPV(
             authorName = uiState.displayedAuthor,
             hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
             pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
         )
+
+        val interactionSource = remember { MutableInteractionSource() }
+        Box(Modifier.weight(1f).hoverable(interactionSource)) {
+            val hovered by interactionSource.collectIsHoveredAsState()
+            Crossfade(hovered) { hovered ->
+                if (hovered) Controls(
+                    modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
+                    playing = uiState.isPlaying,
+                    onPreviousClick = { global.player.previous() },
+                    onPlayOrPauseClick = { global.player.playOrPause() },
+                    onNextClick = { global.player.next() },
+                    onAddToPlaylistClick = {
+                        // TODO:
+                    }
+                )
+                else BriefInfo(
+                    modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+                    title = uiState.displayedTitle,
+                    subtitle = uiState.readySongInfo?.subtitle,
+                    description = uiState.readySongInfo?.description,
+                )
+            }
+        }
     }
 }
 
@@ -324,8 +348,8 @@ private fun Controls(
 ) {
     Row(modifier, horizontalArrangement = Arrangement.SpaceBetween) {
         ControlButton({}) {
-            if (false) Icon(Icons.Default.Favorite, "Favorite On")
-            else Icon(Icons.Default.FavoriteBorder, "Favorite Off")
+            if (false) Icon(Icons.Default.Favorite, "Favorite On", tint = LocalContentColor.current.copy(0.6f))
+            else Icon(Icons.Default.FavoriteBorder, "Favorite Off", tint = LocalContentColor.current.copy(0.6f))
         }
         ControlButton(onClick = onPreviousClick) {
             Icon(Icons.Default.SkipPrevious, "Skip Previous")
@@ -338,7 +362,7 @@ private fun Controls(
             Icon(Icons.Default.SkipNext, "Skip Next")
         }
         ControlButton(onClick = onAddToPlaylistClick) {
-            Icon(Icons.Default.Add, "Add to playlist")
+            Icon(Icons.Default.Add, "Add to playlist", tint = LocalContentColor.current.copy(0.6f))
         }
     }
 }
@@ -377,62 +401,59 @@ private fun BriefInfo(
     modifier: Modifier,
     title: String,
     subtitle: String?,
-    description: String?,
-    authorName: String,
-    hasMultipleArtists: Boolean,
-    pvLink: String?
+    description: String?
 ) {
-    CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
-        Column(modifier) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                AmbientUserChip(
-                    onClick = {
-                        // TODO: Nav to user space
-                    },
-                    avatar = null, // TODO
-                    name = authorName
-                )
-                if (hasMultipleArtists) {
-                    Text(
-                        modifier = Modifier.padding(start = 4.dp),
-                        text = "等人",
-                        style = subtitleStyle,
-                        color = LocalContentColor.current.copy(0.6f)
-                    )
-                }
+    Column(modifier) {
+        Text(
+            text = title,
+            style = titleStyle, color = LocalContentColor.current,
+            maxLines = 1, overflow = TextOverflow.Ellipsis
+        )
 
-                pvLink?.takeIf { isValidHttpsUrl(it) }?.let {
-                    Spacer(Modifier.weight(1f))
-                    AmbientPVChip(
-                        platform = it,
-                        onClick = { getPlatform().openUrl(it) }
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(8.dp))
+        subtitle?.takeIf { it.isNotBlank() }?.let {
             Text(
-                text = title,
-                style = titleStyle, color = LocalContentColor.current,
+                text = it,
+                style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
+        }
 
-            subtitle?.takeIf { it.isNotBlank() }?.let {
-                Text(
-                    text = it,
-                    style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
-                    maxLines = 1, overflow = TextOverflow.Ellipsis
-                )
-            }
+        description?.takeIf { it.isNotBlank() }?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = it,
+                style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
+                maxLines = 2, overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
 
-            description?.takeIf { it.isNotBlank() }?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = it,
-                    style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
-                    maxLines = 2, overflow = TextOverflow.Ellipsis
-                )
-            }
+@Composable
+private fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AmbientUserChip(
+            onClick = {
+                // TODO: Nav to user space
+            },
+            avatar = null, // TODO
+            name = authorName
+        )
+        if (hasMultipleArtists) {
+            Text(
+                modifier = Modifier.padding(start = 4.dp),
+                text = "等人",
+                style = subtitleStyle,
+                color = LocalContentColor.current.copy(0.6f)
+            )
+        }
+
+        pvLink?.takeIf { isValidHttpsUrl(it) }?.let {
+            Spacer(Modifier.weight(1f))
+            AmbientPVChip(
+                platform = it,
+                onClick = { getPlatform().openUrl(it) }
+            )
         }
     }
 }
