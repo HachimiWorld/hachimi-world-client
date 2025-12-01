@@ -1,11 +1,16 @@
 package world.hachimi.app.ui.player
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -24,16 +29,16 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
+import soup.compose.material.motion.animation.materialSharedAxisX
+import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
@@ -45,8 +50,7 @@ import world.hachimi.app.ui.design.components.HollowIconToggleButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
-import world.hachimi.app.ui.player.components.Lyrics2
-import world.hachimi.app.ui.player.components.PlayerProgress
+import world.hachimi.app.ui.player.components.*
 import kotlin.math.roundToInt
 
 @Composable
@@ -65,6 +69,7 @@ fun ExpandedPlayerScreen2(
                 .fillMaxSize()
                 .background(HachimiTheme.colorScheme.background)
         ) {
+            // Background
             DiffusionBackground(
                 modifier = Modifier.fillMaxSize(),
                 painter = rememberAsyncImagePainter(
@@ -82,6 +87,7 @@ fun ExpandedPlayerScreen2(
                 }
 
                 Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                    var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
                     LeftPane(
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         header = {
@@ -92,7 +98,9 @@ fun ExpandedPlayerScreen2(
                                 uiState.displayedJmid
                             )
                         },
-                        cover = { Cover(uiState.displayedCover) },
+                        cover = {
+                            Cover(model = uiState.displayedCover)
+                        },
                         footer = {
                             Footer(
                                 modifier = Modifier/*.border(1.dp, Color.Yellow)*/
@@ -100,21 +108,39 @@ fun ExpandedPlayerScreen2(
                                 global = global,
                                 uiState = uiState
                             )
+                        },
+                        onCoverLayout = { topLeft, _ ->
+                            coverTopLeft = topLeft
                         }
                     )
                     Box(Modifier.weight(1f)) {
                         var currentPage by remember { mutableStateOf(Page.Lyrics) }
-                        AnimatedContent(currentPage) { page ->
+                        val scrollState = rememberLazyListState() // Keep the scroll state between pages
+                        AnimatedContent(
+                            targetState = currentPage,
+                            transitionSpec = rememberTabTransitionSpec()
+                        ) { page ->
                             when (page) {
+                                Page.Info -> InfoTabContent(
+                                    modifier = Modifier.fillMaxSize()
+                                        .wrapContentWidth()
+                                        .widthIn(max = 400.dp),
+                                    uiState = uiState,
+                                    contentPadding = PaddingValues(
+                                        top = with(LocalDensity.current) {
+                                            coverTopLeft.y.toDp()
+                                        }
+                                    )
+                                )
+                                Page.Queue -> Box(Modifier.fillMaxSize())
                                 Page.Lyrics -> Lyrics2(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.fillMaxSize().padding(end = 64.dp),
+                                    lazyListState = scrollState,
                                     supportTimedLyrics = uiState.timedLyricsEnabled,
                                     currentLine = uiState.currentLyricsLine,
                                     lines = uiState.lyricsLines,
                                     loading = uiState.fetchingMetadata,
                                 )
-                                Page.Info -> Box(Modifier.fillMaxSize())
-                                Page.Queue -> Box(Modifier.fillMaxSize())
                             }
                         }
                         PagerButtons(
@@ -127,11 +153,23 @@ fun ExpandedPlayerScreen2(
             }
         }
     }
+}
 
-    // TODO: Remove
-    BoxWithConstraints {
-        println("maxWidth: $maxWidth, maxHeight: $maxHeight")
+typealias TabTransitionSpec = AnimatedContentTransitionScope<Page>.() -> ContentTransform
+
+@Composable
+fun rememberTabTransitionSpec(): TabTransitionSpec {
+    val sliderDistance = rememberSlideDistance()
+    val spec: TabTransitionSpec = {
+        if (targetState < initialState) {
+            // Slide to the left page
+            materialSharedAxisX(forward = false, slideDistance = sliderDistance)
+        } else {
+            // Slide to the right page
+            materialSharedAxisX(forward = true, slideDistance = sliderDistance)
+        }
     }
+    return spec
 }
 
 private val jmidStyle = TextStyle(
@@ -159,6 +197,7 @@ private fun LeftPane(
     header: @Composable () -> Unit,
     cover: @Composable () -> Unit,
     footer: @Composable () -> Unit,
+    onCoverLayout: (topLeft: IntOffset, size: IntSize) -> Unit
 ) {
     val minCoverSize = 256.dp
     val maxCoverSize = 600.dp
@@ -187,6 +226,10 @@ private fun LeftPane(
             headerPlaceable.place(x, 0)
             coverPlaceable.place(x, coverY)
             footerPlaceable.place(x, coverY + coverPlaceable.height)
+            onCoverLayout(
+                IntOffset(x, coverY),
+                IntSize(coverSize, coverSize)
+            )
         }
     }
 }
@@ -247,11 +290,13 @@ private fun Footer(
                 // TODO:
             }
         )
-        Information(
+        BriefInfo(
             modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
             title = uiState.displayedTitle,
             subtitle = uiState.songInfo?.subtitle,
-            description = uiState.songInfo?.description
+            description = uiState.songInfo?.description,
+            authorName = uiState.displayedAuthor,
+            hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1
         )
     }
 }
@@ -316,25 +361,154 @@ private val subtitleStyle = TextStyle(
 )
 
 @Composable
-private fun Information(
+private fun BriefInfo(
     modifier: Modifier,
     title: String,
     subtitle: String?,
-    description: String?
+    description: String?,
+    authorName: String,
+    hasMultipleArtists: Boolean
 ) {
-    Column(modifier) {
-        Text(
-            text = title,
-            style = titleStyle, color = HachimiTheme.colorScheme.onSurfaceReverse,
-            overflow = TextOverflow.Ellipsis, maxLines = 1
-        )
-        subtitle?.takeIf { it.isNotBlank() }?.let {
+    CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
+        Column(modifier) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextUserChip(
+                    onClick = {
+                        // TODO: Nav to user space
+                    },
+                    avatar = null, // TODO
+                    name = authorName
+                )
+                if (hasMultipleArtists) {
+                    Text(
+                        modifier = Modifier.padding(start = 4.dp),
+                        text = "等人",
+                        style = subtitleStyle,
+                        color = LocalContentColor.current.copy(0.6f)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
             Text(
-                text = it, style = subtitleStyle, color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f),
-                overflow = TextOverflow.Ellipsis, maxLines = 1
+                text = title,
+                style = titleStyle, color = LocalContentColor.current,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+
+            subtitle?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = it,
+                    style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            description?.takeIf { it.isNotBlank() }?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
+                    maxLines = 2, overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+enum class Page {
+    Info, Queue, Lyrics
+}
+
+@Composable
+private fun PagerButtons(
+    modifier: Modifier = Modifier,
+    currentPage: Page,
+    onPageSelect: (Page) -> Unit
+) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        HollowIconToggleButton(
+            currentPage == Page.Info,
+            { onPageSelect(Page.Info) },
+            icon = Icons.Outlined.Info,
+            "Info"
+        )
+        HollowIconToggleButton(
+            currentPage == Page.Queue,
+            { onPageSelect(Page.Queue) },
+            icon = Icons.AutoMirrored.Outlined.List,
+            "Music Queue"
+        )
+        HollowIconToggleButton(
+            currentPage == Page.Lyrics,
+            { onPageSelect(Page.Lyrics) },
+            icon = Icons.AutoMirrored.Outlined.Chat,
+            "Lyrics"
+        )
+    }
+}
+
+@Composable
+private fun InfoTabContent(
+    modifier: Modifier,
+    uiState: PlayerUIState,
+    contentPadding: PaddingValues = PaddingValues()
+) {
+    Column(modifier.verticalScroll(rememberScrollState()).padding(contentPadding)) {
+        // No max line limit
+        Text(
+            text = uiState.displayedTitle,
+            style = titleStyle,
+            color = HachimiTheme.colorScheme.onSurfaceReverse
+        )
+        uiState.songInfo?.subtitle?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                text = it,
+                style = subtitleStyle,
+                color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f)
             )
         }
-        description?.takeIf { it.isNotBlank() }?.let {
+        Column(
+            modifier = Modifier.padding(top = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            PropertyLine(
+                label = "作者",
+                content = {
+                    UserChip(
+                        onClick = {
+                            // TODO
+                        },
+                        avatar = null,
+                        name = uiState.displayedAuthor
+                    )
+                }
+            )
+
+            uiState.songInfo?.let { songInfo ->
+                // Staffs
+                songInfo.productionCrew.forEach {
+                    PropertyLine(
+                        label = it.role,
+                        content = {
+                            if (it.uid != null) {
+                                UserChip(
+                                    onClick = {
+                                        it.uid
+                                        // TODO
+                                    },
+                                    avatar = null,
+                                    name = it.personName ?: "Unknown"
+                                )
+                            } else {
+                                OutlineUserChip(name = it.personName ?: "Unknown")
+                            }
+                        }
+                    )
+                }
+            }
+        }
+        uiState.songInfo?.description?.takeIf { it.isNotBlank() }?.let {
             Text(
                 modifier = Modifier.padding(top = 8.dp),
                 text = it, style = subtitleStyle,
@@ -346,22 +520,15 @@ private fun Information(
     }
 }
 
-enum class Page {
-    Lyrics, Info, Queue
-}
-
 @Composable
-private fun PagerButtons(
-    modifier: Modifier = Modifier,
-    currentPage: Page,
-    onPageSelect: (Page) -> Unit
+private fun PropertyLine(
+    label: String,
+    content: @Composable () -> Unit
 ) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        HollowIconToggleButton(currentPage == Page.Info, { onPageSelect(Page.Info) }, icon = Icons.Outlined.Info, "Info")
-        HollowIconToggleButton(currentPage == Page.Queue, { onPageSelect(Page.Queue) }, icon = Icons.AutoMirrored.Outlined.List, "Music Queue")
-        HollowIconToggleButton(currentPage == Page.Lyrics, { onPageSelect(Page.Lyrics) }, icon = Icons.AutoMirrored.Outlined.Chat, "Lyrics")
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, style = titleStyle)
+        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+            content()
+        }
     }
 }
-
-
-
