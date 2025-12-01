@@ -385,12 +385,10 @@ private fun FunctionButtons(
 
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         HachimiIconToggleButton(shuffleOn, onShuffleChange) {
-            if (shuffleOn) Icon(Icons.Default.ShuffleOn, "Shuffle On")
-            else Icon(Icons.Default.Shuffle, "Shuffle Off")
+            Icon(Icons.Default.Shuffle, if (shuffleOn) "Shuffle On" else "Shuffle Off")
         }
         HachimiIconToggleButton(repeatOn, onRepeatChange) {
-            if (repeatOn) Icon(Icons.Default.RepeatOn, "Repeat On")
-            else Icon(Icons.Default.Repeat, "Repeat Off")
+            Icon(Icons.Default.Repeat, if (repeatOn) "Repeat On" else "Repeat Off")
         }
         /*HachimiIconToggleButton(repeatOn, onRepeatChange) {
             if (repeatOn) Icon(Icons.Default.Favorite, "Favorite On")
