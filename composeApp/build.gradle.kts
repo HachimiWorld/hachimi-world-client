@@ -148,6 +148,9 @@ kotlin {
 //            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.mp3spi)
             implementation(libs.jflac)
+
+            implementation(libs.jna)
+            implementation(libs.jna.platform)
         }
         webMain.dependencies {
             implementation(libs.ktor.client.cio)

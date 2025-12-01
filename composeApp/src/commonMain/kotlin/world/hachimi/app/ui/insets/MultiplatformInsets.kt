@@ -3,7 +3,6 @@ package world.hachimi.app.ui.insets
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,7 +22,7 @@ data class SafeAreaInsets(
 fun currentSafeAreaInsets(): SafeAreaInsets {
     return when (remember { getCurrentPlatform() }) {
         Platform.MacOS -> SafeAreaInsets(top = 28.dp)
-        Platform.Windows, Platform.Linux -> SafeAreaInsets()
+        Platform.Windows, Platform.Linux -> SafeAreaInsets(top = 32.dp)
         Platform.Android, Platform.iOS -> {
             val density = LocalDensity.current
             val insets = WindowInsets.safeDrawing

@@ -1,7 +1,6 @@
 package world.hachimi.app.ui
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -22,7 +21,7 @@ import world.hachimi.app.ui.auth.AuthScreen
 import world.hachimi.app.ui.auth.ForgetPasswordScreen
 import world.hachimi.app.ui.component.KidsModeDialog
 import world.hachimi.app.ui.component.UpgradeDialog
-import world.hachimi.app.ui.player.PlayerScreen
+import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
 import world.hachimi.app.ui.theme.AppTheme
 
@@ -43,35 +42,32 @@ fun App() {
 
     val global = koinInject<GlobalStore>()
     val rootDestination = global.nav.backStack.last()
-    val darkMode = global.darkMode ?: isSystemInDarkTheme()
 
-    CompositionLocalProvider(LocalDarkMode provides darkMode) {
-        AppTheme(darkTheme = LocalDarkMode.current) {
-            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                Box(Modifier.fillMaxSize()) {
-                    SharedTransitionLayout {
-                        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                            Content(rootDestination)
-                            AnimatedVisibility(global.playerExpanded, enter = slideInVertically(initialOffsetY = { it }), exit = slideOutVertically(targetOffsetY = { it })) {
-                                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                                    PlayerScreen()
-                                }
+    AppTheme(darkTheme = LocalDarkMode.current) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Box(Modifier.fillMaxSize()) {
+                SharedTransitionLayout {
+                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                        Content(rootDestination)
+                        AnimatedVisibility(global.playerExpanded, enter = slideInVertically(initialOffsetY = { it }), exit = slideOutVertically(targetOffsetY = { it })) {
+                            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                PlayerScreen2()
                             }
                         }
                     }
-                    SnackbarHost(
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
-                        hostState = global.snackbarHostState,
-                    )
                 }
+                SnackbarHost(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                    hostState = global.snackbarHostState,
+                )
             }
-            ClientApiVersionIncompatibleDialog(global)
-            UpgradeDialog(global)
-            if (global.showKidsDialog) KidsModeDialog(
-                onDismissRequest = { global.confirmKidsPlay(false) },
-                onConfirm = { global.confirmKidsPlay(true) }
-            )
         }
+        ClientApiVersionIncompatibleDialog(global)
+        UpgradeDialog(global)
+        if (global.showKidsDialog) KidsModeDialog(
+            onDismissRequest = { global.confirmKidsPlay(false) },
+            onConfirm = { global.confirmKidsPlay(true) }
+        )
     }
 }
 
