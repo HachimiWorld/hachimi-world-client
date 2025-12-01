@@ -8,14 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -25,22 +22,46 @@ fun DiffusionBackground(modifier: Modifier = Modifier, painter: Painter) {
     // TODO: Optimize the performance
     BoxWithConstraints(modifier) {
         val maxEdge = maxOf(maxHeight, maxWidth)
+        // Scale to fill the constraints, instead of render it in full size
         val scale = maxEdge.value / 256.dp.value
+        Box(
+            modifier = Modifier
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin(0f, 0f)
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .size(256.dp)
+        ) {
+            // Apply the blur to the scaled image so the flickering edge will be cut off
+            RotateCombinedPicture(
+                Modifier.fillMaxSize()
+                    .graphicsLayer {
+                        compositingStrategy = CompositingStrategy.Offscreen
+                        scaleX = 1.42f
+                        scaleY = 1.42f
+                        clip = true
 
-        Box(modifier = Modifier
-            .graphicsLayer {
-                transformOrigin = TransformOrigin(0f, 0f)
-                scaleX = scale
-                scaleY = scale
-            }
-            .size(256.dp).clipToBounds().blur(48.dp)) {
-            RotateCombinedPicture(Modifier.fillMaxSize().scale(1.42f), painter)
+                        renderEffect = BlurEffect(
+                            48.dp.toPx() / 1.42f,
+                            48.dp.toPx() / 1.42f,
+                            TileMode.Clamp
+                        )
+                    }
+                    .drawWithContent {
+                        drawContent()
+                        // Gray overlay
+                        // Node: Draw the overlay might aggravate the color banding
+                        drawRect(Color(0x33808080))
+                    },
+                painter
+            )
         }
     }
 }
 
 @Composable
-fun RotateCombinedPicture(modifier: Modifier = Modifier, painter: Painter){
+fun RotateCombinedPicture(modifier: Modifier = Modifier, painter: Painter) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val rotation by infiniteTransition.animateFloat(
         initialValue = 360f,
@@ -110,7 +131,7 @@ fun CombinedRotatePicture(modifier: Modifier = Modifier, painter: Painter) {
 private fun DividedPictureRT(modifier: Modifier = Modifier, painter: Painter) {
     Box(modifier = modifier.size(128.dp).clipToBounds()) {
         Picture(
-            Modifier.scale(2f).offset(128.dp/4, 128.dp/4),
+            Modifier.scale(2f).offset(128.dp / 4, 128.dp / 4),
             painter
         )
     }
@@ -120,7 +141,7 @@ private fun DividedPictureRT(modifier: Modifier = Modifier, painter: Painter) {
 private fun DividedPictureLT(modifier: Modifier = Modifier, painter: Painter) {
     Box(modifier = modifier.size(128.dp).clipToBounds()) {
         Picture(
-            Modifier.scale(2f).offset((-128).dp /4, 128.dp/4),
+            Modifier.scale(2f).offset((-128).dp / 4, 128.dp / 4),
             painter
         )
     }
@@ -130,7 +151,7 @@ private fun DividedPictureLT(modifier: Modifier = Modifier, painter: Painter) {
 private fun DividedPictureRB(modifier: Modifier = Modifier, painter: Painter) {
     Box(modifier = modifier.size(128.dp).clipToBounds()) {
         Picture(
-            Modifier.scale(2f).offset(128.dp/4, (-128).dp /4),
+            Modifier.scale(2f).offset(128.dp / 4, (-128).dp / 4),
             painter
         )
     }
@@ -140,7 +161,7 @@ private fun DividedPictureRB(modifier: Modifier = Modifier, painter: Painter) {
 private fun DividedPictureLB(modifier: Modifier = Modifier, painter: Painter) {
     Box(modifier = modifier.size(128.dp).clipToBounds()) {
         Picture(
-            Modifier.scale(2f).offset((-128).dp /4, (-128).dp /4),
+            Modifier.scale(2f).offset((-128).dp / 4, (-128).dp / 4),
             painter
         )
     }
