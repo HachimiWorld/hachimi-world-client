@@ -75,6 +75,8 @@ class PlayerUIState() {
             }
         } ?: -1L
     }
+    val readySongInfo by derivedStateOf { songInfo?.takeIf { !fetchingMetadata }}
+
     val displayedCurrentMillis by derivedStateOf {
         if (fetchingMetadata) {
             0L

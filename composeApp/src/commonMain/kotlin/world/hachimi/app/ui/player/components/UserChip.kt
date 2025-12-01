@@ -2,33 +2,21 @@ package world.hachimi.app.ui.player.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.component.AmbientChip
+import world.hachimi.app.ui.component.Chip
+import world.hachimi.app.ui.component.HintChip
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-
-private val textStyle = TextStyle(
-    fontSize = 12.sp,
-    fontWeight = FontWeight.Medium,
-    lineHeight = 16.sp
-)
 
 @Composable
 fun UserChip(
@@ -37,83 +25,54 @@ fun UserChip(
     name: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier
-            .height(24.dp).defaultMinSize(minWidth = 60.dp)
-            .clip(RoundedCornerShape(50))
-            .background(HachimiTheme.colorScheme.onSurfaceReverse)
-            .clickable(onClick = onClick)
-            .padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Chip(
+        modifier = modifier,
+        onClick = onClick,
+        contentPadding = PaddingValues(start = if (avatar != null) 4.dp else 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
     ) {
-        Box(Modifier.size(16.dp).clip(CircleShape).background(Color(0xFFB7B7B7))) {
-            avatar?.let {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = it,
-                    contentDescription = "Avatar",
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-        Text(
-            modifier = Modifier.padding(start = 4.dp),
-            text = name,
-            style = textStyle,
-            color = HachimiTheme.colorScheme.onSurface
-        )
+        UserChipContent(avatar, name)
     }
 }
 
 @Composable
-fun TextUserChip(
+fun AmbientUserChip(
     onClick: () -> Unit,
     avatar: Painter?,
     name: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier
-            .height(24.dp).defaultMinSize(minWidth = 60.dp)
-            .clip(RoundedCornerShape(50))
-            .clickable(onClick = onClick)
-            .padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+    AmbientChip(
+        onClick = onClick,
+        modifier = modifier,
+        contentPadding = PaddingValues(start = if (avatar != null) 4.dp else 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
     ) {
-        Box(Modifier.size(16.dp).clip(CircleShape).background(Color(0xFFB7B7B7))) {
-            avatar?.let {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = it,
-                    contentDescription = "Avatar",
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-        Text(
-            modifier = Modifier.padding(start = 4.dp),
-            text = name,
-            style = textStyle,
-        )
+        UserChipContent(avatar, name)
     }
 }
 
 @Composable
-fun OutlineUserChip(
+private fun UserChipContent(avatar: Painter?, name: String) {
+    avatar?.let {
+        Box(Modifier.size(16.dp).clip(CircleShape).background(Color(0xFFB7B7B7).copy(0.6f))) {
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                painter = it,
+                contentDescription = "Avatar",
+                contentScale = ContentScale.Crop
+            )
+        }
+        Spacer(Modifier.width(4.dp))
+    }
+    Text(text = name)
+}
+
+@Composable
+fun HintUserChip(
     name: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier
-            .height(24.dp).defaultMinSize(minWidth = 60.dp)
-            .border(1.dp, color = LocalContentColor.current, shape = RoundedCornerShape(50))
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = name,
-            style = textStyle,
-        )
+    HintChip(modifier) {
+        Text(text = name)
     }
 }
 
@@ -128,8 +87,16 @@ private fun Preview() {
 
 @Preview
 @Composable
-private fun PreviewText() {
+private fun PreviewAmbient() {
     PreviewTheme(background = false) {
-        TextUserChip(onClick = {}, avatar = null, name = "Hachimi")
+        AmbientUserChip(onClick = {}, avatar = null, name = "Hachimi")
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewHint() {
+    PreviewTheme(background = false) {
+        HintUserChip(name = "Hachimi")
     }
 }
