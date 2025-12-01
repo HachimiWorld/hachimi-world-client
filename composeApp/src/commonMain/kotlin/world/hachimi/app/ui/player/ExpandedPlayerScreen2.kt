@@ -7,10 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -39,18 +37,23 @@ import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
+import world.hachimi.app.ui.component.AmbientChip
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.DiffusionBackground
 import world.hachimi.app.ui.design.components.HollowIconToggleButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
-import world.hachimi.app.ui.player.components.*
+import world.hachimi.app.ui.player.components.AmbientUserChip
+import world.hachimi.app.ui.player.components.InfoTabContent
+import world.hachimi.app.ui.player.components.Lyrics2
+import world.hachimi.app.ui.player.components.PlayerProgress
 import kotlin.math.roundToInt
 
 @Composable
@@ -79,15 +82,14 @@ fun ExpandedPlayerScreen2(
                 )
             )
             CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
-                IconButton(
+                ShrinkButton(
                     modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top),
-                    onClick = { global.shrinkPlayer() }
-                ) {
-                    Icon(Icons.Default.Close, "Close")
-                }
+                    onClick = global::shrinkPlayer
+                )
 
                 Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                     var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
+                    var coverSize by remember { mutableStateOf(IntSize.Zero) }
                     LeftPane(
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         header = {
@@ -109,8 +111,9 @@ fun ExpandedPlayerScreen2(
                                 uiState = uiState
                             )
                         },
-                        onCoverLayout = { topLeft, _ ->
+                        onCoverLayout = { topLeft, size ->
                             coverTopLeft = topLeft
+                            coverSize = size
                         }
                     )
                     Box(Modifier.weight(1f)) {
@@ -126,11 +129,12 @@ fun ExpandedPlayerScreen2(
                                         .wrapContentWidth()
                                         .widthIn(max = 400.dp),
                                     uiState = uiState,
-                                    contentPadding = PaddingValues(
-                                        top = with(LocalDensity.current) {
-                                            coverTopLeft.y.toDp()
-                                        }
-                                    )
+                                    contentPadding = with(LocalDensity.current) {
+                                        PaddingValues(
+                                            top = coverTopLeft.y.toDp(),
+                                            bottom = coverTopLeft.y.toDp()
+                                        )
+                                    }
                                 )
                                 Page.Queue -> Box(Modifier.fillMaxSize())
                                 Page.Lyrics -> Lyrics2(
@@ -152,6 +156,16 @@ fun ExpandedPlayerScreen2(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ShrinkButton(modifier: Modifier, onClick: () -> Unit) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick
+    ) {
+        Icon(Icons.Default.Close, "Close")
     }
 }
 
@@ -293,10 +307,11 @@ private fun Footer(
         BriefInfo(
             modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
             title = uiState.displayedTitle,
-            subtitle = uiState.songInfo?.subtitle,
-            description = uiState.songInfo?.description,
+            subtitle = uiState.readySongInfo?.subtitle,
+            description = uiState.readySongInfo?.description,
             authorName = uiState.displayedAuthor,
-            hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1
+            hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
+            pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
         )
     }
 }
@@ -367,12 +382,13 @@ private fun BriefInfo(
     subtitle: String?,
     description: String?,
     authorName: String,
-    hasMultipleArtists: Boolean
+    hasMultipleArtists: Boolean,
+    pvLink: String?
 ) {
     CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
         Column(modifier) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TextUserChip(
+                AmbientUserChip(
                     onClick = {
                         // TODO: Nav to user space
                     },
@@ -386,6 +402,13 @@ private fun BriefInfo(
                         style = subtitleStyle,
                         color = LocalContentColor.current.copy(0.6f)
                     )
+                }
+
+                pvLink?.let {
+                    Spacer(Modifier.weight(1f))
+                    PVChip(it, onClick = {
+                        getPlatform().openUrl(it)
+                    })
                 }
             }
 
@@ -449,86 +472,15 @@ private fun PagerButtons(
 }
 
 @Composable
-private fun InfoTabContent(
-    modifier: Modifier,
-    uiState: PlayerUIState,
-    contentPadding: PaddingValues = PaddingValues()
+private fun PVChip(
+    link: String,
+    onClick: () -> Unit
 ) {
-    Column(modifier.verticalScroll(rememberScrollState()).padding(contentPadding)) {
-        // No max line limit
-        Text(
-            text = uiState.displayedTitle,
-            style = titleStyle,
-            color = HachimiTheme.colorScheme.onSurfaceReverse
-        )
-        uiState.songInfo?.subtitle?.takeIf { it.isNotBlank() }?.let {
-            Text(
-                text = it,
-                style = subtitleStyle,
-                color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f)
-            )
-        }
-        Column(
-            modifier = Modifier.padding(top = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            PropertyLine(
-                label = "作者",
-                content = {
-                    UserChip(
-                        onClick = {
-                            // TODO
-                        },
-                        avatar = null,
-                        name = uiState.displayedAuthor
-                    )
-                }
-            )
-
-            uiState.songInfo?.let { songInfo ->
-                // Staffs
-                songInfo.productionCrew.forEach {
-                    PropertyLine(
-                        label = it.role,
-                        content = {
-                            if (it.uid != null) {
-                                UserChip(
-                                    onClick = {
-                                        it.uid
-                                        // TODO
-                                    },
-                                    avatar = null,
-                                    name = it.personName ?: "Unknown"
-                                )
-                            } else {
-                                OutlineUserChip(name = it.personName ?: "Unknown")
-                            }
-                        }
-                    )
-                }
-            }
-        }
-        uiState.songInfo?.description?.takeIf { it.isNotBlank() }?.let {
-            Text(
-                modifier = Modifier.padding(top = 8.dp),
-                text = it, style = subtitleStyle,
-                maxLines = 2,
-                color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f),
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-@Composable
-private fun PropertyLine(
-    label: String,
-    content: @Composable () -> Unit
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, style = titleStyle)
-        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-            content()
+    AmbientChip(onClick = onClick) {
+        Row {
+            Icon(Icons.Default.MusicVideo, "PV")
+            Spacer(Modifier.width(4.dp))
+            Icon(Icons.Filled.ArrowOutward, "Open in new tab", tint = LocalContentColor.current.copy(0.6f))
         }
     }
 }
