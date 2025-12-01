@@ -129,6 +129,7 @@ kotlin {
             implementation(libs.filekit.coil)
 
             implementation(libs.haze)
+            implementation(libs.materialMotion)
 
         }
         commonTest.dependencies {
