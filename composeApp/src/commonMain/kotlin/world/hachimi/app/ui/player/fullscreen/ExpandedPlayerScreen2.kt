@@ -1,7 +1,6 @@
-package world.hachimi.app.ui.player
+package world.hachimi.app.ui.player.fullscreen
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -9,7 +8,6 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -20,19 +18,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.graphics.shadow.Shadow
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
-import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisX
@@ -40,11 +33,11 @@ import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
-import world.hachimi.app.ui.LocalAnimatedVisibilityScope
-import world.hachimi.app.ui.LocalSharedTransitionScope
-import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.HollowIconToggleButton
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.*
 import world.hachimi.app.util.isValidHttpsUrl
@@ -56,33 +49,18 @@ fun ExpandedPlayerScreen2(
 ) {
     val uiState = global.player.playerState
 
-    with(LocalSharedTransitionScope.current) {
-        Box(
-            Modifier
-                .sharedBounds(
-                    rememberSharedContentState(SharedTransitionKeys.Bounds),
-                    LocalAnimatedVisibilityScope.current
-                )
-                .fillMaxSize()
-                .background(HachimiTheme.colorScheme.background)
-        ) {
-            // Background
-            DiffusionBackground(
-                modifier = Modifier.fillMaxSize(),
-                painter = rememberAsyncImagePainter(
-                    model = uiState.displayedCover,
-                    filterQuality = FilterQuality.None,
-                    placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
-                )
-            )
-            CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
-                ShrinkButton(
-                    modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopEnd),
-                    onClick = global::shrinkPlayer
-                )
-                Content(global, uiState)
-            }
-        }
+    BackgroundContainer(
+        rememberAsyncImagePainter(
+            model = uiState.displayedCover,
+            filterQuality = FilterQuality.None,
+            placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
+        )
+    ) {
+        ShrinkButton(
+            modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopEnd),
+            onClick = global::shrinkPlayer
+        )
+        Content(global, uiState)
     }
 }
 
@@ -187,24 +165,7 @@ fun rememberTabTransitionSpec(): TabTransitionSpec {
     return spec
 }
 
-private val jmidStyle = TextStyle(
-    fontSize = 12.sp,
-    fontWeight = FontWeight.Medium,
-    lineHeight = 16.sp
-)
 
-@Composable
-private fun JmidLabel(
-    modifier: Modifier = Modifier,
-    jmid: String
-) {
-    Text(
-        modifier = modifier,
-        text = jmid,
-        style = jmidStyle,
-        color = LocalContentColor.current.copy(0.6f)
-    )
-}
 
 @Composable
 private fun LeftPane(
@@ -244,38 +205,6 @@ private fun LeftPane(
             onCoverLayout(
                 IntOffset(x, coverY),
                 IntSize(coverSize, coverSize)
-            )
-        }
-    }
-}
-
-@Composable
-private fun Cover(
-    model: Any?,
-    modifier: Modifier = Modifier
-) {
-    with(LocalSharedTransitionScope.current) {
-        Box(
-            modifier
-                .sharedElement(
-                    rememberSharedContentState(SharedTransitionKeys.Cover),
-                    LocalAnimatedVisibilityScope.current
-                )
-                .size(256.dp)
-                .dropShadow(
-                    RoundedCornerShape(8.dp), Shadow(
-                        radius = 24.dp, color = Color.Black.copy(0.17f),
-                        offset = DpOffset(0.dp, 2.dp)
-                    )
-                )
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.Gray)
-        ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = model,
-                contentDescription = "Cover",
-                contentScale = ContentScale.Crop
             )
         }
     }
@@ -408,13 +337,7 @@ private fun BriefInfo(
             maxLines = 1, overflow = TextOverflow.Ellipsis
         )
 
-        subtitle?.takeIf { it.isNotBlank() }?.let {
-            Text(
-                text = it,
-                style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-        }
+        Titles(title = title, subtitle = subtitle)
 
         description?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
@@ -428,8 +351,8 @@ private fun BriefInfo(
 }
 
 @Composable
-private fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         AmbientUserChip(
             onClick = {
                 // TODO: Nav to user space
