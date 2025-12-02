@@ -28,36 +28,61 @@ fun PlayerProgress(
     bufferingProgress: Float = 0f,
     onProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    timeOnTop: Boolean = true,
     trackColor: Color = HachimiTheme.colorScheme.outline,
     barColor: Color = HachimiTheme.colorScheme.primary,
 ) {
     val playingProgress = (currentMillis.toDouble() / durationMillis).toFloat().coerceIn(0f, 1f)
 
     Column(modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = formatSongDuration(currentMillis.milliseconds),
-                style = labelTypography,
+        if (timeOnTop) {
+            TimeText(
+                currentMillis = currentMillis,
+                durationMillis = durationMillis,
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = formatSongDuration(durationMillis.milliseconds),
-                style = labelTypography
+            Spacer(Modifier.height(2.dp))
+            HachimiSlider(
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                progress = { playingProgress },
+                onProgressChange = onProgressChange,
+                trackProgress = { bufferingProgress },
+                trackColor = trackColor,
+                barColor = barColor
+            )
+        } else {
+            HachimiSlider(
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                progress = { playingProgress },
+                onProgressChange = onProgressChange,
+                trackProgress = { bufferingProgress },
+                trackColor = trackColor,
+                barColor = barColor
+            )
+            Spacer(Modifier.height(2.dp))
+            TimeText(
+                currentMillis = currentMillis,
+                durationMillis = durationMillis,
+                modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
 
-        Spacer(Modifier.height(2.dp))
-
-        HachimiSlider(
-            modifier = Modifier.fillMaxWidth().height(6.dp),
-            progress = { playingProgress },
-            onProgressChange = onProgressChange,
-            trackProgress = { bufferingProgress },
-            trackColor = trackColor,
-            barColor = barColor
+@Composable
+private fun TimeText(currentMillis: Long, durationMillis: Long, modifier: Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = formatSongDuration(currentMillis.milliseconds),
+            style = labelTypography,
+        )
+        Spacer(Modifier.weight(1f))
+        Text(
+            text = formatSongDuration(durationMillis.milliseconds),
+            style = labelTypography
         )
     }
 }
