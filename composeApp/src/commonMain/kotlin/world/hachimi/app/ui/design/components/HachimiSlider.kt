@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ fun HachimiSlider(
     applyMode: SliderChangeApplyMode = SliderChangeApplyMode.End,
     trackColor: Color = HachimiTheme.colorScheme.outline,
     barColor: Color = HachimiTheme.colorScheme.primary,
+    thickness: Dp = 2.dp
 ) {
     val animatedPlayingProgress by animateFloatAsState(
         targetValue = progress().coerceIn(0f..1f),
@@ -82,20 +84,24 @@ fun HachimiSlider(
             }
 
     ) {
+        val thicknessPx = thickness.toPx()
+
+        val y = size.height / 2 - thicknessPx / 2
+
         drawRoundRect(
             color = trackColor,
-            topLeft = Offset(0f, 2.dp.toPx()),
-            size = Size(size.width * trackProgress(), 2.dp.toPx()),
-            cornerRadius = CornerRadius(2.dp.toPx())
+            topLeft = Offset(0f, y),
+            size = Size(size.width * trackProgress(), thicknessPx),
+            cornerRadius = CornerRadius(thicknessPx)
         )
 
         val x = size.width * progress
 
         drawRoundRect(
             color = barColor,
-            topLeft = Offset(0f, 2.dp.toPx()),
-            size = Size(width = x, height = 2.dp.toPx()),
-            cornerRadius = CornerRadius(2.dp.toPx())
+            topLeft = Offset(0f, y),
+            size = Size(width = x, height = thicknessPx),
+            cornerRadius = CornerRadius(thicknessPx)
         )
 
         if (hovered || isDragging) {

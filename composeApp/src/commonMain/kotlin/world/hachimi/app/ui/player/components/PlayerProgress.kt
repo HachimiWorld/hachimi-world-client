@@ -29,6 +29,7 @@ fun PlayerProgress(
     onProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     timeOnTop: Boolean = true,
+    touchMode: Boolean = false,
     trackColor: Color = HachimiTheme.colorScheme.outline,
     barColor: Color = HachimiTheme.colorScheme.primary,
 ) {
@@ -48,7 +49,8 @@ fun PlayerProgress(
                 onProgressChange = onProgressChange,
                 trackProgress = { bufferingProgress },
                 trackColor = trackColor,
-                barColor = barColor
+                barColor = barColor,
+                thickness = if (touchMode) 4.dp else 2.dp
             )
         } else {
             HachimiSlider(
@@ -57,7 +59,8 @@ fun PlayerProgress(
                 onProgressChange = onProgressChange,
                 trackProgress = { bufferingProgress },
                 trackColor = trackColor,
-                barColor = barColor
+                barColor = barColor,
+                thickness = if (touchMode) 4.dp else 2.dp
             )
             Spacer(Modifier.height(2.dp))
             TimeText(

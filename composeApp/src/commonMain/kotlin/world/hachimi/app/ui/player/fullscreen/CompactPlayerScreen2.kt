@@ -139,7 +139,9 @@ private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
             bufferingProgress = uiState.downloadProgress,
             onProgressChange = { global.player.setSongProgress(it) },
             trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
-            barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f)
+            barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f),
+            timeOnTop = false,
+            touchMode = true
         )
 
         ControlButtons(
