@@ -8,6 +8,7 @@ import world.hachimi.app.LocalWindow
 internal actual fun SystemAppearance(darkTheme: Boolean) {
     val window = LocalWindow.current
     LaunchedEffect(darkTheme) {
+        // FIXME: Not work on Windows
         val bg = if (darkTheme) backgroundDark else backgroundLight
         window.background = java.awt.Color(bg.red, bg.green, bg.blue, bg.alpha)
     }
