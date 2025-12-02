@@ -18,6 +18,7 @@ import world.hachimi.app.LocalWindow
 @Composable
 fun WindowFrame(
     state: WindowState,
+    darkMode: Boolean,
     onCloseRequest: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -49,6 +50,7 @@ fun WindowFrame(
         modifier = Modifier.fillMaxWidth().onGloballyPositioned {
             captionBarRect = it.boundsInWindow()
         },
+        darkMode = darkMode,
         maximized = maximized,
         onMinClick = {
             User32.INSTANCE.ShowWindow(

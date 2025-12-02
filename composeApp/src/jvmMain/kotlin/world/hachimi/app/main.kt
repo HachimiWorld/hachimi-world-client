@@ -19,7 +19,6 @@ import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
-import world.hachimi.app.ui.LocalDarkMode
 import world.hachimi.app.ui.window.WindowFrame
 import java.awt.Dimension
 
@@ -55,11 +54,12 @@ fun main() {
                 }
             }
         ) {
-            val darkMode = global.darkMode ?: isSystemInDarkTheme()
-            CompositionLocalProvider(LocalWindow provides window, LocalDarkMode provides darkMode) {
+            CompositionLocalProvider(LocalWindow provides window) {
                 if (hostOs == OS.Windows) {
+                    val darkMode = global.darkMode ?: isSystemInDarkTheme()
                     WindowFrame(
                         state = windowState,
+                        darkMode = darkMode,
                         onCloseRequest = ::exitApplication
                     ) {
                         App()

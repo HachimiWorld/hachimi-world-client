@@ -16,7 +16,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
-import world.hachimi.app.ui.LocalDarkMode
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.theme.onSurfaceDark
 import world.hachimi.app.ui.theme.onSurfaceLight
@@ -24,6 +23,7 @@ import world.hachimi.app.ui.theme.onSurfaceLight
 @Composable
 fun CaptionBar(
     modifier: Modifier,
+    darkMode: Boolean,
     maximized: Boolean,
     onMinClick: () -> Unit,
     onMinBounds: (Rect) -> Unit,
@@ -32,7 +32,7 @@ fun CaptionBar(
     onCloseClick: () -> Unit,
     onCloseBounds: (Rect) -> Unit,
 ) {
-    CompositionLocalProvider(LocalContentColor provides if (LocalDarkMode.current) onSurfaceDark else onSurfaceLight) {
+    CompositionLocalProvider(LocalContentColor provides if (darkMode) onSurfaceDark else onSurfaceLight) {
         Row(modifier.height(32.dp), horizontalArrangement = Arrangement.End) {
             CaptionButton(
                 modifier = Modifier.onGloballyPositioned { onMinBounds(it.boundsInWindow()) },

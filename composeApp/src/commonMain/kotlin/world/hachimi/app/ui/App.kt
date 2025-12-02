@@ -1,6 +1,7 @@
 package world.hachimi.app.ui
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -43,7 +44,7 @@ fun App() {
     val global = koinInject<GlobalStore>()
     val rootDestination = global.nav.backStack.last()
 
-    AppTheme(darkTheme = LocalDarkMode.current) {
+    AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Box(Modifier.fillMaxSize()) {
                 SharedTransitionLayout {
