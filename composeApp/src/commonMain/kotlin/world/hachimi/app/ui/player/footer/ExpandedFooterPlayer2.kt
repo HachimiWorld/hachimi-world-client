@@ -1,10 +1,7 @@
-package world.hachimi.app.ui.player
+package world.hachimi.app.ui.player.footer
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -24,10 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.shadow.Shadow
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
@@ -38,9 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
@@ -59,7 +50,7 @@ fun ExpandedFooterPlayer2(
     val uiState = global.player.playerState
     AnimatedVisibility(visible = !global.playerExpanded) {
         CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedVisibility) {
-            Container(modifier = modifier.requiredWidthIn(min = 400.dp).height(104.dp), hazeState = hazeState) {
+            Container(modifier = modifier.requiredWidthIn(min = 400.dp).height(104.dp), hazeState = hazeState, content = {
                 FooterPlayerLayout {
                     Cover(
                         modifier = Modifier.layoutId("cover").padding(8.dp),
@@ -104,7 +95,7 @@ fun ExpandedFooterPlayer2(
                         onOpenInFullClick = { global.expandPlayer() },
                     )
                 }
-            }
+            }, shape = RoundedCornerShape(size = 24.dp))
         }
     }
 }
@@ -168,43 +159,6 @@ private fun FooterPlayerLayout(
 }
 
 @Composable
-private fun Container(
-    modifier: Modifier = Modifier,
-    hazeState: HazeState,
-    content: @Composable BoxScope.() -> Unit
-) {
-    Box(
-        modifier = modifier
-            .pointerInput(Unit) {}
-            .then(
-                with(LocalSharedTransitionScope.current) {
-                    Modifier.sharedBounds(
-                        rememberSharedContentState(SharedTransitionKeys.Bounds),
-                        LocalAnimatedVisibilityScope.current,
-                        resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                        exit = fadeOut()
-                    )
-                }
-            )
-            .fillMaxWidth()
-            .border(1.dp, HachimiTheme.colorScheme.outline, RoundedCornerShape(24.dp))
-            .dropShadow(
-                shape = RoundedCornerShape(size = 24.dp),
-                shadow = Shadow(color = Color.Black.copy(0.06f), radius = 16.dp, spread = 0.dp),
-            )
-            .clip(RoundedCornerShape(24.dp))
-            .hazeEffect(
-                hazeState, style = HazeStyle(
-                    backgroundColor = HachimiTheme.colorScheme.surface.copy(1f),
-                    blurRadius = 80.dp,
-                    tint = HazeTint(HachimiTheme.colorScheme.surface)
-                )
-            ),
-        content = content
-    )
-}
-
-@Composable
 private fun Cover(
     model: Any?,
     onClick: () -> Unit,
@@ -249,7 +203,7 @@ val titleTypography = TextStyle(
 )
 
 @Composable
-private fun Title(
+fun Title(
     text: String
 ) {
     Text(
@@ -268,7 +222,7 @@ val authorTypography = TextStyle(
 )
 
 @Composable
-private fun Author(
+fun Author(
     text: String
 ) {
     Text(
@@ -292,10 +246,14 @@ private fun ControlButton(
     Row(modifier) {
         PreviousButton(onClick = onPreviousClick)
         Spacer(Modifier.width(8.dp))
-        PlayPauseButton(playing = playing, onClick = {
-            if (playing) onPauseClick()
-            else onPlayClick()
-        })
+        PlayPauseButton(
+            modifier = Modifier.size(78.dp),
+            playing = playing,
+            onClick = {
+                if (playing) onPauseClick()
+                else onPlayClick()
+            }
+        )
         Spacer(Modifier.width(8.dp))
         NextButton(onClick = onNextClick)
     }
@@ -335,28 +293,6 @@ private fun NextButton(
     }
 }
 
-
-@Composable
-private fun PlayPauseButton(
-    playing: Boolean,
-    onClick: () -> Unit
-) {
-    AccentButton(
-        modifier = Modifier.size(78.dp),
-        onClick = onClick
-    ) {
-        if (playing) Icon(
-            Icons.Default.Pause,
-            contentDescription = "Pause",
-            tint = HachimiTheme.colorScheme.onSurfaceReverse
-        )
-        else Icon(
-            Icons.Default.PlayArrow,
-            contentDescription = "Play",
-            tint = HachimiTheme.colorScheme.onSurfaceReverse
-        )
-    }
-}
 
 @Composable
 private fun VolumeControl(

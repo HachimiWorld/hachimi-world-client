@@ -22,8 +22,8 @@ import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.home.HomeScreen
-import world.hachimi.app.ui.player.ExpandedFooterPlayer2
-import world.hachimi.app.ui.player.FooterPlayer
+import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
+import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
 import world.hachimi.app.ui.root.component.SideNavigation
@@ -107,17 +107,22 @@ private fun CompactScreen(
             }
         }
     ) {
-        Scaffold(
-            topBar = { TopAppBar(global, onExpandNavClick = {
-                scope.launch {
-                    drawerState.open()
+        val hazeState = rememberHazeState()
+        Box(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
+                TopAppBar(global, onExpandNavClick = {
+                    scope.launch {
+                        drawerState.open()
+                    }
+                })
+                Box(Modifier.weight(1f)) {
+                    content()
                 }
-            }) },
-            bottomBar = { FooterPlayer() }
-        ) {
-            Box(Modifier.padding(it)) {
-                content()
             }
+            CompactFooterPlayer2(
+                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom).padding(24.dp),
+                hazeState = hazeState
+            )
         }
     }
 }
