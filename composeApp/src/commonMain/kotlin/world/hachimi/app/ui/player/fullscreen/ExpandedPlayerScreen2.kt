@@ -128,6 +128,7 @@ private fun Content(
                         lines = uiState.lyricsLines,
                         loading = uiState.fetchingMetadata,
                     )
+                    else -> {}
                 }
             }
             PagerButtons(
@@ -146,13 +147,18 @@ private fun ShrinkButton(modifier: Modifier, onClick: () -> Unit) {
     }
 }
 
-typealias TabTransitionSpec = AnimatedContentTransitionScope<Page>.() -> ContentTransform
+typealias TabTransitionSpec = AnimatedContentTransitionScope<Page?>.() -> ContentTransform
 
 @Composable
 fun rememberTabTransitionSpec(): TabTransitionSpec {
     val sliderDistance = rememberSlideDistance()
     val spec: TabTransitionSpec = {
-        if (targetState < initialState) {
+        val initialState = initialState
+        val targetState = targetState
+
+        if (initialState == null || targetState == null) {
+            fadeIn() togetherWith fadeOut()
+        } else if (targetState < initialState) {
             // Slide to the left page
             materialSharedAxisX(forward = false, slideDistance = sliderDistance)
         } else {
