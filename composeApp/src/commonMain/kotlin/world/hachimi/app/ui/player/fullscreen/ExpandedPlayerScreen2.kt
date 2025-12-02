@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,11 +32,12 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.HollowIconToggleButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.*
+import world.hachimi.app.ui.player.fullscreen.components.Page
+import world.hachimi.app.ui.player.fullscreen.components.PagerButtons
 import world.hachimi.app.util.isValidHttpsUrl
 import kotlin.math.roundToInt
 
@@ -379,34 +377,3 @@ fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?
     }
 }
 
-enum class Page {
-    Info, Queue, Lyrics
-}
-
-@Composable
-private fun PagerButtons(
-    modifier: Modifier = Modifier,
-    currentPage: Page,
-    onPageSelect: (Page) -> Unit
-) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        HollowIconToggleButton(
-            currentPage == Page.Info,
-            { onPageSelect(Page.Info) },
-            icon = Icons.Outlined.Info,
-            "Info"
-        )
-        HollowIconToggleButton(
-            currentPage == Page.Queue,
-            { onPageSelect(Page.Queue) },
-            icon = Icons.AutoMirrored.Outlined.List,
-            "Music Queue"
-        )
-        HollowIconToggleButton(
-            currentPage == Page.Lyrics,
-            { onPageSelect(Page.Lyrics) },
-            icon = Icons.AutoMirrored.Outlined.Chat,
-            "Lyrics"
-        )
-    }
-}
