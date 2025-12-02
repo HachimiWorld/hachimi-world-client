@@ -1,9 +1,6 @@
 package world.hachimi.app.ui.player
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -291,6 +288,10 @@ private fun Footer(
     hideInfo: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val infoHovered by interactionSource.collectIsHoveredAsState()
+    val showControl = hideInfo || infoHovered
+
     Column(modifier) {
         PlayerProgress(
             durationMillis = uiState.displayedDurationMillis,
@@ -303,21 +304,18 @@ private fun Footer(
 
         Spacer(Modifier.height(8.dp))
 
-        AuthorAndPV(
-            authorName = uiState.displayedAuthor,
-            hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
-            pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
-        )
+        AnimatedVisibility(visible = !hideInfo) {
+            AuthorAndPV(
+                authorName = uiState.displayedAuthor,
+                hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
+                pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
+            )
+        }
 
-        val interactionSource = remember { MutableInteractionSource() }
         Box(Modifier.weight(1f).hoverable(interactionSource)) {
-            val hovered by interactionSource.collectIsHoveredAsState()
-
-            val showControl = hideInfo || hovered
-
             Crossfade(showControl) { showControl ->
                 if (showControl) Controls(
-                    modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
+                    modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
                     playing = uiState.isPlaying,
                     onPreviousClick = { global.player.previous() },
                     onPlayOrPauseClick = { global.player.playOrPause() },
