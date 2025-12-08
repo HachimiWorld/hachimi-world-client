@@ -3,6 +3,8 @@ package world.hachimi.app.ui.player.fullscreen
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -24,6 +26,8 @@ import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.player.components.InfoTabContent
+import world.hachimi.app.ui.player.components.Lyrics2
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.fullscreen.components.Page
 import world.hachimi.app.ui.player.fullscreen.components.PagerButtons2
@@ -33,6 +37,8 @@ fun CompactPlayerScreen2(
     global: GlobalStore = koinInject()
 ) {
     val uiState = global.player.playerState
+    var currentPage by remember { mutableStateOf<Page?>(null) }
+    val scrollState = rememberLazyListState()
 
     BackgroundContainer(
         rememberAsyncImagePainter(
@@ -44,11 +50,13 @@ fun CompactPlayerScreen2(
         Column(
             Modifier.fillMaxSize()
                 .padding(top = currentSafeAreaInsets().top, bottom = currentSafeAreaInsets().bottom)
-                .padding(vertical = 24.dp, horizontal = 32.dp)
+                .padding(vertical = 24.dp)
         ) {
-            var currentPage by remember { mutableStateOf<Page?>(null) }
 
-            HachimiIconButton(onClick = { global.shrinkPlayer() }) {
+            HachimiIconButton(
+                modifier = Modifier.padding(start = 32.dp),
+                onClick = { global.shrinkPlayer() }
+            ) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Shrink")
             }
 
@@ -59,15 +67,34 @@ fun CompactPlayerScreen2(
                 ) { tab ->
                     when (tab) {
                         null -> PlayerTab(uiState, global)
-                        Page.Info -> InfoTab()
+                        Page.Info -> InfoTab(uiState)
                         Page.Queue -> QueueTab()
-                        Page.Lyrics -> LyricsTab()
+                        Page.Lyrics -> LyricsTab(global, uiState, scrollState)
                     }
                 }
             }
 
+            PlayerProgress(
+                modifier = Modifier.padding(top = 24.dp).padding(horizontal = 32.dp),
+                durationMillis = uiState.displayedDurationMillis,
+                currentMillis = uiState.displayedCurrentMillis,
+                bufferingProgress = uiState.downloadProgress,
+                onProgressChange = { global.player.setSongProgress(it) },
+                trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
+                barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f),
+                timeOnTop = false,
+                touchMode = true
+            )
+            ControlButtons(
+                modifier = Modifier.padding(top = 16.dp).padding(horizontal = 32.dp).fillMaxWidth(),
+                playing = uiState.isPlaying,
+                onPreviousClick = { global.player.previous() },
+                onNextClick = { global.player.next() },
+                onPlayClick = { global.player.playOrPause() },
+                onPauseClick = { global.player.playOrPause() }
+            )
             PagerButtons2(
-                modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
+                modifier = Modifier.padding(top = 16.dp).padding(horizontal = 32.dp).fillMaxWidth(),
                 currentPage = currentPage,
                 onPageSelect = {
                     currentPage =
@@ -81,7 +108,7 @@ fun CompactPlayerScreen2(
 
 @Composable
 private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
-    Column(Modifier.padding(top = 32.dp)) {
+    Column(Modifier.padding(top = 32.dp).padding(horizontal = 32.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             JmidLabel(
                 modifier = Modifier,
@@ -131,7 +158,7 @@ private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
                 Icon(Icons.Default.MoreVert, contentDescription = "More")
             }
         }
-
+/*
         PlayerProgress(
             modifier = Modifier.padding(top = 24.dp),
             durationMillis = uiState.displayedDurationMillis,
@@ -151,25 +178,40 @@ private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
             onNextClick = { global.player.next() },
             onPlayClick = { global.player.playOrPause() },
             onPauseClick = { global.player.playOrPause() }
+        )*/
+    }
+}
+
+@Composable
+private fun InfoTab(uiState: PlayerUIState) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 32.dp)) {
+        Header(modifier = Modifier.fillMaxWidth())
+        InfoTabContent(Modifier.weight(1f), uiState)
+    }
+}
+
+@Composable
+private fun LyricsTab(
+    global: GlobalStore,
+    uiState: PlayerUIState,
+    scrollState: LazyListState
+) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 32.dp)) {
+        Header(modifier = Modifier.fillMaxWidth())
+        Lyrics2(
+            modifier = Modifier.weight(1f),
+            lazyListState = scrollState,
+            supportTimedLyrics = uiState.timedLyricsEnabled,
+            currentLine = uiState.currentLyricsLine,
+            lines = uiState.lyricsLines,
+            loading = uiState.fetchingMetadata,
         )
     }
 }
 
 @Composable
-private fun InfoTab() {
-
-}
-
-@Composable
-private fun LyricsTab() {
-    Column(Modifier.fillMaxSize()) {
-
-    }
-}
-
-@Composable
 private fun QueueTab() {
-
+    Box(Modifier.fillMaxSize()) {}
 }
 
 @Composable

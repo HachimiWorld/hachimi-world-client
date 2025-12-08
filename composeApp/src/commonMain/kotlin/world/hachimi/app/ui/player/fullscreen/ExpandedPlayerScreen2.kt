@@ -121,7 +121,7 @@ private fun Content(
 
                     Page.Queue -> Box(Modifier.fillMaxSize())
                     Page.Lyrics -> Lyrics2(
-                        modifier = Modifier.fillMaxSize().padding(end = 64.dp),
+                        modifier = Modifier.fillMaxSize().padding(end = 64.dp).padding(vertical = 64.dp),
                         lazyListState = scrollState,
                         supportTimedLyrics = uiState.timedLyricsEnabled,
                         currentLine = uiState.currentLyricsLine,
@@ -335,12 +335,6 @@ private fun BriefInfo(
     description: String?
 ) {
     Column(modifier) {
-        Text(
-            text = title,
-            style = titleStyle, color = LocalContentColor.current,
-            maxLines = 1, overflow = TextOverflow.Ellipsis
-        )
-
         Titles(title = title, subtitle = subtitle)
 
         description?.takeIf { it.isNotBlank() }?.let {
