@@ -39,6 +39,7 @@ import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.InfoTabContent
 import world.hachimi.app.ui.player.components.Lyrics2
 import world.hachimi.app.ui.player.components.PlayerProgress
+import world.hachimi.app.ui.player.components.fadingEdges
 import world.hachimi.app.ui.player.footer.titleTypography
 import world.hachimi.app.ui.player.fullscreen.components.Page
 import world.hachimi.app.ui.player.fullscreen.components.PagerButtons2
@@ -235,12 +236,14 @@ private fun LyricsTab(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = 32.dp)) {
         Lyrics2(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).fadingEdges(42.dp, 42.dp),
             lazyListState = scrollState,
             supportTimedLyrics = uiState.timedLyricsEnabled,
             currentLine = uiState.currentLyricsLine,
             lines = uiState.lyricsLines,
             loading = uiState.fetchingMetadata,
+            centralizeFirstLine = false,
+            contentPadding = PaddingValues(top = 42.dp)
         )
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -42,11 +43,13 @@ fun Lyrics2(
     currentLine: Int,
     lines: List<String>,
     lazyListState: LazyListState = rememberLazyListState(),
+    centralizeFirstLine: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues.Zero,
     modifier: Modifier
 ) {
     var firstJump by remember { mutableStateOf(true) }
 
-    BoxWithConstraints(modifier.fadingEdges()) {
+    BoxWithConstraints(modifier) {
         LaunchedEffect(currentLine) {
             if (currentLine == -1) {
                 lazyListState.scrollToItem(0)
@@ -86,10 +89,12 @@ fun Lyrics2(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = lazyListState,
-                contentPadding = PaddingValues(
-                    top = middleToTop,
-                    bottom = maxHeight / 2,
-                ),
+                contentPadding = if (centralizeFirstLine) PaddingValues(
+                    top = middleToTop + contentPadding.calculateTopPadding(),
+                    bottom = maxHeight / 2 + contentPadding.calculateBottomPadding(),
+                    start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
+                    end = contentPadding.calculateEndPadding(LocalLayoutDirection.current)
+                ) else contentPadding,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 itemsIndexed(lines) { index, line ->

@@ -125,7 +125,7 @@ private fun Content(
 
                     Page.Queue -> Box(Modifier.fillMaxSize())
                     Page.Lyrics -> Lyrics2(
-                        modifier = Modifier.fillMaxSize().padding(end = 64.dp).padding(vertical = 64.dp),
+                        modifier = Modifier.fillMaxSize().padding(end = 64.dp).padding(vertical = 64.dp).fadingEdges(),
                         lazyListState = scrollState,
                         supportTimedLyrics = uiState.timedLyricsEnabled,
                         currentLine = uiState.currentLyricsLine,
