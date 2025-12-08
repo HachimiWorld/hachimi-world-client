@@ -181,7 +181,8 @@ private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
                     modifier = Modifier.padding(top = 8.dp),
                     authorName = uiState.displayedAuthor,
                     hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                    pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
+                    pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                    pvAlignToEnd = false
                 )
             }
             HachimiIconButton(onClick = {
@@ -275,7 +276,8 @@ private fun Header(
                 modifier = Modifier.padding(top = 8.dp),
                 authorName = author,
                 hasMultipleArtists = hasMultipleArtists,
-                pvLink = pvLink
+                pvLink = pvLink,
+                pvAlignToEnd = false
             )
         }
         HachimiIconButton(onClick = {

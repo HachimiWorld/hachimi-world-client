@@ -244,7 +244,8 @@ private fun Footer(
             AuthorAndPV(
                 authorName = uiState.displayedAuthor,
                 hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
-                pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
+                pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                pvAlignToEnd = true
             )
         }
 
@@ -352,7 +353,7 @@ private fun BriefInfo(
 }
 
 @Composable
-fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?, modifier: Modifier = Modifier) {
+fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?, modifier: Modifier = Modifier, pvAlignToEnd: Boolean) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         AmbientUserChip(
             onClick = {
@@ -371,7 +372,7 @@ fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?
         }
 
         pvLink?.takeIf { isValidHttpsUrl(it) }?.let {
-            Spacer(Modifier.weight(1f))
+            if (pvAlignToEnd) Spacer(Modifier.weight(1f))
             AmbientPVChip(
                 platform = it,
                 onClick = { getPlatform().openUrl(it) }
