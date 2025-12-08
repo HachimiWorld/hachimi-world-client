@@ -22,6 +22,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import world.hachimi.app.ui.design.HachimiTheme
@@ -55,34 +56,35 @@ fun HachimiSlider(
             .defaultMinSize(minHeight = 6.dp, minWidth = 100.dp)
             .hoverable(interactionSource)
             .pointerInput(Unit) {
-                awaitEachGesture {
-                    val down = awaitFirstDown()
-                    offsetX = down.position.x
-                    draggingProgress = (down.position.x / size.width).coerceIn(0f, 1f)
-                    isDragging = true
+                coroutineScope {
+                    awaitEachGesture {
+                        val down = awaitFirstDown()
+                        offsetX = down.position.x
+                        draggingProgress = (down.position.x / size.width).coerceIn(0f, 1f)
+                        isDragging = true
 
-                    while (true) {
-                        val change = awaitDragOrCancellation(down.id)
-                        if (change != null && change.pressed) {
-                            val summed = offsetX + change.positionChange().x
-                            change.consume()
-                            offsetX = summed
-                            draggingProgress = (summed / size.width).coerceIn(0f, 1f)
-                            if (applyMode == SliderChangeApplyMode.Immediate) {
-                                onProgressChange(draggingProgress)
+                        while (true) {
+                            val change = awaitDragOrCancellation(down.id)
+                            if (change != null && change.pressed) {
+                                val summed = offsetX + change.positionChange().x
+                                change.consume()
+                                offsetX = summed
+                                draggingProgress = (summed / size.width).coerceIn(0f, 1f)
+                                if (applyMode == SliderChangeApplyMode.Immediate) {
+                                    onProgressChange(draggingProgress)
+                                }
+                            } else {
+                                break
                             }
-                        } else {
-                            break
                         }
-                    }
-                    onProgressChange(draggingProgress)
-                    scope.launch {
-                        delay(200)
-                        isDragging = false
+                        onProgressChange(draggingProgress)
+                        scope.launch {
+                            delay(200)
+                            isDragging = false
+                        }
                     }
                 }
             }
-
     ) {
         val thicknessPx = thickness.toPx()
 

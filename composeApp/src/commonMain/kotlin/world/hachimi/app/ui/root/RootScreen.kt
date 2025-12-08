@@ -22,6 +22,7 @@ import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.home.HomeScreen
+import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
@@ -120,7 +121,7 @@ private fun CompactScreen(
                 }
             }
             CompactFooterPlayer2(
-                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom).padding(24.dp),
+                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom).padding(24.dp).padding(bottom = currentSafeAreaInsets().bottom),
                 hazeState = hazeState
             )
         }

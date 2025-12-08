@@ -8,6 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
 
 @Composable
 fun Surface(
@@ -18,7 +21,9 @@ fun Surface(
     content: @Composable () -> Unit
 ) {
     Box(
-        modifier = modifier.background(color, shape).clip(shape),
+        modifier = modifier.background(color, shape).clip(shape)
+            .semantics { isTraversalGroup = true }
+            .pointerInput(Unit) {},
         propagateMinConstraints = true
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {

@@ -16,7 +16,7 @@ fun PlayerScreen2() {
         global.shrinkPlayer()
     }
     BoxWithConstraints {
-        if (maxWidth < WindowSize.MEDIUM) CompactPlayerScreen2()
+        if (maxWidth < WindowSize.EXPANDED) CompactPlayerScreen2()
         else ExpandedPlayerScreen2()
     }
 }
