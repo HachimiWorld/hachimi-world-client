@@ -234,7 +234,7 @@ private fun LyricsTab(
             lines = uiState.lyricsLines,
             loading = uiState.fetchingMetadata,
             centralizeFirstLine = false,
-            contentPadding = PaddingValues(top = 42.dp)
+            contentPadding = PaddingValues(vertical = 42.dp)
         )
     }
 }
