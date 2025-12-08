@@ -22,7 +22,8 @@ data class SafeAreaInsets(
 fun currentSafeAreaInsets(): SafeAreaInsets {
     return when (remember { getCurrentPlatform() }) {
         Platform.MacOS -> SafeAreaInsets(top = 28.dp)
-        Platform.Windows, Platform.Linux -> SafeAreaInsets(top = 32.dp)
+        Platform.Windows -> SafeAreaInsets(top = 32.dp)
+        Platform.Linux -> SafeAreaInsets()
         Platform.Android, Platform.iOS -> {
             val density = LocalDensity.current
             val insets = WindowInsets.safeDrawing
