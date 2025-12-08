@@ -24,8 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
@@ -37,12 +40,8 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.InfoTabContent
-import world.hachimi.app.ui.player.components.Lyrics2
 import world.hachimi.app.ui.player.components.PlayerProgress
-import world.hachimi.app.ui.player.components.fadingEdges
-import world.hachimi.app.ui.player.footer.titleTypography
-import world.hachimi.app.ui.player.fullscreen.components.Page
-import world.hachimi.app.ui.player.fullscreen.components.PagerButtons2
+import world.hachimi.app.ui.player.fullscreen.components.*
 
 @Composable
 fun CompactPlayerScreen2(
@@ -79,7 +78,7 @@ fun CompactPlayerScreen2(
                 targetState = showTab,
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 transitionSpec = { fadeIn() togetherWith fadeOut() }
-            ) {showTab ->
+            ) { showTab ->
                 if (!showTab) {
                     PlayerTab(uiState, global)
                 } else {
@@ -274,7 +273,7 @@ private fun Header(
             Text(
                 modifier = Modifier,
                 text = title,
-                style = titleTypography
+                style = titleStyle
             )
             AuthorAndPV(
                 modifier = Modifier.padding(top = 8.dp),
@@ -381,3 +380,9 @@ private fun NextButton(
         }
     }
 }
+
+private val titleStyle = TextStyle(
+    fontWeight = FontWeight.Medium,
+    fontSize = 16.sp,
+    lineHeight = 24.sp
+)

@@ -26,6 +26,9 @@ import world.hachimi.app.ui.component.Chip
 import world.hachimi.app.ui.component.HintChip
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.player.fullscreen.components.HintUserChip
+import world.hachimi.app.ui.player.fullscreen.components.PVChip
+import world.hachimi.app.ui.player.fullscreen.components.UserChip
 import world.hachimi.app.util.isValidHttpsUrl
 
 @Composable
@@ -39,13 +42,13 @@ fun InfoTabContent(
             // No max line limit
             Text(
                 text = uiState.displayedTitle,
-                style = titleStyle,
+                style = propertyTitleStyle,
                 color = HachimiTheme.colorScheme.onSurfaceReverse
             )
             readySongInfo?.subtitle?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     text = it,
-                    style = subtitleStyle,
+                    style = contentSubtitleStyle,
                     color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f)
                 )
             }
@@ -77,7 +80,7 @@ fun InfoTabContent(
                 SelectionContainer {
                     Text(
                         modifier = Modifier.padding(top = 16.dp),
-                        text = it, style = subtitleStyle,
+                        text = it, style = contentSubtitleStyle,
                         color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f)
                     )
                 }
@@ -227,20 +230,20 @@ private fun PropertyLine(
     content: @Composable () -> Unit
 ) {
     Row(verticalAlignment = verticalAlignment) {
-        Text(text = label, style = titleStyle)
+        Text(text = label, style = propertyTitleStyle)
         Box(Modifier.padding(start = 16.dp).weight(1f), contentAlignment = Alignment.CenterEnd) {
             content()
         }
     }
 }
 
-private val titleStyle = TextStyle(
+private val propertyTitleStyle = TextStyle(
     fontWeight = FontWeight.Medium,
     fontSize = 16.sp,
     lineHeight = 24.sp
 )
 
-private val subtitleStyle = TextStyle(
+private val contentSubtitleStyle = TextStyle(
     fontWeight = FontWeight.Medium,
     fontSize = 12.sp,
     lineHeight = 16.sp

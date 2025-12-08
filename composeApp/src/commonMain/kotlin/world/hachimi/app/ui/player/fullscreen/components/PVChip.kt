@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.components
+package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width

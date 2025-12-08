@@ -25,11 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import dev.chrisbanes.haze.HazeState
 import org.koin.compose.koinInject
@@ -40,6 +36,8 @@ import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.player.components.PlayerProgress
+import world.hachimi.app.ui.player.footer.components.Author
+import world.hachimi.app.ui.player.footer.components.Title
 
 @Composable
 fun ExpandedFooterPlayer2(
@@ -194,44 +192,6 @@ private fun Cover(
             }
         }
     }
-}
-
-val titleTypography = TextStyle(
-    fontWeight = FontWeight.Medium,
-    fontSize = 16.sp,
-    lineHeight = 24.sp
-)
-
-@Composable
-fun Title(
-    text: String
-) {
-    Text(
-        text = text,
-        style = titleTypography,
-        color = HachimiTheme.colorScheme.onSurface,
-        overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
-    )
-}
-
-val authorTypography = TextStyle(
-    fontWeight = FontWeight.Normal,
-    fontSize = 16.sp,
-    lineHeight = 24.sp,
-)
-
-@Composable
-fun Author(
-    text: String
-) {
-    Text(
-        text = text,
-        style = authorTypography,
-        color = HachimiTheme.colorScheme.onSurfaceVariant,
-        overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
-    )
 }
 
 @Composable

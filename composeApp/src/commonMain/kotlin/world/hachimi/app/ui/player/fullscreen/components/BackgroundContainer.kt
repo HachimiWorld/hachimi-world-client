@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.fullscreen
+package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

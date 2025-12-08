@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.components
+package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
