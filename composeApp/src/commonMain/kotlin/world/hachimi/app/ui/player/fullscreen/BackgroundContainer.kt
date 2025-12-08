@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
@@ -20,24 +23,34 @@ fun BackgroundContainer(
     painter: Painter,
     content: @Composable BoxScope.() -> Unit
 ) {
-    with(LocalSharedTransitionScope.current) {
-        Box(
-            Modifier
-                .sharedBounds(
-                    rememberSharedContentState(SharedTransitionKeys.Bounds),
-                    LocalAnimatedVisibilityScope.current
-                )
-                .fillMaxSize()
-                .background(HachimiTheme.colorScheme.background)
-        ) {
-            // Background
-            DiffusionBackground(
-                modifier = Modifier.fillMaxSize(),
-                painter = painter
+    Box(
+        Modifier
+            .then(
+                with(LocalSharedTransitionScope.current) {
+                    Modifier.sharedBounds(
+                        rememberSharedContentState(SharedTransitionKeys.Bounds),
+                        LocalAnimatedVisibilityScope.current
+                    )
+                }
             )
-            CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
-                content()
-            }
+            .fillMaxSize()
+            .background(HachimiTheme.colorScheme.background)
+    ) {
+        // Background
+        DiffusionBackground(
+            modifier = Modifier.fillMaxSize(),
+            painter = painter
+        )
+        // Use a singleton Box container to provide content.
+        // And use `pointerInput` to intercept unconsumed touch events.
+        // This will enable the MinimumInteractiveComponentSize to improve the touching user experience.
+        CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
+            Box(
+                modifier = Modifier
+                    .semantics { isTraversalGroup = true }
+                    .pointerInput(Unit) {},
+                content = content
+            )
         }
     }
 }
