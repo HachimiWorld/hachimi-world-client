@@ -21,8 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +28,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
@@ -51,15 +48,9 @@ fun CompactPlayerScreen2(
     var showTab by rememberSaveable { mutableStateOf(false) }
     var currentPage by rememberSaveable { mutableStateOf<Page?>(null) }
     val scrollState = rememberLazyListState()
+    val (painter, dominantColor) = rememberAsyncPainterAndColor(uiState.displayedCover)
 
-    BackgroundContainer(
-        rememberAsyncImagePainter(
-            model = uiState.displayedCover,
-            filterQuality = FilterQuality.None,
-            placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
-        ),
-        dominantColor = Color.Gray
-    ) {
+    BackgroundContainer(painter, dominantColor) {
         Column(
             Modifier.fillMaxSize()
                 .padding(top = currentSafeAreaInsets().top, bottom = currentSafeAreaInsets().bottom)
