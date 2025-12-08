@@ -41,7 +41,9 @@ fun rememberAsyncPainterAndColor(
 
             is SuccessResult -> {
                 val image = result.image
-                val avgColor = withContext(Dispatchers.Default) { calculateAvgColor(image) }
+                // Get from cache
+                val avgColor = AvgColorMemoryCache.getFromCache(model) ?: withContext(Dispatchers.Default) { calculateAvgColor(image) }
+                AvgColorMemoryCache.setCache(model, avgColor)
                 println("AVG Color: $avgColor, Luminance: ${avgColor.luminance()}")
                 painter = image.asPainter(context, FilterQuality.None)
                 dominantColor = avgColor
@@ -49,4 +51,16 @@ fun rememberAsyncPainterAndColor(
         }
     }
     return painter to dominantColor
+}
+
+private object AvgColorMemoryCache {
+    private val cache = mutableMapOf<String?, Color>()
+
+    fun getFromCache(model: String?): Color? {
+        return cache[model]
+    }
+
+    fun setCache(model: String?, color: Color) {
+        cache[model] = color
+    }
 }
