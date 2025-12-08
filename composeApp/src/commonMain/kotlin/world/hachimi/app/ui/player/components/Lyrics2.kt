@@ -12,10 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -47,12 +44,19 @@ fun Lyrics2(
     lazyListState: LazyListState = rememberLazyListState(),
     modifier: Modifier
 ) {
+    var firstJump by remember { mutableStateOf(true) }
+
     BoxWithConstraints(modifier.fadingEdges()) {
         LaunchedEffect(currentLine) {
             if (currentLine == -1) {
                 lazyListState.scrollToItem(0)
             } else {
-                lazyListState.animateScrollToItem(currentLine)
+                if (firstJump) {
+                    lazyListState.scrollToItem(currentLine)
+                    firstJump = false
+                } else {
+                    lazyListState.animateScrollToItem(currentLine)
+                }
             }
         }
 
