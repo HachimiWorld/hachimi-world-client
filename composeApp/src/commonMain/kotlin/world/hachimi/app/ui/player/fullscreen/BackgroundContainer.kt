@@ -7,22 +7,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
+import world.hachimi.app.ui.LocalDarkMode
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
+import world.hachimi.app.ui.design.HachimiPalette
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.DiffusionBackground
 import world.hachimi.app.ui.design.components.LocalContentColor
 
 @Composable
 fun BackgroundContainer(
-    painter: Painter,
+    painter: Painter?,
+    dominantColor: Color,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val darkTheme = dominantColor.luminance() < 0.5f
+
     Box(
         Modifier
             .then(
@@ -37,14 +44,19 @@ fun BackgroundContainer(
             .background(HachimiTheme.colorScheme.background)
     ) {
         // Background
-        DiffusionBackground(
+        if (painter != null) DiffusionBackground(
             modifier = Modifier.fillMaxSize(),
             painter = painter
         )
+
+
         // Use a singleton Box container to provide content.
         // And use `pointerInput` to intercept unconsumed touch events.
         // This will enable the MinimumInteractiveComponentSize to improve the touching user experience.
-        CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
+        CompositionLocalProvider(
+            LocalContentColor provides if (darkTheme) HachimiPalette.onSurfaceDark else HachimiPalette.onSurfaceLight,
+            LocalDarkMode provides darkTheme
+        ) {
             Box(
                 modifier = Modifier
                     .semantics { isTraversalGroup = true }

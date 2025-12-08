@@ -58,7 +58,8 @@ fun CompactPlayerScreen2(
             model = uiState.displayedCover,
             filterQuality = FilterQuality.None,
             placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
-        )
+        ),
+        dominantColor = Color.Gray
     ) {
         Column(
             Modifier.fillMaxSize()

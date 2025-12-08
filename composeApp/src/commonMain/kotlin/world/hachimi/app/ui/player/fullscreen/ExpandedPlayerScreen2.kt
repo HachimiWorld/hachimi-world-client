@@ -15,21 +15,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
-import coil3.compose.rememberAsyncImagePainter
+import coil3.SingletonImageLoader
+import coil3.compose.LocalPlatformContext
+import coil3.compose.asPainter
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.size.Size
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.ui.calculateAvgColor
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.LocalContentColor
@@ -46,13 +58,36 @@ fun ExpandedPlayerScreen2(
     global: GlobalStore = koinInject()
 ) {
     val uiState = global.player.playerState
+    val context = LocalPlatformContext.current
+    var painter by remember { mutableStateOf<Painter?>(null) }
+    var dominantColor by remember { mutableStateOf(Color.Gray) }
+
+    LaunchedEffect(uiState.displayedCover) {
+        val request = ImageRequest.Builder(context)
+            .data(uiState.displayedCover)
+            .size(Size.ORIGINAL)
+            // .size(widthPx, heightPx)
+            .build()
+
+        val result = SingletonImageLoader.get(context).execute(request)
+        when (result) {
+            is ErrorResult -> {
+                painter = ColorPainter(Color.Gray)
+                dominantColor = Color.Gray
+            }
+            is SuccessResult -> {
+                val image = result.image
+                val avgColor = withContext(Dispatchers.Default) { calculateAvgColor(image) }
+                println("AVG Color: $avgColor, Luminance: ${avgColor.luminance()}")
+                painter = image.asPainter(context, FilterQuality.None)
+                dominantColor = avgColor
+            }
+        }
+    }
 
     BackgroundContainer(
-        rememberAsyncImagePainter(
-            model = uiState.displayedCover,
-            filterQuality = FilterQuality.None,
-            placeholder = ColorPainter(HachimiTheme.colorScheme.onSurface)
-        )
+        painter = painter,
+        dominantColor = dominantColor
     ) {
         ShrinkButton(
             modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopEnd),

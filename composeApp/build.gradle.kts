@@ -81,21 +81,6 @@ kotlin {
     }
 
     sourceSets {
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.browser)
-            implementation(libs.androidx.core.ktx)
-            implementation(libs.androidx.media3.session)
-            implementation(libs.androidx.media3.exoplayer)
-            implementation(libs.androidx.media3.exoplayer.dash)
-
-            implementation(libs.koin.android)
-            implementation(libs.room.runtime)
-
-            implementation(libs.ktor.client.cio)
-            implementation(libs.androidx.datastore.preferences)
-        }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
@@ -129,38 +114,69 @@ kotlin {
             implementation(libs.filekit.coil)
 
             implementation(libs.haze)
-            implementation(libs.materialMotion)
-
+//            implementation(libs.kmpalette.core)
+//            implementation(libs.materialMotion)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs) {
-                exclude("org.jetbrains.compose.material")
-            }
-            implementation(libs.kotlinx.coroutinesSwing)
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.browser)
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.media3.session)
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.exoplayer.dash)
+
+            implementation(libs.koin.android)
+            implementation(libs.room.runtime)
 
             implementation(libs.ktor.client.cio)
-            implementation(libs.logback)
-
             implementation(libs.androidx.datastore.preferences)
+        }
+        val nonAndroidMain by creating {
+            dependsOn(commonMain.get())
+        }
+        jvmMain {
+            dependsOn(nonAndroidMain)
+            dependencies {
+                implementation(compose.desktop.currentOs) {
+                    exclude("org.jetbrains.compose.material")
+                }
+                implementation(libs.kotlinx.coroutinesSwing)
+
+                implementation(libs.ktor.client.cio)
+                implementation(libs.logback)
+
+                implementation(libs.androidx.datastore.preferences)
 //            implementation(libs.room.runtime)
 //            implementation(libs.androidx.sqlite.bundled)
-            implementation(libs.mp3spi)
-            implementation(libs.jflac)
+                implementation(libs.mp3spi)
+                implementation(libs.jflac)
 
-            implementation(libs.jna)
-            implementation(libs.jna.platform)
+                implementation(libs.jna)
+                implementation(libs.jna.platform)
+            }
         }
-        webMain.dependencies {
-            implementation(libs.ktor.client.cio)
-            implementation(libs.kotlinx.browser)
-            implementation(npm("howler", "2.2.4"))
+        webMain {
+            dependencies {
+                implementation(libs.ktor.client.cio)
+                implementation(libs.kotlinx.browser)
+                implementation(npm("howler", "2.2.4"))
+            }
         }
-        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach {
-            it.dependencies {
-                implementation(libs.ktor.client.darwin)
+        jsMain {
+            dependsOn(nonAndroidMain)
+        }
+        wasmJsMain {
+            dependsOn(nonAndroidMain)
+        }
+        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { iosTarget->
+            iosTarget {
+                dependsOn(nonAndroidMain)
+                dependencies {
+                    implementation(libs.ktor.client.darwin)
+                }
             }
         }
     }
