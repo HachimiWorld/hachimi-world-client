@@ -72,9 +72,12 @@ private fun Content(
     var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
     var coverSize by remember { mutableStateOf(IntSize.Zero) }
 
+    val leftPaneInteractionSource = remember { MutableInteractionSource() }
+    val leftPaneHovered by leftPaneInteractionSource.collectIsHoveredAsState()
+
     Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
         LeftPane(
-            modifier = Modifier.weight(1f).fillMaxHeight(),
+            modifier = Modifier.weight(1f).fillMaxHeight().hoverable(leftPaneInteractionSource),
             header = {
                 JmidLabel(
                     Modifier/*.border(1.dp, Color.Yellow)*/
@@ -93,6 +96,7 @@ private fun Content(
                     global = global,
                     hideInfo = currentPage == Page.Info,
                     uiState = uiState,
+                    hovered = leftPaneHovered
                 )
             },
             onCoverLayout = { topLeft, size ->
@@ -219,11 +223,10 @@ private fun Footer(
     global: GlobalStore,
     uiState: PlayerUIState,
     hideInfo: Boolean,
+    hovered: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val infoHovered by interactionSource.collectIsHoveredAsState()
-    val showControl = hideInfo || infoHovered
+    val showControl = hideInfo || hovered
 
     Column(modifier) {
         PlayerProgress(
@@ -245,7 +248,7 @@ private fun Footer(
             )
         }
 
-        Box(Modifier.weight(1f).hoverable(interactionSource)) {
+        Box(Modifier.weight(1f)) {
             Crossfade(showControl) { showControl ->
                 if (showControl) Controls(
                     modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
