@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -262,9 +263,13 @@ private fun Header(
         )
         Column(Modifier.weight(1f).padding(start = 16.dp, end = 16.dp)) {
             Text(
-                modifier = Modifier,
+                modifier = Modifier.basicMarquee(
+                    iterations = Int.MAX_VALUE,
+                    velocity = 10.dp
+                ),
                 text = title,
-                style = titleStyle
+                style = titleStyle,
+                maxLines = 1
             )
             AuthorAndPV(
                 modifier = Modifier.padding(top = 8.dp),
