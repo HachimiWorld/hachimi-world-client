@@ -4,7 +4,6 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.*
 
 plugins {
@@ -45,7 +44,6 @@ kotlin {
     }
 
     jvm()
-
     js {
         browser()
         binaries.executable()
@@ -57,21 +55,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        outputModuleName.set("composeApp")
-        browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(rootDirPath)
-                        add(projectDirPath)
-                    }
-                }
-            }
-        }
+        browser()
         compilerOptions {
             freeCompilerArgs.add("-Xwasm-attach-js-exception")
             // https://kotlinlang.slack.com/archives/C3PQML5NU/p1758188562782809?thread_ts=1758060473.617919&cid=C3PQML5NU
@@ -85,8 +69,9 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
             implementation(libs.compose.foundation)
-            implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.components.uiToolingPreview)
 
             implementation(libs.compose.material3)
             implementation(libs.compose.materialIconsExtended)
@@ -159,6 +144,7 @@ kotlin {
             }
         }
         webMain {
+            dependsOn(nonAndroidMain)
             dependencies {
                 implementation(libs.ktor.client.cio)
                 implementation(libs.kotlinx.browser)
@@ -166,10 +152,10 @@ kotlin {
             }
         }
         jsMain {
-            dependsOn(nonAndroidMain)
+            dependsOn(webMain.get())
         }
         wasmJsMain {
-            dependsOn(nonAndroidMain)
+            dependsOn(webMain.get())
         }
         listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { iosTarget->
             iosTarget {
