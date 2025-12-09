@@ -152,12 +152,8 @@ kotlin {
                 implementation(npm("howler", "2.2.4"))
             }
         }
-        jsMain {
-            dependsOn(webMain.get())
-        }
-        wasmJsMain {
-            dependsOn(webMain.get())
-        }
+        jsMain { }
+        wasmJsMain { }
         listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { iosTarget->
             iosTarget {
                 dependsOn(nonAndroidMain)
@@ -256,7 +252,7 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "world.hachimi.app.MainKt"
-        jvmArgs += listOf("-Xmx300M")
+        jvmArgs += listOf("-XX:+UseZGC", "-XX:+ZGenerational", "-Xms128M", "-Xmx512M")
         val flavor = project.findProperty("buildkonfig.flavor")
         when (flavor) {
             "release" -> nativeDistributions {
