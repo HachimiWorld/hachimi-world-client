@@ -64,6 +64,7 @@ kotlin {
         binaries.executable()
     }
 
+    applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain.dependencies {
             implementation(libs.compose.runtime)
