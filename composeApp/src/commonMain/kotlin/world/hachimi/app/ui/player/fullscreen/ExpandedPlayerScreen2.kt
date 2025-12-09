@@ -35,10 +35,13 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.player.components.AddToPlaylistDialog
+import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.fullscreen.components.*
 import world.hachimi.app.util.isValidHttpsUrl
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 @Composable
 fun ExpandedPlayerScreen2(
@@ -72,6 +75,8 @@ private fun Content(
     val leftPaneInteractionSource = remember { MutableInteractionSource() }
     val leftPaneHovered by leftPaneInteractionSource.collectIsHoveredAsState()
 
+    var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+
     Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
         LeftPane(
             modifier = Modifier.weight(1f).fillMaxHeight().hoverable(leftPaneInteractionSource),
@@ -88,15 +93,17 @@ private fun Content(
             },
             footer = {
                 Footer(
-                    modifier = Modifier/*.border(1.dp, Color.Yellow)*/
-                        .padding(top = 12.dp),
                     global = global,
-                    hideInfo = currentPage == Page.Info,
                     uiState = uiState,
+                    hideInfo = currentPage == Page.Info,
                     hovered = leftPaneHovered,
                     onNavToUser = { uid ->
                         global.nav.push(Route.Root.PublicUserSpace(uid))
                         global.shrinkPlayer()
+                    },
+                    modifier = Modifier.padding(top = 12.dp),
+                    onAddToPlaylistClick = {
+                        tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                     }
                 )
             },
@@ -148,6 +155,9 @@ private fun Content(
             )
         }
     }
+
+    AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
+    CreatePlaylistDialog()
 }
 
 @Composable
@@ -230,7 +240,8 @@ private fun Footer(
     hideInfo: Boolean,
     hovered: Boolean,
     onNavToUser: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAddToPlaylistClick: () -> Unit
 ) {
     val showControl = hideInfo || hovered
 
@@ -269,9 +280,7 @@ private fun Footer(
                     onPreviousClick = { global.player.previous() },
                     onPlayOrPauseClick = { global.player.playOrPause() },
                     onNextClick = { global.player.next() },
-                    onAddToPlaylistClick = {
-                        // TODO:
-                    }
+                    onAddToPlaylistClick = onAddToPlaylistClick
                 )
                 else BriefInfo(
                     modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
@@ -294,9 +303,8 @@ private fun Controls(
     onAddToPlaylistClick: () -> Unit,
 ) {
     Row(modifier, horizontalArrangement = Arrangement.SpaceBetween) {
-        ControlButton({}) {
-            if (false) Icon(Icons.Default.Favorite, "Favorite On", tint = LocalContentColor.current.copy(0.6f))
-            else Icon(Icons.Default.FavoriteBorder, "Favorite Off", tint = LocalContentColor.current.copy(0.6f))
+        ControlButton(onClick = onAddToPlaylistClick) {
+            Icon(Icons.Default.Add, "Add to playlist", tint = LocalContentColor.current.copy(0.6f))
         }
         ControlButton(onClick = onPreviousClick) {
             Icon(Icons.Default.SkipPrevious, "Skip Previous")
@@ -308,8 +316,8 @@ private fun Controls(
         ControlButton(onClick = onNextClick) {
             Icon(Icons.Default.SkipNext, "Skip Next")
         }
-        ControlButton(onClick = onAddToPlaylistClick) {
-            Icon(Icons.Default.Add, "Add to playlist", tint = LocalContentColor.current.copy(0.6f))
+        ControlButton(onClick = {}) {
+            Icon(Icons.Default.MoreVert, "More", tint = LocalContentColor.current.copy(0.6f))
         }
     }
 }

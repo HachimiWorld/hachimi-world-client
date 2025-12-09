@@ -14,10 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,9 +32,12 @@ import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.player.components.AddToPlaylistDialog
+import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Title
+import kotlin.random.Random
 
 @Composable
 fun ExpandedFooterPlayer2(
@@ -46,6 +46,8 @@ fun ExpandedFooterPlayer2(
     global: GlobalStore = koinInject(),
 ) {
     val uiState = global.player.playerState
+    var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+
     AnimatedVisibility(visible = !global.playerExpanded) {
         CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedVisibility) {
             Container(modifier = modifier.requiredWidthIn(min = 400.dp).height(104.dp), hazeState = hazeState, content = {
@@ -88,13 +90,21 @@ fun ExpandedFooterPlayer2(
                         repeatOn = global.player.repeatMode,
                         onShuffleChange = { global.player.updateShuffleMode(it) },
                         onRepeatChange = { global.player.updateRepeatMode(it) },
-                        onAddToPlaylistClick = {},
+                        onAddToPlaylistClick = {
+                            tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
+                        },
                         onPlaylistClick = {},
                         onOpenInFullClick = { global.expandPlayer() },
                     )
                 }
             }, shape = RoundedCornerShape(size = 24.dp))
         }
+    }
+
+    // TODO: Extract this dialog to global scope
+    if (!global.playerExpanded) {
+        AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
+        CreatePlaylistDialog()
     }
 }
 

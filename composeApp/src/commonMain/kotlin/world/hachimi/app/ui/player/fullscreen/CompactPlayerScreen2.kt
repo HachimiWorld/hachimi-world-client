@@ -13,11 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,8 +37,11 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.player.components.AddToPlaylistDialog
+import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.fullscreen.components.*
+import kotlin.random.Random
 
 @Composable
 fun CompactPlayerScreen2(
@@ -52,6 +52,7 @@ fun CompactPlayerScreen2(
     var currentPage by rememberSaveable { mutableStateOf<Page?>(null) }
     val scrollState = rememberLazyListState()
     val (painter, dominantColor) = rememberAsyncPainterAndColor(uiState.displayedCover)
+    var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
 
     BackgroundContainer(painter, dominantColor) {
         Column(
@@ -74,10 +75,16 @@ fun CompactPlayerScreen2(
                 transitionSpec = { fadeIn() togetherWith fadeOut() }
             ) { showTab ->
                 if (!showTab) {
-                    PlayerTab(uiState, onNavToUser = {
-                        global.nav.push(Route.Root.PublicUserSpace(it))
-                        global.shrinkPlayer()
-                    })
+                    PlayerTab(
+                        uiState = uiState,
+                        onNavToUser = {
+                            global.nav.push(Route.Root.PublicUserSpace(it))
+                            global.shrinkPlayer()
+                        },
+                        onAddToPlaylistClick = {
+                            tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
+                        }
+                    )
                 } else {
                     Column {
                         Header(
@@ -106,6 +113,7 @@ fun CompactPlayerScreen2(
                                         global.shrinkPlayer()
                                     }
                                 )
+
                                 Page.Queue -> QueueTab()
                                 Page.Lyrics -> LyricsTab(global, uiState, scrollState)
                                 else -> {}
@@ -152,10 +160,13 @@ fun CompactPlayerScreen2(
             )
         }
     }
+
+    AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
+    CreatePlaylistDialog()
 }
 
 @Composable
-private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
+private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onAddToPlaylistClick: () -> Unit) {
     Column(Modifier.padding(top = 32.dp).padding(horizontal = 32.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             JmidLabel(
@@ -202,38 +213,13 @@ private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
                     }
                 )
             }
-            HachimiIconButton(onClick = {
-                // TODO:
-            }) {
-                Icon(Icons.Default.FavoriteBorder, contentDescription = "Favorite")
+            HachimiIconButton(onClick = onAddToPlaylistClick) {
+                Icon(Icons.Default.Add, contentDescription = "Add to playlist")
             }
-            HachimiIconButton(onClick = {
-                // TODO:
-            }) {
+            HachimiIconButton(onClick = {}) {
                 Icon(Icons.Default.MoreVert, contentDescription = "More")
             }
         }
-        /*
-        PlayerProgress(
-            modifier = Modifier.padding(top = 24.dp),
-            durationMillis = uiState.displayedDurationMillis,
-            currentMillis = uiState.displayedCurrentMillis,
-            bufferingProgress = uiState.downloadProgress,
-            onProgressChange = { global.player.setSongProgress(it) },
-            trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
-            barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f),
-            timeOnTop = false,
-            touchMode = true
-        )
-
-        ControlButtons(
-            modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
-            playing = uiState.isPlaying,
-            onPreviousClick = { global.player.previous() },
-            onNextClick = { global.player.next() },
-            onPlayClick = { global.player.playOrPause() },
-            onPauseClick = { global.player.playOrPause() }
-        )*/
     }
 }
 
