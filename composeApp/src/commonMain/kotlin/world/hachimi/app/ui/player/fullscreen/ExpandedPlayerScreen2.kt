@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +40,7 @@ import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
+import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.*
 import world.hachimi.app.util.isValidHttpsUrl
 import kotlin.math.roundToInt
@@ -76,6 +79,7 @@ private fun Content(
     val leftPaneHovered by leftPaneInteractionSource.collectIsHoveredAsState()
 
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
         LeftPane(
@@ -104,6 +108,9 @@ private fun Content(
                     modifier = Modifier.padding(top = 12.dp),
                     onAddToPlaylistClick = {
                         tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
+                    },
+                    onShareClick = {
+                        showShareDialog = true
                     }
                 )
             },
@@ -158,6 +165,16 @@ private fun Content(
 
     AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
     CreatePlaylistDialog()
+    if (showShareDialog) {
+        uiState.readySongInfo?.let { info ->
+            ShareDialog(
+                onDismissRequest = { showShareDialog = false },
+                jmid = info.displayId,
+                title = info.title,
+                author = info.uploaderName,
+            )
+        }
+    }
 }
 
 @Composable
@@ -241,9 +258,11 @@ private fun Footer(
     hovered: Boolean,
     onNavToUser: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    onAddToPlaylistClick: () -> Unit
+    onAddToPlaylistClick: () -> Unit,
+    onShareClick: () -> Unit
 ) {
     val showControl = hideInfo || hovered
+    var showDropdownMenu by remember { mutableStateOf(false) }
 
     Column(modifier) {
         PlayerProgress(
@@ -272,6 +291,21 @@ private fun Footer(
             )
         }
 
+        Box(Modifier.align(Alignment.End)) {
+            DropdownMenu(
+                expanded = showDropdownMenu, onDismissRequest = { showDropdownMenu = false },
+            ) {
+                DropdownMenuItem(
+                    onClick = {
+                        onShareClick()
+                        showDropdownMenu = false
+                    },
+                    text = { Text("分享") },
+                    leadingIcon = { Icon(Icons.Default.Share, "Share") },
+                )
+            }
+        }
+
         Box(Modifier.weight(1f)) {
             Crossfade(showControl) { showControl ->
                 if (showControl) Controls(
@@ -280,7 +314,8 @@ private fun Footer(
                     onPreviousClick = { global.player.previous() },
                     onPlayOrPauseClick = { global.player.playOrPause() },
                     onNextClick = { global.player.next() },
-                    onAddToPlaylistClick = onAddToPlaylistClick
+                    onAddToPlaylistClick = onAddToPlaylistClick,
+                    onMoreClick = { showDropdownMenu = true }
                 )
                 else BriefInfo(
                     modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
@@ -301,6 +336,7 @@ private fun Controls(
     onPlayOrPauseClick: () -> Unit,
     onNextClick: () -> Unit,
     onAddToPlaylistClick: () -> Unit,
+    onMoreClick: () -> Unit
 ) {
     Row(modifier, horizontalArrangement = Arrangement.SpaceBetween) {
         ControlButton(onClick = onAddToPlaylistClick) {
@@ -316,7 +352,7 @@ private fun Controls(
         ControlButton(onClick = onNextClick) {
             Icon(Icons.Default.SkipNext, "Skip Next")
         }
-        ControlButton(onClick = {}) {
+        ControlButton(onClick = onMoreClick) {
             Icon(Icons.Default.MoreVert, "More", tint = LocalContentColor.current.copy(0.6f))
         }
     }

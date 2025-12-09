@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +42,7 @@ import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
+import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.*
 import kotlin.random.Random
 
@@ -53,6 +56,7 @@ fun CompactPlayerScreen2(
     val scrollState = rememberLazyListState()
     val (painter, dominantColor) = rememberAsyncPainterAndColor(uiState.displayedCover)
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     BackgroundContainer(painter, dominantColor) {
         Column(
@@ -83,7 +87,8 @@ fun CompactPlayerScreen2(
                         },
                         onAddToPlaylistClick = {
                             tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
-                        }
+                        },
+                        onShareClick = { showShareDialog = true }
                     )
                 } else {
                     Column {
@@ -99,6 +104,12 @@ fun CompactPlayerScreen2(
                                     global.nav.push(Route.Root.PublicUserSpace(it))
                                     global.shrinkPlayer()
                                 }
+                            },
+                            onAddToPlaylistClick = {
+                                tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
+                            },
+                            onShareClick = {
+
                             }
                         )
                         AnimatedContent(
@@ -163,10 +174,20 @@ fun CompactPlayerScreen2(
 
     AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
     CreatePlaylistDialog()
+    if (showShareDialog) {
+        uiState.readySongInfo?.let { info ->
+            ShareDialog(
+                onDismissRequest = { showShareDialog = false },
+                jmid = info.displayId,
+                title = info.title,
+                author = info.uploaderName,
+            )
+        }
+    }
 }
 
 @Composable
-private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onAddToPlaylistClick: () -> Unit) {
+private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onAddToPlaylistClick: () -> Unit, onShareClick: () -> Unit) {
     Column(Modifier.padding(top = 32.dp).padding(horizontal = 32.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             JmidLabel(
@@ -216,10 +237,34 @@ private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onAdd
             HachimiIconButton(onClick = onAddToPlaylistClick) {
                 Icon(Icons.Default.Add, contentDescription = "Add to playlist")
             }
-            HachimiIconButton(onClick = {}) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More")
+            Box {
+                var expanded by remember { mutableStateOf(false) }
+                HachimiIconButton(
+                    onClick = { expanded = true }
+                ) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                }
+                MoreDropdownMenu(expanded, onDismissRequest = { expanded = false }, onShareClick = onShareClick)
             }
         }
+    }
+}
+
+@Composable
+private fun MoreDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onShareClick: () -> Unit
+) {
+    DropdownMenu(expanded, onDismissRequest = onDismissRequest) {
+        DropdownMenuItem(
+            onClick = {
+                onShareClick()
+                onDismissRequest()
+            },
+            text = { Text("分享") },
+            leadingIcon = { Icon(Icons.Default.Share, "Share") },
+        )
     }
 }
 
@@ -264,7 +309,9 @@ private fun Header(
     avatar: String?,
     hasMultipleArtists: Boolean,
     pvLink: String?,
-    onUserClick: () -> Unit
+    onUserClick: () -> Unit,
+    onAddToPlaylistClick: () -> Unit,
+    onShareClick: () -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         AsyncImage(
@@ -293,15 +340,15 @@ private fun Header(
                 onUserClick = onUserClick
             )
         }
-        HachimiIconButton(onClick = {
-            // TODO:
-        }, touchMode = true) {
-            Icon(Icons.Default.FavoriteBorder, contentDescription = "Favorite")
+        HachimiIconButton(onClick = onAddToPlaylistClick, touchMode = true) {
+            Icon(Icons.Default.Add, contentDescription = "Add to playllist")
         }
-        HachimiIconButton(onClick = {
-            // TODO:
-        }, touchMode = true) {
-            Icon(Icons.Default.MoreVert, contentDescription = "More")
+        Box {
+            var expanded by remember { mutableStateOf(false) }
+            HachimiIconButton(onClick = { expanded = true }, touchMode = true) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More")
+            }
+            MoreDropdownMenu(expanded, onDismissRequest = { expanded = false }, onShareClick = onShareClick)
         }
     }
 }
