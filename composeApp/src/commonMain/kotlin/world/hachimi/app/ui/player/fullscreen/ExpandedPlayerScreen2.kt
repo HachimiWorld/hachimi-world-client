@@ -32,7 +32,6 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
-import world.hachimi.app.ui.player.components.InfoTabContent
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.fullscreen.components.*
 import world.hachimi.app.util.isValidHttpsUrl
@@ -229,8 +228,8 @@ private fun Footer(
             currentMillis = uiState.displayedCurrentMillis,
             onProgressChange = { global.player.setSongProgress(it) },
             bufferingProgress = uiState.downloadProgress,
-            trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
-            barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f)
+            trackColor = HachimiTheme.colorScheme.onSurface.copy(0.1f),
+            barColor = HachimiTheme.colorScheme.onSurface.copy(1f)
         )
 
         Spacer(Modifier.height(8.dp))

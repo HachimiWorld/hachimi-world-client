@@ -17,8 +17,7 @@ import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalDarkMode
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
-import world.hachimi.app.ui.design.HachimiPalette
-import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.*
 import world.hachimi.app.ui.design.components.DiffusionBackground
 import world.hachimi.app.ui.design.components.LocalContentColor
 
@@ -54,8 +53,9 @@ fun BackgroundContainer(
         // And use `pointerInput` to intercept unconsumed touch events.
         // This will enable the MinimumInteractiveComponentSize to improve the touching user experience.
         CompositionLocalProvider(
+            LocalDarkMode provides darkTheme,
             LocalContentColor provides if (darkTheme) HachimiPalette.onSurfaceDark else HachimiPalette.onSurfaceLight,
-            LocalDarkMode provides darkTheme
+            LocalColorScheme provides if (darkTheme) hachimiDarkScheme else hachimiLightScheme
         ) {
             Box(
                 modifier = Modifier

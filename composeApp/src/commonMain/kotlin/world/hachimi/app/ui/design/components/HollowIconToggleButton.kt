@@ -37,7 +37,7 @@ fun HollowIconToggleButton(
         }
     )
 
-    val activeColor = HachimiTheme.colorScheme.onSurfaceReverse
+    val activeColor = HachimiTheme.colorScheme.onSurface
     val inactiveColor = LocalContentColor.current.copy(0.6f)
 
     Box(

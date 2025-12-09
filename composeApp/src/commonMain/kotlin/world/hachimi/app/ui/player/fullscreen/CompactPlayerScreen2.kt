@@ -33,10 +33,10 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
-import world.hachimi.app.ui.player.components.InfoTabContent
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.fullscreen.components.*
 
@@ -102,8 +102,8 @@ fun CompactPlayerScreen2(
                 currentMillis = uiState.displayedCurrentMillis,
                 bufferingProgress = uiState.downloadProgress,
                 onProgressChange = { global.player.setSongProgress(it) },
-                trackColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.1f),
-                barColor = HachimiTheme.colorScheme.onSurfaceReverse.copy(1f),
+                trackColor = HachimiTheme.colorScheme.onSurface.copy(0.1f),
+                barColor = HachimiTheme.colorScheme.onSurface,
                 timeOnTop = false,
                 touchMode = true
             )
@@ -320,7 +320,7 @@ private fun PreviousButton(
         modifier = Modifier.defaultMinSize(minHeight = 78.dp, minWidth = 78.dp),
         shape = RoundedCornerShape(12.dp),
         color = Color(0xFFEBE9E7).copy(0.2f),
-        contentColor = HachimiTheme.colorScheme.onSurfaceReverse
+        contentColor = LocalContentColor.current
     ) {
         Box(
             modifier = Modifier.clickable(onClick = onClick),
@@ -340,8 +340,8 @@ private fun PlayPauseButton(
     Surface(
         modifier = modifier.defaultMinSize(minHeight = 78.dp, minWidth = 78.dp),
         shape = RoundedCornerShape(12.dp),
-        color = HachimiTheme.colorScheme.onSurfaceReverse,
-        contentColor = HachimiTheme.colorScheme.onSurface
+        color = HachimiTheme.colorScheme.onSurface,
+        contentColor = HachimiTheme.colorScheme.onSurfaceReverse
     ) {
         Box(
             modifier = Modifier.clickable(onClick = onClick),
@@ -361,7 +361,7 @@ private fun NextButton(
         modifier = Modifier.defaultMinSize(minHeight = 78.dp, minWidth = 78.dp),
         shape = RoundedCornerShape(12.dp),
         color = Color(0xFFEBE9E7).copy(0.2f),
-        contentColor = HachimiTheme.colorScheme.onSurfaceReverse
+        contentColor = LocalContentColor.current
     ) {
         Box(
             modifier = Modifier.clickable(onClick = onClick),

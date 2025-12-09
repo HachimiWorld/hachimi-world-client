@@ -35,11 +35,11 @@ fun Chip(
     contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
     content: @Composable RowScope.() -> Unit
 ) {
-    CompositionLocalProvider(LocalTextStyle provides chipTextStyle, LocalContentColor provides HachimiTheme.colorScheme.onSurface) {
+    CompositionLocalProvider(LocalTextStyle provides chipTextStyle, LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
         Row(
             modifier = modifier
                 .height(24.dp).defaultMinSize(minWidth = 24.dp)
-                .background(HachimiTheme.colorScheme.onSurfaceReverse, RoundedCornerShape(50))
+                .background(HachimiTheme.colorScheme.onSurface, RoundedCornerShape(50))
                 .dropShadow(RoundedCornerShape(50), Shadow(radius = 16.dp, offset = DpOffset(x = 0.dp, y = 2.dp), color = Color(0f, 0f, 0f, 0.15f)))
                 .clip(RoundedCornerShape(50))
                 .clickable(onClick = onClick)

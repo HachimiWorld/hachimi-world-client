@@ -26,7 +26,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
 import kotlin.math.min
 
@@ -115,7 +114,7 @@ fun Lyrics2(
 private fun LyricsLine(
     line: String,
     active: Boolean,
-    activeAlpha: Float = HachimiTheme.colorScheme.onSurfaceReverse.alpha,
+    activeAlpha: Float = 0.87f,
     inactiveAlpha: Float = 0.32f
 ) {
     val transition = updateTransition(active)

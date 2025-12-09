@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.components
+package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
@@ -24,11 +24,7 @@ import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.SongDetailInfo
 import world.hachimi.app.ui.component.Chip
 import world.hachimi.app.ui.component.HintChip
-import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.player.fullscreen.components.HintUserChip
-import world.hachimi.app.ui.player.fullscreen.components.PVChip
-import world.hachimi.app.ui.player.fullscreen.components.UserChip
 import world.hachimi.app.util.isValidHttpsUrl
 
 @Composable
@@ -42,14 +38,13 @@ fun InfoTabContent(
             // No max line limit
             Text(
                 text = uiState.displayedTitle,
-                style = propertyTitleStyle,
-                color = HachimiTheme.colorScheme.onSurfaceReverse
+                style = propertyTitleStyle
             )
             readySongInfo?.subtitle?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     text = it,
                     style = contentSubtitleStyle,
-                    color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f)
+                    color = LocalContentColor.current.copy(0.6f)
                 )
             }
             Column(
@@ -81,7 +76,7 @@ fun InfoTabContent(
                     Text(
                         modifier = Modifier.padding(top = 16.dp),
                         text = it, style = contentSubtitleStyle,
-                        color = HachimiTheme.colorScheme.onSurfaceReverse.copy(0.6f)
+                        color = LocalContentColor.current.copy(0.6f)
                     )
                 }
             }
