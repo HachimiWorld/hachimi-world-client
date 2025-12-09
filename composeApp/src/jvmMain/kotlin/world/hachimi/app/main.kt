@@ -39,7 +39,7 @@ fun main() {
         val windowState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
         if (global.initialized) SwingWindow(
             onCloseRequest = ::exitApplication,
-            title = if (hostOs == OS.MacOS || hostOs == OS.Windows) "" else BuildKonfig.APP_NAME,
+            title = if (hostOs == OS.MacOS) "" else BuildKonfig.APP_NAME,
             state = windowState,
             icon = painterResource(Res.drawable.icon_vector),
             init = { window ->

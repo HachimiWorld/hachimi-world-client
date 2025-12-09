@@ -1,6 +1,6 @@
 package world.hachimi.app.ui.window
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -28,6 +28,7 @@ fun WindowFrame(
     var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
     var captionBarRect by remember { mutableStateOf(Rect.Zero) }
     val maximized = state.placement == WindowPlacement.Maximized
+    var windowInsets by remember { mutableStateOf(WindowInsets()) }
     val procedure = remember(window) {
         ComposeWindowProcedure(
             window,
@@ -41,11 +42,14 @@ fun WindowFrame(
                     else -> WinUserConst.HTCLIENT
                 }
             },
-            onWindowInsetUpdate = {}
+            onWindowInsetUpdate = {
+                windowInsets = it
+            }
         )
     }
-    content()
-
+    Box(Modifier.fillMaxSize().padding(windowInsets.asPaddingValues())) {
+        content()
+    }
     CaptionBar(
         modifier = Modifier.fillMaxWidth().onGloballyPositioned {
             captionBarRect = it.boundsInWindow()
