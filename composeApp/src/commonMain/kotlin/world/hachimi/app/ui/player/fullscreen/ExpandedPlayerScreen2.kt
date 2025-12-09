@@ -15,18 +15,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
+import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.LocalContentColor
@@ -90,7 +93,11 @@ private fun Content(
                     global = global,
                     hideInfo = currentPage == Page.Info,
                     uiState = uiState,
-                    hovered = leftPaneHovered
+                    hovered = leftPaneHovered,
+                    onNavToUser = { uid ->
+                        global.nav.push(Route.Root.PublicUserSpace(uid))
+                        global.shrinkPlayer()
+                    }
                 )
             },
             onCoverLayout = { topLeft, size ->
@@ -114,6 +121,10 @@ private fun Content(
                                 top = coverTopLeft.y.toDp(),
                                 bottom = coverTopLeft.y.toDp()
                             )
+                        },
+                        onNavToUser = { uid ->
+                            global.nav.push(Route.Root.PublicUserSpace(uid))
+                            global.shrinkPlayer()
                         }
                     )
 
@@ -126,6 +137,7 @@ private fun Content(
                         lines = uiState.lyricsLines,
                         loading = uiState.fetchingMetadata,
                     )
+
                     else -> {}
                 }
             }
@@ -166,7 +178,6 @@ fun rememberTabTransitionSpec(): TabTransitionSpec {
     }
     return spec
 }
-
 
 
 @Composable
@@ -218,6 +229,7 @@ private fun Footer(
     uiState: PlayerUIState,
     hideInfo: Boolean,
     hovered: Boolean,
+    onNavToUser: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val showControl = hideInfo || hovered
@@ -239,7 +251,13 @@ private fun Footer(
                 authorName = uiState.displayedAuthor,
                 hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
                 pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
-                pvAlignToEnd = true
+                pvAlignToEnd = true,
+                avatar = uiState.userProfile?.avatarUrl,
+                onUserClick = {
+                    uiState.readySongInfo?.uploaderUid?.let {
+                        onNavToUser(it)
+                    }
+                }
             )
         }
 
@@ -347,13 +365,19 @@ private fun BriefInfo(
 }
 
 @Composable
-fun AuthorAndPV(authorName: String, hasMultipleArtists: Boolean, pvLink: String?, modifier: Modifier = Modifier, pvAlignToEnd: Boolean) {
+fun AuthorAndPV(
+    authorName: String,
+    avatar: String?,
+    hasMultipleArtists: Boolean,
+    pvLink: String?,
+    onUserClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    pvAlignToEnd: Boolean
+) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         AmbientUserChip(
-            onClick = {
-                // TODO: Nav to user space
-            },
-            avatar = null, // TODO
+            onClick = onUserClick,
+            avatar = rememberAsyncImagePainter(avatar, contentScale = ContentScale.Crop),
             name = authorName
         )
         if (hasMultipleArtists) {

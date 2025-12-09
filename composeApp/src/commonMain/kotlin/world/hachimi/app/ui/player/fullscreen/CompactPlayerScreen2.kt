@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,7 @@ import coil3.compose.AsyncImage
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.LocalContentColor
@@ -72,7 +74,10 @@ fun CompactPlayerScreen2(
                 transitionSpec = { fadeIn() togetherWith fadeOut() }
             ) { showTab ->
                 if (!showTab) {
-                    PlayerTab(uiState, global)
+                    PlayerTab(uiState, onNavToUser = {
+                        global.nav.push(Route.Root.PublicUserSpace(it))
+                        global.shrinkPlayer()
+                    })
                 } else {
                     Column {
                         Header(
@@ -80,14 +85,27 @@ fun CompactPlayerScreen2(
                             cover = uiState.displayedCover, title = uiState.displayedTitle,
                             author = uiState.displayedAuthor,
                             hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                            pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url
+                            pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                            avatar = uiState.userProfile?.avatarUrl,
+                            onUserClick = {
+                                uiState.readySongInfo?.uploaderUid?.let {
+                                    global.nav.push(Route.Root.PublicUserSpace(it))
+                                    global.shrinkPlayer()
+                                }
+                            }
                         )
                         AnimatedContent(
                             targetState = currentPage,
                             transitionSpec = rememberTabTransitionSpec()
                         ) { tab ->
                             when (tab) {
-                                Page.Info -> InfoTab(uiState)
+                                Page.Info -> InfoTab(
+                                    uiState,
+                                    onNavToUser = {
+                                        global.nav.push(Route.Root.PublicUserSpace(it))
+                                        global.shrinkPlayer()
+                                    }
+                                )
                                 Page.Queue -> QueueTab()
                                 Page.Lyrics -> LyricsTab(global, uiState, scrollState)
                                 else -> {}
@@ -137,7 +155,7 @@ fun CompactPlayerScreen2(
 }
 
 @Composable
-private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
+private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
     Column(Modifier.padding(top = 32.dp).padding(horizontal = 32.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             JmidLabel(
@@ -175,7 +193,13 @@ private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
                     authorName = uiState.displayedAuthor,
                     hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
                     pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
-                    pvAlignToEnd = false
+                    pvAlignToEnd = false,
+                    avatar = uiState.userProfile?.avatarUrl,
+                    onUserClick = {
+                        uiState.readySongInfo?.uploaderUid?.let {
+                            onNavToUser(it)
+                        }
+                    }
                 )
             }
             HachimiIconButton(onClick = {
@@ -214,9 +238,9 @@ private fun PlayerTab(uiState: PlayerUIState, global: GlobalStore) {
 }
 
 @Composable
-private fun InfoTab(uiState: PlayerUIState) {
+private fun InfoTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
     Column(Modifier.fillMaxSize().padding(top = 32.dp).padding(horizontal = 32.dp)) {
-        InfoTabContent(Modifier.weight(1f), uiState)
+        InfoTabContent(Modifier.weight(1f), uiState, onNavToUser = onNavToUser)
     }
 }
 
@@ -251,15 +275,17 @@ private fun Header(
     cover: Any?,
     title: String,
     author: String,
+    avatar: String?,
     hasMultipleArtists: Boolean,
-    pvLink: String?
+    pvLink: String?,
+    onUserClick: () -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         AsyncImage(
             model = cover,
             contentDescription = "Cover",
             modifier = Modifier.size(64.dp).clip(RoundedCornerShape(8.dp)),
-            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            contentScale = ContentScale.Crop
         )
         Column(Modifier.weight(1f).padding(start = 16.dp, end = 16.dp)) {
             Text(
@@ -276,7 +302,9 @@ private fun Header(
                 authorName = author,
                 hasMultipleArtists = hasMultipleArtists,
                 pvLink = pvLink,
-                pvAlignToEnd = false
+                pvAlignToEnd = false,
+                avatar = avatar,
+                onUserClick = onUserClick
             )
         }
         HachimiIconButton(onClick = {

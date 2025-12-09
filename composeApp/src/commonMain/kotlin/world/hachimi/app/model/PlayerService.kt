@@ -21,6 +21,7 @@ import kotlinx.serialization.json.Json
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
@@ -63,6 +64,7 @@ class PlayerService(
     var repeatMode by mutableStateOf(false)
     private val queueMutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default)
+    private val profileCache = mutableMapOf<Long, UserModule.PublicUserProfile?>()
 
     init {
         scope.launch(Dispatchers.Default) {
@@ -140,11 +142,17 @@ class PlayerService(
             jmid = item.displayId,
             onMetadata = { songInfo ->
                 playerMutex.withLock {
+                    val authorProfile = profileCache[songInfo.uploaderUid]
+
                     if (playerJobSign == sign) {
                         playerState.updateSongInfo(songInfo)
                         playerState.fetchingMetadata = false
                         playerState.hasSong = true
                         playerState.updateCurrentMillis(0L)
+                        playerState.updateAuthorProfile(authorProfile)
+                    }
+                    if (authorProfile == null) {
+                        loadAuthorProfileAsync(sign, songInfo.uploaderUid)
                     }
                 }
             },
@@ -220,6 +228,29 @@ class PlayerService(
     }
 
     private var playPrepareJob: Job? = null
+
+    private fun loadAuthorProfileAsync(sign: Int, uid: Long) {
+        scope.launch {
+            try {
+                val resp = api.userModule.profile(uid)
+
+                if (resp.ok) {
+                    val data = resp.ok()
+                    profileCache[uid] = data
+                    playerMutex.withLock {
+                        if (playerJobSign == sign) {
+                            playerState.updateAuthorProfile(data)
+                        }
+                    }
+                }
+            } catch (_: CancellationException) {
+                return@launch
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to load author profile", e)
+                return@launch
+            }
+        }
+    }
 
     fun playSongInQueue(id: Long, instantPlay: Boolean = true) = scope.launch {
         if (playPrepareJob?.isActive == true) {

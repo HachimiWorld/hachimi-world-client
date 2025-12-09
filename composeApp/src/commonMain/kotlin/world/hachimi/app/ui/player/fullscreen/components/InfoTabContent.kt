@@ -13,11 +13,13 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.rememberAsyncImagePainter
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.PlayerUIState
@@ -31,7 +33,8 @@ import world.hachimi.app.util.isValidHttpsUrl
 fun InfoTabContent(
     modifier: Modifier,
     uiState: PlayerUIState,
-    contentPadding: PaddingValues = PaddingValues()
+    contentPadding: PaddingValues = PaddingValues(),
+    onNavToUser: (Long) -> Unit
 ) {
     Crossfade(uiState.readySongInfo) { readySongInfo ->
         Column(modifier.verticalScroll(rememberScrollState()).padding(contentPadding)) {
@@ -54,9 +57,11 @@ fun InfoTabContent(
                 PropertyLine("作者") {
                     UserChip(
                         onClick = {
-                            // TODO
+                            uiState.readySongInfo?.uploaderUid?.let {
+                                onNavToUser(it)
+                            }
                         },
-                        avatar = null,
+                        avatar = rememberAsyncImagePainter(uiState.userProfile?.avatarUrl, contentScale = ContentScale.Crop),
                         name = uiState.displayedAuthor
                     )
                 }
@@ -65,7 +70,7 @@ fun InfoTabContent(
                     // PV
                     PVs(songInfo)
                     // Staffs
-                    Staffs(songInfo)
+                    Staffs(songInfo, onNavToUser)
                     // Origin infos
                     Origins(songInfo)
                 }
@@ -107,7 +112,7 @@ private fun PVs(songInfo: SongDetailInfo) {
 }
 
 @Composable
-private fun Staffs(songInfo: SongDetailInfo) {
+private fun Staffs(songInfo: SongDetailInfo, onUserClick: (Long) -> Unit) {
     if (songInfo.productionCrew.isEmpty()) return
     songInfo.productionCrew.forEach {
         PropertyLine(
@@ -115,10 +120,7 @@ private fun Staffs(songInfo: SongDetailInfo) {
             content = {
                 if (it.uid != null) {
                     UserChip(
-                        onClick = {
-                            it.uid
-                            // TODO
-                        },
+                        onClick = { onUserClick(it.uid) },
                         avatar = null,
                         name = it.personName ?: "Unknown"
                     )

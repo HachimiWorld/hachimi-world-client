@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.util.LrcParser
 import kotlin.time.Duration
@@ -58,6 +59,8 @@ class PlayerUIState() {
 
     // The current playing music info
     var songInfo by mutableStateOf<SongDetailInfo?>(null)
+        private set
+    var userProfile by mutableStateOf<UserModule.PublicUserProfile?>(null)
         private set
 
     var volume by mutableStateOf<Float>(1f)
@@ -174,6 +177,10 @@ class PlayerUIState() {
         hasSong = true
         songInfo = data
         setLyrics(data.lyrics)
+    }
+
+    fun updateAuthorProfile(data: UserModule.PublicUserProfile?) {
+        userProfile = data
     }
 
     fun updatePreviewMetadata(data: PreviewMetadata) {
