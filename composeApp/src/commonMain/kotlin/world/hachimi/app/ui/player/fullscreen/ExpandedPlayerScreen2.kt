@@ -51,14 +51,10 @@ fun ExpandedPlayerScreen2(
     global: GlobalStore = koinInject()
 ) {
     val uiState = global.player.playerState
-    val (painter, dominantColor) = rememberAsyncPainterAndColor(uiState.displayedCover)
 
-    BackgroundContainer(
-        painter = painter,
-        dominantColor = dominantColor
-    ) {
+    Box(propagateMinConstraints = true) {
         ShrinkButton(
-            modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopEnd),
+            modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopStart),
             onClick = global::shrinkPlayer
         )
         Content(global, uiState)

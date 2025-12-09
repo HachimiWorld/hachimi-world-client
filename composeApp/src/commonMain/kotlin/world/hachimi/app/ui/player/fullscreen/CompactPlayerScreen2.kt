@@ -54,17 +54,15 @@ fun CompactPlayerScreen2(
     var showTab by rememberSaveable { mutableStateOf(false) }
     var currentPage by rememberSaveable { mutableStateOf<Page?>(null) }
     val scrollState = rememberLazyListState()
-    val (painter, dominantColor) = rememberAsyncPainterAndColor(uiState.displayedCover)
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
     var showShareDialog by remember { mutableStateOf(false) }
 
-    BackgroundContainer(painter, dominantColor) {
+    Box(propagateMinConstraints = true) {
         Column(
             Modifier.fillMaxSize()
                 .padding(top = currentSafeAreaInsets().top, bottom = currentSafeAreaInsets().bottom)
                 .padding(vertical = 24.dp)
         ) {
-
             HachimiIconButton(
                 modifier = Modifier.padding(start = 32.dp),
                 onClick = { global.shrinkPlayer() },
