@@ -1,6 +1,8 @@
 package world.hachimi.app.ui.player.fullscreen
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,8 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
-import soup.compose.material.motion.animation.materialSharedAxisX
-import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
@@ -117,7 +117,7 @@ private fun Content(
             }
         )
         Box(Modifier.weight(1f)) {
-            CenterContent(currentPage, uiState, coverTopLeft, global, scrollState)
+            TabContent(currentPage, uiState, coverTopLeft, global, scrollState)
             PagerButtons(
                 modifier = Modifier.align(Alignment.BottomEnd).padding(32.dp),
                 currentPage = currentPage,
@@ -141,7 +141,7 @@ private fun Content(
 }
 
 @Composable
-private fun CenterContent(
+private fun TabContent(
     currentPage: Page,
     uiState: PlayerUIState,
     coverTopLeft: IntOffset,
@@ -195,29 +195,6 @@ private fun ShrinkButton(modifier: Modifier, onClick: () -> Unit) {
         Icon(Icons.Default.CloseFullscreen, "Close")
     }
 }
-
-typealias TabTransitionSpec = AnimatedContentTransitionScope<Page?>.() -> ContentTransform
-
-@Composable
-fun rememberTabTransitionSpec(): TabTransitionSpec {
-    val sliderDistance = rememberSlideDistance()
-    val spec: TabTransitionSpec = {
-        val initialState = initialState
-        val targetState = targetState
-
-        if (initialState == null || targetState == null) {
-            fadeIn() togetherWith fadeOut()
-        } else if (targetState < initialState) {
-            // Slide to the left page
-            materialSharedAxisX(forward = false, slideDistance = sliderDistance)
-        } else {
-            // Slide to the right page
-            materialSharedAxisX(forward = true, slideDistance = sliderDistance)
-        }
-    }
-    return spec
-}
-
 
 @Composable
 private fun LeftPane(
