@@ -22,6 +22,7 @@ import world.hachimi.app.model.PlaylistViewModel
 fun AddToPlaylistDialog(
     tobeAddedSongId: Long?,
     random: Long?,
+    onDismiss: () -> Unit,
     vm: PlaylistViewModel = koinViewModel(),
 ) {
     LaunchedEffect(vm, tobeAddedSongId, random) {
@@ -35,6 +36,7 @@ fun AddToPlaylistDialog(
         modifier = Modifier.width(400.dp),
         onDismissRequest = {
             vm.cancelAddToPlaylist()
+            onDismiss()
         },
         content = {
             ElevatedCard(elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)) {
@@ -108,11 +110,17 @@ fun AddToPlaylistDialog(
                     }
 
                     Row(Modifier.align(Alignment.End)) {
-                        TextButton(onClick = { vm.cancelAddToPlaylist() }) {
+                        TextButton(onClick = {
+                            vm.cancelAddToPlaylist()
+                            onDismiss()
+                        }) {
                             Text("取消")
                         }
                         TextButton(
-                            onClick = { vm.confirmAddToPlaylist() },
+                            onClick = {
+                                vm.confirmAddToPlaylist()
+                                onDismiss()
+                            },
                             enabled = vm.selectedPlaylistId != null && !vm.addingToPlaylistOperating
                         ) {
                             Text("确定")
@@ -122,4 +130,6 @@ fun AddToPlaylistDialog(
             }
         }
     )
+
+    CreatePlaylistDialog(vm)
 }

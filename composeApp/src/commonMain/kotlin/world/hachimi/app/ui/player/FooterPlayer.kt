@@ -26,7 +26,10 @@ import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
-import world.hachimi.app.ui.player.components.*
+import world.hachimi.app.ui.player.components.AddToPlaylistDialog
+import world.hachimi.app.ui.player.components.SongControl
+import world.hachimi.app.ui.player.components.SongProgress
+import world.hachimi.app.ui.player.components.VolumeControl
 import world.hachimi.app.ui.root.component.MusicQueue
 import world.hachimi.app.util.WindowSize
 import kotlin.random.Random
@@ -136,8 +139,10 @@ fun CompactFooterPlayer(modifier: Modifier) {
                                 )
                             }
 
-                            AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
-                            CreatePlaylistDialog()
+                            AddToPlaylistDialog(
+                                tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
+                                onDismiss = { tobeAddedSong = null },
+                            )
                         }
 
                         /*SongProgress(
@@ -322,8 +327,10 @@ fun ExpandedFooterPlayer() {
                     )
                 }
 
-                AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
-                CreatePlaylistDialog()
+                AddToPlaylistDialog(
+                    tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
+                    onDismiss = { tobeAddedSong = null },
+                )
             }
         }
     }

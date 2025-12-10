@@ -36,7 +36,6 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
-import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.*
@@ -122,8 +121,11 @@ private fun Content(
         }
     }
 
-    AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
-    CreatePlaylistDialog()
+    AddToPlaylistDialog(
+        tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
+        onDismiss = { tobeAddedSong = null },
+    )
+
     if (showShareDialog) {
         uiState.readySongInfo?.let { info ->
             ShareDialog(

@@ -40,7 +40,6 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
-import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.*
@@ -106,7 +105,7 @@ fun CompactPlayerScreen2(
                             tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                         },
                         onShareClick = {
-
+                            showShareDialog = true
                         }
                     )
                     AnimatedContent(
@@ -168,8 +167,10 @@ fun CompactPlayerScreen2(
         )
     }
 
-    AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
-    CreatePlaylistDialog()
+    AddToPlaylistDialog(
+        tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
+        onDismiss = { tobeAddedSong = null }
+    )
     if (showShareDialog) {
         uiState.readySongInfo?.let { info ->
             ShareDialog(

@@ -41,7 +41,6 @@ import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
-import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Title
@@ -120,8 +119,10 @@ fun ExpandedFooterPlayer2(
 
     // TODO: Extract this dialog to global scope
     if (!global.playerExpanded) {
-        AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
-        CreatePlaylistDialog()
+        AddToPlaylistDialog(
+            tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
+            onDismiss = { tobeAddedSong = null },
+        )
     }
 
     MusicQueuePopup(
