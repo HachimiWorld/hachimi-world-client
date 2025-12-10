@@ -16,9 +16,13 @@ import androidx.compose.ui.semantics.semantics
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
-import world.hachimi.app.ui.design.*
+import world.hachimi.app.ui.design.HachimiPalette
+import world.hachimi.app.ui.design.LocalColorScheme
 import world.hachimi.app.ui.design.components.DiffusionBackground
 import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.isDiffusionBackgroundSupported
+import world.hachimi.app.ui.design.hachimiDarkScheme
+import world.hachimi.app.ui.design.hachimiLightScheme
 import world.hachimi.app.ui.theme.LocalDarkMode
 
 @Composable
@@ -40,13 +44,15 @@ fun BackgroundContainer(
                 }
             )
             .fillMaxSize()
-            .background(HachimiTheme.colorScheme.background)
+            .background(dominantColor)
     ) {
         // Background
-        if (painter != null) DiffusionBackground(
-            modifier = Modifier.fillMaxSize(),
-            painter = painter
-        )
+        if (painter != null && isDiffusionBackgroundSupported()) {
+            DiffusionBackground(
+                modifier = Modifier.fillMaxSize(),
+                painter = painter
+            )
+        }
 
 
         // Use a singleton Box container to provide content.

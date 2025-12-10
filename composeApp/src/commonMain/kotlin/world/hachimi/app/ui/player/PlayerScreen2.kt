@@ -7,6 +7,7 @@ import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.player.fullscreen.CompactPlayerScreen2
 import world.hachimi.app.ui.player.fullscreen.ExpandedPlayerScreen2
 import world.hachimi.app.ui.player.fullscreen.components.BackgroundContainer
@@ -30,7 +31,7 @@ fun PlayerScreen2() {
 
     BackgroundContainer(
         painter = painter,
-        dominantColor = dominantColor
+        dominantColor = dominantColor ?: HachimiTheme.colorScheme.background
     ) {
         val contentDarkMode = LocalDarkMode.current
 

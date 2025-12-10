@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 
+expect fun isDiffusionBackgroundSupported(): Boolean
+
 @Composable
 fun DiffusionBackground(modifier: Modifier = Modifier, painter: Painter) {
     // TODO: Optimize the performance
@@ -59,6 +61,9 @@ fun DiffusionBackground(modifier: Modifier = Modifier, painter: Painter) {
         }
     }
 }
+
+@Composable
+expect fun FallbackDiffusionBackground(modifier: Modifier = Modifier, painter: Painter)
 
 @Composable
 fun RotateCombinedPicture(modifier: Modifier = Modifier, painter: Painter) {

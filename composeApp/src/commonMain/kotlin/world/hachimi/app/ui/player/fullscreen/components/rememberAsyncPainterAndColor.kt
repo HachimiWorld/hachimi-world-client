@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -22,9 +21,9 @@ import world.hachimi.app.ui.calculateAvgColor
 fun rememberAsyncPainterAndColor(
     model: String?,
     context: PlatformContext = LocalPlatformContext.current
-): Pair<Painter?, Color> {
+): Pair<Painter?, Color?> {
     var painter by remember { mutableStateOf<Painter?>(null) }
-    var dominantColor by remember { mutableStateOf(Color.Gray) }
+    var dominantColor by remember { mutableStateOf<Color?>(null) }
 
     LaunchedEffect(model) {
         val request = ImageRequest.Builder(context)
@@ -35,8 +34,8 @@ fun rememberAsyncPainterAndColor(
         val result = SingletonImageLoader.get(context).execute(request)
         when (result) {
             is ErrorResult -> {
-                painter = ColorPainter(Color.Gray)
-                dominantColor = Color.Gray
+                painter = null
+                dominantColor = null
             }
 
             is SuccessResult -> {

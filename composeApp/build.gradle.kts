@@ -100,7 +100,6 @@ kotlin {
             implementation(libs.filekit.coil)
 
             implementation(libs.haze)
-//            implementation(libs.kmpalette.core)
 //            implementation(libs.materialMotion)
         }
         commonTest.dependencies {
@@ -113,6 +112,9 @@ kotlin {
             implementation(libs.androidx.media3.session)
             implementation(libs.androidx.media3.exoplayer)
             implementation(libs.androidx.media3.exoplayer.dash)
+
+//            implementation(libs.androidx.palette)
+//            implementation(libs.androidx.palette.ktx)
 
             implementation(libs.koin.android)
             implementation(libs.room.runtime)
