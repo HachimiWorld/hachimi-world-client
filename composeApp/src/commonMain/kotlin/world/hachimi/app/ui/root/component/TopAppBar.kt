@@ -34,20 +34,6 @@ import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.singleLined
 
 @Composable
-fun TopAppBar(
-    global: GlobalStore,
-    onExpandNavClick: () -> Unit
-) {
-    BoxWithConstraints {
-        if (maxWidth < 600.dp) {
-            CompactTopAppBar(global, onExpandNavClick)
-        } else {
-            ExpandedTopAppBar(global)
-        }
-    }
-}
-
-@Composable
 fun CompactTopAppBar(
     global: GlobalStore,
     onExpandNavClick: () -> Unit

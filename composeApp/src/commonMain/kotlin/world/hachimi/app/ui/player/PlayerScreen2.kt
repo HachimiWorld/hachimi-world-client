@@ -1,9 +1,9 @@
 package world.hachimi.app.ui.player
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.player.fullscreen.CompactPlayerScreen2
 import world.hachimi.app.ui.player.fullscreen.ExpandedPlayerScreen2
 import world.hachimi.app.ui.player.fullscreen.components.BackgroundContainer
@@ -23,9 +23,7 @@ fun PlayerScreen2() {
         painter = painter,
         dominantColor = dominantColor
     ) {
-        BoxWithConstraints(propagateMinConstraints = true) {
-            if (maxWidth < WindowSize.MEDIUM) CompactPlayerScreen2()
-            else ExpandedPlayerScreen2()
-        }
+        if (LocalWindowSize.current.width < WindowSize.MEDIUM) CompactPlayerScreen2()
+        else ExpandedPlayerScreen2()
     }
 }

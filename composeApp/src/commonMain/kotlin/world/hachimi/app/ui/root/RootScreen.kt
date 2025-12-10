@@ -32,8 +32,9 @@ import world.hachimi.app.ui.player.footer.ExpandedFooterHeight
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
+import world.hachimi.app.ui.root.component.CompactTopAppBar
+import world.hachimi.app.ui.root.component.ExpandedTopAppBar
 import world.hachimi.app.ui.root.component.SideNavigation
-import world.hachimi.app.ui.root.component.TopAppBar
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
@@ -78,7 +79,7 @@ private fun AdaptiveScreen(
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    if (LocalWindowSize.current.width < WindowSize.COMPACT) { // Compact
+    if (LocalWindowSize.current.width < WindowSize.COMPACT) {
         CompactScreen({ state ->
             navigationContent {
                 scope.launch {
@@ -115,7 +116,7 @@ private fun CompactScreen(
         val hazeState = rememberHazeState()
         Box(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
-                TopAppBar(global, onExpandNavClick = {
+                CompactTopAppBar(global, onExpandNavClick = {
                     scope.launch {
                         drawerState.open()
                     }
@@ -144,7 +145,7 @@ private fun ExpandedScreen(
     global: GlobalStore = koinInject()
 ) {
     Column(Modifier.fillMaxSize()) {
-        TopAppBar(global, {})
+        ExpandedTopAppBar(global)
 
         Row(Modifier.weight(1f).fillMaxWidth()) {
             Box(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(200.dp)) {
