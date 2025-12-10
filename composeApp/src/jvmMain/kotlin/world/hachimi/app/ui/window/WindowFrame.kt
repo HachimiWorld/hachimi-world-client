@@ -14,11 +14,25 @@ import io.github.composefluent.gallery.jna.windows.ComposeWindowProcedure
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst
 import world.hachimi.app.LocalWindow
 
+val LocalWindowFrameState: ProvidableCompositionLocal<WindowFrameState?> = staticCompositionLocalOf { null }
+
+interface WindowFrameState {
+    var darkMode: Boolean
+}
+
+private class WindowFrameStateImpl(darkMode: Boolean) : WindowFrameState {
+    private val _darkMode = mutableStateOf(darkMode)
+    override var darkMode: Boolean
+        get() = _darkMode.value
+        set(value) {
+            _darkMode.value = value
+        }
+}
 
 @Composable
 fun WindowFrame(
     state: WindowState,
-    darkMode: Boolean,
+    initialDarkMode: Boolean,
     onCloseRequest: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -47,34 +61,38 @@ fun WindowFrame(
             }
         )
     }
-    Box(Modifier.fillMaxSize().padding(windowInsets.asPaddingValues())) {
-        content()
-        CaptionBar(
-            modifier = Modifier.fillMaxWidth().onGloballyPositioned {
-                captionBarRect = it.boundsInWindow()
-            },
-            darkMode = darkMode,
-            maximized = maximized,
-            onMinClick = {
-                User32.INSTANCE.ShowWindow(
-                    procedure.windowHandle,
-                    WinUser.SW_MINIMIZE
-                )
-            },
-            onMinBounds = { minButtonRect = it },
-            onMaximizeClick = {
-                if (maximized) User32.INSTANCE.ShowWindow(
-                    procedure.windowHandle,
-                    WinUser.SW_RESTORE
-                ) else User32.INSTANCE.ShowWindow(
-                    procedure.windowHandle,
-                    WinUser.SW_MAXIMIZE
-                )
-            },
-            onMaxBounds = { maxButtonRect = it },
-            onCloseClick = onCloseRequest,
-            onCloseBounds = { closeButtonRect = it },
-        )
+    val state = remember(window) { WindowFrameStateImpl(initialDarkMode) }
+
+    CompositionLocalProvider(LocalWindowFrameState provides state) {
+        Box(Modifier.fillMaxSize().padding(windowInsets.asPaddingValues())) {
+            content()
+            CaptionBar(
+                modifier = Modifier.fillMaxWidth().onGloballyPositioned {
+                    captionBarRect = it.boundsInWindow()
+                },
+                darkMode = state.darkMode,
+                maximized = maximized,
+                onMinClick = {
+                    User32.INSTANCE.ShowWindow(
+                        procedure.windowHandle,
+                        WinUser.SW_MINIMIZE
+                    )
+                },
+                onMinBounds = { minButtonRect = it },
+                onMaximizeClick = {
+                    if (maximized) User32.INSTANCE.ShowWindow(
+                        procedure.windowHandle,
+                        WinUser.SW_RESTORE
+                    ) else User32.INSTANCE.ShowWindow(
+                        procedure.windowHandle,
+                        WinUser.SW_MAXIMIZE
+                    )
+                },
+                onMaxBounds = { maxButtonRect = it },
+                onCloseClick = onCloseRequest,
+                onCloseBounds = { closeButtonRect = it },
+            )
+        }
     }
 }
 

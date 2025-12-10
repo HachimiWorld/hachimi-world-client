@@ -2,7 +2,12 @@ package world.hachimi.app.ui.theme
 
 import androidx.compose.runtime.Composable
 
+object WebSystemUIController : SystemUIController {
+    override fun setSystemBarsTheme(darkTheme: Boolean) {
+    }
+}
+
 @Composable
-internal actual fun SystemAppearance(darkTheme: Boolean) {
-    // Maybe we can do something in different browsers with their own API
+actual fun rememberSystemUIController(): SystemUIController {
+    return WebSystemUIController
 }

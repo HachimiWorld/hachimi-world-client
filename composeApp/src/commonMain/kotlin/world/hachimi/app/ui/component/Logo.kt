@@ -26,7 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.vectorResource
-import world.hachimi.app.ui.LocalDarkMode
+import world.hachimi.app.ui.theme.LocalDarkMode
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable

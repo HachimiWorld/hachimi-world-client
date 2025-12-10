@@ -59,7 +59,7 @@ fun main() {
                     val darkMode = global.darkMode ?: isSystemInDarkTheme()
                     WindowFrame(
                         state = windowState,
-                        darkMode = darkMode,
+                        initialDarkMode = darkMode,
                         onCloseRequest = ::exitApplication
                     ) {
                         App()

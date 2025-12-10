@@ -14,12 +14,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
-import world.hachimi.app.ui.LocalDarkMode
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.*
 import world.hachimi.app.ui.design.components.DiffusionBackground
 import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.theme.LocalDarkMode
 
 @Composable
 fun BackgroundContainer(

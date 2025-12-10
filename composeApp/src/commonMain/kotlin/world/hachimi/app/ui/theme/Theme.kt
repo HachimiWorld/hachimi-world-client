@@ -5,7 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.hachimiDarkScheme
 import world.hachimi.app.ui.design.hachimiLightScheme
@@ -238,6 +238,7 @@ private val highContrastDarkColorScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
 
+val LocalDarkMode = compositionLocalOf { false }
 
 @Composable
 fun AppTheme(
@@ -249,17 +250,19 @@ fun AppTheme(
         darkTheme -> darkScheme
         else -> lightScheme
     }
-    HachimiTheme(
-        colorScheme = hachimiColorScheme
-    ) {
-        MaterialTheme(
-            colorScheme = mdColorScheme,
-            typography = AppTypography,
-            content = {
-                SystemAppearance(darkTheme)
-                content()
-            }
-        )
+    CompositionLocalProvider(LocalDarkMode provides darkTheme) {
+        HachimiTheme(
+            colorScheme = hachimiColorScheme
+        ) {
+            MaterialTheme(
+                colorScheme = mdColorScheme,
+                typography = AppTypography,
+                content = {
+                    SystemAppearance(darkTheme)
+                    content()
+                }
+            )
+        }
     }
 }
 
@@ -280,4 +283,18 @@ fun PreviewTheme(
 }
 
 @Composable
-internal expect fun SystemAppearance(darkTheme: Boolean)
+internal fun SystemAppearance(darkTheme: Boolean) {
+    val uiController = rememberSystemUIController()
+    LaunchedEffect(uiController, darkTheme) {
+        uiController.setSystemBarsTheme(darkTheme)
+    }
+}
+
+interface SystemUIController {
+    fun setSystemBarsTheme(darkTheme: Boolean)
+}
+
+@Composable
+expect fun rememberSystemUIController(): SystemUIController
+
+internal val LocalSystemUIController = staticCompositionLocalOf { error("Not initialized") }

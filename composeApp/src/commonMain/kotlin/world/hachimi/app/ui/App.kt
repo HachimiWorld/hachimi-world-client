@@ -27,7 +27,6 @@ import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
 import world.hachimi.app.ui.theme.AppTheme
 
-val LocalDarkMode = compositionLocalOf { false }
 
 val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope> { error("not provided") }
 
