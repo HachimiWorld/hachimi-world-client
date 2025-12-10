@@ -4,10 +4,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,7 +53,7 @@ fun AmbientUserChip(
 @Composable
 private fun UserChipContent(avatar: Painter?, name: String) {
     avatar?.let {
-        Box(Modifier.size(16.dp).clip(CircleShape).background(Color(0xFFB7B7B7).copy(0.6f))) {
+        Box(Modifier.size(16.dp).clip(CircleShape).background(LocalContentColor.current.copy(0.12f))) {
             Image(
                 modifier = Modifier.fillMaxSize(),
                 painter = it,
