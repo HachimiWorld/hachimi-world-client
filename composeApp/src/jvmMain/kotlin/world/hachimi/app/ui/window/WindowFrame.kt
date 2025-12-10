@@ -49,33 +49,33 @@ fun WindowFrame(
     }
     Box(Modifier.fillMaxSize().padding(windowInsets.asPaddingValues())) {
         content()
+        CaptionBar(
+            modifier = Modifier.fillMaxWidth().onGloballyPositioned {
+                captionBarRect = it.boundsInWindow()
+            },
+            darkMode = darkMode,
+            maximized = maximized,
+            onMinClick = {
+                User32.INSTANCE.ShowWindow(
+                    procedure.windowHandle,
+                    WinUser.SW_MINIMIZE
+                )
+            },
+            onMinBounds = { minButtonRect = it },
+            onMaximizeClick = {
+                if (maximized) User32.INSTANCE.ShowWindow(
+                    procedure.windowHandle,
+                    WinUser.SW_RESTORE
+                ) else User32.INSTANCE.ShowWindow(
+                    procedure.windowHandle,
+                    WinUser.SW_MAXIMIZE
+                )
+            },
+            onMaxBounds = { maxButtonRect = it },
+            onCloseClick = onCloseRequest,
+            onCloseBounds = { closeButtonRect = it },
+        )
     }
-    CaptionBar(
-        modifier = Modifier.fillMaxWidth().onGloballyPositioned {
-            captionBarRect = it.boundsInWindow()
-        },
-        darkMode = darkMode,
-        maximized = maximized,
-        onMinClick = {
-            User32.INSTANCE.ShowWindow(
-                procedure.windowHandle,
-                WinUser.SW_MINIMIZE
-            )
-        },
-        onMinBounds = { minButtonRect = it },
-        onMaximizeClick = {
-            if (maximized) User32.INSTANCE.ShowWindow(
-                procedure.windowHandle,
-                WinUser.SW_RESTORE
-            ) else User32.INSTANCE.ShowWindow(
-                procedure.windowHandle,
-                WinUser.SW_MAXIMIZE
-            )
-        },
-        onMaxBounds = { maxButtonRect = it },
-        onCloseClick = onCloseRequest,
-        onCloseBounds = { closeButtonRect = it },
-    )
 }
 
 fun Rect.contains(x: Float, y: Float): Boolean {
