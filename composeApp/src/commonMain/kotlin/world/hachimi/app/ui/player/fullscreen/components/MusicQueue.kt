@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
@@ -15,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -43,7 +48,6 @@ fun MusicQueue(
     playingSongId: Long?,
     onPlayClick: (Long) -> Unit,
     onRemoveClick: (Long) -> Unit,
-    onClearClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues.Zero
 ) {
@@ -58,16 +62,6 @@ fun MusicQueue(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         state = scrollState
     ) {
-        item {
-            Row(
-                modifier = Modifier.fillParentMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "播放队列", style = headStyle)
-                ClearButton(onClick = onClearClick)
-            }
-        }
         itemsIndexed(queue, key = { _, item -> item.id }) { index, item ->
             Item(
                 modifier = Modifier.fillParentMaxWidth().animateItem(),
@@ -80,6 +74,21 @@ fun MusicQueue(
                 onRemoveClick = { onRemoveClick(item.id) },
             )
         }
+    }
+}
+
+@Composable
+fun MusicQueueHeader(
+    onClearClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = "播放队列", style = headStyle)
+        ClearButton(onClick = onClearClick)
     }
 }
 
@@ -97,7 +106,7 @@ private fun ClearButton(onClick: () -> Unit) {
         contentColor = HachimiTheme.colorScheme.onSurface
     ) {
         Box(Modifier.clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("清空")
+            Text("清除")
         }
     }
 }
@@ -122,20 +131,27 @@ private fun Item(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)),
-            model = ImageRequest.Builder(LocalPlatformContext.current)
-                .data(coverUrl).crossfade(true)
-                .build(),
-            contentDescription = "Cover",
-            contentScale = ContentScale.Crop,
-            placeholder = ColorPainter(LocalContentColor.current.copy(0.12f)),
-        )
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(8.dp))) {
+            AsyncImage(
+                modifier = Modifier.fillMaxSize(),
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(coverUrl).crossfade(true)
+                    .build(),
+                contentDescription = "Cover",
+                contentScale = ContentScale.Crop,
+                placeholder = ColorPainter(LocalContentColor.current.copy(0.12f)),
+            )
+            androidx.compose.animation.AnimatedVisibility(visible = isPlaying, enter = fadeIn(), exit = fadeOut()) {
+                Box(Modifier.fillMaxSize().background(Color.Black.copy(0.12f)), Alignment.Center) {
+                    Icon(Icons.Default.Headphones, "Playing", tint = Color.White)
+                }
+            }
+        }
         Column(Modifier.height(48.dp).weight(1f), verticalArrangement = Arrangement.SpaceBetween) {
             Text(
                 text = name,
                 style = titleStyle,
-                color = if (isPlaying) HachimiTheme.colorScheme.primary else HachimiTheme.colorScheme.onSurface,
+                color = HachimiTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -181,7 +197,7 @@ private val durationStyle = TextStyle(
 private fun Preview() {
     PreviewTheme(background = true) {
         MusicQueue(
-            remember {
+            queue = remember {
                 listOf(
                     GlobalStore.MusicQueueItem(0, "0", "Test Song 1", "Artist", 101.seconds, "", true),
                     GlobalStore.MusicQueueItem(1, "1", "Test Song 2", "Artist", 207.seconds, "", false),
@@ -190,9 +206,9 @@ private fun Preview() {
                     GlobalStore.MusicQueueItem(4, "4", "Test Song 5", "Artist", 116.seconds, "", false),
                 )
             },
-            null,
-            {},
-            {},
-            {})
+            playingSongId = null,
+            onPlayClick = {},
+            onRemoveClick = {}
+        )
     }
 }

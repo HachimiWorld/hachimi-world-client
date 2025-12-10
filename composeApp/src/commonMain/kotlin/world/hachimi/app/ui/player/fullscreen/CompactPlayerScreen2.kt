@@ -20,12 +20,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -307,7 +310,6 @@ private fun QueueTab(
             playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
             onPlayClick = { global.player.playSongInQueue(it) },
             onRemoveClick = { global.player.removeFromQueue(it) },
-            onClearClick = { global.player.clearQueue() },
         )
     }
 }
@@ -329,7 +331,12 @@ private fun Header(
         AsyncImage(
             model = cover,
             contentDescription = "Cover",
-            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(8.dp)),
+            modifier = Modifier.size(64.dp).dropShadow(
+                RoundedCornerShape(8.dp), Shadow(
+                    radius = 24.dp, color = Color.Black.copy(0.17f),
+                    offset = DpOffset(0.dp, 2.dp)
+                )
+            ).clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop,
         )
         Column(Modifier.weight(1f).padding(start = 16.dp, end = 16.dp)) {

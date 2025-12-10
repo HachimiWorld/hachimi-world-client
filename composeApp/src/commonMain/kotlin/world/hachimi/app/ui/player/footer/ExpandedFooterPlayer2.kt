@@ -45,6 +45,7 @@ import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
+import world.hachimi.app.ui.player.fullscreen.components.MusicQueueHeader
 import kotlin.random.Random
 
 val ExpandedFooterHeight = 104.dp
@@ -133,14 +134,18 @@ fun ExpandedFooterPlayer2(
             modifier = Modifier.size(400.dp, 400.dp),
             hazeState = hazeState
         ) {
-            MusicQueue(
-                modifier = Modifier.padding(16.dp),
-                queue = global.player.musicQueue,
-                playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
-                onPlayClick = { global.player.playSongInQueue(it) },
-                onRemoveClick = { global.player.removeFromQueue(it) },
-                onClearClick = { global.player.clearQueue() },
-            )
+            Column(modifier = Modifier.padding(16.dp),) {
+                MusicQueueHeader(
+                    onClearClick = { global.player.clearQueue() }, Modifier.fillMaxWidth()
+                )
+                MusicQueue(
+                    modifier = Modifier.padding(top = 16.dp).weight(1f),
+                    queue = global.player.musicQueue,
+                    playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
+                    onPlayClick = { global.player.playSongInQueue(it) },
+                    onRemoveClick = { global.player.removeFromQueue(it) },
+                )
+            }
         }
     }
 }

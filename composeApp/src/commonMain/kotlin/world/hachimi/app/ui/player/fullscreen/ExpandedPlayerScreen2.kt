@@ -411,7 +411,6 @@ private fun QueueTab(
             playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
             onPlayClick = { global.player.playSongInQueue(it) },
             onRemoveClick = { global.player.removeFromQueue(it) },
-            onClearClick = { global.player.clearQueue() },
             contentPadding = contentPadding
         )
     }
