@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -43,35 +44,41 @@ fun MusicQueue(
     onPlayClick: (Long) -> Unit,
     onRemoveClick: (Long) -> Unit,
     onClearClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues.Zero
 ) {
-    Column(modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "播放队列", style = headStyle)
-            ClearButton(onClick = onClearClick)
+    val scrollState = rememberLazyListState(
+        initialFirstVisibleItemIndex = remember(queue) {
+            queue.indexOfFirst { it.id == playingSongId }
         }
-
-        LazyColumn(
-            modifier = Modifier.weight(1f).fillMaxWidth().defaultMinSize(minHeight = 400.dp),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            itemsIndexed(queue, key = { _, item -> item.id }) { index, item ->
-                Item(
-                    modifier = Modifier.fillMaxWidth().animateItem(),
-                    isPlaying = item.id == playingSongId,
-                    onPlayClick = { onPlayClick(item.id) },
-                    coverUrl = item.coverUrl,
-                    name = item.name,
-                    artist = item.artist,
-                    duration = item.duration,
-                    onRemoveClick = { onRemoveClick(item.id) },
-                )
+    )
+    LazyColumn(
+        modifier = modifier.defaultMinSize(minHeight = 400.dp),
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        state = scrollState
+    ) {
+        item {
+            Row(
+                modifier = Modifier.fillParentMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "播放队列", style = headStyle)
+                ClearButton(onClick = onClearClick)
             }
+        }
+        itemsIndexed(queue, key = { _, item -> item.id }) { index, item ->
+            Item(
+                modifier = Modifier.fillParentMaxWidth().animateItem(),
+                isPlaying = item.id == playingSongId,
+                onPlayClick = { onPlayClick(item.id) },
+                coverUrl = item.coverUrl,
+                name = item.name,
+                artist = item.artist,
+                duration = item.duration,
+                onRemoveClick = { onRemoveClick(item.id) },
+            )
         }
     }
 }
@@ -81,9 +88,14 @@ private val headStyle = TextStyle(
     fontSize = 24.sp,
     lineHeight = 32.sp
 )
+
 @Composable
 private fun ClearButton(onClick: () -> Unit) {
-    Surface(shape = RoundedCornerShape(16.dp), color = HachimiTheme.colorScheme.surface, contentColor = HachimiTheme.colorScheme.onSurface) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = HachimiTheme.colorScheme.surface,
+        contentColor = HachimiTheme.colorScheme.onSurface
+    ) {
         Box(Modifier.clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("清空")
         }
@@ -102,7 +114,7 @@ private fun Item(
     onRemoveClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.clickable(
+        modifier = modifier.clickable(
             onClick = onPlayClick,
             indication = null,
             interactionSource = null
@@ -119,11 +131,11 @@ private fun Item(
             contentScale = ContentScale.Crop,
             placeholder = ColorPainter(LocalContentColor.current.copy(0.12f)),
         )
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.height(48.dp).weight(1f), verticalArrangement = Arrangement.SpaceBetween) {
             Text(
                 text = name,
                 style = titleStyle,
-                color = HachimiTheme.colorScheme.onSurface,
+                color = if (isPlaying) HachimiTheme.colorScheme.primary else HachimiTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -135,7 +147,11 @@ private fun Item(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        Text(text = formatSongDuration(duration), style =durationStyle, color = HachimiTheme.colorScheme.onSurfaceVariant)
+        Text(
+            text = formatSongDuration(duration),
+            style = durationStyle,
+            color = HachimiTheme.colorScheme.onSurfaceVariant
+        )
         HachimiIconButton(onClick = onRemoveClick) {
             Icon(Icons.Filled.Close, contentDescription = "Remove from playlist")
         }

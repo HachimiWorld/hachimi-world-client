@@ -167,8 +167,18 @@ private fun TabContent(
             )
 
             Page.Queue -> QueueTab(
-                modifier = Modifier.fillMaxSize().padding(64.dp).fadingEdges(),
-                global = global
+                modifier = Modifier.fillMaxSize()
+                    .wrapContentWidth()
+                    .widthIn(max = 400.dp)
+                    .padding(vertical = 64.dp)
+                    .fadingEdges(),
+                global = global,
+                contentPadding = with(LocalDensity.current) {
+                    PaddingValues(
+                        top = coverTopLeft.y.toDp() - 64.dp, // - paddings
+                        bottom = coverTopLeft.y.toDp() - 64.dp // - paddings
+                    )
+                }
             )
 
             Page.Lyrics -> Lyrics2(
@@ -390,7 +400,8 @@ private fun BriefInfo(
 @Composable
 private fun QueueTab(
     global: GlobalStore,
-    modifier: Modifier
+    modifier: Modifier,
+    contentPadding: PaddingValues
 ) {
     Column(modifier) {
         MusicQueue(
@@ -399,6 +410,7 @@ private fun QueueTab(
             onPlayClick = { global.player.playSongInQueue(it) },
             onRemoveClick = { global.player.removeFromQueue(it) },
             onClearClick = { global.player.clearQueue() },
+            contentPadding = contentPadding
         )
     }
 }
