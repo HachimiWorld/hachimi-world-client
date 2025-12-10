@@ -20,16 +20,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
-import coil3.compose.rememberAsyncImagePainter
 import org.koin.compose.koinInject
-import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.nav.Route
@@ -43,7 +40,6 @@ import world.hachimi.app.ui.player.components.CreatePlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.*
-import world.hachimi.app.util.isValidHttpsUrl
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -364,13 +360,7 @@ private fun ControlButton(
     }
 }
 
-private val titleStyle = TextStyle(
-    fontWeight = FontWeight.Medium,
-    fontSize = 16.sp,
-    lineHeight = 24.sp
-)
-
-private val subtitleStyle = TextStyle(
+private val bodyStyle = TextStyle(
     fontWeight = FontWeight.Medium,
     fontSize = 12.sp,
     lineHeight = 16.sp
@@ -390,43 +380,8 @@ private fun BriefInfo(
             Spacer(Modifier.height(8.dp))
             Text(
                 text = it,
-                style = subtitleStyle, color = LocalContentColor.current.copy(0.6f),
+                style = bodyStyle, color = LocalContentColor.current.copy(0.6f),
                 maxLines = 2, overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-@Composable
-fun AuthorAndPV(
-    authorName: String,
-    avatar: String?,
-    hasMultipleArtists: Boolean,
-    pvLink: String?,
-    onUserClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    pvAlignToEnd: Boolean
-) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        AmbientUserChip(
-            onClick = onUserClick,
-            avatar = rememberAsyncImagePainter(avatar, contentScale = ContentScale.Crop),
-            name = authorName
-        )
-        if (hasMultipleArtists) {
-            Text(
-                modifier = Modifier.padding(start = 4.dp),
-                text = "等人",
-                style = subtitleStyle,
-                color = LocalContentColor.current.copy(0.6f)
-            )
-        }
-
-        pvLink?.takeIf { isValidHttpsUrl(it) }?.let {
-            if (pvAlignToEnd) Spacer(Modifier.weight(1f))
-            AmbientPVChip(
-                platform = it,
-                onClick = { getPlatform().openUrl(it) }
             )
         }
     }
