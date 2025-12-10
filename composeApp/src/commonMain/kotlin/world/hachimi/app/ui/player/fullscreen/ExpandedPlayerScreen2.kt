@@ -6,6 +6,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -116,44 +117,7 @@ private fun Content(
             }
         )
         Box(Modifier.weight(1f)) {
-            AnimatedContent(
-                targetState = currentPage,
-                transitionSpec = rememberTabTransitionSpec()
-            ) { page ->
-                when (page) {
-                    Page.Info -> InfoTabContent(
-                        modifier = Modifier.fillMaxSize()
-                            .wrapContentWidth()
-                            .widthIn(max = 400.dp),
-                        uiState = uiState,
-                        contentPadding = with(LocalDensity.current) {
-                            PaddingValues(
-                                top = coverTopLeft.y.toDp(),
-                                bottom = coverTopLeft.y.toDp()
-                            )
-                        },
-                        onNavToUser = { uid ->
-                            global.nav.push(Route.Root.PublicUserSpace(uid))
-                            global.shrinkPlayer()
-                        }
-                    )
-
-                    Page.Queue -> QueueTab(
-                        modifier = Modifier.fillMaxSize().padding(64.dp).fadingEdges(),
-                        global = global
-                    )
-                    Page.Lyrics -> Lyrics2(
-                        modifier = Modifier.fillMaxSize().padding(end = 64.dp).padding(vertical = 64.dp).fadingEdges(),
-                        lazyListState = scrollState,
-                        supportTimedLyrics = uiState.timedLyricsEnabled,
-                        currentLine = uiState.currentLyricsLine,
-                        lines = uiState.lyricsLines,
-                        loading = uiState.fetchingMetadata,
-                    )
-
-                    else -> {}
-                }
-            }
+            CenterContent(currentPage, uiState, coverTopLeft, global, scrollState)
             PagerButtons(
                 modifier = Modifier.align(Alignment.BottomEnd).padding(32.dp),
                 currentPage = currentPage,
@@ -172,6 +136,55 @@ private fun Content(
                 title = info.title,
                 author = info.uploaderName,
             )
+        }
+    }
+}
+
+@Composable
+private fun CenterContent(
+    currentPage: Page,
+    uiState: PlayerUIState,
+    coverTopLeft: IntOffset,
+    global: GlobalStore,
+    scrollState: LazyListState
+) {
+    AnimatedContent(
+        targetState = currentPage,
+        transitionSpec = rememberTabTransitionSpec()
+    ) { page ->
+        when (page) {
+            Page.Info -> InfoTabContent(
+                modifier = Modifier.fillMaxSize()
+                    .wrapContentWidth()
+                    .widthIn(max = 400.dp),
+                uiState = uiState,
+                contentPadding = with(LocalDensity.current) {
+                    PaddingValues(
+                        top = coverTopLeft.y.toDp(),
+                        bottom = coverTopLeft.y.toDp()
+                    )
+                },
+                onNavToUser = { uid ->
+                    global.nav.push(Route.Root.PublicUserSpace(uid))
+                    global.shrinkPlayer()
+                }
+            )
+
+            Page.Queue -> QueueTab(
+                modifier = Modifier.fillMaxSize().padding(64.dp).fadingEdges(),
+                global = global
+            )
+
+            Page.Lyrics -> Lyrics2(
+                modifier = Modifier.fillMaxSize().padding(end = 64.dp).padding(vertical = 64.dp).fadingEdges(),
+                lazyListState = scrollState,
+                supportTimedLyrics = uiState.timedLyricsEnabled,
+                currentLine = uiState.currentLyricsLine,
+                lines = uiState.lyricsLines,
+                loading = uiState.fetchingMetadata,
+            )
+
+            else -> {}
         }
     }
 }
