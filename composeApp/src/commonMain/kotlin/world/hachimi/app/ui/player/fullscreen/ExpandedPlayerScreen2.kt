@@ -52,12 +52,12 @@ fun ExpandedPlayerScreen2(
 ) {
     val uiState = global.player.playerState
 
-    Box(propagateMinConstraints = true) {
+    Box(Modifier.fillMaxSize()) {
+        Content(global, uiState)
         ShrinkButton(
             modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopStart),
             onClick = global::shrinkPlayer
         )
-        Content(global, uiState)
     }
 }
 
@@ -138,7 +138,10 @@ private fun Content(
                         }
                     )
 
-                    Page.Queue -> Box(Modifier.fillMaxSize())
+                    Page.Queue -> QueueTab(
+                        modifier = Modifier.fillMaxSize().padding(64.dp).fadingEdges(),
+                        global = global
+                    )
                     Page.Lyrics -> Lyrics2(
                         modifier = Modifier.fillMaxSize().padding(end = 64.dp).padding(vertical = 64.dp).fadingEdges(),
                         lazyListState = scrollState,
@@ -439,3 +442,18 @@ fun AuthorAndPV(
     }
 }
 
+@Composable
+private fun QueueTab(
+    global: GlobalStore,
+    modifier: Modifier
+) {
+    Column(modifier) {
+        MusicQueue(
+            queue = global.player.musicQueue,
+            playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
+            onPlayClick = { global.player.playSongInQueue(it) },
+            onRemoveClick = { global.player.removeFromQueue(it) },
+            onClearClick = { global.player.clearQueue() },
+        )
+    }
+}

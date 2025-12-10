@@ -57,117 +57,115 @@ fun CompactPlayerScreen2(
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
     var showShareDialog by remember { mutableStateOf(false) }
 
-    Box(propagateMinConstraints = true) {
-        Column(
-            Modifier.fillMaxSize()
-                .padding(top = currentSafeAreaInsets().top, bottom = currentSafeAreaInsets().bottom)
-                .padding(vertical = 24.dp)
+    Column(
+        Modifier.fillMaxSize()
+            .padding(top = currentSafeAreaInsets().top, bottom = currentSafeAreaInsets().bottom)
+            .padding(vertical = 24.dp)
+    ) {
+        HachimiIconButton(
+            modifier = Modifier.padding(start = 32.dp),
+            onClick = { global.shrinkPlayer() },
+            touchMode = true
         ) {
-            HachimiIconButton(
-                modifier = Modifier.padding(start = 32.dp),
-                onClick = { global.shrinkPlayer() },
-                touchMode = true
-            ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Shrink")
-            }
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Shrink")
+        }
 
-            AnimatedContent(
-                targetState = showTab,
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                transitionSpec = { fadeIn() togetherWith fadeOut() }
-            ) { showTab ->
-                if (!showTab) {
-                    PlayerTab(
-                        uiState = uiState,
-                        onNavToUser = {
-                            global.nav.push(Route.Root.PublicUserSpace(it))
-                            global.shrinkPlayer()
+        AnimatedContent(
+            targetState = showTab,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            transitionSpec = { fadeIn() togetherWith fadeOut() }
+        ) { showTab ->
+            if (!showTab) {
+                PlayerTab(
+                    uiState = uiState,
+                    onNavToUser = {
+                        global.nav.push(Route.Root.PublicUserSpace(it))
+                        global.shrinkPlayer()
+                    },
+                    onAddToPlaylistClick = {
+                        tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
+                    },
+                    onShareClick = { showShareDialog = true }
+                )
+            } else {
+                Column {
+                    Header(
+                        modifier = Modifier.padding(top = 16.dp, start = 32.dp, end = 32.dp),
+                        cover = uiState.displayedCover, title = uiState.displayedTitle,
+                        author = uiState.displayedAuthor,
+                        hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
+                        pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                        avatar = uiState.userProfile?.avatarUrl,
+                        onUserClick = {
+                            uiState.readySongInfo?.uploaderUid?.let {
+                                global.nav.push(Route.Root.PublicUserSpace(it))
+                                global.shrinkPlayer()
+                            }
                         },
                         onAddToPlaylistClick = {
                             tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                         },
-                        onShareClick = { showShareDialog = true }
+                        onShareClick = {
+
+                        }
                     )
-                } else {
-                    Column {
-                        Header(
-                            modifier = Modifier.padding(top = 16.dp, start = 32.dp, end = 32.dp),
-                            cover = uiState.displayedCover, title = uiState.displayedTitle,
-                            author = uiState.displayedAuthor,
-                            hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                            pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
-                            avatar = uiState.userProfile?.avatarUrl,
-                            onUserClick = {
-                                uiState.readySongInfo?.uploaderUid?.let {
+                    AnimatedContent(
+                        targetState = currentPage,
+                        transitionSpec = rememberTabTransitionSpec()
+                    ) { tab ->
+                        when (tab) {
+                            Page.Info -> InfoTab(
+                                uiState,
+                                onNavToUser = {
                                     global.nav.push(Route.Root.PublicUserSpace(it))
                                     global.shrinkPlayer()
                                 }
-                            },
-                            onAddToPlaylistClick = {
-                                tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
-                            },
-                            onShareClick = {
+                            )
 
-                            }
-                        )
-                        AnimatedContent(
-                            targetState = currentPage,
-                            transitionSpec = rememberTabTransitionSpec()
-                        ) { tab ->
-                            when (tab) {
-                                Page.Info -> InfoTab(
-                                    uiState,
-                                    onNavToUser = {
-                                        global.nav.push(Route.Root.PublicUserSpace(it))
-                                        global.shrinkPlayer()
-                                    }
-                                )
-
-                                Page.Queue -> QueueTab()
-                                Page.Lyrics -> LyricsTab(global, uiState, scrollState)
-                                else -> {}
-                            }
+                            Page.Queue -> QueueTab(global)
+                            Page.Lyrics -> LyricsTab(global, uiState, scrollState)
+                            else -> {}
                         }
                     }
                 }
             }
+        }
 
-            PlayerProgress(
-                modifier = Modifier.padding(top = 24.dp).padding(horizontal = 32.dp),
-                durationMillis = uiState.displayedDurationMillis,
-                currentMillis = uiState.displayedCurrentMillis,
-                bufferingProgress = uiState.downloadProgress,
-                onProgressChange = { global.player.setSongProgress(it) },
-                trackColor = HachimiTheme.colorScheme.onSurface.copy(0.1f),
-                barColor = HachimiTheme.colorScheme.onSurface,
-                timeOnTop = false,
-                touchMode = true
-            )
-            ControlButtons(
-                modifier = Modifier.padding(top = 16.dp).padding(horizontal = 32.dp).fillMaxWidth(),
-                playing = uiState.isPlaying,
-                onPreviousClick = { global.player.previous() },
-                onNextClick = { global.player.next() },
-                onPlayClick = { global.player.playOrPause() },
-                onPauseClick = { global.player.playOrPause() }
-            )
-            PagerButtons2(
-                modifier = Modifier.padding(top = 16.dp).padding(horizontal = 32.dp).fillMaxWidth(),
-                currentPage = if (showTab) currentPage else null,
-                onPageSelect = {
-                    if (!showTab) {
-                        currentPage = it
-                        showTab = true
+        PlayerProgress(
+            modifier = Modifier.padding(top = 24.dp).padding(horizontal = 32.dp),
+            durationMillis = uiState.displayedDurationMillis,
+            currentMillis = uiState.displayedCurrentMillis,
+            bufferingProgress = uiState.downloadProgress,
+            onProgressChange = { global.player.setSongProgress(it) },
+            trackColor = HachimiTheme.colorScheme.onSurface.copy(0.1f),
+            barColor = HachimiTheme.colorScheme.onSurface,
+            timeOnTop = false,
+            touchMode = true
+        )
+        ControlButtons(
+            modifier = Modifier.padding(top = 16.dp).padding(horizontal = 32.dp).fillMaxWidth(),
+            playing = uiState.isPlaying,
+            onPreviousClick = { global.player.previous() },
+            onNextClick = { global.player.next() },
+            onPlayClick = { global.player.playOrPause() },
+            onPauseClick = { global.player.playOrPause() }
+        )
+        PagerButtons2(
+            modifier = Modifier.padding(top = 16.dp).padding(horizontal = 32.dp).fillMaxWidth(),
+            currentPage = if (showTab) currentPage else null,
+            onPageSelect = {
+                if (!showTab) {
+                    currentPage = it
+                    showTab = true
+                } else {
+                    if (currentPage == it) {
+                        showTab = false
                     } else {
-                        if (currentPage == it) {
-                            showTab = false
-                        } else {
-                            currentPage = it
-                        }
+                        currentPage = it
                     }
                 }
-            )
-        }
+            }
+        )
     }
 
     AddToPlaylistDialog(tobeAddedSong?.first, tobeAddedSong?.second)
@@ -185,7 +183,12 @@ fun CompactPlayerScreen2(
 }
 
 @Composable
-private fun PlayerTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onAddToPlaylistClick: () -> Unit, onShareClick: () -> Unit) {
+private fun PlayerTab(
+    uiState: PlayerUIState,
+    onNavToUser: (Long) -> Unit,
+    onAddToPlaylistClick: () -> Unit,
+    onShareClick: () -> Unit
+) {
     Column(Modifier.padding(top = 32.dp).padding(horizontal = 32.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             JmidLabel(
@@ -294,8 +297,18 @@ private fun LyricsTab(
 }
 
 @Composable
-private fun QueueTab() {
-    Box(Modifier.fillMaxSize().padding(top = 32.dp)) {}
+private fun QueueTab(
+    global: GlobalStore
+) {
+    Box(Modifier.fillMaxSize().padding(top = 32.dp).padding(horizontal = 32.dp)) {
+        MusicQueue(
+            queue = global.player.musicQueue,
+            playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
+            onPlayClick = { global.player.playSongInQueue(it) },
+            onRemoveClick = { global.player.removeFromQueue(it) },
+            onClearClick = { global.player.clearQueue() },
+        )
+    }
 }
 
 @Composable
@@ -316,7 +329,7 @@ private fun Header(
             model = cover,
             contentDescription = "Cover",
             modifier = Modifier.size(64.dp).clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         )
         Column(Modifier.weight(1f).padding(start = 16.dp, end = 16.dp)) {
             Text(
