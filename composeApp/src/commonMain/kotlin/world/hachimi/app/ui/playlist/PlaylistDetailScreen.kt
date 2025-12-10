@@ -22,6 +22,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PlaylistDetailViewModel
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.formatSongDuration
@@ -155,6 +156,10 @@ fun PlaylistDetailScreen(
                                 vm.removeFromPlaylist(song.songId)
                             }
                         )
+                    }
+
+                    item {
+                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
                     }
                 }
             }

@@ -22,6 +22,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewViewModel
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.YMD
@@ -66,7 +67,12 @@ private fun NotContributor() {
 
 @Composable
 private fun Content(vm: ReviewViewModel) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 24.dp), Arrangement.spacedBy(16.dp)) {
+    Column(
+        Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 24.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .windowInsetsPadding(LocalContentInsets.current),
+        Arrangement.spacedBy(16.dp)
+    ) {
         Text("审核作品 (${vm.total})", style = MaterialTheme.typography.titleLarge)
 
         Box(Modifier.weight(1f).fillMaxWidth()) {

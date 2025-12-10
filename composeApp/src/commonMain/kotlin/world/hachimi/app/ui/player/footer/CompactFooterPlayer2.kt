@@ -29,6 +29,9 @@ import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.theme.PreviewTheme
 
+
+val CompactFooterHeight = 48.dp + 16.dp
+
 @Composable
 fun CompactFooterPlayer2(
     modifier: Modifier = Modifier,

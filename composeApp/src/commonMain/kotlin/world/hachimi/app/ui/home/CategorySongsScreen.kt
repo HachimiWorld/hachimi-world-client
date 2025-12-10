@@ -23,6 +23,7 @@ import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.fromSearchSongItem
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
@@ -105,6 +106,9 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
                         )
                     },
                 )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
             }
         }
     }

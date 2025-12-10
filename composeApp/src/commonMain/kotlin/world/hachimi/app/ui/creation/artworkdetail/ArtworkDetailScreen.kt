@@ -22,6 +22,7 @@ import world.hachimi.app.model.ArtworkDetailViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
@@ -103,7 +104,11 @@ private fun DetailContent(
     vm: ArtworkDetailViewModel,
     global: GlobalStore = koinInject()
 ) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    Column(
+        Modifier.fillMaxSize()
+            .navigationBarsPadding().windowInsetsPadding(LocalContentInsets.current),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
         // Show all properties
         vm.detail?.let { detail ->
             Row(Modifier.padding(top = 24.dp)) {

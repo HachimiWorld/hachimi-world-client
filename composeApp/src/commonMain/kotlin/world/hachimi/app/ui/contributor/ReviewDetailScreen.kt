@@ -25,6 +25,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewDetailViewModel
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.formatSongDuration
@@ -55,7 +56,12 @@ private fun Content(
     vm: ReviewDetailViewModel,
     global: GlobalStore = koinInject()
 ) {
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), Arrangement.spacedBy(16.dp)) {
+    Column(
+        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
+            .navigationBarsPadding()
+            .windowInsetsPadding(LocalContentInsets.current),
+        Arrangement.spacedBy(16.dp)
+    ) {
         vm.data?.let { data ->
             Text("Review 详情", style = MaterialTheme.typography.titleLarge)
             PropertyItem(label = {
@@ -177,7 +183,7 @@ private fun Content(
 
             PropertyItem("歌词", data.lyrics)
 
-            PropertyItem( { Text("外部链接") }) {
+            PropertyItem({ Text("外部链接") }) {
                 data.externalLink.fastForEach {
                     Text(it.platform, style = MaterialTheme.typography.labelMedium)
 
@@ -200,7 +206,13 @@ private fun PropertyItem(
             label()
         }
         Spacer(Modifier.height(8.dp))
-        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall.copy(color = LocalContentColor.current.copy(0.7f))) {
+        CompositionLocalProvider(
+            LocalTextStyle provides MaterialTheme.typography.bodySmall.copy(
+                color = LocalContentColor.current.copy(
+                    0.7f
+                )
+            )
+        ) {
             content()
         }
     }

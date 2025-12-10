@@ -28,6 +28,7 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishViewModel
 import world.hachimi.app.model.PublishViewModel.LyricsType
 import world.hachimi.app.model.PublishViewModel.Type
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.creation.publish.components.*
@@ -56,7 +57,10 @@ fun PublishScreen(
 
 @Composable
 private fun Content(vm: PublishViewModel, global: GlobalStore) {
-    Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Box(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .navigationBarsPadding().windowInsetsPadding(LocalContentInsets.current)
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 700.dp).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)

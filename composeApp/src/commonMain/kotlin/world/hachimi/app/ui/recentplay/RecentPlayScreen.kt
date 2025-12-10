@@ -18,6 +18,7 @@ import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -65,6 +66,9 @@ fun RecentPlayScreen(
                             playTime = item.playTime,
                             onPlayClick = { vm.play(item) }
                         )
+                    }
+                    item {
+                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
                     }
                 }
                 if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))

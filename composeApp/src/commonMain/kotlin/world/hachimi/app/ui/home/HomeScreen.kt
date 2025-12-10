@@ -26,6 +26,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.*
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
@@ -63,7 +64,11 @@ fun HomeMainScreen(
             onRefresh = { vm.fakeRefresh() },
             screenWidth = maxWidth
         ) {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(LocalContentInsets.current)
+                .padding(bottom = 24.dp)
+            ) {
                 Segment(
                     label = "最近发布",
                     status = vm.recentStatus,

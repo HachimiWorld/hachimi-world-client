@@ -23,6 +23,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishedTabViewModel
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
@@ -84,6 +85,9 @@ fun PublishedTabContent(
                             pageSizeChange = { vm.setPage(it, vm.currentPage) },
                             pageChange = { vm.setPage(vm.pageSize, it) }
                         )
+                    }
+                    item {
+                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
                     }
                 }
                 if (vm.loading) Box(Modifier.fillMaxSize(), Alignment.Center) {

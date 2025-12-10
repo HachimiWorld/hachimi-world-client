@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -37,6 +38,12 @@ enum class SharedTransitionKeys {
     Cover, Bounds
 }
 
+/**
+ * A global composition local for the bottom app bar / bottom player insets
+ */
+val LocalContentInsets = compositionLocalOf { WindowInsets() }
+val LocalWindowSize = compositionLocalOf { DpSize.Zero }
+
 @Composable
 fun App() {
     setupCoil()
@@ -44,31 +51,39 @@ fun App() {
     val global = koinInject<GlobalStore>()
     val rootDestination = global.nav.backStack.last()
 
-    AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            Box(Modifier.fillMaxSize()) {
-                SharedTransitionLayout {
-                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                        Content(rootDestination)
-                        AnimatedVisibility(global.playerExpanded, enter = slideInVertically(initialOffsetY = { it }), exit = slideOutVertically(targetOffsetY = { it })) {
-                            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                                PlayerScreen2()
+    BoxWithConstraints {
+        CompositionLocalProvider(LocalWindowSize provides DpSize(maxWidth, maxHeight)) {
+            AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
+                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    Box(Modifier.fillMaxSize()) {
+                        SharedTransitionLayout {
+                            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                                Content(rootDestination)
+                                AnimatedVisibility(
+                                    global.playerExpanded,
+                                    enter = slideInVertically(initialOffsetY = { it }),
+                                    exit = slideOutVertically(targetOffsetY = { it })
+                                ) {
+                                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                        PlayerScreen2()
+                                    }
+                                }
                             }
                         }
+                        SnackbarHost(
+                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                            hostState = global.snackbarHostState,
+                        )
                     }
                 }
-                SnackbarHost(
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
-                    hostState = global.snackbarHostState,
+                ClientApiVersionIncompatibleDialog(global)
+                UpgradeDialog(global)
+                if (global.showKidsDialog) KidsModeDialog(
+                    onDismissRequest = { global.confirmKidsPlay(false) },
+                    onConfirm = { global.confirmKidsPlay(true) }
                 )
             }
         }
-        ClientApiVersionIncompatibleDialog(global)
-        UpgradeDialog(global)
-        if (global.showKidsDialog) KidsModeDialog(
-            onDismissRequest = { global.confirmKidsPlay(false) },
-            onConfirm = { global.confirmKidsPlay(true) }
-        )
     }
 }
 
@@ -82,6 +97,7 @@ private fun Content(rootDestination: Any) {
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 fun setupCoil() {
     // Let coil support PlatformFile

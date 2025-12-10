@@ -18,6 +18,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
 
@@ -35,7 +36,7 @@ fun SearchScreen(
         }
     }
 
-    AnimatedContent(vm.loading) {loading ->
+    AnimatedContent(vm.loading) { loading ->
         if (loading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         } else Content(vm, global)
@@ -44,6 +45,7 @@ fun SearchScreen(
 
 @Composable
 private fun Content(vm: SearchViewModel, global: GlobalStore) {
+
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize(),
         columns = if (vm.searchType == SearchViewModel.SearchType.SONG) GridCells.Adaptive(minSize = 320.dp)
@@ -100,7 +102,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
             items = vm.songData,
             key = { item -> item.id },
             contentType = { _ -> "song" }
-        ) {item ->
+        ) { item ->
             SearchSongItem(
                 modifier = Modifier.fillMaxWidth(),
                 data = item,
@@ -125,6 +127,10 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
                 avatarUrl = item.avatarUrl,
                 onClick = { global.nav.push(Route.Root.PublicUserSpace(item.uid)) },
             )
+        }
+
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
         }
     }
 }

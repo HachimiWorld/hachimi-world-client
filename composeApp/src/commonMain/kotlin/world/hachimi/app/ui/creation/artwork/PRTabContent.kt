@@ -26,6 +26,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.MyPRViewModel
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.util.YMD
@@ -97,6 +98,9 @@ fun PRTabContent(
                         if (vm.loading) Box(Modifier.fillMaxWidth(), Alignment.Center) {
                             CircularProgressIndicator()
                         }
+                    }
+                    item {
+                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
                     }
                 }
             }

@@ -25,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.calculateGridColumns
 
@@ -160,6 +161,9 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
             }
         }
     }

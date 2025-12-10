@@ -26,6 +26,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.SongCard
@@ -157,6 +158,9 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                     ) {
                         Text(text = "没有更多了", modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
                     }
+                }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
                 }
             }
         }

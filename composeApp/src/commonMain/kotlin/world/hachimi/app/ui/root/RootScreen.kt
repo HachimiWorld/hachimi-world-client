@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +16,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.component.NeedLoginScreen
@@ -23,7 +26,9 @@ import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.player.footer.CompactFooterHeight
 import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
+import world.hachimi.app.ui.player.footer.ExpandedFooterHeight
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
@@ -32,6 +37,7 @@ import world.hachimi.app.ui.root.component.TopAppBar
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
+import world.hachimi.app.util.WindowSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,20 +78,18 @@ private fun AdaptiveScreen(
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    BoxWithConstraints {
-        if (maxWidth < 600.dp) { // Compact
-            CompactScreen({state ->
-                navigationContent {
-                    scope.launch {
-                        state.close()
-                    }
+    if (LocalWindowSize.current.width < WindowSize.COMPACT) { // Compact
+        CompactScreen({ state ->
+            navigationContent {
+                scope.launch {
+                    state.close()
                 }
-            }, content)
-        } else {
-            ExpandedScreen({
-                navigationContent({})
-            }, content)
-        }
+            }
+        }, content)
+    } else {
+        ExpandedScreen({
+            navigationContent({})
+        }, content)
     }
 }
 
@@ -117,11 +121,16 @@ private fun CompactScreen(
                     }
                 })
                 Box(Modifier.weight(1f)) {
-                    content()
+                    CompositionLocalProvider(LocalContentInsets provides WindowInsets(
+                        bottom = CompactFooterHeight + 24.dp // Bottom padding
+                    )) {
+                        content()
+                    }
                 }
             }
             CompactFooterPlayer2(
-                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom).padding(24.dp).padding(bottom = currentSafeAreaInsets().bottom),
+                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom).padding(24.dp)
+                    .padding(bottom = currentSafeAreaInsets().bottom),
                 hazeState = hazeState
             )
         }
@@ -147,7 +156,11 @@ private fun ExpandedScreen(
 
             Box(Modifier.weight(1f).fillMaxHeight()) {
                 Box(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
-                    content()
+                    CompositionLocalProvider(LocalContentInsets provides WindowInsets(
+                        bottom = ExpandedFooterHeight + 24.dp // Bottom padding
+                    )) {
+                        content()
+                    }
                 }
                 ExpandedFooterPlayer2(
                     Modifier

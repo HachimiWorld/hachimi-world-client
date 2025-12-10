@@ -48,6 +48,8 @@ import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import kotlin.random.Random
 
+val ExpandedFooterHeight = 104.dp
+
 @Composable
 fun ExpandedFooterPlayer2(
     modifier: Modifier = Modifier,
@@ -61,7 +63,7 @@ fun ExpandedFooterPlayer2(
     AnimatedVisibility(visible = !global.playerExpanded) {
         CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedVisibility) {
             Container(
-                modifier = modifier.requiredWidthIn(min = 400.dp).height(104.dp),
+                modifier = modifier.requiredWidthIn(min = 400.dp).height(ExpandedFooterHeight),
                 hazeState = hazeState,
                 content = {
                     FooterPlayerLayout {
