@@ -63,16 +63,17 @@ fun Card(
     modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(24.dp),
     onClick: (() -> Unit)? = null,
+    color: Color = HachimiTheme.colorScheme.surface,
     contentColor: Color = HachimiTheme.colorScheme.onSurface,
     content: @Composable BoxScope.() -> Unit
 ) {
     Surface(
         modifier = modifier
-            .fillMaxWidth()
             .border(1.dp, HachimiTheme.colorScheme.outline, shape)
             .dropShadow(shape = shape, shadow = CardShadow)
             .clip(shape)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier.pointerInput(Unit) {}),
+        color = color,
         contentColor = contentColor,
         shape = shape
     ) {

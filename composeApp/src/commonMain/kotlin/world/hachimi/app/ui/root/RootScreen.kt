@@ -3,12 +3,16 @@ package world.hachimi.app.ui.root
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.hazeSource
@@ -119,10 +123,19 @@ private fun CompactScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(Modifier.width(300.dp)) {
-                Logo(Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp))
-                Box(Modifier.padding(12.dp)) {
-                    navigationContent(drawerState)
+            Card(
+                modifier = Modifier.width(300.dp),
+                color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background)
+            ) {
+                Column(
+                    Modifier.padding(top = currentSafeAreaInsets().top)
+                        .consumeWindowInsets(WindowInsets.statusBars)
+                        .navigationBarsPadding()
+                ) {
+                    Logo(Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp))
+                    Box(Modifier.padding(12.dp)) {
+                        navigationContent(drawerState)
+                    }
                 }
             }
         }

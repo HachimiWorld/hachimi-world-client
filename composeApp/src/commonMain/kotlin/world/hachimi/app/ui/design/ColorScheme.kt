@@ -15,7 +15,7 @@ object HachimiPalette {
     val onSurfaceReverseLight = Color(0xFFFFFFFF).copy(0.87f)
     val outlineLight = Color(0xFF000000).copy(0.10f)
 
-    val backgroundDark = Color(0xFF2B2625)
+    val backgroundDark = Color(0xFF2B2A25)
     val primaryDark = Color(0xFFFF782F)
     val primaryContainerDark = Color(0xFFFF9155).copy(0.17f)
     val surfaceDark = Color(0xFFFFFFFF).copy(0.07f)

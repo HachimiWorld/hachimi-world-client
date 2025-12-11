@@ -9,8 +9,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
 fun Button(
@@ -44,6 +46,26 @@ fun AccentButton(
     ) {
         CompositionLocalProvider(LocalContentColor provides HachimiTheme.colorScheme.onSurfaceReverse) {
             content()
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewButton() {
+    PreviewTheme(background = false) {
+        Button(onClick = {}) {
+            Text("Button")
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewAccentButton() {
+    PreviewTheme(background = false) {
+        Button(onClick = {}) {
+            Text("Button")
         }
     }
 }
