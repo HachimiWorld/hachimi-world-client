@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
@@ -26,6 +27,7 @@ import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.footer.CompactFooterHeight
@@ -47,10 +49,10 @@ fun RootScreen(routeContent: Route.Root) {
     val global = koinInject<GlobalStore>()
     AdaptiveScreen(
         navigationContent = { onChange ->
-            SideNavigation(content = routeContent, onChange = {
-                global.nav.push(it)
-                onChange(it)
-            })
+            SideNavigation(
+                content = routeContent,
+                onChange = { onChange(it) }
+            )
         },
         content = {
             val slideDistance = rememberSlideDistance()
@@ -82,6 +84,7 @@ fun RootScreen(routeContent: Route.Root) {
 @Composable
 private fun AdaptiveScreen(
     navigationContent: @Composable (onChange: (Route) -> Unit) -> Unit,
+    global: GlobalStore = koinInject(),
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -89,13 +92,17 @@ private fun AdaptiveScreen(
         CompactScreen({ state ->
             navigationContent {
                 scope.launch {
+                    delay(120)
                     state.close()
+                    global.nav.push(it)
                 }
             }
         }, content)
     } else {
         ExpandedScreen({
-            navigationContent({})
+            navigationContent({
+                global.nav.push(it)
+            })
         }, content)
     }
 }
@@ -156,8 +163,10 @@ private fun ExpandedScreen(
         ExpandedTopAppBar(global)
 
         Row(Modifier.weight(1f).fillMaxWidth()) {
-            Box(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(200.dp)) {
-                navigationContent()
+            Card(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
+                Box(Modifier.padding(8.dp)) {
+                    navigationContent()
+                }
             }
             Spacer(Modifier.width(24.dp))
 

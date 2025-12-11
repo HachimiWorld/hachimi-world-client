@@ -14,12 +14,20 @@ import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import world.hachimi.app.ui.design.HachimiTheme
+
+val CardShadow = Shadow(
+    color = Color.Black.copy(0.06f),
+    radius = 16.dp,
+    spread = 0.dp,
+    offset = DpOffset(x = 0.dp, y = 2.dp)
+)
 
 @Composable
 fun Card(
@@ -35,10 +43,7 @@ fun Card(
             modifier = modifier
                 .fillMaxWidth()
                 .border(1.dp, HachimiTheme.colorScheme.outline, shape)
-                .dropShadow(
-                    shape = shape,
-                    shadow = Shadow(color = Color.Black.copy(0.06f), radius = 16.dp, spread = 0.dp),
-                )
+                .dropShadow(shape = shape, shadow = CardShadow)
                 .clip(shape)
                 .hazeEffect(
                     hazeState, style = HazeStyle(
@@ -50,5 +55,27 @@ fun Card(
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier.pointerInput(Unit) {}),
             content = content
         )
+    }
+}
+
+@Composable
+fun Card(
+    modifier: Modifier = Modifier,
+    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
+    onClick: (() -> Unit)? = null,
+    contentColor: Color = HachimiTheme.colorScheme.onSurface,
+    content: @Composable BoxScope.() -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.dp, HachimiTheme.colorScheme.outline, shape)
+            .dropShadow(shape = shape, shadow = CardShadow)
+            .clip(shape)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier.pointerInput(Unit) {}),
+        contentColor = contentColor,
+        shape = shape
+    ) {
+        Box(propagateMinConstraints = true, content = content)
     }
 }

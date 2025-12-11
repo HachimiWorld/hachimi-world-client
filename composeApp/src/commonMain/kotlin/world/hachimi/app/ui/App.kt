@@ -23,6 +23,7 @@ import world.hachimi.app.ui.auth.AuthScreen
 import world.hachimi.app.ui.auth.ForgetPasswordScreen
 import world.hachimi.app.ui.component.KidsModeDialog
 import world.hachimi.app.ui.component.UpgradeDialog
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
 import world.hachimi.app.ui.theme.AppTheme
@@ -53,7 +54,11 @@ fun App() {
     BoxWithConstraints {
         CompositionLocalProvider(LocalWindowSize provides DpSize(maxWidth, maxHeight)) {
             AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
-                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    Modifier.fillMaxSize(),
+                    color = HachimiTheme.colorScheme.background,
+                    contentColor = HachimiTheme.colorScheme.onSurface
+                ) {
                     Box(Modifier.fillMaxSize()) {
                         SharedTransitionLayout {
                             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
@@ -124,7 +129,10 @@ private fun ClientApiVersionIncompatibleDialog(global: GlobalStore) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Client API Ver: ${global.clientApiVersion}", style = MaterialTheme.typography.bodySmall)
                         Text("Server API Ver: ${global.serverVersion}", style = MaterialTheme.typography.bodySmall)
-                        Text("Server Min API Ver: ${global.serverMinVersion}", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            "Server Min API Ver: ${global.serverMinVersion}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
             },
