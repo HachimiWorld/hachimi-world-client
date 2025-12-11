@@ -2,7 +2,7 @@ package world.hachimi.app.ui.player.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -69,7 +69,7 @@ fun AddToPlaylistDialog(
                     Spacer(Modifier.height(12.dp))
 
                     LazyColumn(Modifier.height(200.dp).fillMaxWidth()) {
-                        itemsIndexed(vm.playlists, key = { _, item -> item.id }) { index, item ->
+                        items(vm.playlists, key = { item -> item.id }) { item ->
                             Card(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                 onClick = {

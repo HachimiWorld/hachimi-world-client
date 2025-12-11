@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -86,7 +86,7 @@ private fun Content(vm: ReviewViewModel) {
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn {
-                itemsIndexed(vm.items, key = { _, item -> item.reviewId }) { index, item ->
+                items(vm.items, key = { item -> item.reviewId }) { item ->
                     ReviewItem(
                         modifier = Modifier.fillMaxWidth(),
                         coverUrl = item.coverUrl,

@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,7 +54,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
                         ) {
-                            itemsIndexed(vm.playlists, key = { index, item -> item.id }) { index, item ->
+                            items(vm.playlists, key = { item -> item.id }) { item ->
                                 PlaylistItem(
                                     modifier = Modifier.fillMaxWidth(),
                                     coverUrl = item.coverUrl,

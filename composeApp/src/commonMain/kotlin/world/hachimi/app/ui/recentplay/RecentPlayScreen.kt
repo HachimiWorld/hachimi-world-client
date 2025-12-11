@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,7 +62,7 @@ fun RecentPlayScreen(
                             text ="最近播放", style = MaterialTheme.typography.titleLarge
                         )
                     }
-                    itemsIndexed(vm.history, key = { _, item -> item.id }) { index, item ->
+                    items(vm.history, key = { item -> item.id }) { item ->
                         RecentPlayItem(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
                             coverUrl = item.songInfo.coverUrl,
