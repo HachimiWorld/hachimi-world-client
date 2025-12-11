@@ -14,6 +14,8 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import soup.compose.material.motion.animation.materialSharedAxisY
+import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
@@ -40,7 +42,6 @@ import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 import world.hachimi.app.util.WindowSize
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootScreen(routeContent: Route.Root) {
     val global = koinInject<GlobalStore>()
@@ -52,7 +53,12 @@ fun RootScreen(routeContent: Route.Root) {
             })
         },
         content = {
-            AnimatedContent(routeContent) { routeContent ->
+            val slideDistance = rememberSlideDistance()
+
+            AnimatedContent(
+                targetState = routeContent,
+                transitionSpec = { materialSharedAxisY(true, slideDistance) }
+            ) { routeContent ->
                 when (routeContent) {
                     is Route.Root.Home -> HomeScreen(routeContent)
                     is Route.Root.Search -> SearchScreen(routeContent.query, routeContent.type)
@@ -122,9 +128,11 @@ private fun CompactScreen(
                     }
                 })
                 Box(Modifier.weight(1f)) {
-                    CompositionLocalProvider(LocalContentInsets provides WindowInsets(
-                        bottom = CompactFooterHeight + 24.dp // Bottom padding
-                    )) {
+                    CompositionLocalProvider(
+                        LocalContentInsets provides WindowInsets(
+                            bottom = CompactFooterHeight + 24.dp // Bottom padding
+                        )
+                    ) {
                         content()
                     }
                 }
@@ -157,9 +165,11 @@ private fun ExpandedScreen(
 
             Box(Modifier.weight(1f).fillMaxHeight()) {
                 Box(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
-                    CompositionLocalProvider(LocalContentInsets provides WindowInsets(
-                        bottom = ExpandedFooterHeight + 24.dp // Bottom padding
-                    )) {
+                    CompositionLocalProvider(
+                        LocalContentInsets provides WindowInsets(
+                            bottom = ExpandedFooterHeight + 24.dp // Bottom padding
+                        )
+                    ) {
                         content()
                     }
                 }

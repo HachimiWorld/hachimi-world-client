@@ -10,8 +10,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -19,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onFirstVisible
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -27,24 +28,23 @@ import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.*
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.WindowSize
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(content: Route.Root.Home) {
-    AnimatedContent(content) { content ->
-        when (content) {
-            Route.Root.Home.Main -> HomeMainScreen()
-            Route.Root.Home.Recent -> RecentPublishScreen()
-            Route.Root.Home.Recommend -> RecommendScreen()
-            Route.Root.Home.WeeklyHot -> WeeklyHotScreen()
-            is Route.Root.Home.Category -> CategorySongsScreen(content.category)
-            else -> DevelopingPage()
-        }
+    when (content) {
+        Route.Root.Home.Main -> HomeMainScreen()
+        Route.Root.Home.Recent -> RecentPublishScreen()
+        Route.Root.Home.Recommend -> RecommendScreen()
+        Route.Root.Home.WeeklyHot -> WeeklyHotScreen()
+        is Route.Root.Home.Category -> CategorySongsScreen(content.category)
+        else -> DevelopingPage()
     }
 }
 
@@ -57,55 +57,54 @@ fun HomeMainScreen(
         vm.mounted()
         onDispose { vm.unmount() }
     }
-    BoxWithConstraints(Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED)) {
-        val maxWidth = maxWidth
-        AdaptivePullToRefreshBox(
-            isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
-            onRefresh = { vm.fakeRefresh() },
-            screenWidth = maxWidth
-        ) {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+    AdaptivePullToRefreshBox(
+        modifier = Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+        isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
+        onRefresh = { vm.fakeRefresh() },
+        screenWidth = LocalWindowSize.current.width
+    ) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .windowInsetsPadding(LocalContentInsets.current)
                 .padding(bottom = 24.dp)
-            ) {
-                Segment(
-                    label = "最近发布",
-                    status = vm.recentStatus,
-                    loading = vm.recentLoading,
-                    items = vm.recentSongs,
-                    onMoreClick = { global.nav.push(Route.Root.Home.Recent) },
-                    onLoad = vm::mountRecent,
-                    onRefresh = {},
-                    onRetryClick = vm::retryRecent
-                )
+        ) {
+            Segment(
+                label = "最近发布",
+                status = vm.recentStatus,
+                loading = vm.recentLoading,
+                items = vm.recentSongs,
+                onMoreClick = { global.nav.push(Route.Root.Home.Recent) },
+                onLoad = vm::mountRecent,
+                onRefresh = {},
+                onRetryClick = vm::retryRecent
+            )
 
-                Segment(
-                    label = "每日推荐",
-                    status = vm.recommendStatus,
-                    loading = vm.recommendLoading,
-                    items = vm.recommendSongs,
-                    onMoreClick = { global.nav.push(Route.Root.Home.Recommend) },
-                    onLoad = vm::mountRecommend,
-                    onRefresh = {},
-                    onRetryClick = vm::retryRecommend
-                )
+            Segment(
+                label = "每日推荐",
+                status = vm.recommendStatus,
+                loading = vm.recommendLoading,
+                items = vm.recommendSongs,
+                onMoreClick = { global.nav.push(Route.Root.Home.Recommend) },
+                onLoad = vm::mountRecommend,
+                onRefresh = {},
+                onRetryClick = vm::retryRecommend
+            )
 
-                Segment(
-                    label = "本周热门",
-                    status = vm.hotStatus,
-                    loading = vm.hotLoading,
-                    items = vm.hotSongs,
-                    onMoreClick = { global.nav.push(Route.Root.Home.WeeklyHot) },
-                    onLoad = vm::mountHot,
-                    onRefresh = {},
-                    onRetryClick = vm::retryHot
-                )
+            Segment(
+                label = "本周热门",
+                status = vm.hotStatus,
+                loading = vm.hotLoading,
+                items = vm.hotSongs,
+                onMoreClick = { global.nav.push(Route.Root.Home.WeeklyHot) },
+                onLoad = vm::mountHot,
+                onRefresh = {},
+                onRetryClick = vm::retryHot
+            )
 
-                CategorySegment(category = "纯净哈基米")
-                CategorySegment(category = "古典")
-                CategorySegment(category = "原曲不使用")
-            }
+            CategorySegment(category = "纯净哈基米")
+            CategorySegment(category = "古典")
+            CategorySegment(category = "原曲不使用")
         }
     }
 }
@@ -120,39 +119,42 @@ private fun Segment(
     onLoad: () -> Unit,
     onRefresh: () -> Unit,
     onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier,
     global: GlobalStore = koinInject()
 ) {
-    SegmentHeader(text = label, onMoreClick = onMoreClick, onLoad = onLoad)
-    Spacer(Modifier.height(24.dp))
-    LoadableContent(
-        modifier = Modifier.fillMaxWidth().height(520.dp),
-        initializeStatus = status,
-        loading = loading,
-        onRefresh = onRefresh,
-        onRetryClick = onRetryClick,
-        onLoad = {}
-    ) {
-        if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("空空如也")
-        } else LazyHorizontalGrid(
-            modifier = Modifier.fillMaxSize(),
-            rows = GridCells.Fixed(2),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+    Column(modifier) {
+        SegmentHeader(text = label, onMoreClick = onMoreClick, onLoad = onLoad)
+        Spacer(Modifier.height(24.dp))
+        LoadableContent(
+            modifier = Modifier.fillMaxWidth().height(496.dp),
+            initializeStatus = status,
+            loading = loading,
+            onRefresh = onRefresh,
+            onRetryClick = onRetryClick,
+            onLoad = {}
         ) {
-            items(items = items, key = { it.id }) { item ->
-                SongCard(
-                    modifier = Modifier.width(width = 180.dp),
-                    item = item,
-                    onClick = {
-                        global.player.insertToQueue(
-                            GlobalStore.MusicQueueItem.fromPublicDetail(item),
-                            true,
-                            false
-                        )
-                    },
-                )
+            if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("空空如也")
+            } else LazyHorizontalGrid(
+                modifier = Modifier.fillMaxSize(),
+                rows = GridCells.Fixed(2),
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                items(items = items, key = { it.id }) { item ->
+                    SongCard(
+                        modifier = Modifier.width(width = 180.dp),
+                        item = item,
+                        onClick = {
+                            global.player.insertToQueue(
+                                GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                                true,
+                                false
+                            )
+                        },
+                    )
+                }
             }
         }
     }
@@ -161,57 +163,61 @@ private fun Segment(
 @Composable
 private fun CategorySegment(
     category: String,
+    modifier: Modifier = Modifier,
     global: GlobalStore = koinInject(),
     vm: HomeViewModel = koinViewModel()
 ) {
-    SegmentHeader("${category}专区", onLoad = {
-        vm.mountCategory(category)
-    }, onMoreClick = {
-        global.nav.push(Route.Root.Home.Category(category))
-    })
-    Spacer(Modifier.height(24.dp))
-    val state = vm.categoryState[category]
-    val status = state?.status?.value ?: InitializeStatus.INIT
-    val loading = state?.loading?.value ?: false
-    LoadableContent(
-        modifier = Modifier.fillMaxWidth().height(520.dp),
-        initializeStatus = status,
-        loading = loading,
-        onRefresh = { },
-        onRetryClick = { vm.retryCategory(category) },
-        onLoad = { }
-    ) {
-        val songs = state?.songs?.value ?: emptyList()
-        if (songs.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("空空如也")
-            }
-        } else LazyHorizontalGrid(
-            modifier = Modifier.fillMaxSize(),
-            rows = GridCells.Fixed(2),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+    Column(modifier) {
+
+        SegmentHeader(category, onLoad = {
+            vm.mountCategory(category)
+        }, onMoreClick = {
+            global.nav.push(Route.Root.Home.Category(category))
+        })
+        Spacer(Modifier.height(24.dp))
+        val state = vm.categoryState[category]
+        val status = state?.status?.value ?: InitializeStatus.INIT
+        val loading = state?.loading?.value ?: false
+        LoadableContent(
+            modifier = Modifier.fillMaxWidth().height(520.dp),
+            initializeStatus = status,
+            loading = loading,
+            onRefresh = { },
+            onRetryClick = { vm.retryCategory(category) },
+            onLoad = { }
         ) {
-            items(songs, key = { item -> item.id }) { item ->
-                SongCard(
-                    modifier = Modifier.width(width = 180.dp),
-                    coverUrl = item.coverArtUrl,
-                    title = item.title,
-                    subtitle = item.subtitle,
-                    author = item.uploaderName,
-                    tags = remember { emptyList<String>() },
-                    playCount = item.playCount,
-                    likeCount = item.likeCount,
-                    explicit = item.explicit,
-                    onClick = {
-                        global.player.insertToQueue(
-                            GlobalStore.MusicQueueItem.fromSearchSongItem(item),
-                            true,
-                            false
-                        )
-                    },
-                )
+            val songs = state?.songs?.value ?: emptyList()
+            if (songs.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("空空如也")
+                }
+            } else LazyHorizontalGrid(
+                modifier = Modifier.fillMaxSize(),
+                rows = GridCells.Fixed(2),
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                items(songs, key = { item -> item.id }) { item ->
+                    SongCard(
+                        modifier = Modifier.width(width = 180.dp),
+                        coverUrl = item.coverArtUrl,
+                        title = item.title,
+                        subtitle = item.subtitle,
+                        author = item.uploaderName,
+                        tags = remember { emptyList<String>() },
+                        playCount = item.playCount,
+                        likeCount = item.likeCount,
+                        explicit = item.explicit,
+                        onClick = {
+                            global.player.insertToQueue(
+                                GlobalStore.MusicQueueItem.fromSearchSongItem(item),
+                                true,
+                                false
+                            )
+                        },
+                    )
+                }
             }
         }
     }
@@ -282,21 +288,4 @@ private fun LoadableContent(
             InitializeStatus.LOADED -> content()
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AdaptivePullToRefreshBox(
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
-    screenWidth: Dp,
-    content: @Composable BoxScope.() -> Unit
-) {
-    if (screenWidth >= WindowSize.COMPACT) {
-        Box(content = content)
-    } else PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
-        content = content
-    )
 }

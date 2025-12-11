@@ -11,13 +11,14 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
+import world.hachimi.app.ui.design.HachimiTheme
 
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
     shape: Shape,
-    color: Color,
-    contentColor: Color,
+    color: Color = HachimiTheme.colorScheme.surface,
+    contentColor: Color = HachimiTheme.colorScheme.onSurface,
     content: @Composable () -> Unit
 ) {
     Box(
