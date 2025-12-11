@@ -17,10 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.singleLined
 
@@ -38,6 +35,7 @@ fun SearchBox(
         onValueChange = { onSearchTextChange(it.singleLined()) },
         shape = RoundedCornerShape(24.dp),
         textStyle = TextStyle(
+            color = LocalContentColor.current,
             fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
             lineHeight = 24.sp
