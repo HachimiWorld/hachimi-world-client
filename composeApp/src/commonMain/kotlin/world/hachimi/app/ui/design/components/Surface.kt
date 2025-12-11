@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.isTraversalGroup
@@ -16,7 +17,7 @@ import world.hachimi.app.ui.design.HachimiTheme
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
-    shape: Shape,
+    shape: Shape = RectangleShape,
     color: Color = HachimiTheme.colorScheme.surface,
     contentColor: Color = HachimiTheme.colorScheme.onSurface,
     content: @Composable () -> Unit
