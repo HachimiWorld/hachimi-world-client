@@ -1,11 +1,16 @@
 package world.hachimi.app.ui.auth
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.SettingsBackupRestore
+import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,10 +20,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import soup.compose.material.motion.animation.materialSharedAxisX
+import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.AuthViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.auth.components.CaptchaDialog
-import world.hachimi.app.ui.auth.components.FormCard
+import world.hachimi.app.ui.auth.components.FormContent
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.util.singleLined
 
@@ -35,112 +43,138 @@ fun AuthScreen(
     var isLogin by remember(displayLoginAsInitial) { mutableStateOf(displayLoginAsInitial) }
 
     Box(Modifier.fillMaxSize().padding(top = currentSafeAreaInsets().top)) {
-        IconButton(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 24.dp).align(Alignment.TopStart),
-            onClick = { global.nav.back() }) {
+        HachimiIconButton(
+            modifier = Modifier.padding(24.dp).align(Alignment.TopStart),
+            onClick = { global.nav.back() },
+            touchMode = true
+        ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
         }
-        FormCard(
-            modifier = Modifier
+        Card(
+            Modifier
                 .padding(horizontal = 24.dp, vertical = 24.dp)
                 .widthIn(max = 512.dp)
                 .fillMaxWidth()
-                .align(Alignment.Center),
-            title = {
-                Text(
-                    text = when {
-                        isLogin -> "欢迎回家"
-                        vm.regStep == 0 -> "成为神人"
-                        vm.regStep == 1 -> "离神人很近了"
-                        vm.regStep == 2 -> "只差一步"
-                        else -> error("unreachable")
-                    }
-                )
-            },
-            subtitle = {
-                if (!isLogin && vm.regStep != 0) Text(
-                    text = when {
-                        vm.regStep == 1 -> "已将验证码发送至邮箱，如未收到请检查垃圾箱"
-                        vm.regStep == 2 -> "完善你的资料"
-                        else -> error("unreachable")
-                    }
-                )
-            }
+                .align(Alignment.Center)
         ) {
-            if (isLogin) {
-                LoginContent(vm, { isLogin = false })
-            } else {
-                RegisterContent(vm, { isLogin = true })
+            val form = when {
+                isLogin -> Form.Login
+                vm.regStep == 0 -> Form.Register
+                vm.regStep == 1 -> Form.RegisterVerify
+                vm.regStep == 2 -> Form.RegisterProfile
+                else -> error("unreachable")
             }
-        }
 
-        if (vm.showCaptchaDialog) CaptchaDialog(onConfirm = {
-            vm.finishCaptcha()
-        })
-    }
-}
+            val slideDistance = rememberSlideDistance()
 
-@Composable
-private fun LoginContent(vm: AuthViewModel, toRegister: () -> Unit) {
-    Column(Modifier) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = vm.email,
-            onValueChange = { vm.email = it.singleLined() },
-            label = { Text("邮箱") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-        )
-        Spacer(Modifier.height(24.dp))
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = vm.password,
-            onValueChange = { vm.password = it.singleLined() },
-            label = { Text("密码") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                if (!vm.isOperating && vm.email.isNotBlank() && vm.password.isNotBlank()) {
-                    vm.startLogin()
+            AnimatedContent(
+                modifier = Modifier,
+                targetState = form,
+                transitionSpec = {
+                    materialSharedAxisX(targetState > initialState, slideDistance)
                 }
-            })
-        )
-        Spacer(Modifier.height(8.dp))
-        TextButton(
-            modifier = Modifier.align(Alignment.End),
-            onClick = { vm.forgetPassword() }
-        ) {
-            Text("忘记密码？")
-        }
-        Spacer(Modifier.height(24.dp))
-        Row(Modifier.fillMaxWidth()) {
-            TextButton(modifier = Modifier, onClick = toRegister) {
-                Text("创建账号")
+            ) { page ->
+                Box(Modifier.padding(horizontal = 32.dp, vertical = 24.dp)) {
+                    when (page) {
+                        Form.Login -> LoginForm(
+                            vm = vm,
+                            toRegister = { isLogin = false }
+                        )
+
+                        Form.Register -> RegisterForm(
+                            vm = vm,
+                            toLogin = { isLogin = true }
+                        )
+
+                        Form.RegisterVerify -> RegisterVerifyForm(vm)
+                        Form.RegisterProfile -> RegisterProfileForm(vm)
+                    }
+                }
             }
+        }
+    }
 
-            Spacer(Modifier.weight(1f))
+    if (vm.showCaptchaDialog) CaptchaDialog(onConfirm = {
+        vm.finishCaptcha()
+    })
+}
 
-            Button(
-                modifier = Modifier.width(110.dp),
-                onClick = { vm.startLogin() },
-                enabled = !vm.isOperating && vm.email.isNotBlank() && vm.password.isNotBlank(),
+private enum class Form {
+    Login, Register, RegisterVerify, RegisterProfile
+}
+
+@Composable
+private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
+    FormContent(
+        title = { Text("欢迎回家") },
+        subtitle = {}
+    ) {
+        Column(Modifier) {
+            TextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = vm.email,
+                onValueChange = { vm.email = it.singleLined() },
+                placeholder = { Text("邮箱") },
+                leadingIcon = { Icon(Icons.Outlined.Mail, null) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            )
+            Spacer(Modifier.height(24.dp))
+            TextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = vm.password,
+                onValueChange = { vm.password = it.singleLined() },
+                leadingIcon = { Icon(Icons.Outlined.Lock, null) },
+                placeholder = { Text("密码") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    if (!vm.isOperating && vm.email.isNotBlank() && vm.password.isNotBlank()) {
+                        vm.startLogin()
+                    }
+                })
+            )
+            Spacer(Modifier.height(8.dp))
+            TextButton(
+                modifier = Modifier.align(Alignment.End),
+                onClick = { vm.forgetPassword() }
             ) {
-                Text("登录")
+                Text("忘记密码？")
+            }
+            Spacer(Modifier.height(24.dp))
+            Row(Modifier.fillMaxWidth()) {
+                TextButton(modifier = Modifier.height(48.dp), onClick = toRegister) {
+                    Text("创建账号")
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                AccentButton(
+                    modifier = Modifier.size(width = 112.dp, height = 48.dp),
+                    onClick = { vm.startLogin() },
+                    enabled = !vm.isOperating && vm.email.isNotBlank() && vm.password.isNotBlank(),
+                ) {
+                    Text("登录")
+                }
             }
         }
     }
 }
 
 @Composable
-private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
-    Column(Modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        if (vm.regStep == 0) {
+private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
+    FormContent(
+        title = { Text("离神人很近了") },
+        subtitle = {}
+    ) {
+        Column(Modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regEmail,
                 onValueChange = { vm.regEmail = it.singleLined() },
-                label = { Text("邮箱") },
+                leadingIcon = { Icon(Icons.Outlined.Mail, null) },
+                placeholder = { Text("邮箱") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
             )
@@ -148,7 +182,8 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPassword,
                 onValueChange = { vm.regPassword = it.singleLined() },
-                label = { Text("密码") },
+                leadingIcon = { Icon(Icons.Outlined.Lock, null) },
+                placeholder = { Text("密码") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
@@ -157,7 +192,8 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPasswordRepeat,
                 onValueChange = { vm.regPasswordRepeat = it.singleLined() },
-                label = { Text("确认密码") },
+                leadingIcon = { Icon(Icons.Outlined.SettingsBackupRestore, null) },
+                placeholder = { Text("确认密码") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
@@ -171,21 +207,31 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
             }
 
             Row(Modifier.fillMaxWidth()) {
-                TextButton(modifier = Modifier, onClick = toLogin) {
+                TextButton(modifier = Modifier.size(width = 112.dp, height = 48.dp), onClick = toLogin) {
                     Text("登录")
                 }
 
                 Spacer(Modifier.weight(1f))
 
-                Button(
-                    modifier = Modifier.width(110.dp),
+                AccentButton(
+                    modifier = Modifier.size(width = 112.dp, height = 48.dp),
                     onClick = { vm.regNextStep() },
                     enabled = enabled && !vm.isOperating,
                 ) {
                     Text("下一步")
                 }
             }
-        } else if (vm.regStep == 1) Column {
+        }
+    }
+}
+
+@Composable
+private fun RegisterVerifyForm(vm: AuthViewModel) {
+    FormContent(
+        title = { Text("离神人很近了") },
+        subtitle = { Text("已将验证码发送至邮箱，如未收到请检查垃圾箱") }
+    ) {
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -194,7 +240,8 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     value = vm.regCode,
                     onValueChange = { vm.regCode = it.singleLined() },
-                    label = { Text("验证码") },
+                    leadingIcon = { Icon(Icons.Outlined.Security, null) },
+                    placeholder = { Text("验证码") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
@@ -218,26 +265,39 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
             }
             Spacer(Modifier.height(24.dp))
             Row(Modifier.fillMaxWidth()) {
-                TextButton(onClick = { vm.regStep = 0 }) {
+                TextButton(
+                    modifier = Modifier.size(width = 112.dp, height = 48.dp),
+                    onClick = { vm.regStep = 0 }
+                ) {
                     Text("上一步")
                 }
 
                 Spacer(Modifier.weight(1f))
 
-                Button(
-                    modifier = Modifier.width(110.dp),
+                AccentButton(
+                    modifier = Modifier.size(width = 112.dp, height = 48.dp),
                     onClick = { vm.regNextStep() },
                     enabled = vm.regCode.isNotBlank() && !vm.isOperating
                 ) {
                     Text("下一步")
                 }
             }
-        } else if (vm.regStep == 2) {
+        }
+    }
+}
+
+@Composable
+private fun RegisterProfileForm(vm: AuthViewModel) {
+    FormContent(
+        title = { Text("只差一步") },
+        subtitle = { Text("完善你的资料") }
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.name,
                 onValueChange = { vm.name = it.singleLined() },
-                label = { Text("昵称") },
+                placeholder = { Text("昵称") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
             )
@@ -245,7 +305,7 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.intro,
                 onValueChange = { vm.intro = it },
-                label = { Text("介绍一下") },
+                placeholder = { Text("介绍一下") },
                 maxLines = 4,
                 minLines = 4,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
@@ -262,8 +322,8 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
                 Text("神没有性别")
             }
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
+            AccentButton(
+                modifier = Modifier.fillMaxWidth().height(48.dp),
                 onClick = { vm.finishRegister() },
                 enabled = vm.name.isNotBlank() && vm.intro.isNotBlank() && vm.gender != null && !vm.isOperating
             ) {
@@ -271,7 +331,7 @@ private fun RegisterContent(vm: AuthViewModel, toLogin: () -> Unit) {
             }
 
             TextButton(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
                 onClick = { vm.skipProfile() }
             ) {
                 Text("跳过")

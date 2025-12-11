@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -30,7 +31,10 @@ import world.hachimi.app.ui.theme.LocalDarkMode
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
-fun Logo(modifier: Modifier = Modifier) {
+fun Logo(
+    modifier: Modifier = Modifier,
+    showText: Boolean = true
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale = remember { Animatable(1f) }
     val rotation = remember { Animatable(0f) }
@@ -65,14 +69,16 @@ fun Logo(modifier: Modifier = Modifier) {
             contentDescription = "基米天堂 Icon",
             filterQuality = FilterQuality.High,
         )
-        Image(
-            imageVector = vectorResource(Res.drawable.logo_text),
-            contentDescription = "基米天堂",
-            colorFilter = ColorFilter.tint(
-                if (LocalDarkMode.current) Color(0xFFE8E0D4)
-                else Color(0xFF4F432F)
+        AnimatedVisibility(visible = showText) {
+            Image(
+                imageVector = vectorResource(Res.drawable.logo_text),
+                contentDescription = "基米天堂",
+                colorFilter = ColorFilter.tint(
+                    if (LocalDarkMode.current) Color(0xFFE8E0D4)
+                    else Color(0xFF4F432F)
+                )
             )
-        )
+        }
     }
 }
 
