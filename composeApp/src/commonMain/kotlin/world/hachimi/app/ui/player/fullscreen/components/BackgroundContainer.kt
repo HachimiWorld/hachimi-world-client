@@ -1,8 +1,11 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -44,14 +47,19 @@ fun BackgroundContainer(
                 }
             )
             .fillMaxSize()
-            .background(dominantColor)
+            .background(animateColorAsState(dominantColor).value)
     ) {
         // Background
-        if (painter != null && isDiffusionBackgroundSupported()) {
-            DiffusionBackground(
-                modifier = Modifier.fillMaxSize(),
-                painter = painter
-            )
+        Crossfade(
+            modifier = Modifier.fillMaxSize(),
+            targetState = painter,
+        ) { painter ->
+            if (painter != null && isDiffusionBackgroundSupported()) {
+                DiffusionBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    painter = painter
+                )
+            } else Spacer(Modifier.fillMaxSize())
         }
 
 

@@ -223,6 +223,7 @@ private fun PlayerTab(
         ) {
             Column(Modifier.weight(1f)) {
                 Titles(
+                    modifier = Modifier.fillMaxWidth(),
                     title = uiState.displayedTitle,
                     subtitle = uiState.readySongInfo?.subtitle,
                 )

@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -30,7 +31,7 @@ fun Titles(
     subtitle: String?,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
+    Column(modifier.animateContentSize()) {
         Text(
             modifier = Modifier.basicMarquee(
                 iterations = Int.MAX_VALUE,

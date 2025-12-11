@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,9 +16,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
+import world.hachimi.app.ui.design.components.LocalContentColor
 
 @Composable
 fun Cover(
@@ -39,14 +44,19 @@ fun Cover(
                     )
                 )
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color.Gray)
+                .background(LocalContentColor.current.copy(0.12f))
         ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = model,
-                contentDescription = "Cover",
-                contentScale = ContentScale.Crop
-            )
+            Crossfade(model) { model ->
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(model)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Cover",
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }

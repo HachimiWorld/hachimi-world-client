@@ -387,7 +387,10 @@ private fun BriefInfo(
     description: String?
 ) {
     Column(modifier) {
-        Titles(title = title, subtitle = subtitle)
+        Titles(
+            modifier = Modifier.fillMaxWidth(),
+            title = title, subtitle = subtitle
+        )
 
         description?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
