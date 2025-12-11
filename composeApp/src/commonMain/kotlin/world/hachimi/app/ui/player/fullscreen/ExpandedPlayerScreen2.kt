@@ -39,6 +39,7 @@ import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.*
+import world.hachimi.app.ui.util.fadingEdges
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
