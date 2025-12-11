@@ -2,6 +2,7 @@ package world.hachimi.app.ui.design.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
@@ -23,13 +24,21 @@ fun HachimiIconButton(
 ) {
     Box(
         modifier = modifier
-            .size(if (touchMode) 40.dp else 28.dp)
+            .defaultMinSize(
+                minWidth = if (touchMode) 40.dp else 28.dp,
+                minHeight = if (touchMode) 40.dp else 28.dp
+            )
             .clip(CircleShape)
             .clickable(onClick = onClick, enabled = enabled),
         contentAlignment = Alignment.Center
     ) {
         Box(Modifier.size(20.dp)) {
-            content()
+            CompositionLocalProvider(
+                LocalContentColor provides
+                        if (enabled) LocalContentColor.current else LocalContentColor.current.copy(0.6f)
+            ) {
+                content()
+            }
         }
     }
 }
