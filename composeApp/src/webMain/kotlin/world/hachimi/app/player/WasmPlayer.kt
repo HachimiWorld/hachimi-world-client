@@ -51,6 +51,10 @@ class WasmPlayer : Player {
         return (seconds * 1000L).toLong()
     }
 
+    override suspend fun bufferedProgress(): Float {
+        return 1f
+    }
+
     override suspend fun play() {
         if (isReady()) {
             howl!!.play()
@@ -98,13 +102,24 @@ class WasmPlayer : Player {
                     howl = null
                 }
 
-                val uint8array = item.audioBytes.toUByteArray().toUint8Array()
-                val blob = Blob(arrayOf(uint8array as JsAny?).toJsArray(), BlobPropertyBag())
-                val url = URL.createObjectURL(blob)
+                val url: String
+                val coverUrl: String?
+                when (item) {
+                    is SongItem.Local -> {
+                        val uint8array = item.audioBytes.toUByteArray().toUint8Array()
+                        val blob = Blob(arrayOf(uint8array as JsAny?).toJsArray(), BlobPropertyBag())
+                        url = URL.createObjectURL(blob)
 
-                val coverUint8Array = item.coverBytes?.toUByteArray()?.toUint8Array()
-                val coverBlob = coverUint8Array?.let { Blob(arrayOf(it as JsAny?).toJsArray(), BlobPropertyBag()) }
-                val coverUrl = coverBlob?.let { URL.createObjectURL(it) }
+                        val coverUint8Array = item.coverBytes?.toUByteArray()?.toUint8Array()
+                        val coverBlob = coverUint8Array?.let { Blob(arrayOf(it as JsAny?).toJsArray(), BlobPropertyBag()) }
+                        coverUrl = coverBlob?.let { URL.createObjectURL(it) }
+                    }
+                    is SongItem.Remote -> {
+                        url = item.audioUrl
+                        coverUrl = item.coverUrl
+                    }
+                }
+
 
                 Logger.d("player", "URL: $url")
                 val options = HowlOptions(

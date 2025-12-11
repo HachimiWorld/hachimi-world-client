@@ -23,14 +23,6 @@ class JVMPlayer() : Player {
     private var volume: Float = 1f
     private var replayGainDB: Float = 0f
 
-    suspend fun prepare(uri: String, autoPlay: Boolean) {
-        /*val bytes = withContext(Dispatchers.IO) {
-            val uri = URI.create(uri).toURL()
-            uri.readBytes()
-        }
-        prepare(bytes, autoPlay)*/
-    }
-
     override suspend fun prepare(item: SongItem, autoPlay: Boolean): Unit = withContext(Dispatchers.IO) {
         val item = item as SongItem.Local
         mutex.withLock {
