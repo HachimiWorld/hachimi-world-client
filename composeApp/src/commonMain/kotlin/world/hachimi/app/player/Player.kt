@@ -14,6 +14,7 @@ interface Player {
 
     suspend fun play()
     suspend fun pause()
+    suspend fun stop()
     suspend fun seek(position: Long, autoStart: Boolean = false)
 
     suspend fun getVolume(): Float

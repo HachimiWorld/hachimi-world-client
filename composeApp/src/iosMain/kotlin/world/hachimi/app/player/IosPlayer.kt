@@ -67,6 +67,12 @@ class IosPlayer : Player {
         }
     }
 
+    override suspend fun stop() {
+        withContext(Dispatchers.Main) {
+            player?.replaceCurrentItemWithPlayerItem(null)
+        }
+    }
+
     override suspend fun seek(position: Long, autoStart: Boolean) {
         val time = CMTimeMakeWithSeconds(position.toDouble() / 1000, 1000)
         player?.seekToTime(time) { completed ->

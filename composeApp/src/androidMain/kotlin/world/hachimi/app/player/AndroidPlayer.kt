@@ -72,21 +72,37 @@ class AndroidPlayer(
     }
 
     override suspend fun currentPosition(): Long = withContext(Dispatchers.Main) {
-        controller!!.currentPosition
+        controller?.currentPosition ?: 0
     }
 
-    override suspend fun play() = withContext(Dispatchers.Main) {
-        controller!!.play()
+    override suspend fun play() {
+        withContext(Dispatchers.Main) {
+            controller?.play()
+        }
     }
 
-    override suspend fun pause() = withContext(Dispatchers.Main) {
-        controller!!.pause()
+    override suspend fun pause() {
+        withContext(Dispatchers.Main) {
+            controller?.pause()
+        }
+    }
+
+    override suspend fun stop() {
+        try {
+            withContext(Dispatchers.Main) {
+                controller?.stop()
+            }
+        } catch (e: Throwable) {
+            Logger.e("player", "Failed to stop", e)
+        }
     }
 
     override suspend fun seek(position: Long, autoStart: Boolean) = withContext(Dispatchers.Main) {
-        controller!!.seekTo(position)
-        if (autoStart) {
-            controller!!.play()
+        withContext(Dispatchers.Main) {
+            controller?.seekTo(position)
+            if (autoStart) {
+                controller?.play()
+            }
         }
     }
 

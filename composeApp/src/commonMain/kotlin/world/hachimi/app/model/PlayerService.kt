@@ -118,7 +118,7 @@ class PlayerService(
      * This is only for play current song. Not interested in the music queue.
      */
     private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int) = coroutineScope {
-        player.pause()
+        player.stop()
         playerMutex.withLock {
             playerJobSign = sign
         }
@@ -382,8 +382,6 @@ class PlayerService(
             }
         }
 
-        player.pause()
-
         queueMutex.withLock {
             val indexInQueue = musicQueue.indexOfFirst { it.id == item.id }
 
@@ -425,7 +423,7 @@ class PlayerService(
 
     suspend fun replaceQueue(items: List<MusicQueueItem>) {
         queueMutex.withLock {
-            player.pause()
+            player.stop()
             musicQueue = items
             shuffledQueue = items.shuffled()
             shuffleIndex = -1
@@ -441,7 +439,7 @@ class PlayerService(
                 if (musicQueue.size > 1) {
                     queueNext()
                 } else {
-                    player.pause()
+                    player.stop()
                     playerState.clear()
                 }
             }
@@ -717,7 +715,7 @@ class PlayerService(
             shuffledQueue = emptyList()
             shuffleIndex = -1
 
-            player.pause()
+            player.stop()
             playerState.clear()
             savePlayerState()
         }

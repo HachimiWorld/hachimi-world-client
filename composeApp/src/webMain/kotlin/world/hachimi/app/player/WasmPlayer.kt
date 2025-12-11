@@ -14,7 +14,6 @@ import org.w3c.files.BlobPropertyBag
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.Player.Companion.mixVolume
 import kotlin.js.*
-import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.time.measureTime
 
 class WasmPlayer : Player {
@@ -58,6 +57,14 @@ class WasmPlayer : Player {
     override suspend fun pause() {
         if (isReady()) {
             howl!!.pause()
+        }
+    }
+
+    override suspend fun stop() {
+        try {
+            howl?.stop()
+        } catch (e: Throwable) {
+            Logger.e("player", "Failed to stop player", e)
         }
     }
 
