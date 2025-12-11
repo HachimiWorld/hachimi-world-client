@@ -25,6 +25,9 @@ class WasmPlayer : Player {
     private var rgDb = 0f
     private var userVolume = 1f
 
+    override val supportRemotePlay: Boolean
+        get() = true
+
     override suspend fun isPlaying(): Boolean {
         return if (isReady()) {
             howl!!.playing().toBoolean()

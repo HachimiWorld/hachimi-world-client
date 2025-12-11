@@ -30,6 +30,9 @@ class IosPlayer : Player {
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
 
+    override val supportRemotePlay: Boolean
+        get() = true
+
     override suspend fun isPlaying(): Boolean {
         return player?.timeControlStatus == AVPlayerTimeControlStatusPlaying
     }

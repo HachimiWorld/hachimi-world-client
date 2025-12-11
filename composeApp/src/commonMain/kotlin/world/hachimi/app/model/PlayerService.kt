@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
@@ -101,6 +102,8 @@ class PlayerService(
                     playerState.updateCurrentMillis(currentPosition)
                 }
                 playerState.isPlaying = player.isPlaying()
+
+                playerState.downloadProgress = player.bufferedProgress()
                 delay(100)
             }
         }
@@ -491,12 +494,12 @@ class PlayerService(
         val cacheFromId = songCache.get(songId.toString())
         val cacheFromJmid = songCache.get(jmid)
         val cache = cacheFromId ?: cacheFromJmid
-
         val metadata: SongDetailInfo
-        val coverBytes: ByteArray
-        val audioBytes: ByteArray
 
         if (cache != null) {
+            val coverBytes: ByteArray
+            val audioBytes: ByteArray
+
             Logger.i(TAG, "Cache hit")
             val buffer = Buffer()
             metadata = cache.metadata
@@ -521,109 +524,188 @@ class PlayerService(
             }
 
             // Get the latest data and update the cache
-            scope.launch {
-                try {
-                    Logger.i(TAG, "Downloading")
-                    val resp = api.songModule.detailById(songId)
-                    if (!resp.ok) {
-                        Logger.e(TAG, "Failed to refresh song metadata: ${resp.errData<CommonError>().msg}")
-                        return@launch
-                    }
+            fetchCacheAsync(songId, cache, jmid)
 
-                    val data = resp.ok()
-                    if (cache.metadata != data) {
-                        Logger.i(TAG, "Metadata updated, invalidate cache")
-                        // If the audio file has updated, just invalidate the cache
-                        if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
-                            songCache.delete(songId.toString())
-                            songCache.delete(jmid)
-                        }
-                        // Update the metadata
-                        songCache.saveMetadata(data)
-                    }
-                } catch (e: Throwable) {
-                    Logger.e(TAG, "Failed to refresh song metadata", e)
-                }
-            }
+            val filename = metadata.audioUrl.substringAfterLast("/")
+            val extension = filename.substringAfterLast(".")
+            val item = SongItem.Local(
+                id = metadata.id.toString(),
+                title = metadata.title,
+                artist = metadata.uploaderName,
+                audioBytes = audioBytes,
+                coverBytes = coverBytes,
+                format = extension,
+                durationSeconds = metadata.durationSeconds,
+                replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+            )
+            return@coroutineScope item
         } else {
-            Logger.i(TAG, "Downloading")
+            Logger.i(TAG, "Cache not hit, getting metadata")
+
             onProgress(0f)
-            val data = songCache.getMetadata(songId.toString()) ?: run {
+            val metadata = songCache.getMetadata(songId.toString()) ?: run {
                 val resp = api.songModule.detailById(songId)
                 if (!resp.ok) error(resp.errData<CommonError>().msg)
                 resp.ok()
             }
+            onMetadata(metadata)
 
-            metadata = data
-            onMetadata(data)
+            val filename = metadata.audioUrl.substringAfterLast("/")
+            val extension = filename.substringAfterLast(".")
 
-            val coverBytesAsync = async<ByteArray>(Dispatchers.Default) {
-                api.httpClient.get(data.coverUrl).bodyAsBytes()
+            if (player.supportRemotePlay) {
+                Logger.i(TAG, "Remote play")
+
+                val item = SongItem.Remote(
+                    id = metadata.id.toString(),
+                    title = metadata.title,
+                    artist = metadata.uploaderName,
+                    audioUrl = metadata.audioUrl,
+                    coverUrl = metadata.coverUrl,
+                    format = extension,
+                    durationSeconds = metadata.durationSeconds,
+                    replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                )
+
+                // TODO: Reuse the cached data from player core
+                cacheInBackground(metadata)
+                return@coroutineScope item
+            } else {
+                Logger.i(TAG, "Starting full download")
+
+                val coverBytesAsync = async { api.httpClient.get(metadata.coverUrl).bodyAsBytes() }
+                val audioBuffer = downloadAudio(metadata.audioUrl, onProgress)
+                val audioBytes = audioBuffer.readByteArray()
+                val coverBytes = coverBytesAsync.await()
+
+                val cacheItem = SongCache.Item(
+                    key = songId.toString(),
+                    metadata = metadata,
+                    audio = audioBuffer.copy(),
+                    cover = Buffer().also { it.write(coverBytes) }
+                )
+                songCache.save(cacheItem)
+                Logger.i(TAG, "Full download completed")
+
+                val item = SongItem.Local(
+                    id = metadata.id.toString(),
+                    title = metadata.title,
+                    artist = metadata.uploaderName,
+                    audioBytes = audioBytes,
+                    coverBytes = coverBytes,
+                    format = extension,
+                    durationSeconds = metadata.durationSeconds,
+                    replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                )
+                return@coroutineScope item
             }
+        }
+    }
 
-            // Do not use HttpCache plugin because it will affect the progress (Bugs)
-            val statement = downloadHttpClient.prepareGet(data.audioUrl)
+    private suspend fun downloadAudio(url: String, onProgress: suspend (Float) -> Unit): Buffer {
+        // Do not use HttpCache plugin because it will affect the progress (Bugs)
+        val statement = downloadHttpClient.prepareGet(url)
 
-            // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
-            //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
-            //  https://youtrack.jetbrains.com/issue/KTOR-8377/JS-WASM-response-doesnt-contain-the-Content-Length-header-in-a-browser
-            //  KTOR-7934 JS/WASM fails with "IllegalStateException: Content-Length mismatch" on requesting gzipped content
-            //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
-            var headContentLength: Long? = null
-            // Workaround for wasm, we can use HEAD request to get the content length
-            if (getPlatform().name.startsWith("Web")) {
-                val resp = api.httpClient.head(data.audioUrl)
-                headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
-                Logger.i(TAG, "Head content length: $headContentLength bytes")
-            }
-            val buffer = statement.execute { resp ->
-                val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
-                Logger.i(TAG, "Content length: $contentLength bytes")
+        // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
+        //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
+        //  https://youtrack.jetbrains.com/issue/KTOR-8377/JS-WASM-response-doesnt-contain-the-Content-Length-header-in-a-browser
+        //  KTOR-7934 JS/WASM fails with "IllegalStateException: Content-Length mismatch" on requesting gzipped content
+        //  https://youtrack.jetbrains.com/issue/KTOR-7934/JS-WASM-fails-with-IllegalStateException-Content-Length-mismatch-on-requesting-gzipped-content
+        var headContentLength: Long? = null
+        // Workaround for wasm, we can use HEAD request to get the content length
+        if (getPlatform().name.startsWith("Web")) {
+            val resp = api.httpClient.head(url)
+            headContentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0L
+            Logger.i(TAG, "Head content length: $headContentLength bytes")
+        }
+        val buffer = statement.execute { resp ->
+            val contentLength = resp.headers[HttpHeaders.ContentLength]?.toLongOrNull()
+            Logger.i(TAG, "Content length: $contentLength bytes")
 
-                val bestContentLength = contentLength ?: headContentLength
-                val channel = resp.body<ByteReadChannel>()
+            val bestContentLength = contentLength ?: headContentLength
+            val channel = resp.body<ByteReadChannel>()
 
-                val buffer = if (bestContentLength != null) {
-                    val buffer = Buffer()
-                    var count = 0L
-                    while (!channel.exhausted()) {
-                        val chunk = channel.readRemaining(1024 * 8)
-                        count += chunk.transferTo(buffer)
-                        val progress = count.toFloat() / bestContentLength
-                        onProgress(progress.coerceIn(0f, 1f))
-                    }
-                    buffer
-                } else {
-                    Logger.i(TAG, "Content-Length not found, progress is disabled")
-                    channel.readBuffer()
+            val buffer = if (bestContentLength != null) {
+                val buffer = Buffer()
+                var count = 0L
+                while (!channel.exhausted()) {
+                    val chunk = channel.readRemaining(1024 * 8)
+                    count += chunk.transferTo(buffer)
+                    val progress = count.toFloat() / bestContentLength
+                    onProgress(progress.coerceIn(0f, 1f))
                 }
-
                 buffer
+            } else {
+                Logger.i(TAG, "Content-Length not found, progress is disabled")
+                channel.readBuffer()
             }
-            coverBytes = coverBytesAsync.await()
-            val cacheItem = SongCache.Item(
-                key = songId.toString(),
-                metadata = data,
-                audio = buffer.copy(),
-                cover = Buffer().also { it.write(coverBytes) }
-            )
-            audioBytes = buffer.readByteArray()
-            songCache.save(cacheItem)
+
+            buffer
+        }
+        return buffer
+    }
+
+    private var cacheQueueMutex = Mutex()
+    private var cacheQueue = ArrayDeque<Job>()
+    private suspend fun cacheInBackground(metadata: SongModule.PublicSongDetail) {
+        cacheQueueMutex.withLock {
+            if (cacheQueue.size >= 3) {
+                try {
+                    cacheQueue.removeFirstOrNull()?.cancel()
+                    Logger.d(TAG, "Cancelled background downloading task")
+                } catch (e: Throwable) {
+                    Logger.w(TAG, "Failed to cancel background downloading task", e)
+                }
+            }
         }
 
-        val filename = metadata.audioUrl.substringAfterLast("/")
-        val extension = filename.substringAfterLast(".")
-        val item = SongItem(
-            id = metadata.id.toString(),
-            title = metadata.title,
-            artist = metadata.uploaderName,
-            audioBytes = audioBytes,
-            coverBytes = coverBytes,
-            format = extension,
-            durationSeconds = metadata.durationSeconds,
-            replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
-        )
-        return@coroutineScope item
+        val job = scope.launch {
+            Logger.d(TAG, "Caching ${metadata.id} in background")
+            val audioBuffer = downloadAudio(metadata.audioUrl, onProgress = {
+                // Do nothing
+            })
+            val coverBytes = api.httpClient.get(metadata.coverUrl).bodyAsBytes()
+
+            val cacheItem = SongCache.Item(
+                key = metadata.id.toString(),
+                metadata = metadata,
+                audio = audioBuffer,
+                cover = Buffer().also { it.write(coverBytes) }
+            )
+            songCache.save(cacheItem)
+            Logger.d(TAG, "Caching ${metadata.id} completed")
+        }
+
+        cacheQueueMutex.withLock {
+            cacheQueue.addLast(job)
+        }
+    }
+
+    private fun fetchCacheAsync(songId: Long, cache: SongCache.Item, jmid: String) = scope.launch {
+        try {
+            Logger.i(TAG, "Fetching cache")
+            val resp = api.songModule.detailById(songId)
+            if (!resp.ok) {
+                Logger.e(TAG, "Failed to refresh song metadata: ${resp.err().msg}")
+                return@launch
+            }
+
+            val data = resp.ok()
+            if (cache.metadata != data) {
+                Logger.i(TAG, "Metadata updated, invalidate cache")
+                // If the audio file has updated, just invalidate the cache
+                if (cache.metadata.audioUrl != data.audioUrl || cache.metadata.coverUrl != data.coverUrl) {
+                    songCache.delete(songId.toString())
+                    songCache.delete(jmid)
+                }
+                // Update the metadata
+                songCache.saveMetadata(data)
+            } else {
+                Logger.i(TAG, "Metadata already up to date")
+            }
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to refresh song metadata", e)
+        }
     }
 
     fun previous() = scope.launch {

@@ -32,6 +32,7 @@ class JVMPlayer() : Player {
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean): Unit = withContext(Dispatchers.IO) {
+        val item = item as SongItem.Local
         mutex.withLock {
             stop()
             ready = false
@@ -131,6 +132,10 @@ class JVMPlayer() : Player {
         }
     }
 
+    override suspend fun bufferedProgress(): Float {
+        return 0f
+    }
+
     override suspend fun isReady(): Boolean {
         return ready
     }
@@ -181,6 +186,9 @@ class JVMPlayer() : Player {
             clip?.microsecondPosition = position * 1000L
         }
     }
+
+    override val supportRemotePlay: Boolean
+        get() = false
 
     override suspend fun getVolume(): Float {
         return if (volumeControl != null) {

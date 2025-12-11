@@ -60,6 +60,9 @@ class AndroidPlayer(
         }, MoreExecutors.directExecutor())
     }
 
+    override val supportRemotePlay: Boolean
+        get() = true
+
     override suspend fun isPlaying(): Boolean = withContext(Dispatchers.Main) {
         controller?.isPlaying ?: false
     }
@@ -73,6 +76,10 @@ class AndroidPlayer(
 
     override suspend fun currentPosition(): Long = withContext(Dispatchers.Main) {
         controller?.currentPosition ?: 0
+    }
+
+    override suspend fun bufferedProgress(): Float = withContext(Dispatchers.Main) {
+        (controller?.bufferedPercentage ?: 0) / 100f
     }
 
     override suspend fun play() {
@@ -116,13 +123,21 @@ class AndroidPlayer(
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
         // TODO[refactor]: This is a workaround to get uri. Consider to use network uri or other ways in the future.
-        val audioFile = withContext(Dispatchers.IO) {
-            val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
-            cacheDir.file.resolve("playing.${item.format}").also {
-                it.writeBytes(item.audioBytes)
+        val audioUri = when (item) {
+            is SongItem.Local -> {
+                val audioFile = withContext(Dispatchers.IO) {
+                    val cacheDir = (getPlatform().getCacheDir().androidFile as AndroidFile.FileWrapper)
+                    cacheDir.file.resolve("playing.${item.format}").also {
+                        it.writeBytes(item.audioBytes)
+                    }
+                }
+                audioFile.toUri()
+            }
+
+            is SongItem.Remote -> {
+                item.audioUrl.toUri()
             }
         }
-        val audioUri = audioFile.toUri()
 
 
         /*val coverFile = item.coverBytes?.let { bytes ->
@@ -135,11 +150,20 @@ class AndroidPlayer(
 
         val coverUri = coverFile?.toUri()*/
 
-        val metadata = MediaMetadata.Builder()
-            .setTitle(item.title)
-            .setArtist(item.artist)
-            .setArtworkData(item.coverBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
-            .build()
+        val metadata = MediaMetadata.Builder().apply {
+            setTitle(item.title)
+            setArtist(item.artist)
+            when (item) {
+                is SongItem.Local -> {
+                    setArtworkData(item.coverBytes, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+                }
+
+                is SongItem.Remote -> {
+                    setArtworkUri(item.coverUrl?.toUri())
+                }
+            }
+        }.build()
+
         val mediaItem = MediaItem.Builder()
             .setUri(audioUri)
             .setMediaMetadata(metadata)
