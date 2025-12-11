@@ -18,13 +18,14 @@ fun HachimiIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     touchMode: Boolean = false,
+    enabled: Boolean = true,
     content: @Composable () -> Unit
 ) {
     Box(
         modifier = modifier
             .size(if (touchMode) 40.dp else 28.dp)
             .clip(CircleShape)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, enabled = enabled),
         contentAlignment = Alignment.Center
     ) {
         Box(Modifier.size(20.dp)) {
