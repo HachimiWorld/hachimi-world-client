@@ -67,8 +67,8 @@ class PlayerUIState() {
 
 
     val displayedCover by derivedStateOf { if (fetchingMetadata) previewMetadata?.coverUrl else songInfo?.coverUrl }
-    val displayedTitle by derivedStateOf { if (fetchingMetadata) { previewMetadata?.title } else { songInfo?.title } ?: "" }
-    val displayedAuthor by derivedStateOf { if (fetchingMetadata) { previewMetadata?.author } else { songInfo?.uploaderName } ?: "" }
+    val displayedTitle by derivedStateOf { if (fetchingMetadata) { previewMetadata?.title } else { songInfo?.title } ?: "暂未播放" }
+    val displayedAuthor by derivedStateOf { if (fetchingMetadata) { previewMetadata?.author } else { songInfo?.uploaderName } ?: "暂未播放" }
     val displayedDurationMillis by derivedStateOf {
         if (fetchingMetadata) {
             previewMetadata?.duration?.inWholeMilliseconds
@@ -176,11 +176,18 @@ class PlayerUIState() {
     fun updateSongInfo(data: SongDetailInfo) {
         hasSong = true
         songInfo = data
+        if (userProfile?.uid != data.uploaderUid) {
+            userProfile = null
+        }
         setLyrics(data.lyrics)
     }
 
     fun updateAuthorProfile(data: UserModule.PublicUserProfile?) {
-        userProfile = data
+        if (data == null) {
+            userProfile = null
+        } else if (data.uid == songInfo?.uploaderUid) {
+            userProfile = data
+        }
     }
 
     fun updatePreviewMetadata(data: PreviewMetadata) {
@@ -190,6 +197,7 @@ class PlayerUIState() {
     fun clear() {
         songInfo = null
         hasSong = false
+        userProfile = null
         setLyrics("")
     }
 }
