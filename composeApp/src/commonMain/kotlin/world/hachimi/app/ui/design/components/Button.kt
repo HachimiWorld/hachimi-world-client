@@ -46,7 +46,7 @@ fun Button(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CompositionLocalProvider(
-                LocalContentColor provides contentColor,
+                LocalContentColor provides if (enabled) contentColor else contentColor.copy(0.6f),
                 LocalTextStyle provides buttonLabelTextStyle
             ) {
                 content()
@@ -71,6 +71,7 @@ fun AccentButton(
         shape = shape,
         color = HachimiTheme.colorScheme.primary,
         contentColor = HachimiTheme.colorScheme.onSurfaceReverse,
+        enabled = enabled,
         content = content
     )
 }
@@ -91,6 +92,7 @@ fun SubtleButton(
         shape = shape,
         color = HachimiTheme.colorScheme.primaryContainer,
         contentColor = HachimiTheme.colorScheme.primary,
+        enabled = enabled,
         content = content
     )
 }
@@ -111,6 +113,7 @@ fun TextButton(
         shape = shape,
         color = Color.Transparent,
         contentColor = HachimiTheme.colorScheme.primary,
+        enabled = enabled,
         content = content
     )
 }
