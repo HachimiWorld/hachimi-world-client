@@ -3,6 +3,7 @@ package world.hachimi.app.ui.root
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -125,7 +126,8 @@ private fun CompactScreen(
         drawerContent = {
             Card(
                 modifier = Modifier.width(300.dp),
-                color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background)
+                color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background),
+                shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
             ) {
                 Column(
                     Modifier.padding(top = currentSafeAreaInsets().top)
