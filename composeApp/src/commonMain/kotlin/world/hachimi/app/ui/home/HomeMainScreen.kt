@@ -33,6 +33,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.WindowSize
 
 @Composable
@@ -54,7 +55,8 @@ fun HomeMainScreen(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .windowInsetsPadding(LocalContentInsets.current)
-                .padding(bottom = 24.dp)
+                .padding(vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {
             Segment(
                 label = "最近发布",
@@ -111,9 +113,9 @@ private fun Segment(
 ) {
     Column(modifier) {
         SegmentHeader(text = label, onMoreClick = onMoreClick, onLoad = onLoad)
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(AdaptiveListSpacing))
         LoadableContent(
-            modifier = Modifier.fillMaxWidth().height(496.dp),
+            modifier = Modifier.fillMaxWidth().height(228.dp * 2 + AdaptiveListSpacing),
             initializeStatus = status,
             loading = loading,
             onRefresh = onRefresh,
@@ -125,13 +127,13 @@ private fun Segment(
             } else LazyHorizontalGrid(
                 modifier = Modifier.fillMaxSize(),
                 rows = GridCells.Fixed(2),
-                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 items(items = items, key = { it.id }) { item ->
                     SongCard(
-                        modifier = Modifier.width(width = 180.dp),
+                        modifier = Modifier.size(width = 180.dp, height = 228.dp),
                         item = item,
                         onClick = {
                             global.player.insertToQueue(
@@ -161,12 +163,12 @@ private fun CategorySegment(
         }, onMoreClick = {
             global.nav.push(Route.Root.Home.Category(category))
         })
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(AdaptiveListSpacing))
         val state = vm.categoryState[category]
         val status = state?.status?.value ?: InitializeStatus.INIT
         val loading = state?.loading?.value ?: false
         LoadableContent(
-            modifier = Modifier.fillMaxWidth().height(520.dp),
+            modifier = Modifier.fillMaxWidth().height(228.dp * 2 + AdaptiveListSpacing),
             initializeStatus = status,
             loading = loading,
             onRefresh = { },
@@ -181,13 +183,13 @@ private fun CategorySegment(
             } else LazyHorizontalGrid(
                 modifier = Modifier.fillMaxSize(),
                 rows = GridCells.Fixed(2),
-                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 items(songs, key = { item -> item.id }) { item ->
                     SongCard(
-                        modifier = Modifier.width(width = 180.dp),
+                        modifier = Modifier.size(width = 180.dp, height = 228.dp),
                         coverUrl = item.coverArtUrl,
                         title = item.title,
                         subtitle = item.subtitle,
@@ -217,7 +219,7 @@ private fun SegmentHeader(
     onLoad: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp).onFirstVisible { onLoad() },
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp).onFirstVisible { onLoad() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = text, style = MaterialTheme.typography.titleLarge)

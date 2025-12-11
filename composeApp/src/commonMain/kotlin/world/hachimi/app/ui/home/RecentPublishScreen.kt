@@ -31,6 +31,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
 import world.hachimi.app.util.formatDaysDistance
@@ -78,8 +79,8 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 state = state,
                 columns = calculateGridColumns(maxWidth),
                 contentPadding = PaddingValues(24.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

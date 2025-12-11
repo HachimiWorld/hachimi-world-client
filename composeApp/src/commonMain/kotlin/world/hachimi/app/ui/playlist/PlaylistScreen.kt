@@ -23,6 +23,7 @@ import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.playlist.components.PlaylistItem
+import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
 
 @Composable
@@ -50,8 +51,8 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                             modifier = Modifier.fillMaxSize(),
                             columns = calculateGridColumns(maxWidth),
                             contentPadding = PaddingValues(horizontal = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(24.dp),
-                            horizontalArrangement = Arrangement.spacedBy(24.dp)
+                            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                            horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
                         ) {
                             itemsIndexed(vm.playlists, key = { index, item -> item.id }) { index, item ->
                                 PlaylistItem(

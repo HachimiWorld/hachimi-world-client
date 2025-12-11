@@ -27,6 +27,7 @@ import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
 
 @Composable
@@ -43,8 +44,8 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+            horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             contentPadding = PaddingValues(24.dp)
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {

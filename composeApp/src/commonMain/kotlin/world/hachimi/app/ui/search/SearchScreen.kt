@@ -21,6 +21,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
+import world.hachimi.app.util.AdaptiveListSpacing
 
 @Composable
 fun SearchScreen(
@@ -51,8 +52,8 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
         columns = if (vm.searchType == SearchViewModel.SearchType.SONG) GridCells.Adaptive(minSize = 320.dp)
         else GridCells.Adaptive(152.dp),
         contentPadding = PaddingValues(24.dp),
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Row(
