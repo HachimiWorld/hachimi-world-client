@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
@@ -31,9 +30,10 @@ import world.hachimi.app.ui.insets.currentSafeAreaInsets
 @Composable
 fun CompactTopAppBar(
     global: GlobalStore,
-    onExpandNavClick: () -> Unit
+    onExpandNavClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Surface(Modifier.fillMaxWidth().dropShadow(RectangleShape, CardShadow)) {
+    Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 .padding(top = currentSafeAreaInsets().top)
@@ -69,8 +69,11 @@ fun CompactTopAppBar(
 }
 
 @Composable
-fun ExpandedTopAppBar(global: GlobalStore) {
-    Surface(Modifier.zIndex(2f).fillMaxWidth().dropShadow(RectangleShape, CardShadow)) {
+fun ExpandedTopAppBar(
+    global: GlobalStore,
+    modifier: Modifier = Modifier
+) {
+    Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
         Row(
             modifier = Modifier
                 .padding(top = currentSafeAreaInsets().top)

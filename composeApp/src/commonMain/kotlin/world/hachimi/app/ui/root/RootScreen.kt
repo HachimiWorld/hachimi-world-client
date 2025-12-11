@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
@@ -129,11 +130,15 @@ private fun CompactScreen(
         val hazeState = rememberHazeState()
         Box(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
-                CompactTopAppBar(global, onExpandNavClick = {
-                    scope.launch {
-                        drawerState.open()
+                CompactTopAppBar(
+                    modifier = Modifier.zIndex(2f).fillMaxWidth(),
+                    global = global,
+                    onExpandNavClick = {
+                        scope.launch {
+                            drawerState.open()
+                        }
                     }
-                })
+                )
                 Box(Modifier.weight(1f)) {
                     CompositionLocalProvider(
                         LocalContentInsets provides WindowInsets(
@@ -160,7 +165,10 @@ private fun ExpandedScreen(
     global: GlobalStore = koinInject()
 ) {
     Column(Modifier.fillMaxSize()) {
-        ExpandedTopAppBar(global)
+        ExpandedTopAppBar(
+            modifier = Modifier.zIndex(2f).fillMaxWidth(),
+            global = global,
+        )
 
         Row(Modifier.weight(1f).fillMaxWidth()) {
             Card(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
