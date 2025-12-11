@@ -49,15 +49,16 @@ fun CompactFooterPlayer2(
             ) {
                 Row(
                     modifier = Modifier.padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Cover(uiState.displayedCover)
-                    Spacer(Modifier.width(8.dp))
+
                     Column(Modifier.weight(1f)) {
                         Title(uiState.displayedTitle)
                         Author(uiState.displayedAuthor)
                     }
-                    Spacer(Modifier.width(8.dp))
+
                     PlayPauseButton(
                         modifier = Modifier.size(48.dp),
                         playing = uiState.isPlaying,
@@ -65,10 +66,14 @@ fun CompactFooterPlayer2(
                             global.player.playOrPause()
                         }
                     )
-                    Spacer(Modifier.width(8.dp))
-                    Button(modifier = Modifier.size(48.dp), onClick = { global.player.next() }) {
+
+                    Button(
+                        modifier = Modifier.size(48.dp),
+                        onClick = { global.player.next() },
+                        contentPadding = PaddingValues.Zero
+                    ) {
                         Icon(
-                            modifier = Modifier,
+                            modifier = Modifier.size(24.dp),
                             imageVector = Icons.Default.SkipNext,
                             contentDescription = "Skip Next",
                             tint = HachimiTheme.colorScheme.onSurface

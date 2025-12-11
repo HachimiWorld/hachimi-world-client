@@ -283,6 +283,7 @@ private fun PreviousButton(
         contentColor = HachimiTheme.colorScheme.onSurface
     ) {
         Icon(
+            modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.SkipPrevious,
             contentDescription = "Skip Previous"
         )
@@ -300,6 +301,7 @@ private fun NextButton(
         contentColor = HachimiTheme.colorScheme.onSurface
     ) {
         Icon(
+            modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.SkipNext,
             contentDescription = "Skip Next"
         )

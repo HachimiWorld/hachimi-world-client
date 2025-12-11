@@ -89,7 +89,7 @@ fun TextField(
                                 it()
                             }
                         }
-                        Box {
+                        Box(contentAlignment = Alignment.CenterStart) {
                             innerTextField() // This won't use LocalContentColor
                             if (value.isEmpty()) placeholder?.invoke()
                         }
