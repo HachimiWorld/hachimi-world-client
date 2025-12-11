@@ -31,6 +31,7 @@ fun Button(
     shape: Shape = RoundedCornerShape(12.dp),
     color: Color = HachimiTheme.colorScheme.surface,
     contentColor: Color = HachimiTheme.colorScheme.onSurface,
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     Surface(
@@ -40,7 +41,7 @@ fun Button(
         contentColor = contentColor,
     ) {
         Row(
-            Modifier.clickable(onClick = onClick).padding(contentPadding),
+            Modifier.clickable(onClick = onClick, enabled = enabled).padding(contentPadding),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -60,6 +61,7 @@ fun AccentButton(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     shape: Shape = RoundedCornerShape(12.dp),
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
@@ -79,6 +81,7 @@ fun SubtleButton(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     shape: Shape = RoundedCornerShape(12.dp),
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
@@ -98,6 +101,7 @@ fun TextButton(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     shape: Shape = RoundedCornerShape(12.dp),
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     Button(

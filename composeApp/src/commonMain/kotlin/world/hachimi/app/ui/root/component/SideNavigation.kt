@@ -9,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text

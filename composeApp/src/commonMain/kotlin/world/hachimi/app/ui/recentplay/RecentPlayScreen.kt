@@ -1,11 +1,14 @@
 package world.hachimi.app.ui.recentplay
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +24,8 @@ import world.hachimi.app.model.RecentPlayViewModel
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
@@ -86,20 +91,26 @@ private fun RecentPlayItem(
     onPlayClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier.height(72.dp), onClick = onPlayClick) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.clickable(onClick = onPlayClick).padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(color = MaterialTheme.colorScheme.onSurface.copy(0.12f)) {
+            Surface(
+                color = MaterialTheme.colorScheme.onSurface.copy(0.12f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
                 AsyncImage(
-                    modifier = Modifier.fillMaxHeight().aspectRatio(1f),
+                    modifier = Modifier.size(48.dp),
                     model = coverUrl,
                     contentDescription = "Cover Image",
                     contentScale = ContentScale.Crop
                 )
             }
-            Column(Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 12.dp)) {
+            Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
                 Text(text = title, style = MaterialTheme.typography.bodyMedium)
                 Text(text = artist, style = MaterialTheme.typography.bodySmall)
             }

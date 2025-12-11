@@ -7,13 +7,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,9 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
@@ -125,9 +129,9 @@ private fun ReviewItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Surface(Modifier.size(42.dp), MaterialTheme.shapes.small, LocalContentColor.current.copy(0.12f)) {
+        Surface(Modifier.size(42.dp), RoundedCornerShape(8.dp), LocalContentColor.current.copy(0.12f)) {
             AsyncImage(
-                modifier = Modifier.size(42.dp).clip(MaterialTheme.shapes.small),
+                modifier = Modifier.fillMaxSize(),
                 model = coverUrl,
                 contentDescription = "Cover Image",
                 contentScale = ContentScale.Crop

@@ -6,7 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -28,6 +29,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.formatTime
 import kotlin.time.Duration.Companion.seconds
@@ -57,13 +59,14 @@ private fun Content(
     global: GlobalStore = koinInject()
 ) {
     Column(
-        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
+        Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
             .navigationBarsPadding()
-            .windowInsetsPadding(LocalContentInsets.current),
+            .windowInsetsPadding(LocalContentInsets.current)
+            .padding(24.dp),
         Arrangement.spacedBy(16.dp)
     ) {
         vm.data?.let { data ->
-            Text("Review 详情", style = MaterialTheme.typography.titleLarge)
+            Text(text = "Review 详情", style = MaterialTheme.typography.titleLarge)
             PropertyItem(label = {
                 Text("投稿人")
             }) {

@@ -2,7 +2,6 @@ package world.hachimi.app.ui.home.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explicit
@@ -14,21 +13,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import dev.chrisbanes.haze.*
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import world.hachimi.app.api.module.SongModule
-import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.TagBadge
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 
@@ -78,7 +75,7 @@ fun SongCard(
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = null,
+                    contentDescription = "Song Cover Image",
                     contentScale = ContentScale.Crop
                 )
                 FlowRow(
@@ -87,22 +84,7 @@ fun SongCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     tags.forEach { tag ->
-                        Surface(
-                            modifier = Modifier.clip(CircleShape).hazeEffect(hazeState, style = HazeStyle(
-                                backgroundColor = HachimiTheme.colorScheme.surface,
-                                blurRadius = 12.dp,
-                                tint = HazeTint(color = HachimiTheme.colorScheme.surface)
-                            )),
-                            color = Color.Transparent,
-                            shape = CircleShape,
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                text = tag,
-                                style = TextStyle(fontSize = 12.sp),
-                                color = HachimiTheme.colorScheme.onSurface,
-                            )
-                        }
+                        TagBadge(hazeState, tag)
                     }
                 }
             }
@@ -148,102 +130,8 @@ fun SongCard(
             }
         }
     }
-}/*
-
-@Composable
-fun SongCardInHorizontal(
-    coverUrl: String,
-    title: String,
-    subtitle: String,
-    author: String,
-    tags: List<String>,
-    playCount: Long,
-    likeCount: Long,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.defaultMinSize(minHeight = 200.dp),
-        onClick = onClick,
-        shape = CardDefaults.shape,
-        color = CardDefaults.cardColors().containerColor
-    ) {
-        Layout(
-            content = {
-                Box(Modifier.aspectRatio(1f)) {
-                    AsyncImage(
-                        model = coverUrl,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    FlowRow(
-                        Modifier.align(Alignment.TopStart).padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        tags.forEach { tag ->
-                            Surface(
-                                color = Color(0x99FFFFFF),
-                                shape = MaterialTheme.shapes.small,
-                            ) {
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    text = tag,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0x99000000),
-                                )
-                            }
-                        }
-                    }
-                }
-                Column(Modifier.padding(vertical = 8.dp, horizontal = 12.dp)) {
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1
-                        )
-                        Icon(Icons.Default.Explicit, "Explicit", tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.requiredSize(16.dp))
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = author,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1
-                        )
-                        Icon(
-                            Icons.Default.Headphones,
-                            "Play Count",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(end = 4.dp).size(12.dp)
-                        )
-                        Text(
-                            playCount.toString(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            },
-            measurePolicy = { measurables, constraints ->
-                val cover = measurables[0].measure(constraints)
-                val content = measurables[1].measure(constraints.copy(maxWidth = cover.width))
-
-                layout(cover.width, cover.height + content.height) {
-                    cover.place(0, 0)
-                    content.place(0, cover.height)
-                }
-            }
-        )
-    }
 }
-*/
+
 @Preview
 @Composable
 private fun Preview() {
