@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,15 +33,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Surface
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
@@ -304,13 +305,54 @@ private fun LyricsTab(
 private fun QueueTab(
     global: GlobalStore
 ) {
-    Box(Modifier.fillMaxSize().padding(top = 32.dp).padding(horizontal = 32.dp)) {
+    Column(Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 32.dp)) {
+        RepeatShuffleControls(
+            modifier = Modifier.fillMaxWidth(),
+            shuffle = global.player.shuffleMode,
+            onShuffleChange = { global.player.updateShuffleMode(it) },
+            repeat = global.player.repeatMode,
+            onRepeatChange = { global.player.updateRepeatMode(it) }
+        )
         MusicQueue(
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
             queue = global.player.musicQueue,
             playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
             onPlayClick = { global.player.playSongInQueue(it) },
             onRemoveClick = { global.player.removeFromQueue(it) },
         )
+    }
+}
+
+@Composable
+private fun RepeatShuffleControls(
+    shuffle: Boolean,
+    onShuffleChange: (Boolean) -> Unit,
+    repeat: Boolean,
+    onRepeatChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier, horizontalArrangement = Arrangement.SpaceEvenly) {
+        ToggleButton(
+            selected = shuffle,
+            onClick = { onShuffleChange(!shuffle) },
+        ) {
+            Icon(
+                modifier = Modifier.padding(horizontal = 48.dp, vertical = 8.dp),
+                imageVector = Icons.Default.Shuffle,
+                contentDescription = if (shuffle) "Shuffle on" else "Shuffle off"
+            )
+        }
+
+        ToggleButton(
+            selected = repeat,
+            onClick = { onRepeatChange(!repeat) },
+        ) {
+            Icon(
+                modifier = Modifier.padding(horizontal = 48.dp, vertical = 8.dp),
+                imageVector = Icons.Default.Repeat,
+                contentDescription = if (repeat) "Repeat on" else "Repeat off"
+            )
+        }
     }
 }
 
@@ -329,14 +371,20 @@ private fun Header(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         AsyncImage(
-            model = cover,
+            model = ImageRequest.Builder(LocalPlatformContext.current)
+                .data(cover)
+                .crossfade(true)
+                .build(),
             contentDescription = "Cover",
-            modifier = Modifier.size(64.dp).dropShadow(
-                RoundedCornerShape(8.dp), Shadow(
-                    radius = 24.dp, color = Color.Black.copy(0.17f),
-                    offset = DpOffset(0.dp, 2.dp)
+            modifier = Modifier.size(64.dp)
+                .dropShadow(
+                    RoundedCornerShape(8.dp), Shadow(
+                        radius = 24.dp, color = Color.Black.copy(0.17f),
+                        offset = DpOffset(0.dp, 2.dp)
+                    )
                 )
-            ).clip(RoundedCornerShape(8.dp)),
+                .clip(RoundedCornerShape(8.dp))
+                .background(LocalContentColor.current.copy(alpha = 0.12f)),
             contentScale = ContentScale.Crop,
         )
         Column(Modifier.weight(1f).padding(start = 16.dp, end = 16.dp)) {

@@ -1,11 +1,8 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -13,14 +10,9 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HollowIconToggleButton
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.ToggleButton
 
 enum class Page {
     Info, Queue, Lyrics
@@ -82,26 +74,3 @@ fun PagerButtons2(
     }
 }
 
-@Composable
-private fun ToggleButton(
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(50),
-    activeColor: Color = HachimiTheme.colorScheme.onSurface,
-    activeContentColor: Color = HachimiTheme.colorScheme.onSurfaceReverse,
-    inactiveColor: Color = Color.Transparent,
-    inactiveContentColor: Color = LocalContentColor.current,
-    content: @Composable () -> Unit,
-) {
-    Surface(
-        modifier = modifier,
-        shape = shape,
-        color = if (selected) activeColor else inactiveColor,
-        contentColor = if (selected) activeContentColor else inactiveContentColor
-    ) {
-        Box(Modifier.selectable(selected = selected, onClick = onClick, role = Role.Tab)) {
-            content()
-        }
-    }
-}
