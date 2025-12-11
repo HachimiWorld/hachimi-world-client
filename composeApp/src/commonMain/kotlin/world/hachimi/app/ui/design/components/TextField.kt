@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -21,7 +22,7 @@ import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.util.singleLined
 
 private val textFieldStyle = TextStyle(
-    fontWeight = FontWeight.Medium,
+    fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp
 )
@@ -31,8 +32,11 @@ fun TextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(8.dp),
     contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
     placeholder: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    postfix: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     enabled: Boolean = true,
@@ -68,28 +72,33 @@ fun TextField(
         cursorBrush = cursorBrush,
         decorationBox = { innerTextField ->
             Surface(
-                shape = RoundedCornerShape(16.dp),
+                shape = shape,
                 color = HachimiTheme.colorScheme.background
             ) {
                 Row(
                     modifier = Modifier.padding(contentPadding),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    leadingIcon?.let {
-                        it()
-                    }
-                    Box {
-                        innerTextField()
-
-                        if (value.isEmpty()) CompositionLocalProvider(
-                            LocalContentColor provides HachimiTheme.colorScheme.onSurfaceVariant,
-                            LocalTextStyle provides textFieldStyle
-                        ) {
-                            placeholder?.invoke()
+                    CompositionLocalProvider(
+                        LocalContentColor provides HachimiTheme.colorScheme.onSurfaceVariant,
+                        LocalTextStyle provides textFieldStyle
+                    ) {
+                        prefix?.invoke()
+                        leadingIcon?.let {
+                            Box(Modifier.padding(end = 12.dp)) {
+                                it()
+                            }
                         }
-                    }
-                    trailingIcon?.let {
-                        it()
+                        Box {
+                            innerTextField() // This won't use LocalContentColor
+                            if (value.isEmpty()) placeholder?.invoke()
+                        }
+                        trailingIcon?.let {
+                            Box(Modifier.padding(start = 12.dp)) {
+                                it()
+                            }
+                        }
+                        postfix?.invoke()
                     }
                 }
             }
