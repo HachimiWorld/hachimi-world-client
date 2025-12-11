@@ -35,7 +35,7 @@ fun PlayerScreen2() {
     ) {
         val contentDarkMode = LocalDarkMode.current
 
-        LaunchedEffect(animatedVisibility.transition.currentState, animatedVisibility.transition.targetState) {
+        LaunchedEffect(animatedVisibility.transition.currentState, animatedVisibility.transition.targetState, systemUIController, contentDarkMode) {
             if (
                 animatedVisibility.transition.currentState == EnterExitState.Visible &&
                 animatedVisibility.transition.targetState == EnterExitState.Visible
