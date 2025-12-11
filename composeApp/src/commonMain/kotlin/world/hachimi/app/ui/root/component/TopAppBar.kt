@@ -77,7 +77,7 @@ fun ExpandedTopAppBar(
         Row(
             modifier = Modifier
                 .padding(top = currentSafeAreaInsets().top)
-                .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
+                .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
                 .consumeWindowInsets(WindowInsets.statusBars),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -92,7 +92,7 @@ fun ExpandedTopAppBar(
             Row(Modifier.weight(1f).wrapContentWidth()) {
                 var searchText by remember { mutableStateOf("") }
                 SearchBox(
-                    searchText, { searchText = it }, modifier = Modifier.widthIn(max = 400.dp),
+                    searchText, { searchText = it }, modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth(),
                     onSearch = {
                         global.nav.push(Route.Root.Search(searchText))
                     }
@@ -107,12 +107,12 @@ fun ExpandedTopAppBar(
                     onClick = { global.nav.push(Route.Root.UserSpace) }
                 )
             } else {
-                Button(onClick = {
+                AccentButton(onClick = {
                     global.nav.push(Route.Auth())
                 }) {
                     Text("登录")
                 }
-                Button(onClick = {
+                SubtleButton(onClick = {
                     global.nav.push(Route.Auth(false))
                 }) {
                     Text("注册")
