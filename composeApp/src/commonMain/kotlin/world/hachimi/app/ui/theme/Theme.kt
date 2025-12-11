@@ -123,7 +123,7 @@ fun PreviewTheme(
 ) {
     AppTheme(darkTheme) {
         if (background) {
-            Surface(color = MaterialTheme.colorScheme.background, content = content)
+            Surface(color = HachimiTheme.colorScheme.background, content = content)
         } else {
             content()
         }

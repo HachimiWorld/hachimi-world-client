@@ -43,6 +43,7 @@ import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
+import world.hachimi.app.ui.player.footer.components.PlayPauseButton
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueueHeader
@@ -277,13 +278,13 @@ private fun PreviousButton(
 ) {
     Button(
         modifier = Modifier.height(78.dp),
-        onClick = onClick
+        onClick = onClick,
+        color = HachimiTheme.colorScheme.background,
+        contentColor = HachimiTheme.colorScheme.onSurface
     ) {
         Icon(
-            modifier = Modifier.padding(16.dp),
             imageVector = Icons.Default.SkipPrevious,
-            contentDescription = "Skip Previous",
-            tint = HachimiTheme.colorScheme.onSurface
+            contentDescription = "Skip Previous"
         )
     }
 }
@@ -294,13 +295,13 @@ private fun NextButton(
 ) {
     Button(
         modifier = Modifier.height(78.dp),
-        onClick = onClick
+        onClick = onClick,
+        color = HachimiTheme.colorScheme.background,
+        contentColor = HachimiTheme.colorScheme.onSurface
     ) {
         Icon(
-            modifier = Modifier.padding(16.dp),
             imageVector = Icons.Default.SkipNext,
-            contentDescription = "Skip Next",
-            tint = HachimiTheme.colorScheme.onSurface
+            contentDescription = "Skip Next"
         )
     }
 }

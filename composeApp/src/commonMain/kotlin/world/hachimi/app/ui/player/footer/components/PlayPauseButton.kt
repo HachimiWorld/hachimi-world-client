@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.footer
+package world.hachimi.app.ui.player.footer.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -6,7 +6,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 
 @Composable
@@ -21,13 +20,11 @@ fun PlayPauseButton(
     ) {
         if (playing) Icon(
             Icons.Default.Pause,
-            contentDescription = "Pause",
-            tint = HachimiTheme.colorScheme.onSurfaceReverse
+            contentDescription = "Pause"
         )
         else Icon(
             Icons.Default.PlayArrow,
-            contentDescription = "Play",
-            tint = HachimiTheme.colorScheme.onSurfaceReverse
+            contentDescription = "Play"
         )
     }
 }

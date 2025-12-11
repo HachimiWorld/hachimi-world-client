@@ -26,6 +26,7 @@ import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.player.footer.components.Author
+import world.hachimi.app.ui.player.footer.components.PlayPauseButton
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.theme.PreviewTheme
 
