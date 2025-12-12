@@ -102,8 +102,9 @@ class PlayerService(
                     playerState.updateCurrentMillis(currentPosition)
                 }
                 playerState.isPlaying = player.isPlaying()
-
-                playerState.downloadProgress = player.bufferedProgress()
+                if (player.supportRemotePlay) {
+                    playerState.downloadProgress = player.bufferedProgress()
+                }
                 delay(100)
             }
         }
