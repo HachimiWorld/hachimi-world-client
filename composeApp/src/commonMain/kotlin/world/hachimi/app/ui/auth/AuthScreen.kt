@@ -165,7 +165,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
 @Composable
 private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
     FormContent(
-        title = { Text("离神人很近了") },
+        title = { Text("成为神人") },
         subtitle = {}
     ) {
         Column(Modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
