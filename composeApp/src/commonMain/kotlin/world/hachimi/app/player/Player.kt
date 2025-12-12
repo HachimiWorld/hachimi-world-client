@@ -8,12 +8,16 @@ import kotlin.math.pow
  * A player can work without UI
  */
 interface Player {
+    val supportRemotePlay: Boolean
+
     suspend fun isPlaying(): Boolean
     suspend fun isEnd(): Boolean
     suspend fun currentPosition(): Long
+    suspend fun bufferedProgress(): Float
 
     suspend fun play()
     suspend fun pause()
+    suspend fun stop()
     suspend fun seek(position: Long, autoStart: Boolean = false)
 
     suspend fun getVolume(): Float
@@ -60,37 +64,57 @@ sealed class PlayEvent {
     data class Seek(val position: Long) : PlayEvent()
 }
 
-data class SongItem(
-    val id: String,
-    val title: String,
-    val artist: String,
-    val durationSeconds: Int,
-    val audioBytes: ByteArray,
-    val coverBytes: ByteArray? = null,
-    val format: String,
-    val replayGainDB: Float
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+sealed class SongItem {
+    abstract val id: String
+    abstract val title: String
+    abstract val artist: String
+    abstract val durationSeconds: Int
+    abstract val format: String
+    abstract val replayGainDB: Float
 
-        other as SongItem
+    data class Local(
+        override val id: String,
+        override val title: String,
+        override val artist: String,
+        override val durationSeconds: Int,
+        val audioBytes: ByteArray,
+        val coverBytes: ByteArray? = null,
+        override val format: String,
+        override val replayGainDB: Float
+    ): SongItem() {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
 
-        if (id != other.id) return false
-        if (title != other.title) return false
-        if (artist != other.artist) return false
-        if (!audioBytes.contentEquals(other.audioBytes)) return false
-        if (!coverBytes.contentEquals(other.coverBytes)) return false
+            other as Local
 
-        return true
+            if (id != other.id) return false
+            if (title != other.title) return false
+            if (artist != other.artist) return false
+            if (!audioBytes.contentEquals(other.audioBytes)) return false
+            if (!coverBytes.contentEquals(other.coverBytes)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = id.hashCode()
+            result = 31 * result + title.hashCode()
+            result = 31 * result + artist.hashCode()
+            result = 31 * result + audioBytes.contentHashCode()
+            result = 31 * result + (coverBytes?.contentHashCode() ?: 0)
+            return result
+        }
     }
 
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + title.hashCode()
-        result = 31 * result + artist.hashCode()
-        result = 31 * result + audioBytes.contentHashCode()
-        result = 31 * result + (coverBytes?.contentHashCode() ?: 0)
-        return result
-    }
+    data class Remote(
+        override val id: String,
+        override val title: String,
+        override val artist: String,
+        override val durationSeconds: Int,
+        val audioUrl: String,
+        val coverUrl: String? = null,
+        override val format: String,
+        override val replayGainDB: Float
+    ): SongItem()
 }

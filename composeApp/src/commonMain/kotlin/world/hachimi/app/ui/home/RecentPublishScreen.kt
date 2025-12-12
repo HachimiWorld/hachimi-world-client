@@ -9,7 +9,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,9 +27,16 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
 import world.hachimi.app.util.formatDaysDistance
@@ -76,8 +84,8 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 state = state,
                 columns = calculateGridColumns(maxWidth),
                 contentPadding = PaddingValues(24.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -85,7 +93,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                             text = "最近发布", style = MaterialTheme.typography.titleLarge
                         )
                         if (maxWidth >= WindowSize.COMPACT) {
-                            IconButton(
+                            HachimiIconButton(
                                 modifier = Modifier.padding(start = 8.dp),
                                 enabled = !vm.loading,
                                 onClick = { vm.fakeRefresh() }
@@ -157,6 +165,9 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                     ) {
                         Text(text = "没有更多了", modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
                     }
+                }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
                 }
             }
         }

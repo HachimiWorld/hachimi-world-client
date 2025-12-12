@@ -4,7 +4,6 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.*
 
 plugins {
@@ -45,7 +44,6 @@ kotlin {
     }
 
     jvm()
-
     js {
         browser()
         binaries.executable()
@@ -57,21 +55,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        outputModuleName.set("composeApp")
-        browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(rootDirPath)
-                        add(projectDirPath)
-                    }
-                }
-            }
-        }
+        browser()
         compilerOptions {
             freeCompilerArgs.add("-Xwasm-attach-js-exception")
             // https://kotlinlang.slack.com/archives/C3PQML5NU/p1758188562782809?thread_ts=1758060473.617919&cid=C3PQML5NU
@@ -80,31 +64,18 @@ kotlin {
         binaries.executable()
     }
 
+    applyDefaultHierarchyTemplate()
     sourceSets {
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.browser)
-            implementation(libs.androidx.core.ktx)
-            implementation(libs.androidx.media3.session)
-            implementation(libs.androidx.media3.exoplayer)
-            implementation(libs.androidx.media3.exoplayer.dash)
-
-            implementation(libs.koin.android)
-            implementation(libs.room.runtime)
-
-            implementation(libs.ktor.client.cio)
-            implementation(libs.androidx.datastore.preferences)
-        }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.compose.ui.backhandler)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.uiToolingPreview)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.components.uiToolingPreview)
+
+            implementation(libs.compose.material3)
+            implementation(libs.compose.materialIconsExtended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
@@ -128,33 +99,69 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.coil)
 
+            implementation(libs.haze)
+//            implementation(libs.materialMotion)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs) {
-                exclude("org.jetbrains.compose.material")
-            }
-            implementation(libs.kotlinx.coroutinesSwing)
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.browser)
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.media3.session)
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.exoplayer.dash)
+
+//            implementation(libs.androidx.palette)
+//            implementation(libs.androidx.palette.ktx)
+
+            implementation(libs.koin.android)
+            implementation(libs.room.runtime)
 
             implementation(libs.ktor.client.cio)
-            implementation(libs.logback)
-
             implementation(libs.androidx.datastore.preferences)
+        }
+        val nonAndroidMain by creating {
+            dependsOn(commonMain.get())
+        }
+        jvmMain {
+            dependsOn(nonAndroidMain)
+            dependencies {
+                implementation(compose.desktop.currentOs) {
+                    exclude("org.jetbrains.compose.material")
+                }
+                implementation(libs.kotlinx.coroutinesSwing)
+
+                implementation(libs.ktor.client.cio)
+                implementation(libs.logback)
+
+                implementation(libs.androidx.datastore.preferences)
 //            implementation(libs.room.runtime)
 //            implementation(libs.androidx.sqlite.bundled)
-            implementation(libs.mp3spi)
-            implementation(libs.jflac)
+                implementation(libs.mp3spi)
+                implementation(libs.jflac)
+
+                implementation(libs.jna)
+                implementation(libs.jna.platform)
+            }
         }
-        webMain.dependencies {
-            implementation(libs.ktor.client.cio)
-            implementation(libs.kotlinx.browser)
-            implementation(npm("howler", "2.2.4"))
+        webMain {
+            dependsOn(nonAndroidMain)
+            dependencies {
+                implementation(libs.ktor.client.cio)
+                implementation(libs.kotlinx.browser)
+                implementation(npm("howler", "2.2.4"))
+            }
         }
-        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach {
-            it.dependencies {
-                implementation(libs.ktor.client.darwin)
+        jsMain { }
+        wasmJsMain { }
+        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { iosTarget->
+            iosTarget {
+                dependsOn(nonAndroidMain)
+                dependencies {
+                    implementation(libs.ktor.client.darwin)
+                }
             }
         }
     }
@@ -247,7 +254,7 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "world.hachimi.app.MainKt"
-
+        jvmArgs += listOf("-XX:+UseZGC", "-XX:+ZGenerational", "-Xms128M", "-Xmx512M")
         val flavor = project.findProperty("buildkonfig.flavor")
         when (flavor) {
             "release" -> nativeDistributions {

@@ -1,19 +1,25 @@
 package world.hachimi.app.ui.search.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explicit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.formatSongDuration
 import kotlin.time.Duration.Companion.seconds
@@ -24,15 +30,19 @@ fun SearchSongItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
-    Card(
+    Surface(
         modifier = modifier.height(100.dp),
-        onClick = onClick
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Row {
-            Surface(Modifier.aspectRatio(1f).fillMaxHeight(), shape = MaterialTheme.shapes.medium) {
+        Row(Modifier.clickable(onClick = onClick)) {
+            Surface(
+                Modifier.aspectRatio(1f).fillMaxHeight(),
+                shape = RoundedCornerShape(16.dp),
+                color = LocalContentColor.current.copy(0.12f)
+            ) {
                 AsyncImage(
                     model = data.coverArtUrl,
-                    contentDescription = null,
+                    contentDescription = "Song Cover Image",
                     contentScale = ContentScale.Crop
                 )
             }
@@ -68,7 +78,8 @@ fun SearchSongItem(
                         Icon(Icons.Default.Schedule, contentDescription = "Duration", modifier = Modifier.size(12.dp))
                         Text(
                             modifier = Modifier.padding(start = 4.dp),
-                            text = formatSongDuration(data.durationSeconds.seconds), style = MaterialTheme.typography.bodySmall
+                            text = formatSongDuration(data.durationSeconds.seconds),
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
 
@@ -76,23 +87,14 @@ fun SearchSongItem(
                         Icon(Icons.Default.Headphones, contentDescription = "Play Count", modifier = Modifier.size(12.dp))
                         Text(
                             modifier = Modifier.padding(start = 4.dp),
-                            text = data.playCount.toString(), style = MaterialTheme.typography.bodySmall
+                            text = data.playCount.toString(),
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
             }
         }
     }
-    /*SongCard(
-        coverUrl = data.coverArtUrl,
-        title = data.title,
-        subtitle = data.subtitle,
-        author = data.artist,
-        tags = emptyList(),// data.tags.map { it.name },
-        likeCount = data.likeCount,
-        onClick = onClick,
-        modifier = modifier,
-    )*/
 }
 
 @Preview

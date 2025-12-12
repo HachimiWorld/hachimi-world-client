@@ -3,6 +3,23 @@ package world.hachimi.app.util
 import androidx.compose.runtime.Stable
 import io.ktor.http.*
 
+
+@Stable
+fun formatBytes(bytes: Long): String {
+    if (bytes == 0L) return "0 MB"
+    return ((bytes.toFloat() / (1024 * 1024) * 10).toInt()).toString()
+        .toCharArray()
+        .toMutableList()
+        .also {
+            if (it.size < 2) {
+                it.add(0, '0')
+            }
+            it.add(it.lastIndex, '.')
+        }
+        .joinToString("")
+        .plus(" MB")
+}
+
 @Stable
 fun isValidHttpsUrl(content: String): Boolean {
     try {

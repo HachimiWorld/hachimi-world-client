@@ -1,9 +1,6 @@
 package world.hachimi.app.player
 
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.useContents
-import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -12,6 +9,7 @@ import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
 import platform.AVFoundation.*
 import platform.CoreMedia.CMTimeCompare
+import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.*
 import platform.MediaPlayer.*
@@ -29,6 +27,10 @@ class IosPlayer : Player {
     val nowPlayingCenter = MPNowPlayingInfoCenter.defaultCenter()
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
+    private var currentSongId: String? = null
+
+    override val supportRemotePlay: Boolean
+        get() = true
 
     override suspend fun isPlaying(): Boolean {
         return player?.timeControlStatus == AVPlayerTimeControlStatusPlaying
@@ -55,6 +57,22 @@ class IosPlayer : Player {
         } ?: -1
     }
 
+    override suspend fun bufferedProgress(): Float {
+        val item = player?.currentItem ?: return 0f
+        val ranges = item.loadedTimeRanges() ?: return 0f
+
+        @Suppress("UNCHECKED_CAST")
+        val cast =  ranges as List<NSValue>
+        val bufferedSecs = cast.firstOrNull()?.let {
+            it.CMTimeRangeValue().useContents {
+                CMTimeGetSeconds(duration.readValue())
+            }
+        } ?: 0.0
+
+        val duration = CMTimeGetSeconds(item.duration)
+        return (bufferedSecs / duration).toFloat()
+    }
+
     override suspend fun play() {
         withContext(Dispatchers.Main) {
             player?.play()
@@ -64,6 +82,12 @@ class IosPlayer : Player {
     override suspend fun pause() {
         withContext(Dispatchers.Main) {
             player?.pause()
+        }
+    }
+
+    override suspend fun stop() {
+        withContext(Dispatchers.Main) {
+            player?.replaceCurrentItemWithPlayerItem(null)
         }
     }
 
@@ -90,45 +114,89 @@ class IosPlayer : Player {
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
         // Write bytes to a temporary file
-        val url = withContext(Dispatchers.IO) {
-            val tempDir = NSFileManager.defaultManager.temporaryDirectory
-            val tempFile =
-                tempDir.URLByAppendingPathComponent("temp_audio.${item.format}") ?: error("Could not create temp file")
+        val url: NSURL
+        var image: MPMediaItemArtwork? = null
+        when(item) {
+            is SongItem.Local -> {
+                withContext(Dispatchers.IO) {
+                    val tempDir = NSFileManager.defaultManager.temporaryDirectory
+                    val tempFile =
+                        tempDir.URLByAppendingPathComponent("temp_audio.${item.format}") ?: error("Could not create temp file")
 
-            item.audioBytes.usePinned { pinned ->
-                NSFileManager.defaultManager.createFileAtPath(
-                    tempFile.path!!,
-                    NSData.dataWithBytes(pinned.addressOf(0), item.audioBytes.size.toULong()),
-                    null
-                )
+                    item.audioBytes.usePinned { pinned ->
+                        NSFileManager.defaultManager.createFileAtPath(
+                            tempFile.path!!,
+                            NSData.dataWithBytes(pinned.addressOf(0), item.audioBytes.size.toULong()),
+                            null
+                        )
+                    }
+                    url = NSURL.fileURLWithPath(tempFile.path!!)
+                    Logger.i("player", "temp url: ${url.absoluteString}")
+
+                    image = item.coverBytes?.usePinned {
+                        UIImage(NSData.dataWithBytes(it.addressOf(0), item.coverBytes.size.toULong()))
+                    }?.let {
+                        MPMediaItemArtwork(it)
+                    }
+                }
             }
-            val url = NSURL.fileURLWithPath(tempFile.path!!)
-            url
+            is SongItem.Remote -> {
+                url = NSURL.URLWithString(item.audioUrl) ?: error("Invalid audio url: ${item.audioUrl}")
+                image = null
+                updateCoverAsync(item)
+            }
         }
-        Logger.i("player", "temp url: ${url.absoluteString}")
 
         val playerItem = AVPlayerItem.playerItemWithURL(url)
         player?.replaceCurrentItemWithPlayerItem(playerItem)
+
+        currentSongId = item.id
         replayGainDb = item.replayGainDB
+
         setVolume(userVolume)
+        updateNowPlayingInfo(item, image)
 
-        val image = item.coverBytes?.usePinned {
-            UIImage(NSData.dataWithBytes(it.addressOf(0), item.coverBytes.size.toULong()))
-        }?.let {
-            MPMediaItemArtwork(it)
+        if (autoPlay) play()
+    }
+
+    private fun updateCoverAsync(item: SongItem.Remote) {
+        item.coverUrl?.let {
+            // Load cover url asynchronously
+            Logger.d("player", "Loading cover image: $it with URLSession")
+            val session = NSURLSession.sharedSession.dataTaskWithURL(
+                NSURL.URLWithString(it) ?: error("Invalid cover url: ${item.coverUrl}"),
+                completionHandler = { data, response, error ->
+                    Logger.d("player", "URLSession completed: data: ${data != null}, resp: ${response != null}, err: ${error != null}")
+                    if (error == null && data != null) {
+                        if (currentSongId == item.id) {
+                            try {
+                                val image = MPMediaItemArtwork(UIImage(data = data))
+                                updateNowPlayingInfo(item, image)
+                            } catch (e: Throwable) {
+                                Logger.e("player", "Error loading cover image: $e")
+                            }
+                        }
+                    } else {
+                        Logger.e("player", "Error loading cover image: $error")
+                    }
+                }
+            )
+            session.resume()
         }
+    }
 
-        val info = mapOf(
-            MPMediaItemPropertyTitle to item.title,
-            MPMediaItemPropertyArtist to item.artist,
-            MPMediaItemPropertyPlaybackDuration to item.durationSeconds,
-            MPMediaItemPropertyArtwork to image
-        )
+    private fun updateNowPlayingInfo(item: SongItem, cover: MPMediaItemArtwork?) {
+
+        val info = buildMap {
+            put(MPMediaItemPropertyTitle, item.title)
+            put(MPMediaItemPropertyArtist, item.artist)
+            put(MPMediaItemPropertyPlaybackDuration, item.durationSeconds)
+            if (cover != null) put(MPMediaItemPropertyArtwork, cover)
+        }
 
         @Suppress("UNCHECKED_CAST")
         nowPlayingCenter.nowPlayingInfo = info as Map<Any?, *>?
 
-        if (autoPlay) play()
     }
 
     override suspend fun isReady(): Boolean {
@@ -156,6 +224,7 @@ class IosPlayer : Player {
             null,
             null
         ) { _ ->
+            currentSongId = null
             Logger.i("player", "End event")
             listeners.forEach { it.onEvent(PlayEvent.End) }
         }

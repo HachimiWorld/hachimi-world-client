@@ -7,10 +7,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -22,9 +19,14 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.WeeklyHotViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
 
 @Composable
@@ -54,8 +56,8 @@ private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
             contentPadding = PaddingValues(24.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 FlowRow(
@@ -101,6 +103,9 @@ private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
                         )
                     },
                 )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
             }
         }
     }

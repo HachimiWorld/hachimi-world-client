@@ -5,7 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -82,7 +82,7 @@ fun TagEdit(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     text = "无结果", style = MaterialTheme.typography.bodyMedium
                 ) else LazyColumn(Modifier.height(120.dp)) {
-                    itemsIndexed(vm.tagCandidates, key = { _, item -> item.id }) { index, item ->
+                    items(vm.tagCandidates, key = { item -> item.id }) { item ->
                         Box(
                             modifier = Modifier.fillMaxWidth().height(40.dp)
                                 .clickable { vm.selectTag(item) }

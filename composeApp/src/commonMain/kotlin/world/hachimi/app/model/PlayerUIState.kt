@@ -1,9 +1,11 @@
 package world.hachimi.app.model
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.util.LrcParser
 import kotlin.time.Duration
@@ -58,8 +60,41 @@ class PlayerUIState() {
     // The current playing music info
     var songInfo by mutableStateOf<SongDetailInfo?>(null)
         private set
+    var userProfile by mutableStateOf<UserModule.PublicUserProfile?>(null)
+        private set
 
     var volume by mutableStateOf<Float>(1f)
+
+
+    val displayedCover by derivedStateOf { if (fetchingMetadata) previewMetadata?.coverUrl else songInfo?.coverUrl }
+    val displayedTitle by derivedStateOf { if (fetchingMetadata) { previewMetadata?.title } else { songInfo?.title } ?: "暂未播放" }
+    val displayedAuthor by derivedStateOf { if (fetchingMetadata) { previewMetadata?.author } else { songInfo?.uploaderName } ?: "暂未播放" }
+    val displayedDurationMillis by derivedStateOf {
+        if (fetchingMetadata) {
+            previewMetadata?.duration?.inWholeMilliseconds
+        } else {
+            songInfo?.durationSeconds?.let {
+                it * 1000L
+            }
+        } ?: -1L
+    }
+    val readySongInfo by derivedStateOf { songInfo?.takeIf { !fetchingMetadata }}
+
+    val displayedCurrentMillis by derivedStateOf {
+        if (fetchingMetadata) {
+            0L
+        } else {
+            currentMillis
+        }
+    }
+    val displayedJmid by derivedStateOf {
+        if (fetchingMetadata) {
+            previewMetadata?.displayId
+        } else {
+            songInfo?.displayId
+        } ?: ""
+    }
+    val explicit by derivedStateOf { if (fetchingMetadata) previewMetadata?.explicit else songInfo?.explicit }
 
     private var lrcSegments: List<TimedLyricsSegment> = emptyList()
 
@@ -141,7 +176,18 @@ class PlayerUIState() {
     fun updateSongInfo(data: SongDetailInfo) {
         hasSong = true
         songInfo = data
+        if (userProfile?.uid != data.uploaderUid) {
+            userProfile = null
+        }
         setLyrics(data.lyrics)
+    }
+
+    fun updateAuthorProfile(data: UserModule.PublicUserProfile?) {
+        if (data == null) {
+            userProfile = null
+        } else if (data.uid == songInfo?.uploaderUid) {
+            userProfile = data
+        }
     }
 
     fun updatePreviewMetadata(data: PreviewMetadata) {
@@ -151,6 +197,7 @@ class PlayerUIState() {
     fun clear() {
         songInfo = null
         hasSong = false
+        userProfile = null
         setLyrics("")
     }
 }

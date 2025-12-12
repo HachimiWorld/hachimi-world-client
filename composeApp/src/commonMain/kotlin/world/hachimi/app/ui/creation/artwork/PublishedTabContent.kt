@@ -5,27 +5,33 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.datetime.LocalDateTime
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishedTabViewModel
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
@@ -85,6 +91,9 @@ fun PublishedTabContent(
                             pageChange = { vm.setPage(vm.pageSize, it) }
                         )
                     }
+                    item {
+                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
+                    }
                 }
                 if (vm.loading) Box(Modifier.fillMaxSize(), Alignment.Center) {
                     CircularProgressIndicator()
@@ -116,9 +125,9 @@ private fun ArtworkItem(
             Row(
                 modifier = Modifier.padding(top = 4.dp),
             ) {
-                Surface(Modifier.size(42.dp), MaterialTheme.shapes.small, LocalContentColor.current.copy(0.12f)) {
+                Surface(Modifier.size(42.dp), RoundedCornerShape(8.dp), LocalContentColor.current.copy(0.12f)) {
                     AsyncImage(
-                        modifier = Modifier.size(42.dp).clip(MaterialTheme.shapes.small),
+                        modifier = Modifier.fillMaxSize(),
                         model = coverUrl,
                         contentDescription = "Cover Image",
                         contentScale = ContentScale.Crop

@@ -1,10 +1,14 @@
 package world.hachimi.app.ui.creation.artwork
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.SecondaryTabRow
-import androidx.compose.material3.Tab
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,17 +30,17 @@ fun MyArtworkScreen() {
 
     Column(Modifier.fillMaxSize()) {
         val scope = rememberCoroutineScope()
-
-        SecondaryTabRow(selectedTabIndex = pagerState.currentPage, modifier = Modifier.padding(top = 16.dp).widthIn(max = 300.dp).fillMaxWidth()) {
+        SingleChoiceSegmentedButtonRow(Modifier.padding(top = 24.dp, start = 24.dp)) {
             Tab.entries.forEachIndexed { index, tab ->
-                Tab(
+                SegmentedButton(
                     selected = pagerState.currentPage == index,
                     onClick = {
                         scope.launch {
                             pagerState.animateScrollToPage(index)
                         }
                     },
-                    text = { Text(text = tab.title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+                    label = { Text(text = tab.title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
                 )
             }
         }

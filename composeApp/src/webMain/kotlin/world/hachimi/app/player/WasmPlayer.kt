@@ -14,7 +14,6 @@ import org.w3c.files.BlobPropertyBag
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.Player.Companion.mixVolume
 import kotlin.js.*
-import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.time.measureTime
 
 class WasmPlayer : Player {
@@ -25,6 +24,9 @@ class WasmPlayer : Player {
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var rgDb = 0f
     private var userVolume = 1f
+
+    override val supportRemotePlay: Boolean
+        get() = true
 
     override suspend fun isPlaying(): Boolean {
         return if (isReady()) {
@@ -49,6 +51,10 @@ class WasmPlayer : Player {
         return (seconds * 1000L).toLong()
     }
 
+    override suspend fun bufferedProgress(): Float {
+        return 1f
+    }
+
     override suspend fun play() {
         if (isReady()) {
             howl!!.play()
@@ -58,6 +64,14 @@ class WasmPlayer : Player {
     override suspend fun pause() {
         if (isReady()) {
             howl!!.pause()
+        }
+    }
+
+    override suspend fun stop() {
+        try {
+            howl?.stop()
+        } catch (e: Throwable) {
+            Logger.e("player", "Failed to stop player", e)
         }
     }
 
@@ -88,13 +102,24 @@ class WasmPlayer : Player {
                     howl = null
                 }
 
-                val uint8array = item.audioBytes.toUByteArray().toUint8Array()
-                val blob = Blob(arrayOf(uint8array as JsAny?).toJsArray(), BlobPropertyBag())
-                val url = URL.createObjectURL(blob)
+                val url: String
+                val coverUrl: String?
+                when (item) {
+                    is SongItem.Local -> {
+                        val uint8array = item.audioBytes.toUByteArray().toUint8Array()
+                        val blob = Blob(arrayOf(uint8array as JsAny?).toJsArray(), BlobPropertyBag())
+                        url = URL.createObjectURL(blob)
 
-                val coverUint8Array = item.coverBytes?.toUByteArray()?.toUint8Array()
-                val coverBlob = coverUint8Array?.let { Blob(arrayOf(it as JsAny?).toJsArray(), BlobPropertyBag()) }
-                val coverUrl = coverBlob?.let { URL.createObjectURL(it) }
+                        val coverUint8Array = item.coverBytes?.toUByteArray()?.toUint8Array()
+                        val coverBlob = coverUint8Array?.let { Blob(arrayOf(it as JsAny?).toJsArray(), BlobPropertyBag()) }
+                        coverUrl = coverBlob?.let { URL.createObjectURL(it) }
+                    }
+                    is SongItem.Remote -> {
+                        url = item.audioUrl
+                        coverUrl = item.coverUrl
+                    }
+                }
+
 
                 Logger.d("player", "URL: $url")
                 val options = HowlOptions(

@@ -12,7 +12,7 @@ import kotlin.math.pow
 
 
 class JVMPlayer() : Player {
-    private var clip: Clip = AudioSystem.getLine(DataLine.Info(Clip::class.java, null)) as Clip
+    private var clip: Clip? = null
     private var volumeControl: FloatControl? = null
     private var masterGainControl: FloatControl? = null
 
@@ -23,18 +23,10 @@ class JVMPlayer() : Player {
     private var volume: Float = 1f
     private var replayGainDB: Float = 0f
 
-    suspend fun prepare(uri: String, autoPlay: Boolean) {
-        /*val bytes = withContext(Dispatchers.IO) {
-            val uri = URI.create(uri).toURL()
-            uri.readBytes()
-        }
-        prepare(bytes, autoPlay)*/
-    }
-
     override suspend fun prepare(item: SongItem, autoPlay: Boolean): Unit = withContext(Dispatchers.IO) {
+        val item = item as SongItem.Local
         mutex.withLock {
-            clip.close()
-
+            stop()
             ready = false
             val stream = withContext(Dispatchers.IO) {
                 AudioSystem.getAudioInputStream(ByteArrayInputStream(item.audioBytes))
@@ -70,7 +62,7 @@ class JVMPlayer() : Player {
                 null
             }
 
-            if (clip == null) {
+            if (clip == null || !clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 Logger.i("player", "Raw format is unsupported, fallback to PCM 16bit")
                 // Target format is not supported, try fallback to PCM 16bit format
                 val fallbackFormat = AudioFormat( // 16bit, signed-int PCM, with original sampleRate
@@ -132,42 +124,63 @@ class JVMPlayer() : Player {
         }
     }
 
+    override suspend fun bufferedProgress(): Float {
+        return 0f
+    }
+
     override suspend fun isReady(): Boolean {
         return ready
     }
 
     override suspend fun isPlaying(): Boolean {
-        return clip.isRunning
+        return clip?.isRunning ?: false
     }
 
     override suspend fun isEnd(): Boolean {
-        return clip.framePosition >= clip.frameLength - 1
+        return clip?.let {
+            it.framePosition >= it.frameLength - 1
+        } ?: true
     }
 
     override suspend fun currentPosition(): Long {
-        return clip.microsecondPosition / 1000L
+        return clip?.let {
+            it.microsecondPosition / 1000L
+        } ?: 0
     }
 
     override suspend fun play() {
         if (ready) {
-            clip.start()
+            withContext(Dispatchers.IO) { clip?.start() }
         }
     }
 
     override suspend fun pause() {
         if (ready) {
-            clip.stop()
+            withContext(Dispatchers.IO) { clip?.stop() }
+        }
+    }
+
+    override suspend fun stop() {
+        try {
+            ready = false
+            withContext(Dispatchers.IO) { clip?.close() }
+            clip = null
+        } catch (e: Throwable) {
+            Logger.e("player", "Failed to stop", e)
         }
     }
 
     override suspend fun seek(position: Long, autoStart: Boolean) {
         if (autoStart || isPlaying()) {
-            clip.microsecondPosition = position * 1000L
-            clip.start()
+            clip?.microsecondPosition = position * 1000L
+            clip?.start()
         } else {
-            clip.microsecondPosition = position * 1000L
+            clip?.microsecondPosition = position * 1000L
         }
     }
+
+    override val supportRemotePlay: Boolean
+        get() = false
 
     override suspend fun getVolume(): Float {
         return if (volumeControl != null) {
@@ -213,9 +226,11 @@ class JVMPlayer() : Player {
     override suspend fun release() {
         // Do some cleanup work
         try {
-            clip.stop()
-            clip.close()
-            stream.close()
+            withContext(Dispatchers.IO) {
+                clip?.stop()
+                clip?.close()
+                stream.close()
+            }
         } catch (e: Throwable) {
             Logger.e("PlayerImpl", "release: Error closing resources", e)
         }
@@ -230,7 +245,7 @@ class JVMPlayer() : Player {
     }
 
     suspend fun drain() = withContext(Dispatchers.IO) {
-        clip.drain()
+        clip?.drain()
     }
 
     override suspend fun initialize() {

@@ -15,13 +15,16 @@ import org.koin.compose.koinInject
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.ui.LocalContentInsets
 
 @Composable
 fun SettingsScreen() {
     val globalStore = koinInject<GlobalStore>()
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)
+            .navigationBarsPadding()
+            .windowInsetsPadding(LocalContentInsets.current),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text("设置", style = MaterialTheme.typography.titleLarge)

@@ -151,7 +151,7 @@ class PublishViewModel(
         lyricsType = LyricsType.LRC
         lyrics = ""
 
-        creationType = 0
+        creationType = 1
         originId = ""
         originTitle = ""
         originArtist = ""
@@ -839,7 +839,9 @@ class PublishViewModel(
         if (Regex("[A-Z]{3,4}").matches(mappedInput)) {
             viewModelScope.launch {
                 checkJmidPrefixMutex.withLock {
-                    checkJmidPrefixJob?.cancelAndJoin()
+                    try {
+                        checkJmidPrefixJob?.cancelAndJoin()
+                    } catch (_: CancellationException) {}
                     checkJmidPrefixJob = launch {
                         delay(500)
                         try {
@@ -850,7 +852,7 @@ class PublishViewModel(
                                         initJmidValid = true
                                         initJmidSupportText = null
                                     } else {
-                                        initJmidValid = true
+                                        initJmidValid = false
                                         initJmidSupportText = "该前缀已被使用，如被抢占请联系维护者"
                                     }
                                 } else {
@@ -905,7 +907,10 @@ class PublishViewModel(
         if (Regex("\\d{3}").matches(mappedInput)) {
             viewModelScope.launch {
                 checkJmidMutex.withLock {
-                    checkJmidJob?.cancelAndJoin()
+                    try {
+                        checkJmidJob?.cancelAndJoin()
+                    } catch (_: CancellationException) {}
+
                     checkJmidJob = launch {
                         delay(500)
                         try {
