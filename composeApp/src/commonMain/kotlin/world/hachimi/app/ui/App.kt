@@ -17,6 +17,7 @@ import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import org.koin.compose.koinInject
+import soup.compose.material.motion.animation.materialSharedAxisZ
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.Route.*
 import world.hachimi.app.ui.auth.AuthScreen
@@ -49,7 +50,6 @@ fun App() {
     setupCoil()
 
     val global = koinInject<GlobalStore>()
-    val rootDestination = global.nav.backStack.last()
 
     BoxWithConstraints {
         CompositionLocalProvider(LocalWindowSize provides DpSize(maxWidth, maxHeight)) {
@@ -62,7 +62,7 @@ fun App() {
                     Box(Modifier.fillMaxSize()) {
                         SharedTransitionLayout {
                             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                Content(rootDestination)
+                                Content(global.nav.backStack)
                                 AnimatedVisibility(
                                     global.playerExpanded,
                                     enter = slideInVertically(initialOffsetY = { it }),
@@ -93,11 +93,32 @@ fun App() {
 
 
 @Composable
-private fun Content(rootDestination: Any) {
-    when (rootDestination) {
-        is Root -> RootScreen(rootDestination)
-        is Auth -> AuthScreen(rootDestination.initialLogin)
-        is ForgetPassword -> ForgetPasswordScreen()
+private fun Content(
+    backstack: List<Any>
+) {
+    val rootDestination = backstack.last()
+    AnimatedContent(
+        targetState = rootDestination,
+        transitionSpec = {
+            // TODO(nav): We should decide the `forward` based on the backstack or destination depth
+            if (initialState is Root) materialSharedAxisZ(true)
+            else if (initialState is Auth && targetState is ForgetPassword) materialSharedAxisZ(true)
+            else materialSharedAxisZ(false)
+         },
+        contentKey = {
+            when(it) {
+                is Root -> "root"
+                is Auth -> "auth"
+                is ForgetPassword -> "forget_password"
+                else -> it
+            }
+        }
+    ) { rootDestination ->
+        when (rootDestination) {
+            is Root -> RootScreen(rootDestination)
+            is Auth -> AuthScreen(rootDestination.initialLogin)
+            is ForgetPassword -> ForgetPasswordScreen()
+        }
     }
 }
 
