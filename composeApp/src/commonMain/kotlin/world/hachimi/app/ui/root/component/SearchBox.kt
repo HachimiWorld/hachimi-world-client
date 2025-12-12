@@ -1,7 +1,9 @@
 package world.hachimi.app.ui.root.component
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,26 +32,28 @@ fun SearchBox(
 ) {
     val focusManager = LocalFocusManager.current
     TextField(
-        modifier = modifier,
+        modifier = modifier.height(44.dp),
         value = searchText,
         onValueChange = { onSearchTextChange(it.singleLined()) },
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(16.dp),
         textStyle = TextStyle(
             color = LocalContentColor.current,
             fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
             lineHeight = 24.sp
         ),
-        contentPadding = PaddingValues(start = 8.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+        contentPadding = PaddingValues(start = 8.dp, end = 12.dp, top = 0.dp, bottom = 0.dp),
         prefix = {
             HachimiIconButton(
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier.padding(end = 4.dp).size(28.dp),
                 touchMode = true,
                 onClick = {
                     focusManager.clearFocus()
-                    onSearch()
+                    if (searchText.isNotBlank()) {
+                        onSearch()
+                    }
                 },
-                enabled = searchText.isNotBlank()
+//                enabled = searchText.isNotBlank()
             ) {
                 Icon(Icons.Default.Search, "Search")
             }
@@ -58,8 +62,8 @@ fun SearchBox(
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {
+            focusManager.clearFocus()
             if (searchText.isNotBlank()) {
-                focusManager.clearFocus()
                 onSearch()
             }
         })
