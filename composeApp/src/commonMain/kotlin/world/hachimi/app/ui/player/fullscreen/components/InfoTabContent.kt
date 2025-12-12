@@ -19,7 +19,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.PlayerUIState
@@ -61,7 +64,13 @@ fun InfoTabContent(
                                 onNavToUser(it)
                             }
                         },
-                        avatar = rememberAsyncImagePainter(uiState.userProfile?.avatarUrl, contentScale = ContentScale.Crop),
+                        avatar = rememberAsyncImagePainter(
+                            model = ImageRequest.Builder(LocalPlatformContext.current)
+                                .data(uiState.userProfile?.avatarUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentScale = ContentScale.Crop
+                        ),
                         name = uiState.displayedAuthor
                     )
                 }
