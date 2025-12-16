@@ -11,7 +11,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import world.hachimi.app.getPlatform
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
@@ -30,7 +33,13 @@ fun AuthorAndPV(
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         AmbientUserChip(
             onClick = onUserClick,
-            avatar = rememberAsyncImagePainter(avatar, contentScale = ContentScale.Crop),
+            avatar = rememberAsyncImagePainter(
+                ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(avatar)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.Crop
+            ),
             name = authorName
         )
         if (hasMultipleArtists) {
