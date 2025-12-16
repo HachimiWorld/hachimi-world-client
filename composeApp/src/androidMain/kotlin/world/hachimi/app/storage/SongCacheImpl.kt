@@ -22,9 +22,12 @@ class SongCacheImpl : SongCache {
         .also { it.mkdirs() }
 
     override suspend fun get(key: String): SongCache.Item? = withContext(Dispatchers.IO) {
-        val audioFile = cacheDir.resolve(key).takeIf { it.exists() } ?: return@withContext null
-        val coverFile = cacheDir.resolve("${key}_cover").takeIf { it.exists() } ?: return@withContext null
-        val metadataFile = cacheDir.resolve("${key}_metadata").takeIf { it.exists() } ?: return@withContext null
+        val audioFile = cacheDir.resolve(key)
+            .takeIf { it.exists() && it.length() != 0L } ?: return@withContext null
+        val coverFile = cacheDir.resolve("${key}_cover")
+            .takeIf { it.exists() && it.length() != 0L } ?: return@withContext null
+        val metadataFile = cacheDir.resolve("${key}_metadata")
+            .takeIf { it.exists() && it.length() != 0L } ?: return@withContext null
         val metadata = try {
             json.decodeFromString<SongDetailInfo>(metadataFile.readText())
         } catch (e: Throwable) {
@@ -39,14 +42,17 @@ class SongCacheImpl : SongCache {
         )
     }
 
-    override suspend fun save(item: SongCache.Item) = withContext(Dispatchers.IO) {
-        val audioFile = cacheDir.resolve(item.key)
-        val coverFile = cacheDir.resolve("${item.key}_cover")
-        val metadataFile = cacheDir.resolve("${item.key}_metadata")
+    override suspend fun save(item: SongCache.Item): Unit = withContext(Dispatchers.IO) {
+        val audioFile = cacheDir.resolve("${item.key}_temp")
+        val coverFile = cacheDir.resolve("${item.key}_cover_temp")
+        val metadataFile = cacheDir.resolve("${item.key}_metadata_temp")
 
         audioFile.writeBytes(item.audio.readByteArray())
+        audioFile.renameTo(cacheDir.resolve(item.key))
         coverFile.writeBytes(item.cover.readByteArray())
+        coverFile.renameTo(cacheDir.resolve("${item.key}_cover"))
         metadataFile.writeText(json.encodeToString(item.metadata))
+        metadataFile.renameTo(cacheDir.resolve("${item.key}_metadata"))
     }
 
     override suspend fun delete(key: String) {
