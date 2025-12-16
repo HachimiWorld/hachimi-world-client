@@ -498,9 +498,6 @@ class PlayerService(
         val metadata: SongDetailInfo
 
         if (cache != null) {
-            val coverBytes: ByteArray
-            val audioBytes: ByteArray
-
             Logger.i(TAG, "Cache hit")
             val buffer = Buffer()
             metadata = cache.metadata
@@ -509,8 +506,8 @@ class PlayerService(
             cache.audio.use {
                 it.transferTo(buffer)
             }
-            coverBytes = cache.cover.readByteArray()
-            audioBytes = buffer.readByteArray()
+            val coverBytes: ByteArray = cache.cover.readByteArray()
+            val audioBytes: ByteArray = buffer.readByteArray()
 
             if (cacheFromId == null && cacheFromJmid != null) {
                 // Migrate to id
@@ -576,7 +573,6 @@ class PlayerService(
 
                 val coverBytesAsync = async { api.httpClient.get(metadata.coverUrl).bodyAsBytes() }
                 val audioBuffer = downloadAudio(metadata.audioUrl, onProgress)
-                val audioBytes = audioBuffer.readByteArray()
                 val coverBytes = coverBytesAsync.await()
 
                 val cacheItem = SongCache.Item(
@@ -592,7 +588,7 @@ class PlayerService(
                     id = metadata.id.toString(),
                     title = metadata.title,
                     artist = metadata.uploaderName,
-                    audioBytes = audioBytes,
+                    audioBytes = audioBuffer.readByteArray(),
                     coverBytes = coverBytes,
                     format = extension,
                     durationSeconds = metadata.durationSeconds,

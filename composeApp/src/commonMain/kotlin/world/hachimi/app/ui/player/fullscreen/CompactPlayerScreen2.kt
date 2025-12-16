@@ -138,7 +138,7 @@ fun CompactPlayerScreen2(
         PlayerProgress(
             modifier = Modifier.padding(top = 24.dp).padding(horizontal = 32.dp),
             durationMillis = uiState.displayedDurationMillis,
-            currentMillis = uiState.displayedCurrentMillis,
+            currentMillis = { uiState.displayedCurrentMillis },
             bufferingProgress = uiState.downloadProgress,
             onProgressChange = { global.player.setSongProgress(it) },
             trackColor = HachimiTheme.colorScheme.onSurface.copy(0.1f),

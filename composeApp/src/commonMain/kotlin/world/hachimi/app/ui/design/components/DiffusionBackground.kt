@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.Painter
@@ -77,7 +76,7 @@ fun RotateCombinedPicture(modifier: Modifier = Modifier, painter: Painter) {
         ),
         label = ""
     )
-    CombinedRotatePicture(modifier.rotate(rotation), painter)
+    CombinedRotatePicture(modifier.graphicsLayer { rotationZ = rotation }, painter)
 }
 
 @Composable
@@ -121,14 +120,11 @@ fun CombinedRotatePicture(modifier: Modifier = Modifier, painter: Painter) {
     )
 
     Box(modifier = modifier.size(256.dp)) {
-        Picture(
-            Modifier.align(Alignment.Center).fillMaxSize(),
-            painter
-        )
-        DividedPictureRT(Modifier.align(Alignment.TopStart).rotate(rotation1), painter)
-        DividedPictureLT(Modifier.align(Alignment.TopEnd).rotate(rotation3), painter)
-        DividedPictureRB(Modifier.align(Alignment.BottomStart).rotate(rotation2), painter)
-        DividedPictureLB(Modifier.align(Alignment.BottomEnd).rotate(rotation4), painter)
+        Picture(Modifier.align(Alignment.Center).fillMaxSize(), painter)
+        DividedPictureRT(Modifier.align(Alignment.TopStart).graphicsLayer { rotationZ = rotation1 }, painter)
+        DividedPictureLT(Modifier.align(Alignment.TopEnd).graphicsLayer { rotationZ = rotation3 }, painter)
+        DividedPictureRB(Modifier.align(Alignment.BottomStart).graphicsLayer { rotationZ = rotation2 }, painter)
+        DividedPictureLB(Modifier.align(Alignment.BottomEnd).graphicsLayer { rotationZ = rotation4 }, painter)
     }
 }
 

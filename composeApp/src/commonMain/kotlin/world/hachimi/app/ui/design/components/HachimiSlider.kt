@@ -1,8 +1,5 @@
 package world.hachimi.app.ui.design.components
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitDragOrCancellation
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -22,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceIn
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,18 +36,15 @@ fun HachimiSlider(
     barColor: Color = HachimiTheme.colorScheme.primary,
     thickness: Dp = 2.dp
 ) {
-    val animatedPlayingProgress by animateFloatAsState(
-        targetValue = progress().coerceIn(0f..1f),
-        tween(durationMillis = 100, easing = LinearEasing)
-    )
+    val coercedProgress = { progress().fastCoerceIn(0f, 1f) }
     var draggingProgress by remember { mutableStateOf(0f) }
     var offsetX by remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
     var isDragging by remember { mutableStateOf(false) }
 
-    val progress = if (isDragging) draggingProgress else animatedPlayingProgress
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
+    val progress = { if (isDragging) draggingProgress else coercedProgress() }
 
     Canvas(
         modifier = modifier
@@ -97,7 +92,7 @@ fun HachimiSlider(
             cornerRadius = CornerRadius(thicknessPx)
         )
 
-        val x = size.width * progress
+        val x = size.width * progress()
 
         drawRoundRect(
             color = barColor,
