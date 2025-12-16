@@ -1,7 +1,12 @@
 package world.hachimi.app.ui.player.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +29,7 @@ private val labelTypography = TextStyle(
 @Composable
 fun PlayerProgress(
     durationMillis: Long,
-    currentMillis: Long,
+    currentMillis: () -> Long,
     bufferingProgress: Float = 0f,
     onProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
@@ -33,19 +38,23 @@ fun PlayerProgress(
     trackColor: Color = HachimiTheme.colorScheme.outline,
     barColor: Color = HachimiTheme.colorScheme.primary,
 ) {
-    val playingProgress = (currentMillis.toDouble() / durationMillis).toFloat().coerceIn(0f, 1f)
+    val playingProgress = { (currentMillis().toDouble() / durationMillis).toFloat().coerceIn(0f, 1f) }
+    val animatedProgress by animateFloatAsState(
+        targetValue = playingProgress(),
+        tween(durationMillis = 100, easing = LinearEasing)
+    )
 
     Column(modifier) {
         if (timeOnTop) {
             TimeText(
-                currentMillis = currentMillis,
+                currentMillis = currentMillis(),
                 durationMillis = durationMillis,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(2.dp))
             HachimiSlider(
                 modifier = Modifier.fillMaxWidth().height(6.dp),
-                progress = { playingProgress },
+                progress = { animatedProgress },
                 onProgressChange = onProgressChange,
                 trackProgress = { bufferingProgress },
                 trackColor = trackColor,
@@ -55,7 +64,7 @@ fun PlayerProgress(
         } else {
             HachimiSlider(
                 modifier = Modifier.fillMaxWidth().height(6.dp),
-                progress = { playingProgress },
+                progress = { animatedProgress },
                 onProgressChange = onProgressChange,
                 trackProgress = { bufferingProgress },
                 trackColor = trackColor,
@@ -64,7 +73,7 @@ fun PlayerProgress(
             )
             Spacer(Modifier.height(2.dp))
             TimeText(
-                currentMillis = currentMillis,
+                currentMillis = currentMillis(),
                 durationMillis = durationMillis,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -74,17 +83,23 @@ fun PlayerProgress(
 
 @Composable
 private fun TimeText(currentMillis: Long, durationMillis: Long, modifier: Modifier) {
+    val currentDuration = remember(currentMillis / 1000) {
+        formatSongDuration(currentMillis.milliseconds)
+    }
+    val totalDuration = remember {
+        formatSongDuration(durationMillis.milliseconds)
+    }
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = formatSongDuration(currentMillis.milliseconds),
+            text = currentDuration,
             style = labelTypography,
         )
         Spacer(Modifier.weight(1f))
         Text(
-            text = formatSongDuration(durationMillis.milliseconds),
+            text = totalDuration,
             style = labelTypography
         )
     }

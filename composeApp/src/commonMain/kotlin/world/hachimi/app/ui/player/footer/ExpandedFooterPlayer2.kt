@@ -90,7 +90,7 @@ fun ExpandedFooterPlayer2(
                         PlayerProgress(
                             modifier = Modifier.layoutId("progress").padding(start = 24.dp, bottom = 6.dp),
                             durationMillis = uiState.displayedDurationMillis,
-                            currentMillis = uiState.displayedCurrentMillis,
+                            currentMillis = { uiState.displayedCurrentMillis },
                             bufferingProgress = uiState.downloadProgress,
                             onProgressChange = { global.player.setSongProgress(it) }
                         )

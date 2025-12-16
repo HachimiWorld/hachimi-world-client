@@ -79,7 +79,7 @@ private fun Content(
             modifier = Modifier.weight(1f).fillMaxHeight().hoverable(leftPaneInteractionSource),
             header = {
                 JmidLabel(
-                    Modifier/*.border(1.dp, Color.Yellow)*/
+                    Modifier
                         .wrapContentHeight(align = Alignment.Bottom)
                         .padding(bottom = 6.dp),
                     uiState.displayedJmid
@@ -265,7 +265,7 @@ private fun Footer(
     Column(modifier) {
         PlayerProgress(
             durationMillis = uiState.displayedDurationMillis,
-            currentMillis = uiState.displayedCurrentMillis,
+            currentMillis = { uiState.displayedCurrentMillis },
             onProgressChange = { global.player.setSongProgress(it) },
             bufferingProgress = uiState.downloadProgress,
             trackColor = HachimiTheme.colorScheme.onSurface.copy(0.1f),
