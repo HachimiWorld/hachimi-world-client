@@ -5,7 +5,6 @@ on:
       - feat/rustplayer
 jobs:
   build-macos:
-    if: github.event.pull_request.merged == true
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +69,6 @@ jobs:
           path: composeApp/build/compose/binaries/main/dmg/*.dmg
           compression-level: 0
   build-windows:
-    if: github.event.pull_request.merged == true
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -135,7 +133,6 @@ jobs:
           path: composeApp/build/compose/binaries/main/msi/*.msi
           compression-level: 0
   build-linux:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
