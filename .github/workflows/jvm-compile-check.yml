@@ -28,9 +28,9 @@ jobs:
         working-directory: ./rustLib
         run: |
           cargo build -r --lib
-          cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
+          cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
-            --library target/release/libhachimi.so \
+            --library target/release/libhachimi.dylib \
             --language kotlin --out-dir ../composeApp/src/jvmMain
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -90,6 +90,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Build rust library
         working-directory: ./rustLib
+        shell: bash
         run: |
           cargo build -r --lib
           cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
@@ -152,13 +153,15 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install libasound2-dev # This is essential for build `rodio` dependency.
+        run: sudo apt install libasound2-dev
       - name: Build rust library
         working-directory: ./rustLib
         run: |
           cargo build -r --lib
-          cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
+          cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
-            --library target/release/hachimi.dll \
+            --library target/release/libhachimi.so \
             --language kotlin --out-dir ../composeApp/src/jvmMain
       - name: Set up JDK
         uses: actions/setup-java@v4
