@@ -113,6 +113,22 @@ jobs:
           echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
           echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
           echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rustLib/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build rust library
+        working-directory: ./rustLib
+        run: |
+          cargo build -r --lib
+          cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
+          cargo run --bin uniffi-bindgen generate \
+            --library target/release/libhachimi.so \
+            --language kotlin --out-dir ../composeApp/src/jvmMain
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -207,6 +223,22 @@ jobs:
           echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
           echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
           echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rustLib/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build rust library
+        working-directory: ./rustLib
+        run: |
+          cargo build -r --lib
+          cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
+          cargo run --bin uniffi-bindgen generate \
+            --library target/release/hachimi.dll \
+            --language kotlin --out-dir ../composeApp/src/jvmMain
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -305,6 +337,22 @@ jobs:
           echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
           echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
           echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rustLib/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build rust library
+        working-directory: ./rustLib
+        run: |
+          cargo build -r --lib
+          cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
+          cargo run --bin uniffi-bindgen generate \
+            --library target/release/hachimi.dll \
+            --language kotlin --out-dir ../composeApp/src/jvmMain
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
