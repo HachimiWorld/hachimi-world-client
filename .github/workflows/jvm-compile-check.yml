@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - feat/rustplayer
+concurrency:
+  group: jvm-compile-check-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-macos:
     runs-on: macos-latest
@@ -37,8 +40,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
         run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
@@ -102,8 +105,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
         run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
@@ -153,8 +156,10 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install libasound2-dev # This is essential for build `rodio` dependency.
-        run: sudo apt install libasound2-dev
+      - name: Install dependencies
+        run: ｜
+          sudo apt install libasound2-dev # This is essential for build `rodio` dependency.
+          sudo apt install libdbus-1-dev
       - name: Build rust library
         working-directory: ./rustLib
         run: |
@@ -168,8 +173,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
         run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
