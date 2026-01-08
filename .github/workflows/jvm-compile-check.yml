@@ -157,7 +157,7 @@ jobs:
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install dependencies
-        run: ｜
+        run: |
           sudo apt install libasound2-dev # This is essential for build `rodio` dependency.
           sudo apt install libdbus-1-dev
       - name: Build rust library
