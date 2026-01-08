@@ -7,6 +7,7 @@ import uniffi.hachimi.PlayerEvent
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.Player.Companion.mixVolume
 import java.time.Duration
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeBytes
 
@@ -107,7 +108,7 @@ class RustPlayer : Player {
                 val file = withContext(Dispatchers.IO) {
                     createTempFile().also { it.writeBytes(item.audioBytes) }
                 }
-                file.toUri().toURL().toString()
+                "file://" + file.absolutePathString()
             }
 
             is SongItem.Remote -> {

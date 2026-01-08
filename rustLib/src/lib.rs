@@ -238,7 +238,11 @@ impl Player {
                     "file" => {
                         info!("Local file");
                         *buffer_progress.write().unwrap() = 1f32;
-                        let file = File::open(&audio_url.path())
+                        let path = &item.audio_url.as_str().strip_prefix("file://").ok_or_else(|| {
+                            IOError { msg: "Invalid file URL".to_string() }
+                        })?;
+                        println!("Path: {}", path);
+                        let file = File::open(path)
                             .map_err(|x| IOError { msg: x.to_string() })?;
                         let length = file.metadata().map_err(|x| IOError { msg: x.to_string() })?.len();
 
