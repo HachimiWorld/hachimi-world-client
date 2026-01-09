@@ -4,31 +4,65 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.PlaylistViewModel
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.singleLined
 
 @Composable
 fun CreatePlaylistDialog(vm: PlaylistViewModel = koinViewModel()) {
-    if (vm.showCreatePlaylistDialog) AlertDialog(
+    if (vm.showCreatePlaylistDialog) CreatePlaylistDialog(
+        name = vm.createPlaylistName,
+        onNameChange = { vm.createPlaylistName = it.singleLined() },
+        description = vm.createPlaylistDescription,
+        onDescriptionChange = { vm.createPlaylistDescription = it },
+        private = vm.createPlaylistPrivate,
+        onPrivateChange = { vm.createPlaylistPrivate = it },
+        onConfirm = { vm.confirmCreatePlaylist() },
+        onDismiss = { vm.cancelCreatePlaylist() },
+        processing = vm.createPlaylistOperating
+    )
+}
+
+@Composable
+private fun CreatePlaylistDialog(
+    name: String,
+    onNameChange: (String) -> Unit,
+    description: String,
+    onDescriptionChange: (String) -> Unit,
+    private: Boolean,
+    onPrivateChange: (Boolean) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    processing: Boolean
+) {
+    AlertDialog(
         title = { Text("新建歌单") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 TextField(
-                    value = vm.createPlaylistName,
-                    onValueChange = { vm.createPlaylistName = it.singleLined() },
-                    label = { Text("名称") },
+                    modifier = Modifier.width(280.dp),
+                    value = name,
+                    onValueChange = onNameChange,
+                    placeholder = { Text("名称") },
                     singleLine = true
                 )
                 TextField(
-                    value = vm.createPlaylistDescription,
-                    onValueChange = { vm.createPlaylistDescription = it },
-                    label = { Text("描述") },
+                    modifier = Modifier.width(280.dp),
+                    value = description,
+                    onValueChange = onDescriptionChange,
+                    placeholder = { Text("描述") },
                     minLines = 3,
                     maxLines = 3
                 )
@@ -36,27 +70,43 @@ fun CreatePlaylistDialog(vm: PlaylistViewModel = koinViewModel()) {
                     Text("私有歌单")
                     Switch(
                         modifier = Modifier.padding(start = 16.dp),
-                        checked = vm.createPlaylistPrivate,
-                        onCheckedChange = { vm.createPlaylistPrivate = it }
+                        checked = private,
+                        onCheckedChange = onPrivateChange
                     )
                 }
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { vm.confirmCreatePlaylist() },
-                enabled = vm.createPlaylistName.isNotBlank() && !vm.createPlaylistOperating
+                onClick = onConfirm,
+                enabled = name.isNotBlank() && !processing
             ) {
                 Text("创建")
             }
         },
         dismissButton = {
-            TextButton(onClick = { vm.cancelCreatePlaylist() }) {
+            TextButton(onClick = onDismiss) {
                 Text("取消")
             }
         },
-        onDismissRequest = {
-            vm.cancelCreatePlaylist()
-        }
+        onDismissRequest = onDismiss
     )
+}
+
+@Composable
+@Preview
+private fun Preview() {
+    PreviewTheme(background = false) {
+        CreatePlaylistDialog(
+            name = "",
+            onNameChange = { },
+            description = "",
+            onDescriptionChange = { },
+            private = false,
+            onPrivateChange = { },
+            onConfirm = { },
+            onDismiss = { },
+            processing = false
+        )
+    }
 }

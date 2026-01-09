@@ -1,10 +1,10 @@
 package world.hachimi.app.ui.component
 
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
