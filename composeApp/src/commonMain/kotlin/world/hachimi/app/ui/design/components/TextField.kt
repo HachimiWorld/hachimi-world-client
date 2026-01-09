@@ -58,7 +58,7 @@ fun TextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = false,
     minLines: Int = 1,
-    maxLines: Int = Int.MAX_VALUE,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     onTextLayout: (TextLayoutResult) -> Unit = {},
     interactionSource: MutableInteractionSource? = null,
@@ -108,7 +108,16 @@ fun TextField(
                                     contentAlignment = Alignment.CenterStart
                                 ) {
                                     innerTextField()
-                                    if (value.isEmpty()) placeholder?.invoke()
+                                    if (value.isEmpty()) {
+                                        Box(
+                                            modifier = Modifier.align(
+                                                if (maxLines == 1) Alignment.CenterStart
+                                                else Alignment.TopStart
+                                            )
+                                        ) {
+                                            placeholder?.invoke()
+                                        }
+                                    }
                                 }
                                 trailingIcon?.let {
                                     Box(Modifier.padding(start = 12.dp)) {
@@ -127,12 +136,17 @@ fun TextField(
                 val field = measureables[0]
                 val supporting = measureables.getOrNull(1)
                 val fieldPlaceable = field.measure(constraints)
-                val supportingPlaceable = supporting?.measure(constraints.copy(
-                    minHeight = 0,
-                    maxWidth = fieldPlaceable.width
-                ))
+                val supportingPlaceable = supporting?.measure(
+                    constraints.copy(
+                        minHeight = 0,
+                        maxWidth = fieldPlaceable.width
+                    )
+                )
 
-                layout(width = fieldPlaceable.width, height = fieldPlaceable.height + (supportingPlaceable?.height ?: 0)) {
+                layout(
+                    width = fieldPlaceable.width,
+                    height = fieldPlaceable.height + (supportingPlaceable?.height ?: 0)
+                ) {
                     fieldPlaceable.place(0, 0)
                     supportingPlaceable?.place(0, fieldPlaceable.height)
                 }
