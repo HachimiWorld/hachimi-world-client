@@ -8,7 +8,6 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,10 +39,10 @@ import world.hachimi.app.ui.component.UpgradeDialog
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
-import world.hachimi.app.ui.theme.AppTheme
 
 
-val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope> { error("not provided") }
+val LocalAnimatedVisibilityScope =
+    compositionLocalOf<AnimatedVisibilityScope> { error("not provided") }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("not provided") }
@@ -59,43 +58,36 @@ val LocalContentInsets = compositionLocalOf { WindowInsets() }
 val LocalWindowSize = compositionLocalOf { DpSize.Zero }
 
 @Composable
-fun App() {
+fun App(global: GlobalStore = koinInject()) {
     setupCoil()
-
-    val global = koinInject<GlobalStore>()
-
-    BoxWithConstraints {
-        CompositionLocalProvider(LocalWindowSize provides DpSize(maxWidth, maxHeight)) {
-            AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
-                Surface(
-                    Modifier.fillMaxSize(),
-                    color = HachimiTheme.colorScheme.background,
-                    contentColor = HachimiTheme.colorScheme.onSurface
-                ) {
-                    Box(Modifier.fillMaxSize()) {
-                        SharedTransitionLayout {
-                            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                Content(global.nav.backStack)
-                                AnimatedVisibility(
-                                    global.playerExpanded,
-                                    enter = slideInVertically(initialOffsetY = { it }),
-                                    exit = slideOutVertically(targetOffsetY = { it })
-                                ) {
-                                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                                        PlayerScreen2()
-                                    }
-                                }
+    ProvideLocalWindowSize {
+        Surface(
+            Modifier.fillMaxSize(),
+            color = HachimiTheme.colorScheme.background,
+            contentColor = HachimiTheme.colorScheme.onSurface
+        ) {
+            Box(Modifier.fillMaxSize()) {
+                SharedTransitionLayout {
+                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                        Content(global.nav.backStack)
+                        AnimatedVisibility(
+                            global.playerExpanded,
+                            enter = slideInVertically(initialOffsetY = { it }),
+                            exit = slideOutVertically(targetOffsetY = { it })
+                        ) {
+                            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                PlayerScreen2()
                             }
                         }
-                        SnackbarHost(
-                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
-                            hostState = global.snackbarHostState,
-                        )
                     }
                 }
-                GlobalDialogs(global)
+                SnackbarHost(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                    hostState = global.snackbarHostState,
+                )
             }
         }
+        GlobalDialogs(global)
     }
 }
 
@@ -112,9 +104,9 @@ private fun Content(
             if (initialState is Root) materialSharedAxisZ(true)
             else if (initialState is Auth && targetState is ForgetPassword) materialSharedAxisZ(true)
             else materialSharedAxisZ(false)
-         },
+        },
         contentKey = {
-            when(it) {
+            when (it) {
                 is Root -> "root"
                 is Auth -> "auth"
                 is ForgetPassword -> "forget_password"
@@ -150,5 +142,15 @@ fun setupCoil() {
                 addPlatformFileSupport()
             }
             .build()
+    }
+}
+
+@Composable
+private fun ProvideLocalWindowSize(content: @Composable () -> Unit) {
+    BoxWithConstraints {
+        CompositionLocalProvider(
+            LocalWindowSize provides DpSize(maxWidth, maxHeight),
+            content = content
+        )
     }
 }
