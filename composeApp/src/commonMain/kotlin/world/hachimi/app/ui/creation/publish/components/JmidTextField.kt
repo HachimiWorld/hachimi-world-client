@@ -1,15 +1,21 @@
 package world.hachimi.app.ui.creation.publish.components
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
 fun JmidTextField(
@@ -24,21 +30,32 @@ fun JmidTextField(
         value = jmidNumber ?: "",
         onValueChange = onNumberChange,
         singleLine = true,
-        leadingIcon = {
-            Text(
-                modifier = Modifier.padding(start = 24.dp),
-                text = "JM - $jmidPrefix - "
-            )
+        prefix = {
+            Text(text = "JM - $jmidPrefix - ")
         },
         trailingIcon = {
             when(valid) {
-                true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = MaterialTheme.colorScheme.primary)
+                true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = HachimiTheme.colorScheme.secondary)
                 false -> Icon(Icons.Default.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
                 null -> if (jmidNumber != null) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.dp)
             }
         },
         supportingText = {
-            Text(supportText ?: "")
+            Text(supportText ?: "", maxLines = 1)
         }
     )
+}
+
+@Preview
+@Composable
+private fun Preview() {
+    PreviewTheme(background = true) {
+        JmidTextField(
+            "",
+            "ABCD",
+            true,
+            null,
+            onNumberChange = {}
+        )
+    }
 }
