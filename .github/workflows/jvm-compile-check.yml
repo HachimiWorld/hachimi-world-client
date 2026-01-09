@@ -2,7 +2,12 @@ name: Compile Check
 on:
   push:
     branches:
-      - feat/rustplayer
+      - dev
+  pull_request:
+    types:
+      - opened
+    branches:
+      - dev
 concurrency:
   group: jvm-compile-check-${{ github.ref }}
   cancel-in-progress: true
@@ -30,7 +35,7 @@ jobs:
       - name: Build rust library
         working-directory: ./rustLib
         run: |
-          cargo build -r --lib
+          cargo build --lib
           cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/release/libhachimi.dylib \
@@ -42,35 +47,8 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
-      - name: Upload failure logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jpackage-logs
-          path: composeApp/build/compose/logs/
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: composeApp/build/compose/binaries/main/dmg/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.dmg
-          mv *.dmg $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos
-          path: composeApp/build/compose/binaries/main/dmg/*.dmg
-          compression-level: 0
+      - name: Compile
+        run: ./gradlew compileKotlinJvm
   build-windows:
     runs-on: windows-latest
     steps:
@@ -95,7 +73,7 @@ jobs:
         working-directory: ./rustLib
         shell: bash
         run: |
-          cargo build -r --lib
+          cargo build --lib
           cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/release/hachimi.dll \
@@ -107,35 +85,8 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
-      - name: Upload failure logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jpackage-logs
-          path: composeApp/build/compose/logs/
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: composeApp/build/compose/binaries/main/msi/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.msi
-          mv *.msi $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows
-          path: composeApp/build/compose/binaries/main/msi/*.msi
-          compression-level: 0
+      - name: Compile
+        run: ./gradlew compileKotlinJvm
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -163,7 +114,7 @@ jobs:
       - name: Build rust library
         working-directory: ./rustLib
         run: |
-          cargo build -r --lib
+          cargo build --lib
           cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/release/libhachimi.so \
@@ -175,32 +126,5 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
-      - name: Upload failure logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jpackage-logs
-          path: composeApp/build/compose/logs/
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: composeApp/build/compose/binaries/main/deb/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.deb
-          mv *.deb $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux
-          path: composeApp/build/compose/binaries/main/deb/*.deb
-          compression-level: 0
+      - name: Compile
+        run: ./gradlew compileKotlinJvm
