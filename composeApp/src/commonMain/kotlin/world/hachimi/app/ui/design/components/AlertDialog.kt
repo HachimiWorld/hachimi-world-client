@@ -67,7 +67,7 @@ fun AlertDialog(
                             }
                         }
                     }
-                    Box {
+                    CompositionLocalProvider(LocalTextStyle provides textStyle) {
                         text?.let {
                             it()
                         }
@@ -90,6 +90,11 @@ private val titleStyle = TextStyle(
     fontWeight = FontWeight.Medium,
     fontSize = 24.sp,
     lineHeight = 32.sp
+)
+private val textStyle = TextStyle(
+    fontWeight = FontWeight.Medium,
+    fontSize = 16.sp,
+    lineHeight = 24.sp
 )
 
 @Composable
