@@ -1,7 +1,22 @@
 package world.hachimi.app.ui.userspace
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -12,7 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -28,10 +44,13 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
@@ -170,30 +189,30 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                     }
                 }
             }
+        }
 
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "全部作品",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                )
-                Box(Modifier.weight(1f))
-                if (vm.songs.isNotEmpty()) Button(
-                    modifier = Modifier,
-                    onClick = { vm.playAll() }
-                ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = "Play")
-                    Spacer(Modifier.width(8.dp))
-                    Text("播放全部")
-                }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "全部作品",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+            )
+            Box(Modifier.weight(1f))
+            if (vm.songs.isNotEmpty()) Button(
+                modifier = Modifier,
+                onClick = { vm.playAll() }
+            ) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                Spacer(Modifier.width(8.dp))
+                Text("播放全部")
             }
+        }
 
-            if (vm.loadingSongs) Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
-                CircularProgressIndicator()
-            } else if (vm.songs.isEmpty()) {
-                Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
-                    Text(text = "什么也没有")
-                }
+        if (vm.loadingSongs) Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
+            CircularProgressIndicator()
+        } else if (vm.songs.isEmpty()) {
+            Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
+                Text(text = "什么也没有")
             }
         }
     }
@@ -208,7 +227,11 @@ private fun ChangeUsernameDialog(vm: UserSpaceViewModel) {
             Text("更改昵称")
         },
         text = {
-            TextField(value = vm.editUsernameValue, onValueChange = { vm.editUsernameValue = it })
+            TextField(
+                modifier = Modifier.requiredWidth(280.dp),
+                value = vm.editUsernameValue,
+                onValueChange = { vm.editUsernameValue = it }
+            )
         },
         confirmButton = {
             TextButton(
@@ -234,7 +257,11 @@ private fun ChangeBioDialog(vm: UserSpaceViewModel) {
             Text("更改简介")
         },
         text = {
-            TextField(value = vm.editBioValue, onValueChange = { vm.editBioValue = it })
+            TextField(
+                modifier = Modifier.requiredWidth(280.dp),
+                value = vm.editBioValue, onValueChange = { vm.editBioValue = it },
+                minLines = 3
+            )
         },
         confirmButton = {
             TextButton(
