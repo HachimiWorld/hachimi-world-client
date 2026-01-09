@@ -1,15 +1,40 @@
 package world.hachimi.app.ui.creation.publish
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -31,7 +56,20 @@ import world.hachimi.app.model.PublishViewModel.Type
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
-import world.hachimi.app.ui.creation.publish.components.*
+import world.hachimi.app.ui.creation.publish.components.FormItem
+import world.hachimi.app.ui.creation.publish.components.InitJmidDialog
+import world.hachimi.app.ui.creation.publish.components.JmidTextField
+import world.hachimi.app.ui.creation.publish.components.PrefixInactiveDialog
+import world.hachimi.app.ui.creation.publish.components.TagEdit
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
@@ -47,7 +85,7 @@ fun PublishScreen(
         onDispose { vm.dispose() }
     }
     AnimatedContent(vm.initializeStatus) {
-        when(it) {
+        when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
             InitializeStatus.LOADED -> Content(vm, global)
@@ -62,361 +100,438 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
             .navigationBarsPadding().windowInsetsPadding(LocalContentInsets.current)
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 700.dp).padding(24.dp),
+            modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 900.dp)
+                .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text(if (vm.type == Type.CREATE) "发布作品" else  "编辑作品", style = MaterialTheme.typography.titleLarge)
+            Text(
+                if (vm.type == Type.CREATE) "发布作品" else "编辑作品",
+                style = MaterialTheme.typography.titleLarge
+            )
 
             if (vm.type == Type.CREATE) Text(
                 "尊重劳动成果，请勿搬运作品。暂不收录时长或结构明显短于 TV Size 的作品。",
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            FormItem(
-                header = { Text("上传音频*") },
-                subtitle = { Text("支持 flac 和 mp3 格式，大小不超过 20MB") }
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    if (vm.type == Type.EDIT) Button(onClick = {
-                        getPlatform().openUrl(vm.audioUrl!!)
-                    }) {
-                        Text("下载音频")
+                    FormItem(
+                        header = { Text("上传音频*") },
+                        subtitle = { Text("支持 flac 和 mp3 格式，大小不超过 20MB") }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            if (vm.type == Type.EDIT) Button(onClick = {
+                                getPlatform().openUrl(vm.audioUrl!!)
+                            }) {
+                                Text("下载音频")
+                            }
+
+                            Button(onClick = { vm.setAudioFile() }, enabled = !vm.audioUploading) {
+                                if (vm.type == Type.EDIT) Text("更改音频")
+                                else Text("选择文件")
+                            }
+
+                            if (vm.audioUploading) {
+                                if (vm.audioUploadProgress == 0f || vm.audioUploadProgress == 1f) CircularProgressIndicator()
+                                else CircularProgressIndicator(progress = { vm.audioUploadProgress })
+                            }
+
+                            if (vm.audioUploaded) {
+                                Text(
+                                    text = "${vm.audioFileName}\n${formatSongDuration(vm.audioDurationSecs.seconds)}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     }
 
-                    Button(onClick = { vm.setAudioFile() }, enabled = !vm.audioUploading) {
-                        if (vm.type == Type.EDIT) Text("更改音频")
-                        else Text("选择文件")
-                    }
-
-                    if (vm.audioUploading) {
-                        if (vm.audioUploadProgress == 0f || vm.audioUploadProgress == 1f) CircularProgressIndicator()
-                        else CircularProgressIndicator(progress = { vm.audioUploadProgress })
-                    }
-
-                    if (vm.audioUploaded) {
-                        Text(
-                            text = "${vm.audioFileName}\n${formatSongDuration(vm.audioDurationSecs.seconds)}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                    FormItem(
+                        header = { Text("设置封面*") },
+                        subtitle = {
+                            Text("支持 jpg, png, webp 格式的图片。封面在所有地方都只会以裁剪的方式显示为正方形，如果您的封面原先是长方形，建议进行适当的调整。请勿通过拉伸比例的方式来调整，请勿使用透明图片。")
+                        }
+                    ) {
+                        Surface(
+                            Modifier.size(200.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = LocalContentColor.current.copy(0.12f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clickable(enabled = !vm.coverImageUploading) { vm.setCoverImage() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (vm.type == Type.EDIT) AsyncImage(
+                                    model = vm.coverImage ?: vm.coverImageUrl,
+                                    contentDescription = "Cover Image",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                ) else AsyncImage(
+                                    model = vm.coverImage,
+                                    contentDescription = "Cover Image",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                                if (vm.coverImageUploading) {
+                                    if (vm.coverImageUploadProgress == 0f || vm.coverImageUploadProgress == 1f) CircularProgressIndicator()
+                                    else CircularProgressIndicator(progress = { vm.coverImageUploadProgress })
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            FormItem(
-                header = { Text("设置封面*") },
-                subtitle = {
-                    Text("支持 jpg, png, webp 格式的图片。封面在所有地方都只会以裁剪的方式显示为正方形，如果您的封面原先是长方形，建议进行适当的调整。请勿通过拉伸比例的方式来调整，请勿使用透明图片。")
-                }
-            ) {
-                Card(
-                    modifier = Modifier.size(200.dp),
-                    onClick = { vm.setCoverImage() },
-                    enabled = !vm.coverImageUploading
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (vm.type == Type.EDIT) AsyncImage(
-                            model = vm.coverImage ?: vm.coverImageUrl,
-                            contentDescription = "Cover Image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        ) else AsyncImage(
-                            model = vm.coverImage,
-                            contentDescription = "Cover Image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                        if (vm.coverImageUploading) {
-                            if (vm.coverImageUploadProgress == 0f || vm.coverImageUploadProgress == 1f) CircularProgressIndicator()
-                            else CircularProgressIndicator(progress = { vm.coverImageUploadProgress })
-                        }
-                    }
-                }
-            }
 
-            if (vm.type == Type.CREATE) FormItem(
-                header = { Text("基米ID*") }
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val prefix = vm.jmidPrefix
-                    if (prefix == null) {
-                        TextButton(onClick = { vm.showJmidDialog() }) {
-                            Text("设置前缀")
-                        }
-                    } else {
-                        JmidTextField(
-                            jmidNumber = vm.jmidNumber,
-                            jmidPrefix = prefix,
-                            valid = vm.jmidValid,
-                            supportText = vm.jmidSupportText,
-                            onNumberChange = vm::updateJmidNumber
-                        )
-                    }
-                }
-            }
-
-            FormItem(
-                header = { Text("标题*") },
-                subtitle = { Text("填写一个您认为适合永久流传的纯文字标题。如 钢铁雄基4 这类与原曲标题关联性强的纯文字标题。请不要在标题中添加标签、Emoji等复杂内容。请不要使用标题来引流，后续可能会做专门用于推荐的标题。") }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = vm.title,
-                    onValueChange = { vm.title = it.singleLined() },
-                    singleLine = true
-                )
-            }
-
-            FormItem(
-                header = { Text("副标题") },
-                subtitle = { Text("可选。副标题通常是一句简短的描述，或是 OST 的出处，如《XXX》OP、《XXX》游戏原声带。无需在此处填写原作标题，原作信息请在后方对应的输入框中填写。") }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = vm.subtitle,
-                    onValueChange = { vm.subtitle = it.singleLined() },
-                    singleLine = true
-                )
-            }
-
-            FormItem(
-                header = { Text("标签") },
-                subtitle = { Text("使用标签描述你的曲风类型（如古典、流行、J-Pop、ACG、R&B）、创作类型（如纯净哈基米、原曲不使用）。不建议添加过多的标签。若只有英文请按照每单词首字母大写空格隔开，或使用行业标准写法。请勿使用符号和 Emoji") }
-            ) {
-                TagEdit(vm)
-            }
-
-            FormItem(
-                header = { Text("简介") },
-                subtitle = { Text("介绍一下你的作品，编写一段故事，或是描述一下你的创作历程吧") }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = vm.description,
-                    onValueChange = { vm.description = it }
-                )
-            }
-
-            FormItem(
-                header = { Text("歌词") },
-                subtitle = {
-                    Text("建议使用LRC格式的滚动歌词", modifier = Modifier.weight(1f))
-                    TextButton(onClick = {
-                        getPlatform().openUrl("https://lrc-maker.github.io/")
-                    }) {
-                        Text("制作工具")
-                    }
-                }
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    LyricsType.entries.forEach {
-                        RadioButton(selected = vm.lyricsType == it, onClick = { vm.lyricsType = it })
-                        Text(
-                            text = when (it) {
-                                LyricsType.LRC -> "LRC歌词"
-                                LyricsType.TEXT -> "文本歌词"
-                                LyricsType.NONE -> "不填写"
-                            },
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
-                }
-
-                if (vm.lyricsType == LyricsType.NONE) {
-                    Text("强烈建议至少使用文本歌词", color = MaterialTheme.colorScheme.error)
-                }
-
-                if (vm.lyricsType != LyricsType.NONE) {
-                    LrcTextField(
-                        value = vm.lyrics,
-                        onValueChange = { vm.lyrics = it }
-                    )
-                }
-            }
-
-            FormItem(
-                header = { Text("创作类型*") },
-                subtitle = { Text("如果你的作品是对现有作品的再创作（如对《D大调卡农》的改编），请选择二创并填写原作信息。如果你的作品是对哈基米音乐的再创作（如翻唱），请选择三创") }
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = vm.creationType == 0, onClick = { vm.creationType = 0 })
-                    Text("原创", style = MaterialTheme.typography.labelLarge)
-
-                    RadioButton(selected = vm.creationType == 1, onClick = { vm.creationType = 1 })
-                    Text("二创", style = MaterialTheme.typography.labelLarge)
-
-                    RadioButton(selected = vm.creationType == 2, onClick = { vm.creationType = 2 })
-                    Text("三创", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-
-            if (vm.creationType == 0) {
-                Text(
-                    "原创指的是作词、作曲、编曲等全部原创，改编作品请勿选择原创。选择错误会被退回，请再次确认！",
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            if (vm.creationType > 0) {
-                /*FormItem(header = { Text("原作基米ID") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.originId,
-                        onValueChange = { vm.originId = it.singleLined() },
-                        singleLine = true,
-                        supportingText = { Text("如果原作是基米天堂站内的作品，填写基米 ID 即可，无需再填写标题与链接") }
-                    )
-                }*/
-                FormItem(header = { Text("原作标题*") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.originTitle,
-                        onValueChange = { vm.originTitle = it.singleLined() },
-                        singleLine = true,
-                        supportingText = { Text("如 D 大调卡农") }
-                    )
-                }
-                FormItem(header = { Text("原作艺术家") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.originArtist,
-                        onValueChange = { vm.originArtist = it.singleLined() },
-                        singleLine = true,
-                        supportingText = { Text("涉及到多位艺术家的，暂时填写主要的一位歌手即可") }
-                    )
-                }
-                FormItem(header = { Text("原作链接") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.originLink,
-                        onValueChange = { vm.originLink = it.singleLined() },
-                        singleLine = true,
-                        placeholder = { Text("https://") },
-                        supportingText = { Text("建议填写，请使用 https:// 格式的链接") }
-                    )
-                }
-            }
-
-            if (vm.creationType > 1) {
-                FormItem(header = { Text("二作基米ID") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.deriveId,
-                        onValueChange = { vm.deriveId = it.singleLined() },
-                        singleLine = true,
-                        supportingText = { Text("如果二作是站内作品，填写 ID 即可，则无需再填写标题与链接") }
-                    )
-                }
-                FormItem(header = { Text("二作标题*") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.deriveTitle,
-                        onValueChange = { vm.deriveTitle = it.singleLined() },
-                        singleLine = true
-                    )
-                }
-                FormItem(header = { Text("二作艺术家") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.deriveArtist,
-                        onValueChange = { vm.deriveArtist = it.singleLined() },
-                        singleLine = true
-                    )
-                }
-                FormItem(header = { Text("二作链接") }) {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = vm.deriveLink,
-                        onValueChange = { vm.deriveLink = it.singleLined() },
-                        singleLine = true
-                    )
-                }
-            }
-
-            FormItem(
-                header = {
-                    Text("制作团队")
-                    IconButton(onClick = { vm.addStaff() }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add")
-                    }
-                },
-                subtitle = { Text("如果该作品的制作者不止一人，请在此添加并选择角色（如混音、编曲）。你可以选择站内用户，也可以仅填写他的名字") }
-            ) {
-                vm.staffs.fastForEachIndexed { index, item ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    if (vm.type == Type.CREATE) FormItem(
+                        header = { Text("基米ID*") }
                     ) {
-                        Text(
-                            text = item.role,
-                            modifier = Modifier.width(120.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = item.name ?: "uid: ${item.uid}",
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        IconButton(onClick = { vm.removeStaff(index) }) {
-                            Icon(Icons.Default.Remove, contentDescription = "Remove")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val prefix = vm.jmidPrefix
+                            if (prefix == null) {
+                                Button(onClick = { vm.showJmidDialog() }) {
+                                    Text("设置前缀")
+                                }
+                            } else {
+                                JmidTextField(
+                                    jmidNumber = vm.jmidNumber,
+                                    jmidPrefix = prefix,
+                                    valid = vm.jmidValid,
+                                    supportText = vm.jmidSupportText,
+                                    onNumberChange = vm::updateJmidNumber
+                                )
+                            }
                         }
                     }
-                }
-            }
 
-            FormItem(
-                header = {
-                    Text("外部链接")
-
-                    IconButton(onClick = { vm.showAddExternalLinkDialog() }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add")
-                    }
-                },
-                subtitle = { Text("如果你的作品已发表在其他平台上，请在此添加链接") }
-            ) {
-                vm.externalLinks.fastForEachIndexed { index, item ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    FormItem(
+                        header = { Text("标题*") },
+                        subtitle = { Text("填写一个您认为适合永久流传的纯文字标题。如 钢铁雄基4 这类与原曲标题关联性强的纯文字标题。请不要在标题中添加标签、Emoji等复杂内容。请不要使用标题来引流，后续可能会做专门用于推荐的标题。") }
                     ) {
-                        Text(
-                            modifier = Modifier.width(120.dp),
-                            text = translatePlatformLabel(item.platform),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = vm.title,
+                            onValueChange = { vm.title = it.singleLined() },
+                            singleLine = true
                         )
+                    }
 
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = item.url,
-                            overflow = TextOverflow.MiddleEllipsis,
-                            style = MaterialTheme.typography.bodySmall
+                    FormItem(
+                        header = { Text("副标题") },
+                        subtitle = { Text("可选。副标题通常是一句简短的描述，或是 OST 的出处，如《XXX》OP、《XXX》游戏原声带。无需在此处填写原作标题，原作信息请在后方对应的输入框中填写。") }
+                    ) {
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = vm.subtitle,
+                            onValueChange = { vm.subtitle = it.singleLined() },
+                            singleLine = true
                         )
+                    }
 
-                        IconButton(onClick = { vm.removeLink(index) }) {
-                            Icon(Icons.Default.Remove, contentDescription = "Remove")
-                        }
+                    FormItem(
+                        header = { Text("标签") },
+                        subtitle = { Text("使用标签描述你的曲风类型（如古典、流行、J-Pop、ACG、R&B）、创作类型（如纯净哈基米、原曲不使用）。不建议添加过多的标签。若只有英文请按照每单词首字母大写空格隔开，或使用行业标准写法。请勿使用符号和 Emoji") }
+                    ) {
+                        TagEdit(vm)
+                    }
+
+                    FormItem(
+                        header = { Text("简介") },
+                        subtitle = { Text("介绍一下你的作品，编写一段故事，或是描述一下你的创作历程吧") }
+                    ) {
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = vm.description,
+                            onValueChange = { vm.description = it }
+                        )
                     }
                 }
             }
 
-            FormItem(
-                header = { Text("是否含有露骨内容*") },
-                subtitle = { Text("如果作品含有脏话、低俗、暴力等内容，尤其是儿童不宜内容，请务必正确标记") }
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = vm.explicit == false, onClick = { vm.explicit = false })
-                    Text("全年龄", style = MaterialTheme.typography.labelLarge)
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    FormItem(
+                        header = { Text("歌词") },
+                        subtitle = {
+                            Text("建议使用LRC格式的滚动歌词", modifier = Modifier.weight(1f))
+                            TextButton(onClick = {
+                                getPlatform().openUrl("https://lrc-maker.github.io/")
+                            }) {
+                                Text("制作工具")
+                            }
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            LyricsType.entries.forEach {
+                                RadioButton(
+                                    selected = vm.lyricsType == it,
+                                    onClick = { vm.lyricsType = it })
+                                Text(
+                                    text = when (it) {
+                                        LyricsType.LRC -> "LRC歌词"
+                                        LyricsType.TEXT -> "文本歌词"
+                                        LyricsType.NONE -> "不填写"
+                                    },
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
 
-                    RadioButton(selected = vm.explicit == true, onClick = { vm.explicit = true })
-                    Text("非全年龄", style = MaterialTheme.typography.labelLarge)
+                        if (vm.lyricsType == LyricsType.NONE) {
+                            Text(
+                                "强烈建议至少使用文本歌词",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        if (vm.lyricsType != LyricsType.NONE) {
+                            LrcTextField(
+                                value = vm.lyrics,
+                                onValueChange = { vm.lyrics = it }
+                            )
+                        }
+                    }
+
                 }
             }
 
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    FormItem(
+                        header = { Text("创作类型*") },
+                        subtitle = { Text("如果你的作品是对现有作品的再创作（如对《D大调卡农》的改编），请选择二创并填写原作信息。如果你的作品是对哈基米音乐的再创作（如翻唱），请选择三创") }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = vm.creationType == 0,
+                                onClick = { vm.creationType = 0 })
+                            Text("原创", style = MaterialTheme.typography.labelLarge)
+
+                            RadioButton(
+                                selected = vm.creationType == 1,
+                                onClick = { vm.creationType = 1 })
+                            Text("二创", style = MaterialTheme.typography.labelLarge)
+
+                            RadioButton(
+                                selected = vm.creationType == 2,
+                                onClick = { vm.creationType = 2 })
+                            Text("三创", style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
+
+                    if (vm.creationType == 0) {
+                        Text(
+                            "原创指的是作词、作曲、编曲等全部原创，改编作品请勿选择原创。选择错误会被退回，请再次确认！",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    if (vm.creationType > 0) {
+                        /*FormItem(header = { Text("原作基米ID") }) {
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.originId,
+                                onValueChange = { vm.originId = it.singleLined() },
+                                singleLine = true,
+                                supportingText = { Text("如果原作是基米天堂站内的作品，填写基米 ID 即可，无需再填写标题与链接") }
+                            )
+                        }*/
+                        FormItem(header = { Text("原作标题*") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.originTitle,
+                                onValueChange = { vm.originTitle = it.singleLined() },
+                                singleLine = true,
+                                supportingText = { Text("如 D 大调卡农") }
+                            )
+                        }
+                        FormItem(header = { Text("原作艺术家") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.originArtist,
+                                onValueChange = { vm.originArtist = it.singleLined() },
+                                singleLine = true,
+                                supportingText = { Text("涉及到多位艺术家的，暂时填写主要的一位歌手即可") }
+                            )
+                        }
+                        FormItem(header = { Text("原作链接") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.originLink,
+                                onValueChange = { vm.originLink = it.singleLined() },
+                                singleLine = true,
+                                placeholder = { Text("https://") },
+                                supportingText = { Text("建议填写，请使用 https:// 格式的链接") }
+                            )
+                        }
+                    }
+
+                    if (vm.creationType > 1) {
+                        FormItem(header = { Text("二作基米ID") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.deriveId,
+                                onValueChange = { vm.deriveId = it.singleLined() },
+                                singleLine = true,
+                                supportingText = { Text("如果二作是站内作品，填写 ID 即可，则无需再填写标题与链接") }
+                            )
+                        }
+                        FormItem(header = { Text("二作标题*") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.deriveTitle,
+                                onValueChange = { vm.deriveTitle = it.singleLined() },
+                                singleLine = true
+                            )
+                        }
+                        FormItem(header = { Text("二作艺术家") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.deriveArtist,
+                                onValueChange = { vm.deriveArtist = it.singleLined() },
+                                singleLine = true
+                            )
+                        }
+                        FormItem(header = { Text("二作链接") }) {
+                            TextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = vm.deriveLink,
+                                onValueChange = { vm.deriveLink = it.singleLined() },
+                                singleLine = true
+                            )
+                        }
+                    }
+
+
+                }
+            }
+
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    FormItem(
+                        header = {
+                            Text("制作团队")
+                            IconButton(onClick = { vm.addStaff() }) {
+                                Icon(Icons.Default.Add, contentDescription = "Add")
+                            }
+                        },
+                        subtitle = { Text("如果该作品的制作者不止一人，请在此添加并选择角色（如混音、编曲）。你可以选择站内用户，也可以仅填写他的名字") }
+                    ) {
+                        vm.staffs.fastForEachIndexed { index, item ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = item.role,
+                                    modifier = Modifier.width(120.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = item.name ?: "uid: ${item.uid}",
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                IconButton(onClick = { vm.removeStaff(index) }) {
+                                    Icon(Icons.Default.Remove, contentDescription = "Remove")
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    FormItem(
+                        header = {
+                            Text("外部链接")
+
+                            IconButton(onClick = { vm.showAddExternalLinkDialog() }) {
+                                Icon(Icons.Default.Add, contentDescription = "Add")
+                            }
+                        },
+                        subtitle = { Text("如果你的作品已发表在其他平台上，请在此添加链接") }
+                    ) {
+                        vm.externalLinks.fastForEachIndexed { index, item ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    modifier = Modifier.width(120.dp),
+                                    text = translatePlatformLabel(item.platform),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.url,
+                                    overflow = TextOverflow.MiddleEllipsis,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+
+                                IconButton(onClick = { vm.removeLink(index) }) {
+                                    Icon(Icons.Default.Remove, contentDescription = "Remove")
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    FormItem(
+                        header = { Text("是否含有露骨内容*") },
+                        subtitle = { Text("如果作品含有脏话、低俗、暴力等内容，尤其是儿童不宜内容，请务必正确标记") }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = vm.explicit == false,
+                                onClick = { vm.explicit = false })
+                            Text("全年龄", style = MaterialTheme.typography.labelLarge)
+
+                            RadioButton(
+                                selected = vm.explicit == true,
+                                onClick = { vm.explicit = true })
+                            Text("非全年龄", style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
+                }
+            }
             Button(onClick = { vm.publish() }, enabled = !vm.isOperating) {
                 Text("提交作品")
             }
@@ -467,14 +582,15 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
 
 @Composable
 private fun LrcTextField(value: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
+    TextField(
         modifier = Modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
         minLines = 8,
         maxLines = 8,
         textStyle = MaterialTheme.typography.bodyMedium.copy(
-            fontFamily = FontFamily.Monospace
+            fontFamily = FontFamily.Monospace,
+            color = LocalContentColor.current
         )
     )
 }
@@ -482,6 +598,7 @@ private fun LrcTextField(value: String, onValueChange: (String) -> Unit) {
 @Composable
 private fun AddStaffDialog(vm: PublishViewModel) {
     if (vm.showAddStaffDialog) AlertDialog(
+        modifier = Modifier.width(300.dp),
         onDismissRequest = { vm.cancelAddStaff() },
         title = {
             Text("添加成员")
@@ -490,10 +607,10 @@ private fun AddStaffDialog(vm: PublishViewModel) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 var type by remember { mutableStateOf(0) }
 
-                OutlinedTextField(
+                TextField(
                     value = vm.addStaffRole,
                     onValueChange = { vm.addStaffRole = it.singleLined() },
-                    label = { Text("角色") },
+                    placeholder = { Text("角色") },
                     singleLine = true,
                     supportingText = {
                         Text("如：编曲、作词、混音、吉他等")
@@ -513,17 +630,17 @@ private fun AddStaffDialog(vm: PublishViewModel) {
                     Text(text = "站外艺术家")
                 }
 
-                if (type == 0) OutlinedTextField(
+                if (type == 0) TextField(
                     value = vm.addStaffUid,
                     onValueChange = { vm.addStaffUid = it.singleLined() },
-                    label = { Text("UID") },
+                    placeholder = { Text("UID") },
                     singleLine = true
                 )
 
-                if (type == 1) OutlinedTextField(
+                if (type == 1) TextField(
                     value = vm.addStaffName,
                     onValueChange = { vm.addStaffName = it.singleLined() },
-                    label = { Text("名称") },
+                    placeholder = { Text("名称") },
                     singleLine = true
                 )
             }
@@ -554,6 +671,7 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
         var error by remember { mutableStateOf<String?>(null) }
 
         AlertDialog(
+            modifier = Modifier.width(300.dp),
             onDismissRequest = { vm.closeAddExternalLinkDialog() },
             title = {
                 Text("添加外部链接")
@@ -562,7 +680,10 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box {
                         var dropdown by remember { mutableStateOf(false) }
-                        TextButton(onClick = { dropdown = true }, modifier = Modifier.width(120.dp)) {
+                        TextButton(
+                            onClick = { dropdown = true },
+                            modifier = Modifier.width(120.dp)
+                        ) {
                             Text(
                                 platform?.let {
                                     translatePlatformLabel(it)
@@ -585,14 +706,13 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                         }
                     }
                     if (platform == "bilibili") {
-                        OutlinedTextField(
+                        TextField(
                             modifier = Modifier,
                             value = value,
                             onValueChange = {
                                 value = it.singleLined()
                             },
-                            label = { Text("BV号") },
-                            placeholder = { Text("BV...") },
+                            placeholder = { Text("BV号") },
                             singleLine = true,
                             supportingText = {
                                 error?.let { error ->
@@ -601,12 +721,11 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                             }
                         )
                     } else if (platform == "niconico") {
-                        OutlinedTextField(
+                        TextField(
                             modifier = Modifier,
                             value = value,
                             onValueChange = { value = it.singleLined() },
-                            label = { Text("sm号") },
-                            placeholder = { Text("sm...") },
+                            placeholder = { Text("sm号") },
                             singleLine = true,
                             supportingText = {
                                 error?.let { error ->
@@ -614,12 +733,11 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                                 }
                             }
                         )
-                    } else OutlinedTextField(
+                    } else TextField(
                         modifier = Modifier,
                         value = value,
                         onValueChange = { value = it.singleLined() },
-                        label = { Text("链接") },
-                        placeholder = { Text("https://") },
+                        placeholder = { Text("链接") },
                         singleLine = true,
                         supportingText = {
                             error?.let { error ->
