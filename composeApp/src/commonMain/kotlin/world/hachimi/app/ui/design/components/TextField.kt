@@ -129,7 +129,11 @@ fun TextField(
                         }
                     }
                     CompositionLocalProvider(LocalTextStyle provides supportingTextStyle) {
-                        supportingText?.invoke()
+                        supportingText?.let {
+                            Box(Modifier.padding(top = 4.dp), propagateMinConstraints = true) {
+                                it()
+                            }
+                        }
                     }
                 }
             ) { measureables, constraints ->
