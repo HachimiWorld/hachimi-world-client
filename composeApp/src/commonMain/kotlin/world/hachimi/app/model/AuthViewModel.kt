@@ -23,6 +23,8 @@ import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.Route
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
+import world.hachimi.app.util.validateEmailPattern
+import world.hachimi.app.util.validatePasswordPattern
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
@@ -110,13 +112,13 @@ class AuthViewModel(
     fun regNextStep() {
         if (regStep == 0) {
             // Validate
-            if (!regEmail.matches(Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))) {
+            if (!validateEmailPattern(regEmail)) {
                 global.alert("邮箱地址不正确")
                 return
             }
 
-            if (regPassword.length < 8) {
-                global.alert("密码长度至少为8位")
+            if (!validatePasswordPattern(regPassword)) {
+                global.alert("密码长度至少为 6 位")
                 return
             }
 

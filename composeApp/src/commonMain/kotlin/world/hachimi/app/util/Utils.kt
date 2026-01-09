@@ -1,7 +1,9 @@
 package world.hachimi.app.util
 
 import androidx.compose.runtime.Stable
-import io.ktor.http.*
+import io.ktor.http.URLParserException
+import io.ktor.http.URLProtocol
+import io.ktor.http.Url
 
 
 @Stable
@@ -31,6 +33,16 @@ fun isValidHttpsUrl(content: String): Boolean {
         return false
     }
     return false
+}
+
+@Stable
+fun validateEmailPattern(string: String): Boolean {
+    return string.matches(Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))
+}
+
+@Stable
+fun validatePasswordPattern(string: String): Boolean {
+    return string.length >= 6
 }
 
 /**

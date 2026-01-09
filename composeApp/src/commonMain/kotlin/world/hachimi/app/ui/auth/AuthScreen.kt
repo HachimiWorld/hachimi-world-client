@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -42,6 +43,7 @@ import world.hachimi.app.model.AuthViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.auth.components.CaptchaDialog
 import world.hachimi.app.ui.auth.components.FormContent
+import world.hachimi.app.ui.auth.components.PasswordToggleButton
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -51,6 +53,8 @@ import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.util.singleLined
+import world.hachimi.app.util.validateEmailPattern
+import world.hachimi.app.util.validatePasswordPattern
 
 @Composable
 fun AuthScreen(
@@ -140,18 +144,30 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
                 placeholder = { Text("邮箱") },
                 leadingIcon = { Icon(Icons.Outlined.Mail, null) },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
             )
             Spacer(Modifier.height(24.dp))
+            var showPassword by remember { mutableStateOf(false) }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.password,
                 onValueChange = { vm.password = it.singleLined() },
                 leadingIcon = { Icon(Icons.Outlined.Lock, null) },
                 placeholder = { Text("密码") },
+                trailingIcon = {
+                    PasswordToggleButton(
+                        showPassword,
+                        onValueChange = { showPassword = it })
+                },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
                 keyboardActions = KeyboardActions(onDone = {
                     if (!vm.isOperating && vm.email.isNotBlank() && vm.password.isNotBlank()) {
                         vm.startLogin()
@@ -191,35 +207,85 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
         title = { Text("成为神人") },
         subtitle = {}
     ) {
-        Column(Modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Column(Modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            var emailHelp by remember { mutableStateOf("") }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regEmail,
-                onValueChange = { vm.regEmail = it.singleLined() },
+                onValueChange = {
+                    vm.regEmail = it.singleLined()
+                    emailHelp =
+                        if (validateEmailPattern(vm.regEmail)) ""
+                        else "邮箱格式不正确"
+                },
                 leadingIcon = { Icon(Icons.Outlined.Mail, null) },
                 placeholder = { Text("邮箱") },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+                supportingText = {
+                    Text(emailHelp)
+                }
             )
+            var showPassword by remember { mutableStateOf(false) }
+            var passwordHelp by remember { mutableStateOf("") }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPassword,
-                onValueChange = { vm.regPassword = it.singleLined() },
+                onValueChange = {
+                    vm.regPassword = it.singleLined()
+                    passwordHelp =
+                        if (validatePasswordPattern(vm.regPassword)) ""
+                        else "密码长度至少为 6 位"
+                },
                 leadingIcon = { Icon(Icons.Outlined.Lock, null) },
                 placeholder = { Text("密码") },
+                trailingIcon = {
+                    PasswordToggleButton(
+                        showPassword,
+                        onValueChange = { showPassword = it }
+                    )
+                },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next
+                ),
+                supportingText = {
+                    Text(passwordHelp)
+                }
             )
+            var showRepeatPassword by remember { mutableStateOf(false) }
+            var repeatPasswordHelp by remember { mutableStateOf("") }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPasswordRepeat,
-                onValueChange = { vm.regPasswordRepeat = it.singleLined() },
+                onValueChange = {
+                    vm.regPasswordRepeat = it.singleLined()
+                    repeatPasswordHelp =
+                        if (vm.regPasswordRepeat != vm.regPassword) "两次输入不一致"
+                        else ""
+                },
                 leadingIcon = { Icon(Icons.Outlined.SettingsBackupRestore, null) },
                 placeholder = { Text("确认密码") },
+                trailingIcon = {
+                    PasswordToggleButton(
+                        showRepeatPassword,
+                        onValueChange = { showRepeatPassword = it }
+                    )
+                },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+                visualTransformation = if (showRepeatPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next
+                ),
+                supportingText = {
+                    Text(repeatPasswordHelp)
+                }
             )
 
             val enabled by remember {
@@ -230,7 +296,10 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
             }
 
             Row(Modifier.fillMaxWidth()) {
-                TextButton(modifier = Modifier.size(width = 112.dp, height = 48.dp), onClick = toLogin) {
+                TextButton(
+                    modifier = Modifier.size(width = 112.dp, height = 48.dp),
+                    onClick = toLogin
+                ) {
                     Text("登录")
                 }
 
@@ -266,7 +335,10 @@ private fun RegisterVerifyForm(vm: AuthViewModel) {
                     leadingIcon = { Icon(Icons.Outlined.Security, null) },
                     placeholder = { Text("验证码") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
                     keyboardActions = KeyboardActions(onDone = {
                         if (!vm.isOperating && vm.regCode.isNotBlank()) {
                             vm.regNextStep()
@@ -322,7 +394,10 @@ private fun RegisterProfileForm(vm: AuthViewModel) {
                 onValueChange = { vm.name = it.singleLined() },
                 placeholder = { Text("昵称") },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
             )
             TextField(
                 modifier = Modifier.fillMaxWidth(),
@@ -331,7 +406,10 @@ private fun RegisterProfileForm(vm: AuthViewModel) {
                 placeholder = { Text("介绍一下") },
                 maxLines = 4,
                 minLines = 4,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
