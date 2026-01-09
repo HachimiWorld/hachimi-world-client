@@ -5,7 +5,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.hachimiDarkScheme
 import world.hachimi.app.ui.design.hachimiLightScheme
@@ -99,17 +103,16 @@ fun AppTheme(
         else -> lightScheme
     }
     CompositionLocalProvider(LocalDarkMode provides darkTheme) {
-        HachimiTheme(
-            colorScheme = hachimiColorScheme
+        MaterialTheme(
+            colorScheme = mdColorScheme,
+            typography = AppTypography,
         ) {
-            MaterialTheme(
-                colorScheme = mdColorScheme,
-                typography = AppTypography,
-                content = {
-                    SystemAppearance(darkTheme)
-                    content()
-                }
-            )
+            HachimiTheme(
+                colorScheme = hachimiColorScheme
+            ) {
+                SystemAppearance(darkTheme)
+                content()
+            }
         }
     }
 }
@@ -121,11 +124,25 @@ fun PreviewTheme(
     background: Boolean,
     content: @Composable () -> Unit
 ) {
-    AppTheme(darkTheme) {
-        if (background) {
-            Surface(color = HachimiTheme.colorScheme.background, content = content)
-        } else {
-            content()
+    val hachimiColorScheme = if (darkTheme) hachimiDarkScheme else hachimiLightScheme
+    val mdColorScheme = when {
+        darkTheme -> darkScheme
+        else -> lightScheme
+    }
+    CompositionLocalProvider(LocalDarkMode provides darkTheme) {
+        MaterialTheme(
+            colorScheme = mdColorScheme,
+            typography = AppTypography,
+        ) {
+            HachimiTheme(
+                colorScheme = hachimiColorScheme
+            ) {
+                if (background) {
+                    Surface(color = HachimiTheme.colorScheme.background, content = content)
+                } else {
+                    content()
+                }
+            }
         }
     }
 }
