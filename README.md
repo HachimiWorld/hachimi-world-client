@@ -38,19 +38,19 @@ cargo build -r --lib
 cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
 cargo run --bin uniffi-bindgen generate \
   --library target/release/libhachimi.so \
-  --language kotlin --out-dir ../composeApp/src/jvmMain
+  --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
 
 # macOS
 cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
 cargo run --bin uniffi-bindgen generate \
   --library target/release/libhachimi.dylib \
-  --language kotlin --out-dir ../composeApp/src/jvmMain
+  --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
 
 # Windows
 cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
 cargo run --bin uniffi-bindgen generate \
   --library target/release/hachimi.dll \
-  --language kotlin --out-dir ../composeApp/src/jvmMain
+  --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
 ```
 
 4. Add properties in `./local.properties`

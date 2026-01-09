@@ -39,7 +39,7 @@ jobs:
           cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/libhachimi.dylib \
-            --language kotlin --out-dir ../composeApp/src/jvmMain
+            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -77,7 +77,7 @@ jobs:
           cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/hachimi.dll \
-            --language kotlin --out-dir ../composeApp/src/jvmMain
+            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -118,7 +118,7 @@ jobs:
           cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/libhachimi.so \
-            --language kotlin --out-dir ../composeApp/src/jvmMain
+            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
