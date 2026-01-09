@@ -26,7 +26,10 @@ import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
-fun CaptchaDialog(onConfirm: () -> Unit) {
+fun CaptchaDialog(
+    processing: Boolean,
+    onConfirm: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = {},
         title = {
@@ -64,7 +67,7 @@ fun CaptchaDialog(onConfirm: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(onClick = onConfirm, enabled = !processing) {
                 Text("我已完成，继续")
             }
         }
@@ -76,7 +79,9 @@ fun CaptchaDialog(onConfirm: () -> Unit) {
 @Composable
 private fun Preview() {
     PreviewTheme(background = false) {
-        CaptchaDialog(onConfirm = {
-        })
+        CaptchaDialog(
+            processing = false,
+            onConfirm = {}
+        )
     }
 }

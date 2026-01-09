@@ -5,7 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.module.AuthModule
@@ -65,7 +70,6 @@ class ForgetPasswordViewModel(
     }
 
     fun captchaContinue() = viewModelScope.launch {
-        showCaptchaDialog = false
         try {
             operating = true
             val resp = api.authModule.resetPassword(AuthModule.ResetPasswordReq(
@@ -84,6 +88,9 @@ class ForgetPasswordViewModel(
         } catch (e: Throwable) {
             Logger.e(TAG, "Failed to reset password", e)
             global.alert("重置密码失败，请稍后再试")
+        } finally {
+            showCaptchaDialog = false
+            operating = false
         }
     }
 

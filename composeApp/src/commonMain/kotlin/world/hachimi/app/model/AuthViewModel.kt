@@ -280,7 +280,6 @@ class AuthViewModel(
     }
 
     fun finishCaptcha() {
-        showCaptchaDialog = false
         captchaCont?.resume(Unit)
     }
 
@@ -289,6 +288,7 @@ class AuthViewModel(
             generateCaptcha()
             waitForCaptcha()
             doLogin()
+            showCaptchaDialog = false
         }
     }
 
@@ -297,6 +297,7 @@ class AuthViewModel(
             generateCaptcha()
             waitForCaptcha()
             doRegister()
+            showCaptchaDialog = false
         }
     }
 

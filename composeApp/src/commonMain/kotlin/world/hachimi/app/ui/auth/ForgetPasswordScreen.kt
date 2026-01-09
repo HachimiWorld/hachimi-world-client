@@ -174,9 +174,10 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                     text = { Text("已成功将您的密码重置") }
                 )
 
-                if (vm.showCaptchaDialog) CaptchaDialog(onConfirm = {
-                    vm.captchaContinue()
-                })
+                if (vm.showCaptchaDialog) CaptchaDialog(
+                    processing = vm.operating,
+                    onConfirm = { vm.captchaContinue() }
+                )
             }
         }
     }
