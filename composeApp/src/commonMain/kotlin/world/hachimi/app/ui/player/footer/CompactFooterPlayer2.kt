@@ -1,6 +1,8 @@
 package world.hachimi.app.ui.player.footer
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.core.animateDp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +42,7 @@ import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
 import world.hachimi.app.ui.player.footer.components.Title
+import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.theme.PreviewTheme
 
 
@@ -101,6 +105,16 @@ private fun Cover(
     model: String?,
     modifier: Modifier = Modifier
 ) {
+    val animatedVisibility = LocalAnimatedVisibilityScope.current
+
+    val cornerRadius by animatedVisibility.transition.animateDp(label = "rounded corner") { enterExitState ->
+        when(enterExitState) {
+            EnterExitState.PreEnter -> FullScreenCoverCornerRadius
+            EnterExitState.Visible -> FooterPlayerCoverCornerRadius
+            EnterExitState.PostExit -> FullScreenCoverCornerRadius
+        }
+    }
+
     with(LocalSharedTransitionScope.current) {
         Box(
             modifier
@@ -110,7 +124,7 @@ private fun Cover(
                     zIndexInOverlay = 2f
                 )
                 .size(48.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(cornerRadius))
                 .background(Color.Gray)
         ) {
             AsyncImage(

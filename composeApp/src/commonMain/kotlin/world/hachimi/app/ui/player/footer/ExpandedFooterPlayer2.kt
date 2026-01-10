@@ -1,7 +1,9 @@
 package world.hachimi.app.ui.player.footer
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateDp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,6 +33,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -75,6 +78,7 @@ import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
 import world.hachimi.app.ui.player.footer.components.Title
+import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueueHeader
 import kotlin.random.Random
@@ -241,6 +245,8 @@ private fun FooterPlayerLayout(
     }
 }
 
+val FooterPlayerCoverCornerRadius = 16.dp
+
 @Composable
 private fun Cover(
     url: String?,
@@ -249,17 +255,27 @@ private fun Cover(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
+    val animatedVisibility = LocalAnimatedVisibilityScope.current
+
+    val cornerRadius by animatedVisibility.transition.animateDp(label = "rounded corner") { enterExitState ->
+        when(enterExitState) {
+            EnterExitState.PreEnter -> FullScreenCoverCornerRadius
+            EnterExitState.Visible -> FooterPlayerCoverCornerRadius
+            EnterExitState.PostExit -> FullScreenCoverCornerRadius
+        }
+    }
 
     with(LocalSharedTransitionScope.current) {
         Box(
             modifier
                 .sharedElement(
                     rememberSharedContentState(SharedTransitionKeys.Cover),
-                    LocalAnimatedVisibilityScope.current
+                    LocalAnimatedVisibilityScope.current,
+                    zIndexInOverlay = 2f
                 )
                 .size(88.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.Gray)
+                .clip(RoundedCornerShape(cornerRadius))
+                .background(LocalContentColor.current.copy(0.12f))
                 .clickable(interactionSource = interactionSource) { onClick() }
         ) {
             AsyncImage(
