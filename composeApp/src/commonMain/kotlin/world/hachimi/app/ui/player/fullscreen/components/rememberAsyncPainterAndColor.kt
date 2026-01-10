@@ -1,6 +1,11 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.luminance
@@ -28,6 +33,8 @@ fun rememberAsyncPainterAndColor(
     LaunchedEffect(model) {
         val request = ImageRequest.Builder(context)
             .data(model)
+            .placeholderMemoryCacheKey(model)
+            .memoryCacheKey(model)
             .size(Size.ORIGINAL)
             .build()
 

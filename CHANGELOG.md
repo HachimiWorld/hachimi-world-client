@@ -11,6 +11,8 @@
 
 ## Fixes 修复
 
+1. Fixed the flickering issue when expanding the player. 修复展开播放器时闪烁的问题。
+
 # 1.0.8-beta (2025-12-16)
 
 ## Fixes 修复

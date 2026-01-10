@@ -23,7 +23,7 @@ import world.hachimi.app.ui.SharedTransitionKeys
 
 @Composable
 fun Cover(
-    model: Any?,
+    model: String?,
     modifier: Modifier = Modifier
 ) {
     with(LocalSharedTransitionScope.current) {
@@ -31,7 +31,9 @@ fun Cover(
             modifier
                 .sharedElement(
                     rememberSharedContentState(SharedTransitionKeys.Cover),
-                    LocalAnimatedVisibilityScope.current
+                    LocalAnimatedVisibilityScope.current,
+                    // Ensure the cover displayed on the background, because the background zIndex == 1f
+                    zIndexInOverlay = 2f
                 )
                 .size(256.dp)
                 .shadow(16.dp, RoundedCornerShape(8.dp))
@@ -51,6 +53,8 @@ fun Cover(
                     model = ImageRequest.Builder(LocalPlatformContext.current)
                         .data(model)
                         .crossfade(true)
+                        .placeholderMemoryCacheKey(model)
+                        .memoryCacheKey(model)
                         .build(),
                     contentDescription = "Cover",
                     contentScale = ContentScale.Crop

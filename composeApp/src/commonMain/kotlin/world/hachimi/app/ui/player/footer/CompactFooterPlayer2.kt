@@ -2,7 +2,14 @@ package world.hachimi.app.ui.player.footer
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SkipNext
@@ -17,6 +24,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
@@ -26,6 +36,7 @@ import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.player.footer.components.Author
+import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -87,7 +98,7 @@ fun CompactFooterPlayer2(
 
 @Composable
 private fun Cover(
-    model: Any?,
+    model: String?,
     modifier: Modifier = Modifier
 ) {
     with(LocalSharedTransitionScope.current) {
@@ -95,7 +106,8 @@ private fun Cover(
             modifier
                 .sharedElement(
                     rememberSharedContentState(SharedTransitionKeys.Cover),
-                    LocalAnimatedVisibilityScope.current
+                    LocalAnimatedVisibilityScope.current,
+                    zIndexInOverlay = 2f
                 )
                 .size(48.dp)
                 .clip(RoundedCornerShape(16.dp))
@@ -103,7 +115,12 @@ private fun Cover(
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = model,
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(model)
+                    .crossfade(true)
+                    .placeholderMemoryCacheKey(model)
+                    .memoryCacheKey(model)
+                    .build(),
                 contentDescription = "Cover",
                 contentScale = ContentScale.Crop
             )
