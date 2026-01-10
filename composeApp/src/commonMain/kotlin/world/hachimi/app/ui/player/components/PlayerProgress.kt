@@ -3,7 +3,11 @@ package world.hachimi.app.ui.player.components
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -86,7 +90,7 @@ private fun TimeText(currentMillis: Long, durationMillis: Long, modifier: Modifi
     val currentDuration = remember(currentMillis / 1000) {
         formatSongDuration(currentMillis.milliseconds)
     }
-    val totalDuration = remember {
+    val totalDuration = remember(durationMillis) {
         formatSongDuration(durationMillis.milliseconds)
     }
     Row(
