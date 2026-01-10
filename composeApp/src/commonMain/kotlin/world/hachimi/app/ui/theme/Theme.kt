@@ -10,7 +10,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.TextStyle
 import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.bodyTextStyle
 import world.hachimi.app.ui.design.hachimiDarkScheme
 import world.hachimi.app.ui.design.hachimiLightScheme
 
@@ -95,6 +97,7 @@ val LocalDarkMode = compositionLocalOf { false }
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    typography: TextStyle = bodyTextStyle,
     content: @Composable () -> Unit
 ) {
     val hachimiColorScheme = if (darkTheme) hachimiDarkScheme else hachimiLightScheme
@@ -105,7 +108,7 @@ fun AppTheme(
     CompositionLocalProvider(LocalDarkMode provides darkTheme) {
         MaterialTheme(
             colorScheme = mdColorScheme,
-            typography = AppTypography,
+            typography = buildMdTypo(typography),
         ) {
             HachimiTheme(
                 colorScheme = hachimiColorScheme
@@ -132,7 +135,7 @@ fun PreviewTheme(
     CompositionLocalProvider(LocalDarkMode provides darkTheme) {
         MaterialTheme(
             colorScheme = mdColorScheme,
-            typography = AppTypography,
+            typography = buildMdTypo(bodyTextStyle),
         ) {
             HachimiTheme(
                 colorScheme = hachimiColorScheme

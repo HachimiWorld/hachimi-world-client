@@ -1,7 +1,5 @@
 package world.hachimi.app
 
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
@@ -18,7 +16,6 @@ import world.hachimi.app.font.WithFont
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.WasmPlayerHelper
 import world.hachimi.app.ui.App
-import world.hachimi.app.ui.theme.AppTheme
 import world.hachimi.app.util.parseJmid
 import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.js.toJsString
@@ -87,15 +84,8 @@ fun main() {
                 }
         }
 
-        AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
-            WithFont {
-                if (global.initialized) {
-                    App(global)
-                } else {
-                    // TODO: Add splash screen
-                    Box {}
-                }
-            }
+        WithFont(global) {
+            App(global)
         }
     }
 }
