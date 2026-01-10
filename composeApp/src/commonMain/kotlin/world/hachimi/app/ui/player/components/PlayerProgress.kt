@@ -47,6 +47,9 @@ fun PlayerProgress(
         targetValue = playingProgress(),
         tween(durationMillis = 100, easing = LinearEasing)
     )
+    val animatedBufferProgress by animateFloatAsState(
+        targetValue = bufferingProgress
+    )
 
     Column(modifier) {
         if (timeOnTop) {
@@ -60,7 +63,7 @@ fun PlayerProgress(
                 modifier = Modifier.fillMaxWidth().height(6.dp),
                 progress = { animatedProgress },
                 onProgressChange = onProgressChange,
-                trackProgress = { bufferingProgress },
+                trackProgress = { animatedBufferProgress },
                 trackColor = trackColor,
                 barColor = barColor,
                 thickness = if (touchMode) 4.dp else 2.dp
