@@ -1,17 +1,43 @@
 package world.hachimi.app.ui.search
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -19,6 +45,7 @@ import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.design.components.SubtleButton
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
 import world.hachimi.app.util.AdaptiveListSpacing
@@ -56,37 +83,16 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
         verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Row(
-                modifier = Modifier.padding(bottom = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "搜索结果",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "${vm.searchProcessingTimeMs} ms",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
+            Header(vm.searchProcessingTimeMs)
         }
 
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SingleChoiceSegmentedButtonRow(Modifier.wrapContentWidth(align = Alignment.Start)) {
-                SegmentedButton(
-                    selected = vm.searchType == SearchViewModel.SearchType.SONG,
-                    onClick = { vm.updateSearchType(SearchViewModel.SearchType.SONG) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                    label = { Text("歌曲") }
-                )
-                SegmentedButton(
-                    selected = vm.searchType == SearchViewModel.SearchType.USER,
-                    onClick = { vm.updateSearchType(SearchViewModel.SearchType.USER) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                    label = { Text("神人") }
-                )
-            }
+            Tab(
+                searchType = vm.searchType,
+                onTypeChange = { vm.updateSearchType(it) },
+                sortMethod = vm.songSortMethod,
+                onSortMethodChange = { vm.updateSortMethod(it) }
+            )
         }
 
         val data = if (vm.searchType == SearchViewModel.SearchType.SONG) vm.songData else vm.userData
@@ -132,6 +138,77 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
 
         item(span = { GridItemSpan(maxLineSpan) }) {
             Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
+        }
+    }
+}
+
+@Composable
+private fun Header(processTimeMillis: Long) {
+    Row(
+        modifier = Modifier.padding(bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "搜索结果",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = "$processTimeMillis ms",
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+@Composable
+private fun Tab(
+    searchType: SearchViewModel.SearchType,
+    onTypeChange: (SearchViewModel.SearchType) -> Unit,
+    sortMethod: SearchViewModel.SortMethod,
+    onSortMethodChange: (SearchViewModel.SortMethod) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        SingleChoiceSegmentedButtonRow(Modifier.weight(1f).wrapContentWidth(align = Alignment.Start)) {
+            SegmentedButton(
+                selected = searchType == SearchViewModel.SearchType.SONG,
+                onClick = { onTypeChange(SearchViewModel.SearchType.SONG) },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                label = { Text("歌曲") }
+            )
+            SegmentedButton(
+                selected = searchType == SearchViewModel.SearchType.USER,
+                onClick = { onTypeChange(SearchViewModel.SearchType.USER) },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                label = { Text("神人") }
+            )
+        }
+
+        if (searchType == SearchViewModel.SearchType.SONG) {
+            var expanded by remember { mutableStateOf(false) }
+
+            Box {
+                SubtleButton(onClick = {
+                    expanded = true
+                }) {
+                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
+                    Text(sortMethod.label)
+                }
+                DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
+                    SearchViewModel.SortMethod.entries.fastForEach {
+                        DropdownMenuItem(
+                            text = { Text(it.label) },
+                            onClick = {
+                                onSortMethodChange(it)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }

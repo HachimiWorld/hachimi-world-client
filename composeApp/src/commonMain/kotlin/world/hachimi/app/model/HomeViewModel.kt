@@ -1,6 +1,10 @@
 package world.hachimi.app.model
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -214,7 +218,8 @@ class HomeViewModel(
                     q = "",
                     limit = 12,
                     offset = null,
-                    filter = "tags = \"$category\""
+                    filter = "tags = \"$category\"",
+                    sortBy = SongModule.SearchReq.SORT_BY_RELEASE_TIME_DESC
                 )
             )
             if (resp.ok) {

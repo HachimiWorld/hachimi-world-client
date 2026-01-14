@@ -1,10 +1,14 @@
 package world.hachimi.app.api.module
 
-import io.ktor.client.content.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
-import io.ktor.http.*
+import io.ktor.client.content.ProgressListener
+import io.ktor.client.plugins.onUpload
+import io.ktor.client.plugins.timeout
+import io.ktor.client.request.forms.InputProvider
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.setBody
+import io.ktor.http.HttpHeaders
+import io.ktor.http.headersOf
 import kotlinx.io.Source
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
@@ -252,7 +256,18 @@ class SongModule(
         val limit: Int?,
         val offset: Int?,
         val filter: String?,
-    )
+        /**
+         * Default: relevance
+         * @since 260114
+         */
+        val sortBy: String? = null
+    ) {
+        companion object {
+            const val SORT_BY_RELEVANCE = "relevance"
+            const val SORT_BY_RELEASE_TIME_DESC = "release_time_desc"
+            const val SORT_BY_RELEASE_TIME_ASC = "release_time_asc"
+        }
+    }
 
     @Serializable
     data class SearchResp(

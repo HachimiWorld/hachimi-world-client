@@ -27,6 +27,15 @@ class SearchViewModel(
         SONG, USER, ALBUM, PLAYLIST
     }
 
+    enum class SortMethod(
+        val label: String,
+        val value: String
+    ) {
+        RELEVANCE("最相关", SongModule.SearchReq.SORT_BY_RELEVANCE),
+        NEWEST("最新发布", SongModule.SearchReq.SORT_BY_RELEASE_TIME_DESC),
+        OLDEST("最早发布", SongModule.SearchReq.SORT_BY_RELEASE_TIME_ASC),
+    }
+
     var searchType by mutableStateOf(SearchType.SONG)
         private set
     var query by mutableStateOf("")
@@ -39,9 +48,12 @@ class SearchViewModel(
     var searchProcessingTimeMs by mutableStateOf(0L)
         private set
 
+    var songSortMethod by mutableStateOf<SortMethod>(SortMethod.RELEVANCE)
+
     fun mounted(query: String, searchType: SearchType) {
         if (this.query != query) {
             this.query = query
+            this.searchType = searchType
             search()
         }
     }
@@ -62,6 +74,11 @@ class SearchViewModel(
 
     fun updateSearchType(type: SearchType) = viewModelScope.launch {
         searchType = type
+        search()
+    }
+
+    fun updateSortMethod(method: SortMethod) = viewModelScope.launch {
+        songSortMethod = method
         search()
     }
 
@@ -107,7 +124,8 @@ class SearchViewModel(
                     q = query,
                     limit = null,
                     offset = null,
-                    filter = null
+                    filter = null,
+                    sortBy = songSortMethod.value
                 )
             )
             if (resp.ok) {
