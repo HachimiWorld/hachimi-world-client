@@ -107,7 +107,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
 
         if (vm.searchType == SearchViewModel.SearchType.SONG) items(
             items = vm.songData,
-            key = { item -> item.id },
+            key = { item -> item.info.id },
             contentType = { _ -> "song" }
         ) { item ->
             SearchSongItem(
@@ -115,7 +115,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
                 data = item,
                 onClick = {
                     global.player.insertToQueue(
-                        GlobalStore.MusicQueueItem.fromSearchSongItem(item),
+                        GlobalStore.MusicQueueItem.fromSearchSongItem(item.info),
                         true,
                         false
                     )

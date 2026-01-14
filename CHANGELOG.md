@@ -10,6 +10,7 @@
 2. Refactored more UI with the custom design system. 用新设计重做更多了界面。
 3. Added support for headset media controls on Android. 安卓支持耳机控制。
 4. Show more song information in player screen. 播放页面显示更多歌曲信息。
+5. Highlight matched query in search results. 在搜索结果中高亮匹配的查询文本。
 
 ## Fixes 修复
 

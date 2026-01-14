@@ -36,6 +36,66 @@ class SearchViewModel(
         OLDEST("最早发布", SongModule.SearchReq.SORT_BY_RELEASE_TIME_ASC),
     }
 
+    data class SearchSongItem(
+        val info: SongModule.SearchSongItem,
+        val matchTitleRanges: List<IntRange>,
+        val matchDescRanges: List<IntRange>,
+        val matchSubtitleRanges: List<IntRange>,
+        val matchedOriginArtists: List<String>,
+        val matchedOriginTitles: List<String>
+    ) {
+        companion object {
+            fun fromItem(query: String, item: SongModule.SearchSongItem): SearchSongItem {
+                val matchTitleRanges = query.toRegex(RegexOption.IGNORE_CASE).findAll(item.title).map { it.range }.toList()
+                val matchDescRanges = query.toRegex(RegexOption.IGNORE_CASE).findAll(item.description).map { it.range }.toList()
+                val matchSubtitleRanges = query.toRegex(RegexOption.IGNORE_CASE).findAll(item.subtitle).map { it.range }.toList()
+                val matchedOriginArtists = item.originalArtists.filter { query.toRegex(RegexOption.IGNORE_CASE).find(it) != null }
+                val matchedOriginalTitles = item.originalTitles.filter { query.toRegex(RegexOption.IGNORE_CASE).find(it) != null }
+                return SearchSongItem(
+                    info = item,
+                    matchTitleRanges = matchTitleRanges,
+                    matchDescRanges = matchDescRanges,
+                    matchSubtitleRanges = matchSubtitleRanges,
+                    matchedOriginArtists = matchedOriginArtists,
+                    matchedOriginTitles = matchedOriginalTitles
+                )
+            }
+
+            fun fromItem(query: String, item: SongModule.PublicSongDetail): SearchSongItem {
+                val matchTitleRanges = query.toRegex(RegexOption.IGNORE_CASE).findAll(item.title).map { it.range }.toList()
+                val matchDescRanges = query.toRegex(RegexOption.IGNORE_CASE).findAll(item.description).map { it.range }.toList()
+                val matchSubtitleRanges = query.toRegex(RegexOption.IGNORE_CASE).findAll(item.subtitle).map { it.range }.toList()
+                val matchedOriginalTitles = item.originInfos.mapNotNull { it.title }.filter { query.toRegex(RegexOption.IGNORE_CASE).find(it) != null }
+                val matchedOriginArtists = item.originInfos.mapNotNull { it.artist }.filter { query.toRegex(RegexOption.IGNORE_CASE).find(it) != null }
+                return SearchSongItem(
+                    info = SongModule.SearchSongItem(
+                        id = item.id,
+                        displayId = item.displayId,
+                        title = item.title,
+                        subtitle = item.subtitle,
+                        description = item.description,
+                        artist = item.uploaderName,
+                        durationSeconds = item.durationSeconds,
+                        playCount = item.playCount,
+                        likeCount = item.likeCount,
+                        coverArtUrl = item.coverUrl,
+                        audioUrl = item.audioUrl,
+                        uploaderUid = item.uploaderUid,
+                        uploaderName = item.uploaderName,
+                        explicit = item.explicit,
+                        originalTitles = item.originInfos.mapNotNull { it.title },
+                        originalArtists = item.originInfos.mapNotNull{ it.artist }
+                    ),
+                    matchTitleRanges = matchTitleRanges,
+                    matchDescRanges = matchDescRanges,
+                    matchSubtitleRanges = matchSubtitleRanges,
+                    matchedOriginArtists = matchedOriginArtists,
+                    matchedOriginTitles = matchedOriginalTitles
+                )
+            }
+        }
+    }
+
     var searchType by mutableStateOf(SearchType.SONG)
         private set
     var query by mutableStateOf("")
@@ -43,7 +103,7 @@ class SearchViewModel(
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var loading by mutableStateOf(false)
-    val songData = mutableStateListOf<SongModule.SearchSongItem>()
+    var songData by mutableStateOf<List<SearchSongItem>>(emptyList())
     val userData = mutableStateListOf<UserModule.PublicUserProfile>()
     var searchProcessingTimeMs by mutableStateOf(0L)
         private set
@@ -85,7 +145,7 @@ class SearchViewModel(
     private suspend fun searchSongs() {
         loading = true
         try {
-            songData.clear()
+            val result = mutableListOf<SearchSongItem>()
             // If the query text is display id: JM-ABCD-123, use detail to get information.
             // The `JM-` prefix and dash `-` is optional
             val displayIdPattern = "^(?:JM-)?([A-Z]{3,4})-?(\\d{3})$".toRegex()
@@ -97,25 +157,8 @@ class SearchViewModel(
                 val resp = api.songModule.detail(displayId)
                 if (resp.ok) {
                     val data = resp.okData<SongModule.PublicSongDetail>()
-                    Snapshot.withMutableSnapshot {
-                        songData.add(SongModule.SearchSongItem(
-                            id = data.id,
-                            displayId = data.displayId,
-                            title = data.title,
-                            subtitle = data.subtitle,
-                            description = data.description,
-                            artist = data.uploaderName,
-                            durationSeconds = data.durationSeconds,
-                            playCount = data.playCount,
-                            likeCount = data.likeCount,
-                            coverArtUrl = data.coverUrl,
-                            audioUrl = data.audioUrl,
-                            uploaderUid = data.uploaderUid,
-                            uploaderName = data.uploaderName,
-                            explicit = data.explicit
-                        ))
-                        searchProcessingTimeMs = 0
-                    }
+                    result.add(SearchSongItem.fromItem(query, data))
+                    searchProcessingTimeMs = 0
                 }
             }
 
@@ -130,14 +173,14 @@ class SearchViewModel(
             )
             if (resp.ok) {
                 val data = resp.okData<SongModule.SearchResp>()
-                Snapshot.withMutableSnapshot {
-                    songData.addAll(data.hits)
-                    searchProcessingTimeMs = data.processingTimeMs
-                }
+                result.addAll(data.hits.map { SearchSongItem.fromItem(query, it) })
+                searchProcessingTimeMs = data.processingTimeMs
             } else {
                 val err = resp.err()
                 global.alert(err.msg)
             }
+
+            songData = result
         } catch (e: Throwable) {
             Logger.e("search", "Failed to search", e)
             global.alert(e.message)

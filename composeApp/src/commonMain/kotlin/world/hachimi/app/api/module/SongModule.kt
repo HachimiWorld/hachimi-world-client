@@ -297,7 +297,15 @@ class SongModule(
         /**
          * @since 251105
          */
-        val explicit: Boolean?
+        val explicit: Boolean?,
+        /**
+         * @since 260114
+         */
+        val originalArtists: List<String>,
+        /**
+         * @since 260114
+         */
+        val originalTitles: List<String>
     )
 
     suspend fun search(req: SearchReq): WebResult<SearchResp> =
