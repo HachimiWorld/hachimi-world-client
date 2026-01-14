@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -97,7 +97,8 @@ fun PublishScreen(
 private fun Content(vm: PublishViewModel, global: GlobalStore) {
     Box(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .navigationBarsPadding().windowInsetsPadding(LocalContentInsets.current)
+            .navigationBarsPadding()
+            .padding(LocalContentInsets.current.asPaddingValues())
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 900.dp)

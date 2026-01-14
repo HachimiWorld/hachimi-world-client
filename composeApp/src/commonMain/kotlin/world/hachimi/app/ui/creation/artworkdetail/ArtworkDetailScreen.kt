@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -66,7 +66,7 @@ fun ArtworkDetailScreen(
         onDispose { vm.dispose() }
     }
 
-    Column(Modifier.fillMaxSize().padding(24.dp)) {
+    Column(Modifier.fillMaxSize()) {
         Text("作品详情", style = MaterialTheme.typography.titleLarge)
 
         val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
@@ -103,8 +103,8 @@ fun ArtworkDetailScreen(
 private fun DetailTab(vm: ArtworkDetailViewModel = koinViewModel()) {
     AnimatedContent(vm.initializeStatus) {
         when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.INIT -> LoadingPage(Modifier.padding(bottom = 24.dp))
+            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() }, modifier = Modifier.padding(bottom = 24.dp))
             InitializeStatus.LOADED -> DetailContent(vm)
         }
     }
@@ -127,7 +127,9 @@ private fun DetailContent(
 ) {
     Column(
         Modifier.fillMaxSize()
-            .navigationBarsPadding().windowInsetsPadding(LocalContentInsets.current),
+            .navigationBarsPadding()
+            .padding(LocalContentInsets.current.asPaddingValues())
+            .padding(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // Show all properties

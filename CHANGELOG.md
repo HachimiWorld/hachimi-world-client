@@ -17,6 +17,7 @@
 ## Fixes 修复
 
 1. Fixed the flickering issue when expanding the player. 修复展开播放器时闪烁的问题。
+2. Fixed issues where UI could be obscured by navigation bar. 修复界面会被导航栏遮挡的问题。
 
 # 1.0.8-beta (2025-12-16)
 

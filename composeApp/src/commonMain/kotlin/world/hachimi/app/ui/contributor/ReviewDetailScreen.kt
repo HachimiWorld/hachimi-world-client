@@ -2,7 +2,17 @@ package world.hachimi.app.ui.contributor
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +39,12 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.LocalTextStyle
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.formatTime
 import kotlin.time.Duration.Companion.seconds
@@ -61,7 +76,7 @@ private fun Content(
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
             .navigationBarsPadding()
-            .windowInsetsPadding(LocalContentInsets.current)
+            .padding(LocalContentInsets.current.asPaddingValues())
             .padding(24.dp),
         Arrangement.spacedBy(16.dp)
     ) {
