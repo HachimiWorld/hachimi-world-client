@@ -4,13 +4,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -44,50 +42,54 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
         onDispose { vm.dispose() }
     }
     val global = koinInject<GlobalStore>()
-    BoxWithConstraints {
-        val maxWidth = maxWidth
-        Column(Modifier.fillMaxSize()) {
-            Text(modifier = Modifier.fillMaxWidth().padding(top = 24.dp, start = 24.dp), text = "我的歌单", style = MaterialTheme.typography.titleLarge)
-
-            Spacer(Modifier.height(24.dp))
-
-            AnimatedContent(vm.initializeStatus, modifier = Modifier.weight(1f)) {
-                when (it) {
-                    InitializeStatus.INIT -> LoadingPage()
-                    InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-                    InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
-                        if (vm.playlists.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("什么也没有")
-                        } else LazyVerticalGrid(
-                            modifier = Modifier.fillMaxSize(),
-                            columns = calculateGridColumns(maxWidth),
-                            contentPadding = PaddingValues(horizontal = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-                            horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
-                        ) {
-                            items(vm.playlists, key = { item -> item.id }) { item ->
-                                PlaylistItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    coverUrl = item.coverUrl,
-                                    title = item.name,
-                                    songCount = item.songsCount,
-                                    createTime = item.createTime,
-                                    onEnter = {
-                                        global.nav.push(Route.Root.MyPlaylist.Detail(item.id))
-                                    }
-                                )
-                            }
-                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
-                            }
-                        }
-                        if (vm.playlistIsLoading) {
-                            CircularProgressIndicator(Modifier.align(Alignment.Center))
-                        }
+    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) { status ->
+        when (status) {
+            InitializeStatus.INIT -> LoadingPage()
+            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.LOADED -> if (vm.playlists.isEmpty()) Box(
+                Modifier.fillMaxSize().navigationBarsPadding()
+                    .padding(LocalContentInsets.current.asPaddingValues()),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("什么也没有")
+            } else BoxWithConstraints {
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxSize(),
+                    columns = calculateGridColumns(maxWidth),
+                    contentPadding = PaddingValues(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                    horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
+                ) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                            text = "我的歌单",
+                            style = MaterialTheme.typography.titleLarge
+                        )
                     }
+
+                    items(vm.playlists, key = { item -> item.id }) { item ->
+                        PlaylistItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            coverUrl = item.coverUrl,
+                            title = item.name,
+                            songCount = item.songsCount,
+                            createTime = item.createTime,
+                            onEnter = {
+                                global.nav.push(Route.Root.MyPlaylist.Detail(item.id))
+                            }
+                        )
+                    }
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Spacer(
+                            Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues())
+                        )
+                    }
+                }
+                if (vm.playlistIsLoading) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
             }
         }
     }
 }
-

@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.playlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -121,7 +122,10 @@ fun PlaylistDetailScreen(
                     }
 
                     item {
-                        Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+                        Spacer(
+                            Modifier.navigationBarsPadding()
+                                .padding(LocalContentInsets.current.asPaddingValues())
+                        )
                     }
                 }
             }
@@ -147,11 +151,11 @@ private fun Header(
                     .clickable(
                         onClick = { vm.editCover() },
                         enabled = !vm.coverUploading
-                    ),
+                    )
+                    .background(LocalContentColor.current.copy(0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 val hazeState = rememberHazeState()
-
                 AsyncImage(
                     modifier = Modifier.hazeSource(hazeState).fillMaxSize(),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
@@ -167,7 +171,11 @@ private fun Header(
                     else CircularProgressIndicator(progress = { vm.coverUploadingProgress })
                 }
                 if (!info.isPublic) {
-                    TagBadge(hazeState, tag = "私有", modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp))
+                    TagBadge(
+                        hazeState,
+                        tag = "私有",
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
+                    )
                 }
             }
 
@@ -239,16 +247,10 @@ private fun SongItem(
             modifier = Modifier.combinedClickable(
                 onClick = onClick,
                 onLongClick = { dropdownExpanded = true }
-            ).padding(horizontal = 16.dp, vertical = 8.dp),
+            ).padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                modifier = Modifier.width(40.dp),
-                text = "#" + (orderIndex + 1).toString(),
-                style = MaterialTheme.typography.bodyMedium
-            )
-
             Box(Modifier.size(48.dp).clip(MaterialTheme.shapes.small)) {
                 AsyncImage(
                     model = coverUrl,
@@ -258,8 +260,18 @@ private fun SongItem(
             }
 
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.bodyMedium)
-                Text(artist, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    artist,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
             Text(formatSongDuration(duration), style = MaterialTheme.typography.bodySmall)
@@ -268,7 +280,9 @@ private fun SongItem(
                 HachimiIconButton(onClick = { dropdownExpanded = true }) {
                     Icon(Icons.Default.MoreVert, contentDescription = "Dropdown")
                 }
-                DropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
+                DropdownMenu(
+                    expanded = dropdownExpanded,
+                    onDismissRequest = { dropdownExpanded = false }) {
                     DropdownMenuItem(onClick = {
                         onRemoveClick()
                         dropdownExpanded = false
