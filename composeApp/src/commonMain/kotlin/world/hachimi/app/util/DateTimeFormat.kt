@@ -17,15 +17,12 @@ import kotlin.time.Instant
 
 @Composable
 fun formatTime(instant: Instant, distance: Boolean = false, thresholdDay: Int = 7, precise: Boolean = true, fullFormat: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO): String {
-    return remember(instant, distance, thresholdDay, precise) {
+    return remember(instant, distance, thresholdDay, precise, fullFormat) {
         val now = Clock.System.now()
         if (distance) {
             formatDistance(time = instant, thresholdDay = thresholdDay, precise = precise, now = now, fullFormat = fullFormat)
         } else {
-            val formatted = LocalDateTime.Formats.ISO.format(
-                instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            )
-            formatted
+            fullFormat.format(instant.toLocalDateTime(TimeZone.currentSystemDefault()))
         }
     }
 }
@@ -161,12 +158,15 @@ val LocalDateTime.Formats.YMD get() = LocalDateTime.Format {
     day()
 }
 
-private val ymdhms = LocalDateTime.Format {
+/**
+ * 25/10/14-22:29:28
+ */
+val LocalDateTime.Formats.YMDHMS get() = LocalDateTime.Format {
     yearTwoDigits(1960)
     char('/')
     monthNumber()
     char('/')
-    dayOfMonth()
+    day()
     char('-')
     hour()
     char(':')
@@ -175,7 +175,22 @@ private val ymdhms = LocalDateTime.Format {
     second()
 }
 
-private val hms = LocalDateTime.Format {
+/**
+ * 2025-10-14 22:28
+ */
+val LocalDateTime.Formats.YMDHM get() = LocalDateTime.Format {
+    year()
+    char('-')
+    monthNumber()
+    char('-')
+    day()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+}
+
+val LocalDateTime.Formats.HMS get() = LocalDateTime.Format {
     hour()
     char(':')
     minute()
@@ -193,12 +208,12 @@ fun formatDateRange(
     val endDateTime = end.toLocalDateTime(timeZone)
 
     if (startDateTime.date == endDateTime.date) {
-        val a = ymdhms.format(startDateTime)
-        val b = hms.format(endDateTime)
+        val a = LocalDateTime.Formats.YMDHMS.format(startDateTime)
+        val b = LocalDateTime.Formats.HMS.format(endDateTime)
         return "$a ~ $b"
     } else {
-        val a = ymdhms.format(startDateTime)
-        val b = hms.format(endDateTime)
+        val a = LocalDateTime.Formats.YMDHMS.format(startDateTime)
+        val b = LocalDateTime.Formats.HMS.format(endDateTime)
         return "$a ~ $b"
     }
 }

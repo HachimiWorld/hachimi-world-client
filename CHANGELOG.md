@@ -9,6 +9,7 @@
 1. Added streaming playback support on Windows, macOS and Linux. 在 Windows、macOS 和 Linux 系统上支持了流式播放。
 2. Refactored more UI with the custom design system. 用新设计重做更多了界面。
 3. Added support for headset media controls on Android. 安卓支持耳机控制。
+4. Show more song information in player screen. 播放页面显示更多歌曲信息。
 
 ## Fixes 修复
 

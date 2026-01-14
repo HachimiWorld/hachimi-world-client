@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -203,6 +204,10 @@ private fun TabContent(
                 },
                 onNavToUser = { uid ->
                     global.nav.push(Route.Root.PublicUserSpace(uid))
+                    global.shrinkPlayer()
+                },
+                onSearchTag = { _, name ->
+                    global.nav.push(Route.Root.Search(name, SearchViewModel.SearchType.SONG))
                     global.shrinkPlayer()
                 }
             )

@@ -1,7 +1,16 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +32,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import kotlinx.datetime.LocalDateTime
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.PlayerUIState
@@ -30,6 +40,8 @@ import world.hachimi.app.model.SongDetailInfo
 import world.hachimi.app.ui.component.Chip
 import world.hachimi.app.ui.component.HintChip
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.util.YMDHM
+import world.hachimi.app.util.formatTime
 import world.hachimi.app.util.isValidHttpsUrl
 
 @Composable
@@ -37,7 +49,8 @@ fun InfoTabContent(
     modifier: Modifier,
     uiState: PlayerUIState,
     contentPadding: PaddingValues = PaddingValues(),
-    onNavToUser: (Long) -> Unit
+    onNavToUser: (Long) -> Unit,
+    onSearchTag: (Long, String) -> Unit
 ) {
     Crossfade(uiState.readySongInfo) { readySongInfo ->
         Column(modifier.verticalScroll(rememberScrollState()).padding(contentPadding)) {
@@ -82,6 +95,38 @@ fun InfoTabContent(
                     Staffs(songInfo, onNavToUser)
                     // Origin infos
                     Origins(songInfo)
+                }
+
+                readySongInfo?.tags?.let { tags ->
+                    if (tags.isNotEmpty()) PropertyLine(
+                        label = "标签",
+                        verticalAlignment = if (tags.size > 1) Alignment.Top else Alignment.CenterVertically,
+                    ) {
+                        FlowRow(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            tags.forEach {
+                                Chip(onClick = { onSearchTag(it.id, it.name) }) {
+                                    Text(it.name)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                readySongInfo?.releaseTime?.let { releaseTime ->
+                    PropertyLine("发行日期") {
+                        HintChip {
+                            Text(
+                                text = formatTime(
+                                    releaseTime,
+                                    fullFormat = LocalDateTime.Formats.YMDHM
+                                )
+                            )
+                        }
+                    }
                 }
             }
             // Description
