@@ -2,7 +2,6 @@ package world.hachimi.app.ui.design.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -38,41 +37,38 @@ fun AlertDialog(
     properties: DialogProperties = DialogProperties()
 ) {
     Dialog(onDismissRequest = onDismissRequest, properties = properties) {
-        BoxWithConstraints {
-            println(constraints)
-        }
         Card(
             modifier = modifier.defaultMinSize(minWidth = 280.dp).widthIn(min = 280.dp, max = 560.dp),
             color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background)
         ) {
-            BoxWithConstraints {
-                println(constraints)
-            }
             Column(modifier = Modifier.padding(24.dp)) {
-                icon?.let {
-                    Box(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 16.dp)) {
-                        it()
-                    }
-                }
-
-                Column {
-                    title?.let {
-                        Row(
-                            Modifier.padding(bottom = 16.dp).align(if (icon != null) Alignment.CenterHorizontally else Alignment.Start),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            CompositionLocalProvider(LocalTextStyle provides titleStyle) {
-                                it.invoke()
-                            }
-                        }
-                    }
-                    CompositionLocalProvider(LocalTextStyle provides textStyle) {
-                        text?.let {
+                Column(Modifier.weight(1f, false)) {
+                    icon?.let {
+                        Box(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 16.dp)) {
                             it()
                         }
                     }
+
+                    Column {
+                        title?.let {
+                            Row(
+                                Modifier.padding(bottom = 16.dp).align(if (icon != null) Alignment.CenterHorizontally else Alignment.Start),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                CompositionLocalProvider(LocalTextStyle provides titleStyle) {
+                                    it.invoke()
+                                }
+                            }
+                        }
+                        CompositionLocalProvider(LocalTextStyle provides textStyle) {
+                            text?.let {
+                                it()
+                            }
+                        }
+                    }
                 }
+
 
                 Row(
                     modifier = Modifier.align(Alignment.End).padding(top = 24.dp),
@@ -85,6 +81,7 @@ fun AlertDialog(
         }
     }
 }
+
 
 private val titleStyle = TextStyle(
     fontWeight = FontWeight.Medium,
