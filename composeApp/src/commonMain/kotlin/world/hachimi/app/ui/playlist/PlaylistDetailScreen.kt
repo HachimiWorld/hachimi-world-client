@@ -251,9 +251,12 @@ private fun SongItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Box(Modifier.size(48.dp).clip(MaterialTheme.shapes.small)) {
+            Box(Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(LocalContentColor.current.copy(0.12f))) {
                 AsyncImage(
-                    model = coverUrl,
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(coverUrl)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Song Cover Image",
                     contentScale = ContentScale.Crop
                 )

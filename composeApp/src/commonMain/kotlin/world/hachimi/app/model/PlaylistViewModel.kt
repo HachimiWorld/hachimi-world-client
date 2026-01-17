@@ -10,7 +10,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
+import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
 class PlaylistViewModel(
@@ -27,6 +29,8 @@ class PlaylistViewModel(
     var playlistIsLoading by mutableStateOf(false)
     var selectedPlaylistId by mutableStateOf<Long?>(null)
     var addingToPlaylistOperating by mutableStateOf(false)
+    var containingPlaylist by mutableStateOf(setOf<Long>())
+        private set
 
     fun mounted() {
         viewModelScope.launch {
@@ -49,18 +53,36 @@ class PlaylistViewModel(
         }
     }
 
-    fun addToPlaylist() {
-        if (!global.player.playerState.hasSong) return
+    fun addToPlaylist(songId: Long) {
         if (!global.isLoggedIn) {
             global.alert("歌单功能登录后可用")
             return
         }
 
         viewModelScope.launch {
-            toBeAddedSongId = global.player.playerState.songInfo?.id
+            toBeAddedSongId = songId
             selectedPlaylistId = null
+            containingPlaylist = emptySet()
             showPlaylistDialog = true
-            refreshPlaylist()
+            launch { refreshPlaylist() }
+            launch { getContaining(songId) }
+        }
+    }
+
+    private suspend fun getContaining(songId: Long) {
+        try {
+            val resp = api.playlistModule.listContaining(PlaylistModule.ListContainingReq(songId))
+            if (resp.ok) {
+                val data = resp.ok()
+                containingPlaylist = data.playlistIds.toSet()
+                if (containingPlaylist.contains(selectedPlaylistId)) {
+                    selectedPlaylistId = null
+                }
+            } else {
+                global.alert(resp.err().msg)
+            }
+        } catch (e: Throwable) {
+            Logger.e("player", "Failed to list containing playlist", e)
         }
     }
 
@@ -70,11 +92,11 @@ class PlaylistViewModel(
         try {
             val resp = api.playlistModule.list()
             if (resp.ok) {
-                val data = resp.okData<PlaylistModule.ListResp>()
+                val data = resp.ok()
                 playlists = data.playlists
                 if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
             } else {
-                val data = resp.errData<CommonError>()
+                val data = resp.err()
                 global.alert(data.msg)
                 if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
             }

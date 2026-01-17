@@ -2,17 +2,16 @@ package world.hachimi.app.api.module
 
 import io.ktor.client.content.ProgressListener
 import io.ktor.client.plugins.onUpload
-import io.ktor.client.request.forms.InputProvider
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
 import io.ktor.http.headersOf
-import kotlin.time.Instant
 import kotlinx.io.Source
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.WebResult
+import kotlin.time.Instant
 
 class PlaylistModule(
     private val client: ApiClient
@@ -35,6 +34,19 @@ class PlaylistModule(
 
     suspend fun list(): WebResult<ListResp> =
         client.get("/playlist/list")
+
+    @Serializable
+    data class ListContainingReq(
+        val songId: Long
+    )
+
+    @Serializable
+    data class ListContainingResp(
+        val playlistIds: List<Long>
+    )
+
+    suspend fun listContaining(req: ListContainingReq): WebResult<ListContainingResp> =
+        client.get("/playlist/list_containing", req)
 
     @Serializable
     data class PlaylistIdReq(

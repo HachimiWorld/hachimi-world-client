@@ -12,6 +12,7 @@
 4. Show more song information in player screen. 播放页面显示更多歌曲信息。
 5. Highlight matched query in search results. 在搜索结果中高亮匹配的查询文本。
 6. Added sorting functionality for song searching. 添加歌曲搜索的排序功能。
+7. Show playlists containing the song before clicking adding button. 在添加歌单对话框中显示已添加到的歌单标识。
 
 
 ## Fixes 修复

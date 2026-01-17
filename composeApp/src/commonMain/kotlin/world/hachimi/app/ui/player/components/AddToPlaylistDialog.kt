@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.player.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.PlaylistViewModel
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Card
@@ -45,8 +47,7 @@ fun AddToPlaylistDialog(
 ) {
     LaunchedEffect(vm, tobeAddedSongId, random) {
         if (tobeAddedSongId != null) {
-            vm.toBeAddedSongId = tobeAddedSongId
-            vm.addToPlaylist()
+            vm.addToPlaylist(tobeAddedSongId)
         }
     }
 
@@ -80,45 +81,12 @@ fun AddToPlaylistDialog(
                     }
                 }
                 items(vm.playlists, key = { item -> item.id }) { item ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
+                    Item(
+                        item = item,
                         onClick = { vm.selectedPlaylistId = item.id },
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                Modifier.size(64.dp).padding(8.dp),
-                                RoundedCornerShape(8.dp),
-                                LocalContentColor.current.copy(0.12f)
-                            ) {
-                                AsyncImage(
-                                    modifier = Modifier.fillMaxSize(),
-                                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                                        .data(item.coverUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = "Playlist Cover",
-                                    contentScale = ContentScale.Crop,
-                                )
-                            }
-                            Text(
-                                modifier = Modifier.weight(1f).padding(start = 8.dp),
-                                text = item.name,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            if (vm.selectedPlaylistId == item.id) {
-                                Icon(
-                                    modifier = Modifier.padding(end = 12.dp),
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Selected"
-                                )
-                            }
-                        }
-                    }
+                        selected = vm.selectedPlaylistId == item.id,
+                        existed = vm.containingPlaylist.contains(item.id)
+                    )
                 }
             }
         },
@@ -144,4 +112,54 @@ fun AddToPlaylistDialog(
     )
 
     CreatePlaylistDialog(vm)
+}
+
+@Composable
+private fun Item(
+    item: PlaylistModule.PlaylistItem,
+    onClick: () -> Unit,
+    selected: Boolean,
+    existed: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.clickable(
+                enabled = !existed,
+                onClick = onClick
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                Modifier.size(64.dp).padding(8.dp),
+                RoundedCornerShape(8.dp),
+                LocalContentColor.current.copy(0.12f)
+            ) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(item.coverUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Playlist Cover",
+                    contentScale = ContentScale.Crop,
+                )
+            }
+            Text(
+                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                text = item.name,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (selected || existed) {
+                Icon(
+                    modifier = Modifier.padding(end = 12.dp),
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Selected"
+                )
+            }
+        }
+    }
 }
