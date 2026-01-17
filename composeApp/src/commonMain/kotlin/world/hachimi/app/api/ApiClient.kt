@@ -373,10 +373,12 @@ data class WebResp<T, E>(
         }
     }
 
+    @Deprecated("Use ok() instead", ReplaceWith("ok()"))
     inline fun <reified U : T> okData(): U {
         return json.decodeFromJsonElement<U>(this.data)
     }
 
+    @Deprecated("Use ok() instead", ReplaceWith("err()"))
     inline fun <reified D : E> errData(): E {
         return json.decodeFromJsonElement<D>(this.data)
     }
@@ -393,10 +395,11 @@ data class CommonError(
 // Ohh! I like extension function! :p
 inline fun <reified T> WebResp<T, *>.ok(): T {
     if (!ok) error("Trying to decode ok data with error response!")
-    return okData<T>()
+    return WebResp.json.decodeFromJsonElement<T>(this.data)
 }
 
 inline fun <reified E> WebResp<*, E>.err(): E {
     if (ok) error("Trying to decode error data with ok response!")
-    return errData<E>()
+    @Suppress("DEPRECATION")
+    return WebResp.json.decodeFromJsonElement<E>(this.data)
 }
