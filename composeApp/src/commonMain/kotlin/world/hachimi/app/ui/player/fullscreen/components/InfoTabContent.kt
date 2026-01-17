@@ -234,7 +234,7 @@ private fun OriginChip(
 @Composable
 private fun InternalOriginChip(title: String?, artist: String?, onClick: () -> Unit) {
     Chip(onClick = onClick) {
-        TitleArtist(title, artist)
+        TitleArtist(modifier = Modifier.weight(1f, fill = false), title = title, artist = artist)
         Icon(
             modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp),
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -247,7 +247,7 @@ private fun InternalOriginChip(title: String?, artist: String?, onClick: () -> U
 @Composable
 private fun ExternalOriginChip(title: String?, artist: String?, onClick: () -> Unit) {
     Chip(onClick = onClick) {
-        TitleArtist(title, artist)
+        TitleArtist(modifier = Modifier.weight(1f, fill = false), title = title, artist = artist)
         Icon(
             modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp),
             imageVector = Icons.Filled.ArrowOutward,
@@ -260,14 +260,14 @@ private fun ExternalOriginChip(title: String?, artist: String?, onClick: () -> U
 @Composable
 private fun NoLinkOriginChip(title: String?, artist: String?) {
     HintChip {
-        TitleArtist(title, artist)
+        TitleArtist(modifier = Modifier.weight(1f, fill = false), title = title, artist = artist)
     }
 }
 
 @Composable
-private fun RowScope.TitleArtist(title: String?, artist: String?) {
+private fun RowScope.TitleArtist(title: String?, artist: String?, modifier: Modifier = Modifier) {
     Text(
-        modifier = Modifier,
+        modifier = modifier,
         text = title ?: "unknown",
         overflow = TextOverflow.Ellipsis,
     )
