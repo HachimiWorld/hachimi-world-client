@@ -233,4 +233,13 @@
     <string name="common_play_cd">Play</string>
     <string name="recent_play_title">Recent plays</string>
 
+    <!-- InfoTab / Player fullscreen labels -->
+    <string name="info_author">Author</string>
+    <string name="info_tags">Tags</string>
+    <string name="info_release_date">Release date</string>
+    <string name="info_pv">PV</string>
+    <string name="info_origin">Origin</string>
+    <string name="info_listen_cd">Listen to this music</string>
+    <string name="info_open_in_new_tab_cd">Open in new window</string>
+
 </resources>
