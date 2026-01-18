@@ -65,6 +65,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.ui.util.horizontalFadingEdges
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.WindowSize
 
@@ -78,7 +79,7 @@ fun HomeMainScreen(
         onDispose { vm.unmount() }
     }
     AdaptivePullToRefreshBox(
-        modifier = Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+        modifier = Modifier.fillMaxSize(),
         isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
         onRefresh = { vm.fakeRefresh() },
         screenWidth = LocalWindowSize.current.width
@@ -88,7 +89,8 @@ fun HomeMainScreen(
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
                 .padding(LocalContentInsets.current.asPaddingValues())
-                .padding(vertical = 24.dp),
+                .padding(vertical = 24.dp)
+                .wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {
             Segment(
@@ -158,7 +160,7 @@ private fun Segment(
             if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(Res.string.common_empty))
             } else LazyHorizontalGrid(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
                 rows = GridCells.Fixed(2),
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
@@ -214,7 +216,7 @@ private fun CategorySegment(
                     Text(stringResource(Res.string.common_empty))
                 }
             } else LazyHorizontalGrid(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
                 rows = GridCells.Fixed(2),
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),

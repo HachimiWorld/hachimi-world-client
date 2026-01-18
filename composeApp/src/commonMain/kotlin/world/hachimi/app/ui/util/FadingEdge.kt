@@ -4,7 +4,11 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
@@ -46,9 +50,7 @@ fun Modifier.fadingEdges(
 fun Modifier.horizontalFadingEdges(
     startEdgeWidth: Dp = 72.dp,
     endEdgeWidth: Dp = 72.dp
-): Modifier = this.graphicsLayer {
-    compositingStrategy = CompositingStrategy.Offscreen
-}
+): Modifier = this
     .drawWithCache {
         val startColors = listOf(Color.Transparent, Color.Black)
         val startBrush = Brush.horizontalGradient(
@@ -60,8 +62,8 @@ fun Modifier.horizontalFadingEdges(
         val endColors = listOf(Color.Black, Color.Transparent)
         val endBrush = Brush.horizontalGradient(
             colors = endColors,
-            startX = size.height - endEdgeWidth.toPx(),
-            endX = size.height
+            startX = size.width - endEdgeWidth.toPx(),
+            endX = size.width
         )
 
         onDrawWithContent {
