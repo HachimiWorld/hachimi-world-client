@@ -35,6 +35,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.settings_client_type
+import hachimiworld.composeapp.generated.resources.settings_dark_mode_follow_system
+import hachimiworld.composeapp.generated.resources.settings_dark_mode_label
+import hachimiworld.composeapp.generated.resources.settings_dark_mode_off
+import hachimiworld.composeapp.generated.resources.settings_dark_mode_on
+import hachimiworld.composeapp.generated.resources.settings_dropdown_cd
+import hachimiworld.composeapp.generated.resources.settings_feedback
+import hachimiworld.composeapp.generated.resources.settings_github_text
+import hachimiworld.composeapp.generated.resources.settings_kids_mode
+import hachimiworld.composeapp.generated.resources.settings_loudness
+import hachimiworld.composeapp.generated.resources.settings_official_site_text
+import hachimiworld.composeapp.generated.resources.settings_official_website
+import hachimiworld.composeapp.generated.resources.settings_open_in_browser_cd
+import hachimiworld.composeapp.generated.resources.settings_title
+import hachimiworld.composeapp.generated.resources.settings_version_code
+import hachimiworld.composeapp.generated.resources.settings_version_name
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
@@ -51,69 +69,69 @@ fun SettingsScreen() {
             .padding(LocalContentInsets.current.asPaddingValues()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Text("设置", style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.titleLarge)
 
         PropertyItem(label = {
-            Text("深色模式", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(Res.string.settings_dark_mode_label), style = MaterialTheme.typography.bodyLarge)
         }) {
             var expanded by remember { mutableStateOf(false) }
             Box {
                 TextButton(onClick = { expanded = true }) {
                     Text(
                         when (globalStore.darkMode) {
-                            true -> "始终开启"
-                            false -> "始终关闭"
-                            null -> "跟随系统"
+                            true -> stringResource(Res.string.settings_dark_mode_on)
+                            false -> stringResource(Res.string.settings_dark_mode_off)
+                            null -> stringResource(Res.string.settings_dark_mode_follow_system)
                         }
                     )
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(Res.string.settings_dropdown_cd))
                 }
                 DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
                     DropdownMenuItem(onClick = {
                         globalStore.updateDarkMode(null)
                         expanded = false
                     }, text = {
-                        Text("跟随系统")
+                        Text(stringResource(Res.string.settings_dark_mode_follow_system))
                     })
                     DropdownMenuItem(onClick = {
                         globalStore.updateDarkMode(true)
                         expanded = false
                     }, text = {
-                        Text("始终开启")
+                        Text(stringResource(Res.string.settings_dark_mode_on))
                     })
                     DropdownMenuItem(onClick = {
                         globalStore.updateDarkMode(false)
                         expanded = false
                     }, text = {
-                        Text("始终关闭")
+                        Text(stringResource(Res.string.settings_dark_mode_off))
                     })
                 }
             }
         }
-        PropertyItem(label = { Text("响度均衡") }) {
+        PropertyItem(label = { Text(stringResource(Res.string.settings_loudness)) }) {
             Switch(globalStore.enableLoudnessNormalization, {
                 globalStore.updateLoudnessNormalization(it)
             })
         }
-        PropertyItem(label = { Text("宝宝模式") }) {
+        PropertyItem(label = { Text(stringResource(Res.string.settings_kids_mode)) }) {
             Switch(globalStore.kidsMode, {
                 globalStore.updateKidsMode(it)
             })
         }
-        PropertyItem(label = { Text("客户端类型") }) {
+        PropertyItem(label = { Text(stringResource(Res.string.settings_client_type)) }) {
             Text(getPlatform().name)
         }
-        PropertyItem(label = { Text("版本名") }) {
+        PropertyItem(label = { Text(stringResource(Res.string.settings_version_name)) }) {
             Text(BuildKonfig.VERSION_NAME)
         }
-        PropertyItem(label = { Text("版本号") }) {
+        PropertyItem(label = { Text(stringResource(Res.string.settings_version_code)) }) {
             Text(BuildKonfig.VERSION_CODE.toString())
         }
-        PropertyItem(label = { Text("反馈与建议") }) {
-            LinkButton("GitHub", "https://github.com/HachimiWorld/hachimi-world-client/discussions")
+        PropertyItem(label = { Text(stringResource(Res.string.settings_feedback)) }) {
+            LinkButton(stringResource(Res.string.settings_github_text), "https://github.com/HachimiWorld/hachimi-world-client/discussions")
         }
-        PropertyItem(label = { Text("官方网站") }) {
-            LinkButton("hachimi.world", "https://hachimi.world")
+        PropertyItem(label = { Text(stringResource(Res.string.settings_official_website)) }) {
+            LinkButton(stringResource(Res.string.settings_official_site_text), "https://hachimi.world")
         }
     }
 }
@@ -148,7 +166,7 @@ private fun LinkButton(
         Icon(
             modifier = Modifier.size(14.dp),
             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-            contentDescription = "Open in browser"
+            contentDescription = stringResource(Res.string.settings_open_in_browser_cd)
         )
     }
 }

@@ -40,6 +40,12 @@ import androidx.compose.ui.layout.onFirstVisible
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_empty
+import hachimiworld.composeapp.generated.resources.common_more
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.home_recent_title
+import hachimiworld.composeapp.generated.resources.home_recommend_title
+import hachimiworld.composeapp.generated.resources.home_weekly_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel

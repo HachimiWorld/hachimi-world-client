@@ -254,4 +254,22 @@
     <string name="song_cover_cd">歌曲封面</string>
     <string name="playlist_edit_title">编辑歌单</string>
 
+    <!-- Settings screen -->
+    <string name="settings_title">设置</string>
+    <string name="settings_dark_mode_label">深色模式</string>
+    <string name="settings_dark_mode_follow_system">跟随系统</string>
+    <string name="settings_dark_mode_on">始终开启</string>
+    <string name="settings_dark_mode_off">始终关闭</string>
+    <string name="settings_dropdown_cd">下拉菜单</string>
+    <string name="settings_loudness">响度均衡</string>
+    <string name="settings_kids_mode">宝宝模式</string>
+    <string name="settings_client_type">客户端类型</string>
+    <string name="settings_version_name">版本名</string>
+    <string name="settings_version_code">版本号</string>
+    <string name="settings_feedback">反馈与建议</string>
+    <string name="settings_official_website">官方网站</string>
+    <string name="settings_github_text">GitHub</string>
+    <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_open_in_browser_cd">在浏览器中打开</string>
+
 </resources>

@@ -254,4 +254,22 @@
     <string name="song_cover_cd">Song cover</string>
     <string name="playlist_edit_title">Edit playlist</string>
 
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_dark_mode_label">Dark mode</string>
+    <string name="settings_dark_mode_follow_system">Follow system</string>
+    <string name="settings_dark_mode_on">Always on</string>
+    <string name="settings_dark_mode_off">Always off</string>
+    <string name="settings_dropdown_cd">Dropdown</string>
+    <string name="settings_loudness">Loudness normalization</string>
+    <string name="settings_kids_mode">Kids mode</string>
+    <string name="settings_client_type">Client type</string>
+    <string name="settings_version_name">Version name</string>
+    <string name="settings_version_code">Version code</string>
+    <string name="settings_feedback">Feedback</string>
+    <string name="settings_official_website">Official site</string>
+    <string name="settings_github_text">GitHub</string>
+    <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_open_in_browser_cd">Open in browser</string>
+
 </resources>
