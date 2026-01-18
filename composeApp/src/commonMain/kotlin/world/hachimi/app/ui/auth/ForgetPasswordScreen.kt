@@ -33,6 +33,22 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_back
+import hachimiworld.composeapp.generated.resources.auth_confirm_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_email_placeholder
+import hachimiworld.composeapp.generated.resources.auth_forget_subtitle
+import hachimiworld.composeapp.generated.resources.auth_forget_title
+import hachimiworld.composeapp.generated.resources.auth_new_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_password_too_short
+import hachimiworld.composeapp.generated.resources.auth_passwords_not_match
+import hachimiworld.composeapp.generated.resources.auth_resend_seconds
+import hachimiworld.composeapp.generated.resources.auth_reset_success_text
+import hachimiworld.composeapp.generated.resources.auth_reset_success_title
+import hachimiworld.composeapp.generated.resources.auth_send
+import hachimiworld.composeapp.generated.resources.auth_verify_code_placeholder
+import hachimiworld.composeapp.generated.resources.common_ok
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.ForgetPasswordViewModel
@@ -77,8 +93,8 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                 .align(Alignment.Center)
         ) {
             FormContent(
-                title = { Text("重置密码") },
-                subtitle = { Text("忘记密码是成为神人的第一步") },
+                title = { Text(stringResource(Res.string.auth_forget_title)) },
+                subtitle = { Text(stringResource(Res.string.auth_forget_subtitle)) },
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextField(
@@ -86,29 +102,31 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                         value = vm.email,
                         onValueChange = { vm.email = it.singleLined() },
                         leadingIcon = { Icon(Icons.Outlined.Mail, null) },
-                        placeholder = { Text("邮箱") },
+                        placeholder = { Text(stringResource(Res.string.auth_email_placeholder)) },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                        supportingText = {
-                            Text("")
-                        }
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        supportingText = { Text("") }
                     )
 
                     var showPassword by remember { mutableStateOf(false) }
-                    var passwordHelp by remember { mutableStateOf("") }
+                    var showTooShortHelp by remember { mutableStateOf(false) }
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = vm.password,
                         onValueChange = {
                             vm.password = it.singleLined()
-                            passwordHelp =
-                                if (validatePasswordPattern(vm.password)) ""
-                                else "密码长度至少为 6 位"
+                            showTooShortHelp = validatePasswordPattern(vm.password)
                         },
                         leadingIcon = { Icon(Icons.Outlined.Lock, null) },
-                        placeholder = { Text("新密码") },
+                        placeholder = { Text(stringResource(Res.string.auth_new_password_placeholder)) },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Next
+                        ),
                         trailingIcon = {
                             PasswordToggleButton(
                                 showPassword,
@@ -116,25 +134,26 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                             )
                         },
                         visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                        supportingText = { Text(passwordHelp) }
+                        supportingText = { Text(if (showTooShortHelp) stringResource(Res.string.auth_password_too_short) else "") }
                     )
 
                     var showRepeatPassword by remember { mutableStateOf(false) }
-                    var repeatPasswordHelp by remember { mutableStateOf("") }
+                    var showRepeatNotMatchHelp by remember { mutableStateOf(false) }
 
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = vm.passwordRepeat,
                         onValueChange = {
                             vm.passwordRepeat = it.singleLined()
-                            repeatPasswordHelp =
-                                if (vm.password != vm.passwordRepeat) "两次输入不一致"
-                                else ""
+                            showRepeatNotMatchHelp = vm.password != vm.passwordRepeat
                         },
                         leadingIcon = { Icon(Icons.Outlined.SettingsBackupRestore, null) },
-                        placeholder = { Text("确认密码") },
+                        placeholder = { Text(stringResource(Res.string.auth_confirm_password_placeholder)) },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Next
+                        ),
                         trailingIcon = {
                             PasswordToggleButton(
                                 showRepeatPassword,
@@ -142,7 +161,13 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                             )
                         },
                         visualTransformation = if (showRepeatPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                        supportingText = { Text(repeatPasswordHelp) }
+                        supportingText = {
+                            Text(
+                                text =
+                                    if (showRepeatNotMatchHelp) stringResource(Res.string.auth_passwords_not_match)
+                                    else ""
+                            )
+                        }
                     )
 
                     val enabled by remember {
@@ -162,9 +187,12 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                             value = vm.verifyCode,
                             onValueChange = { vm.verifyCode = it.singleLined() },
                             leadingIcon = { Icon(Icons.Outlined.Security, null) },
-                            placeholder = { Text("验证码") },
+                            placeholder = { Text(stringResource(Res.string.auth_verify_code_placeholder)) },
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
                             keyboardActions = KeyboardActions(onDone = {
                                 if (enabled && !vm.operating) {
                                     vm.submit()
@@ -177,17 +205,20 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                             enabled = sendCodeEnabled && !vm.operating && vm.email.isNotBlank()
                         ) {
                             Text(
-                                if (sendCodeEnabled) "发送"
-                                else "重新发送 (${vm.codeRemainSecs} 秒)"
+                                if (sendCodeEnabled) stringResource(Res.string.auth_send)
+                                else stringResource(
+                                    Res.string.auth_resend_seconds,
+                                    vm.codeRemainSecs
+                                )
                             )
                         }
                     }
                     Row(Modifier.fillMaxWidth()) {
                         TextButton(
                             modifier = Modifier.size(width = 112.dp, height = 48.dp),
-                            onClick = { global.nav.back()
-                        }) {
-                            Text("返回")
+                            onClick = { global.nav.back() }
+                        ) {
+                            Text(stringResource(Res.string.auth_back))
                         }
 
                         Spacer(Modifier.weight(1f))
@@ -197,7 +228,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                             onClick = { vm.submit() },
                             enabled = enabled && !vm.operating
                         ) {
-                            Text("确定")
+                            Text(stringResource(Res.string.common_ok))
                         }
                     }
                 }
@@ -206,11 +237,11 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                     onDismissRequest = { vm.closeDialog() },
                     confirmButton = {
                         TextButton(onClick = { vm.closeDialog() }) {
-                            Text("确定")
+                            Text(stringResource(Res.string.common_ok))
                         }
                     },
-                    title = { Text("成功") },
-                    text = { Text("已成功将您的密码重置") }
+                    title = { Text(stringResource(Res.string.auth_reset_success_title)) },
+                    text = { Text(stringResource(Res.string.auth_reset_success_text)) }
                 )
 
                 if (vm.showCaptchaDialog) CaptchaDialog(

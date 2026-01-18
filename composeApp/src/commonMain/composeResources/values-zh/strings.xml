@@ -173,4 +173,19 @@
     <string name="nav_committee_center">委员会中心</string>
     <string name="nav_contributor_center">贡献者中心</string>
     <string name="nav_settings">设置</string>
+
+    <string name="auth_forget_title">重置密码</string>
+    <string name="auth_forget_subtitle">忘记密码是成为神人的第一步</string>
+
+    <string name="auth_new_password_placeholder">新密码</string>
+
+    <string name="auth_verify_code_placeholder">验证码</string>
+    <string name="auth_send">发送</string>
+    <string name="auth_resend_seconds">重新发送 (%d 秒)</string>
+
+    <string name="auth_back">返回</string>
+    <string name="common_ok">确定</string>
+
+    <string name="auth_reset_success_title">成功</string>
+    <string name="auth_reset_success_text">已成功将您的密码重置</string>
 </resources>

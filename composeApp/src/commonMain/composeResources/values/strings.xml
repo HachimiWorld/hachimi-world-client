@@ -173,4 +173,19 @@
     <string name="nav_committee_center">Committee Center</string>
     <string name="nav_contributor_center">Contributor Center</string>
     <string name="nav_settings">Settings</string>
+
+    <string name="auth_forget_title">Reset password</string>
+    <string name="auth_forget_subtitle">Forgetting password is the first step to becoming a god</string>
+
+    <string name="auth_new_password_placeholder">New password</string>
+
+    <string name="auth_verify_code_placeholder">Verification code</string>
+    <string name="auth_send">Send</string>
+    <string name="auth_resend_seconds">Resend (%d s)</string>
+
+    <string name="auth_back">Back</string>
+    <string name="common_ok">OK</string>
+
+    <string name="auth_reset_success_title">Success</string>
+    <string name="auth_reset_success_text">Your password has been reset successfully</string>
 </resources>
