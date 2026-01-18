@@ -242,4 +242,16 @@
     <string name="info_listen_cd">收听此音乐</string>
     <string name="info_open_in_new_tab_cd">在新窗口打开</string>
 
+    <!-- Playlist package strings (zh originals) -->
+    <string name="playlist_empty">什么也没有</string>
+    <string name="playlist_my_playlists_title">我的歌单</string>
+    <string name="playlist_description_placeholder">暂无介绍</string>
+    <string name="playlist_private_badge">私有</string>
+    <string name="playlist_songs_list">歌曲列表</string>
+    <string name="playlist_song_count">%d 首</string>
+    <string name="playlist_remove_item">移出歌单</string>
+    <string name="playlist_cover_cd">歌单封面</string>
+    <string name="song_cover_cd">歌曲封面</string>
+    <string name="playlist_edit_title">编辑歌单</string>
+
 </resources>

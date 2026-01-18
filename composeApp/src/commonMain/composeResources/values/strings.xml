@@ -242,4 +242,16 @@
     <string name="info_listen_cd">Listen to this music</string>
     <string name="info_open_in_new_tab_cd">Open in new window</string>
 
+    <!-- Playlist package strings -->
+    <string name="playlist_empty">No items</string>
+    <string name="playlist_my_playlists_title">My playlists</string>
+    <string name="playlist_description_placeholder">No description</string>
+    <string name="playlist_private_badge">Private</string>
+    <string name="playlist_songs_list">Songs</string>
+    <string name="playlist_song_count">%d tracks</string>
+    <string name="playlist_remove_item">Remove from playlist</string>
+    <string name="playlist_cover_cd">Playlist cover</string>
+    <string name="song_cover_cd">Song cover</string>
+    <string name="playlist_edit_title">Edit playlist</string>
+
 </resources>
