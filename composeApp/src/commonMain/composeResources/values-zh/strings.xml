@@ -210,4 +210,14 @@
     <!-- ReloadPage strings -->
     <string name="reload_page_message">基米好像去往了天堂</string>
     <string name="reload_retry">重试</string>
+
+    <!-- Update / Upgrade dialog -->
+    <string name="update_found_title">发现新版本</string>
+    <string name="update_current_version">当前版本：%s</string>
+    <string name="update_new_version">新版本：%s</string>
+    <string name="update_changelog_title">更新日志</string>
+    <string name="update_confirm">立即升级</string>
+    <string name="update_ignore">忽略</string>
+    <string name="update_icon_cd">升级</string>
+
 </resources>

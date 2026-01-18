@@ -211,4 +211,13 @@
     <string name="reload_page_message">It seems Hachimi has gone to heaven</string>
     <string name="reload_retry">Retry</string>
 
+    <!-- Update / Upgrade dialog -->
+    <string name="update_found_title">Update available</string>
+    <string name="update_current_version">Current: %s</string>
+    <string name="update_new_version">New: %s</string>
+    <string name="update_changelog_title">Changelog</string>
+    <string name="update_confirm">Upgrade now</string>
+    <string name="update_ignore">Ignore</string>
+    <string name="update_icon_cd">Upgrade</string>
+
 </resources>
