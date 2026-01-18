@@ -3,6 +3,7 @@
 ## Features 新功能
 
 1. Added support for minimizing to system tray. 支持最小化到系统托盘。
+2. Added multiple language support. 添加多语言支持。
 
 ## Enhancements 改进
 
