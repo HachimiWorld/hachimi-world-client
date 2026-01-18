@@ -26,6 +26,12 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_cancel
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_confirm
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_create
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.PlaylistViewModel
@@ -58,7 +64,7 @@ fun AddToPlaylistDialog(
             onDismiss()
         },
         title = {
-            Text("收藏到歌单")
+            Text(stringResource(Res.string.player_add_to_playlist_title))
         },
         text = {
             if (vm.playlistIsLoading) {
@@ -75,7 +81,7 @@ fun AddToPlaylistDialog(
                             Icon(Icons.Default.Add, contentDescription = null)
                             Text(
                                 modifier = Modifier.padding(start = 16.dp),
-                                text = "新建歌单"
+                                text = stringResource(Res.string.player_add_to_playlist_create)
                             )
                         }
                     }
@@ -98,7 +104,7 @@ fun AddToPlaylistDialog(
                 },
                 enabled = vm.selectedPlaylistId != null && !vm.addingToPlaylistOperating
             ) {
-                Text("确定")
+                Text(stringResource(Res.string.player_add_to_playlist_confirm))
             }
         },
         dismissButton = {
@@ -106,7 +112,7 @@ fun AddToPlaylistDialog(
                 vm.cancelAddToPlaylist()
                 onDismiss()
             }) {
-                Text("取消")
+                Text(stringResource(Res.string.player_add_to_playlist_cancel))
             }
         }
     )

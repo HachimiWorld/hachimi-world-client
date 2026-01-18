@@ -26,6 +26,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.play_all
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -99,7 +102,7 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = "Play")
                         Spacer(Modifier.width(8.dp))
-                        Text("播放全部")
+                        Text(stringResource(Res.string.play_all))
                     }
                 }
             }

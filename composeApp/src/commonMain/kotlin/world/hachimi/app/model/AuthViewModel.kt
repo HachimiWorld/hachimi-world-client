@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_invalid_email
+import hachimiworld.composeapp.generated.resources.auth_password_too_short
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -113,12 +116,12 @@ class AuthViewModel(
         if (regStep == 0) {
             // Validate
             if (!validateEmailPattern(regEmail)) {
-                global.alert("邮箱地址不正确")
+                global.alert(Res.string.auth_invalid_email)
                 return
             }
 
             if (!validatePasswordPattern(regPassword)) {
-                global.alert("密码长度至少为 6 位")
+                global.alert(Res.string.auth_password_too_short)
                 return
             }
 

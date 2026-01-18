@@ -38,6 +38,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_logout
+import hachimiworld.composeapp.generated.resources.common_cancel
+import hachimiworld.composeapp.generated.resources.common_change
+import hachimiworld.composeapp.generated.resources.player_play_all
+import hachimiworld.composeapp.generated.resources.user_change_bio
+import hachimiworld.composeapp.generated.resources.user_change_nickname
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -109,7 +117,7 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                 style = MaterialTheme.typography.titleLarge
             )
             if (vm.myself) TextButton(onClick = { global.logout() }) {
-                Text("退出登录")
+                Text(stringResource(Res.string.auth_logout))
             }
         }
 
@@ -204,7 +212,7 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
             ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = "Play")
                 Spacer(Modifier.width(8.dp))
-                Text("播放全部")
+                Text(stringResource(Res.string.player_play_all))
             }
         }
 
@@ -224,7 +232,7 @@ private fun ChangeUsernameDialog(vm: UserSpaceViewModel) {
     if (vm.showEditUsername) AlertDialog(
         onDismissRequest = { vm.cancelEdit() },
         title = {
-            Text("更改昵称")
+            Text(stringResource(Res.string.user_change_nickname))
         },
         text = {
             TextField(
@@ -238,12 +246,12 @@ private fun ChangeUsernameDialog(vm: UserSpaceViewModel) {
                 onClick = { vm.confirmEditUsername() },
                 enabled = !vm.operating && vm.editUsernameValue.isNotBlank()
             ) {
-                Text("更改")
+                Text(stringResource(Res.string.common_change))
             }
         },
         dismissButton = {
             TextButton(onClick = { vm.cancelEdit() }) {
-                Text("取消")
+                Text(stringResource(Res.string.common_cancel))
             }
         }
     )
@@ -254,7 +262,7 @@ private fun ChangeBioDialog(vm: UserSpaceViewModel) {
     if (vm.showEditBio) AlertDialog(
         onDismissRequest = { vm.cancelEdit() },
         title = {
-            Text("更改简介")
+            Text(stringResource(Res.string.user_change_bio))
         },
         text = {
             TextField(
@@ -268,12 +276,12 @@ private fun ChangeBioDialog(vm: UserSpaceViewModel) {
                 onClick = { vm.confirmEditBio() },
                 enabled = !vm.operating && vm.editBioValue.isNotBlank()
             ) {
-                Text("更改")
+                Text(stringResource(Res.string.common_change))
             }
         },
         dismissButton = {
             TextButton(onClick = { vm.cancelEdit() }) {
-                Text("取消")
+                Text(stringResource(Res.string.common_cancel))
             }
         }
     )

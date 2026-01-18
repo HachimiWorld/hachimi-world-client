@@ -1,0 +1,143 @@
+<resources>
+    <!-- Kids mode dialog -->
+    <string name="player_kids_mode_title">Kids mode enabled</string>
+    <string name="player_kids_mode_message">This work is marked by the author as containing content unsuitable for children; since kids mode is enabled, please confirm whether to continue playback.</string>
+    <string name="player_kids_mode_play">Play</string>
+    <string name="player_kids_mode_cancel">Cancel</string>
+
+    <!-- Player / Playlist strings -->
+    <string name="player_add_to_playlist_title">Add to playlist</string>
+    <string name="player_add_to_playlist_create">Create playlist</string>
+    <string name="player_add_to_playlist_confirm">Confirm</string>
+    <string name="player_add_to_playlist_cancel">Cancel</string>
+
+    <string name="player_create_playlist_title">Create playlist</string>
+    <string name="player_create_playlist_name_placeholder">Name</string>
+    <string name="player_create_playlist_description_placeholder">Description</string>
+    <string name="player_create_playlist_private_label">Private playlist</string>
+    <string name="player_create_playlist_create">Create</string>
+    <string name="player_create_playlist_cancel">Cancel</string>
+
+    <string name="player_share">Share</string>
+    <string name="share_share_music_title">Share music</string>
+    <string name="share">Share</string>
+    <string name="player_share_copied_clipboard">Copied to clipboard</string>
+
+    <string name="player_queue_title">Playback queue</string>
+    <string name="player_queue_clear">Clear</string>
+    <string name="player_cover_cd">Cover</string>
+    <string name="player_remove_from_playlist_cd">Remove from playlist</string>
+
+    <string name="play_all">Play all</string>
+
+    <string name="contributor_submitter">Submitter</string>
+    <string name="artwork_details_title">Artwork details</string>
+
+    <string name="auth_logout">Logout</string>
+    <string name="auth_login">Login</string>
+    <string name="auth_register">Register</string>
+    <string name="auth_auth_token_invalid">Login token expired, please sign in again</string>
+    <string name="auth_forget_send_code_failed">Failed to send verification code, please try again later</string>
+    <string name="auth_forget_reset_failed">Failed to reset password, please try again later</string>
+    <string name="auth_forget_captcha_failed">Captcha verification failed, please try again later</string>
+
+    <string name="user_change_nickname">Change Nickname</string>
+    <string name="user_change_bio">Change bio</string>
+
+    <string name="player_play_all">Play all</string>
+
+    <string name="common_change">Change</string>
+    <string name="common_close">Close</string>
+    <string name="common_cancel">Cancel</string>
+
+    <string name="common_clear">Clear</string>
+    <string name="common_search_placeholder">Search...</string>
+
+    <string name="review_approve">Approve</string>
+    <string name="review_reject">Reject</string>
+
+    <!-- Client API version incompatible dialog -->
+    <string name="player_client_api_version_title">Client version too old</string>
+    <string name="player_client_api_version_message">Your client is below the minimum version supported by the server. Please update to the latest client to continue using the app.</string>
+    <string name="player_client_api_version_client_label">Client API Ver:</string>
+    <string name="player_client_api_version_server_label">Server API Ver:</string>
+    <string name="player_client_api_version_server_min_label">Server Min API Ver:</string>
+
+    <string name="global_check_update_failed">Check for update failed</string>
+    <string name="global_error_check_min_api_failed">Failed to check min API version</string>
+    <string name="recent_error_fetch_recommend_failed">Failed to fetch recommendations: %s</string>
+
+    <string name="player_not_playing">Not playing yet</string>
+    <string name="app_menu_show_window">Show window</string>
+    <string name="app_menu_quit">Quit</string>
+    <string name="common_done">Done</string>
+    <string name="artwork_jmid_prefix_not_set">Jmid prefix not set</string>
+    <string name="artwork_jmid_already_used">This Jmid is already used</string>
+
+    <string name="auth_not_logged_in">Not logged in</string>
+    <string name="playlist_login_required">Playlist features require login</string>
+
+    <!-- Publish -->
+    <string name="publish_image_too_large">Image too large</string>
+    <string name="publish_audio_too_large">Audio file is too large (max 20MB)</string>
+    <string name="publish_fetch_jmid_failed">Failed to get available Jmid</string>
+    <string name="publish_jmid_number_format">Number must be 3 digits, e.g. 001</string>
+    <string name="publish_change_success">Changed successfully</string>
+    <string name="publish_cover_required">Please upload cover</string>
+    <string name="publish_jmid_required">Please set Jmid</string>
+    <string name="publish_title_required">Please enter a title</string>
+    <string name="publish_subtitle_too_long">Subtitle is too long</string>
+    <string name="publish_description_too_long">Description is too long</string>
+    <string name="publish_tag_name_empty">Tag name cannot be empty</string>
+    <string name="publish_tag_already_exists">Tag already exists</string>
+    <string name="publish_invalid_uid">Please enter a valid UID</string>
+    <string name="publish_fetch_user_failed">Failed to fetch user info</string>
+    <string name="publish_audio_file_required">Please select an audio file</string>
+    <string name="publish_lyrics_required">Please enter lyrics</string>
+    <string name="publish_lyrics_invalid_lrc">Please provide valid LRC format lyrics</string>
+    <string name="publish_origin_info_required">Please enter origin work info</string>
+    <string name="publish_derive_info_required">Please enter derivative work info</string>
+    <string name="publish_https_required">Please provide an HTTPS origin link, do not use HTTP</string>
+    <string name="publish_https_format">Please provide a valid HTTPS link like https://xxxx</string>
+    <string name="publish_explicit_required">Please select whether explicit content is included</string>
+    <string name="publish_init_jmid_prefix_used">This prefix is already used; contact maintainers if it's taken</string>
+    <string name="publish_init_jmid_invalid_format">Please enter 3 to 4 letters</string>
+
+    <!-- Search sort labels -->
+    <string name="search_sort_relevance">Most relevant</string>
+    <string name="search_sort_newest">Newest</string>
+    <string name="search_sort_oldest">Oldest</string>
+    <string name="search_placeholder">Search...</string>
+
+    <!-- Auth validation -->
+    <string name="auth_invalid_email">Invalid email address</string>
+    <string name="auth_password_too_short">Password must be at least 6 characters</string>
+
+    <!-- Player errors -->
+    <string name="player_play_failed">Playback failed: %s</string>
+
+    <!-- Date/time labels -->
+    <string name="date_after_tomorrow">Day after tomorrow</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_today">Today</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="date_before_yesterday">Day before yesterday</string>
+    <string name="time_seconds_format">%d s</string>
+    <string name="time_minutes_seconds_format">%d m %d s</string>
+
+    <!-- Search UI strings -->
+    <string name="search_no_results">Nothing found</string>
+    <string name="search_tab_songs">Songs</string>
+    <string name="search_tab_users">Users</string>
+
+    <!-- Navigation labels -->
+    <string name="nav_home_title">Home</string>
+    <string name="nav_recent_like">Recent likes</string>
+    <string name="nav_recent_play">Recently played</string>
+    <string name="nav_my_playlist">My playlists</string>
+    <string name="nav_my_subscribe">My follows</string>
+    <string name="nav_creation_center">Creation Center</string>
+    <string name="nav_committee_center">Committee Center</string>
+    <string name="nav_contributor_center">Contributor Center</string>
+    <string name="nav_settings">Settings</string>
+</resources>

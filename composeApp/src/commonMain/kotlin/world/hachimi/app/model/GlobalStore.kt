@@ -5,6 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_auth_token_invalid
+import hachimiworld.composeapp.generated.resources.global_check_update_failed
+import hachimiworld.composeapp.generated.resources.global_error_check_min_api_failed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -14,9 +18,13 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.BuildKonfig
-import world.hachimi.app.api.*
+import world.hachimi.app.api.ApiClient
+import world.hachimi.app.api.AuthError
+import world.hachimi.app.api.AuthenticationListener
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.VersionModule
+import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.Navigator
@@ -124,7 +132,7 @@ class GlobalStore(
                     when (err) {
                         is AuthError.RefreshTokenError -> {
                             logout()
-                            alert("登录令牌失效，请重新登录")
+                            alert( Res.string.auth_auth_token_invalid)
                             nav.push(Route.Auth())
                         }
                         is AuthError.ErrorHttpResponse -> {}
@@ -157,8 +165,17 @@ class GlobalStore(
         }
     }
 
-    fun alert(text: StringResource, vararg params: Any?) {
-        TODO()
+    fun alert(text: StringResource, vararg params: Any) {
+        // Resolve a StringResource to a localized String and delegate to the existing alert(text: String?)
+        scope.launch {
+            try {
+                val resolved = org.jetbrains.compose.resources.getString(text, *params)
+                alert(resolved)
+            } catch (e: Throwable) {
+                // Fallback to a simple unknown error message if getString isn't available on the platform
+                alert("Unknown Error")
+            }
+        }
     }
 
     fun expandPlayer() {
@@ -211,7 +228,7 @@ class GlobalStore(
             }
         } catch (e: Throwable) {
             Logger.e("player", "Failed to check min API version", e)
-            alert("Failed to check min API version")
+            alert(Res.string.global_error_check_min_api_failed)
         }
     }
 
@@ -239,7 +256,7 @@ class GlobalStore(
             }
         } catch (e: Throwable) {
             Logger.e("global", "Failed to check update", e)
-            alert("检查更新失败")
+            alert(Res.string.global_check_update_failed)
         } finally {
             checkingUpdate = false
         }

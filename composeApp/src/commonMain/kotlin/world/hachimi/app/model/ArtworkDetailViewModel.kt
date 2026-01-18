@@ -5,7 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_jmid_already_used
+import hachimiworld.composeapp.generated.resources.artwork_jmid_prefix_not_set
+import hachimiworld.composeapp.generated.resources.publish_change_success
+import hachimiworld.composeapp.generated.resources.publish_jmid_number_format
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import world.hachimi.app.api.ApiClient
@@ -128,9 +138,11 @@ class ArtworkDetailViewModel(
         val mappedInput = number.singleLined()
         jmidNumber = mappedInput
         val prefix = jmidPrefix ?: run {
-            // unreachable
-            jmidSupportText = "未设置基米ID前缀"
+            // unreachable — set localized message asynchronously
             jmidValid = false
+            viewModelScope.launch {
+                jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_prefix_not_set)
+            }
             return
         }
 
@@ -151,7 +163,9 @@ class ArtworkDetailViewModel(
                                         jmidSupportText = null
                                     } else {
                                         jmidValid = false
-                                        jmidSupportText = "该基米ID已被使用"
+                                        viewModelScope.launch {
+                                            jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
+                                        }
                                     }
                                 } else {
                                     jmidValid = false
@@ -168,7 +182,9 @@ class ArtworkDetailViewModel(
             }
         } else {
             jmidValid = false
-            jmidSupportText = "数字段必须为 3 位，如 001"
+            viewModelScope.launch {
+                jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_jmid_number_format)
+            }
         }
     }
 
@@ -186,7 +202,7 @@ class ArtworkDetailViewModel(
                 ))
                 if (resp.ok) {
                     showChangeJmidDialog = false
-                    global.alert("更改成功")
+                    global.alert(Res.string.publish_change_success)
                     load()
                 } else {
                     val err = resp.err()

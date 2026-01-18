@@ -29,7 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_close
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.ArtworkDetailViewModel
@@ -238,7 +241,7 @@ private fun ChangeJmidDialogHost(
                 onDismissRequest = { vm.cancelChangeJmid() },
                 confirmButton = {
                     TextButton(onClick = { vm.cancelChangeJmid() }) {
-                        Text("关闭")
+                        Text(stringResource(Res.string.common_close))
                     }
                 }
             )

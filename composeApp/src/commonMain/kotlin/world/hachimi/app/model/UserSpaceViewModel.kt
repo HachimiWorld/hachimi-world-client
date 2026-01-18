@@ -6,13 +6,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_not_logged_in
+import hachimiworld.composeapp.generated.resources.publish_image_too_large
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
@@ -88,7 +95,7 @@ class UserSpaceViewModel(
         if (uid == null) {
             val userInfo = global.userInfo
             if (userInfo == null) {
-                global.alert("未登录")
+                global.alert(Res.string.auth_not_logged_in)
                 return
             }
             this.uid = userInfo.uid
@@ -123,7 +130,7 @@ class UserSpaceViewModel(
                 // 1. Validate image
                 val size = image.size()
                 if (size > 4 * 1024 * 1024) {
-                    global.alert("Image too large")
+                    global.alert(Res.string.publish_image_too_large)
                     return@launch
                 }
                 val buffer = Buffer().apply { write(image.readBytes()) }

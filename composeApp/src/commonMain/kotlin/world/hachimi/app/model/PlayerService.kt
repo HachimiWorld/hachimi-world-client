@@ -3,6 +3,8 @@ package world.hachimi.app.model
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_play_failed
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -245,7 +247,7 @@ class PlayerService(
         }
 
         Logger.e(TAG, "Failed to play song", lastError)
-        global.alert("播放失败：${lastError?.message}")
+        global.alert(Res.string.player_play_failed, lastError?.message ?: "")
     }
 
     private var playPrepareJob: Job? = null

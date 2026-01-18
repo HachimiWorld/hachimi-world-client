@@ -55,6 +55,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_share
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
@@ -345,7 +348,7 @@ private fun Footer(
                         onShareClick()
                         showDropdownMenu = false
                     },
-                    text = { Text("分享") },
+                    text = { Text(stringResource(Res.string.player_share)) },
                     leadingIcon = { Icon(Icons.Default.Share, "Share") },
                 )
             }

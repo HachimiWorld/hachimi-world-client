@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.playlist_login_required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,7 +57,7 @@ class PlaylistViewModel(
 
     fun addToPlaylist(songId: Long) {
         if (!global.isLoggedIn) {
-            global.alert("歌单功能登录后可用")
+            global.alert(Res.string.playlist_login_required)
             return
         }
 

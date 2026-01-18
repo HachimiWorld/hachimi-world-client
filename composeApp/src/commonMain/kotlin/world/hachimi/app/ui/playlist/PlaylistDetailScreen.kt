@@ -46,6 +46,9 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.play_all
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PlaylistModule
@@ -220,7 +223,7 @@ private fun Header(
             ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = "Play")
                 Spacer(Modifier.width(16.dp))
-                Text("播放全部")
+                Text(stringResource(Res.string.play_all))
             }
         }
     }

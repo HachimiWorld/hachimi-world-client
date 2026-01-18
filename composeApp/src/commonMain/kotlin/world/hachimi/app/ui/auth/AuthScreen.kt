@@ -35,6 +35,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_login
+import hachimiworld.composeapp.generated.resources.auth_register
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialSharedAxisX
@@ -184,7 +188,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
             Spacer(Modifier.height(24.dp))
             Row(Modifier.fillMaxWidth()) {
                 TextButton(modifier = Modifier.height(48.dp), onClick = toRegister) {
-                    Text("创建账号")
+                    Text(stringResource(Res.string.auth_register))
                 }
 
                 Spacer(Modifier.weight(1f))
@@ -194,7 +198,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
                     onClick = { vm.startLogin() },
                     enabled = !vm.isOperating && vm.email.isNotBlank() && vm.password.isNotBlank(),
                 ) {
-                    Text("登录")
+                    Text(stringResource(Res.string.auth_login))
                 }
             }
         }
@@ -300,7 +304,7 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                     modifier = Modifier.size(width = 112.dp, height = 48.dp),
                     onClick = toLogin
                 ) {
-                    Text("登录")
+                    Text(stringResource(Res.string.auth_login))
                 }
 
                 Spacer(Modifier.weight(1f))

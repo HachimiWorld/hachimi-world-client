@@ -58,6 +58,9 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_share
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
@@ -310,7 +313,7 @@ private fun MoreDropdownMenu(
                 onShareClick()
                 onDismissRequest()
             },
-            text = { Text("分享") },
+            text = { Text(stringResource(Res.string.player_share)) },
             leadingIcon = { Icon(Icons.Default.Share, "Share") },
         )
     }

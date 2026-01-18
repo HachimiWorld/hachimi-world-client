@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_close
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
@@ -44,7 +47,7 @@ fun InitJmidDialog(
         },
         dismissButton = {
             TextButton(onDismissRequest) {
-                Text("关闭")
+                Text(stringResource(Res.string.common_close))
             }
         },
         title = {
