@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -37,6 +39,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.playlist.components.PlaylistItem
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
 
 @Composable
@@ -58,7 +61,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                 Text(stringResource(Res.string.playlist_empty))
             } else BoxWithConstraints {
                 LazyVerticalGrid(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
                     columns = calculateGridColumns(maxWidth),
                     contentPadding = PaddingValues(24.dp),
                     verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),

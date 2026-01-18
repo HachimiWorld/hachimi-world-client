@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.SegmentedButton
@@ -16,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import world.hachimi.app.util.WindowSize
 
 
 private enum class Tab(
@@ -28,7 +31,7 @@ private enum class Tab(
 fun MyArtworkScreen() {
     val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED)) {
         val scope = rememberCoroutineScope()
         SingleChoiceSegmentedButtonRow(Modifier.padding(top = 24.dp, start = 24.dp)) {
             Tab.entries.forEachIndexed { index, tab ->
