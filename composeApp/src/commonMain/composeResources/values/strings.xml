@@ -194,4 +194,8 @@
     <string name="closeask_text">After minimizing you can restore the window from the system tray</string>
     <string name="closeask_minimize">Minimize</string>
     <string name="closeask_quit">Quit</string>
+
+    <!-- Developing page -->
+    <string name="developing_page_title">Under development</string>
+
 </resources>

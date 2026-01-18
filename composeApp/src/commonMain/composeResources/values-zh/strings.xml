@@ -194,4 +194,7 @@
     <string name="closeask_text">最小化后可从系统托盘唤出窗口</string>
     <string name="closeask_minimize">最小化</string>
     <string name="closeask_quit">直接退出</string>
+
+    <!-- Developing page -->
+    <string name="developing_page_title">绝赞开发中</string>
 </resources>
