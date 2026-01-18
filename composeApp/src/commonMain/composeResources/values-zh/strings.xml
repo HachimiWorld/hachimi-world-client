@@ -197,4 +197,7 @@
 
     <!-- Developing page -->
     <string name="developing_page_title">绝赞开发中</string>
+
+    <!-- NeedLogin screen -->
+    <string name="need_login_message">登录后才可以使用哦</string>
 </resources>

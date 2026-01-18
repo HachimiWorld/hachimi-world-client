@@ -198,4 +198,7 @@
     <!-- Developing page -->
     <string name="developing_page_title">Under development</string>
 
+    <!-- NeedLogin screen -->
+    <string name="need_login_message">You need to log in to use this</string>
+
 </resources>
