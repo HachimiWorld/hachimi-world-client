@@ -207,4 +207,8 @@
     <string name="pagination_previous_cd">Previous</string>
     <string name="pagination_next_cd">Next</string>
 
+    <!-- ReloadPage strings -->
+    <string name="reload_page_message">It seems Hachimi has gone to heaven</string>
+    <string name="reload_retry">Retry</string>
+
 </resources>

@@ -206,4 +206,8 @@
     <string name="pagination_page_size">%d 条/页</string>
     <string name="pagination_previous_cd">上一页</string>
     <string name="pagination_next_cd">下一页</string>
+
+    <!-- ReloadPage strings -->
+    <string name="reload_page_message">基米好像去往了天堂</string>
+    <string name="reload_retry">重试</string>
 </resources>
