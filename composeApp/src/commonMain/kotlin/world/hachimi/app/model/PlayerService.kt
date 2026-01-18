@@ -114,6 +114,9 @@ class PlayerService(
             Logger.i(TAG, "Inner player initialized")
             restorePlayerState()
 
+            // Apply initial replay gain toggle immediately for the current runtime.
+            player.setReplayGainEnabled(global.enableLoudnessNormalization)
+
             startSyncingJob()
         }
     }
@@ -553,7 +556,7 @@ class PlayerService(
                 coverBytes = coverBytes,
                 format = extension,
                 durationSeconds = metadata.durationSeconds,
-                replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                replayGainDB = metadata.gain ?: 0f
             )
             return@coroutineScope item
         } else {
@@ -581,7 +584,7 @@ class PlayerService(
                     coverUrl = metadata.coverUrl,
                     format = extension,
                     durationSeconds = metadata.durationSeconds,
-                    replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                    replayGainDB = metadata.gain ?: 0f
                 )
 
                 // TODO: Reuse the cached data from player core
@@ -611,7 +614,7 @@ class PlayerService(
                     coverBytes = coverBytes,
                     format = extension,
                     durationSeconds = metadata.durationSeconds,
-                    replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                    replayGainDB = metadata.gain ?: 0f
                 )
                 return@coroutineScope item
             }
@@ -852,5 +855,9 @@ class PlayerService(
         val playingSongId = playerState.songInfo?.id
         val data = PlayerStatePersistence(playingSongId, musicQueue)
         dataStore.set(PreferencesKeys.PLAYER_MUSIC_QUEUE, Json.encodeToString(data))
+    }
+
+    suspend fun setReplayGainEnabled(enabled: Boolean) {
+        player.setReplayGainEnabled(enabled)
     }
 }

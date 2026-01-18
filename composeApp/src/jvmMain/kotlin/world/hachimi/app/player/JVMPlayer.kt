@@ -6,7 +6,13 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import world.hachimi.app.logging.Logger
 import java.io.ByteArrayInputStream
-import javax.sound.sampled.*
+import javax.sound.sampled.AudioFormat
+import javax.sound.sampled.AudioInputStream
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.Clip
+import javax.sound.sampled.DataLine
+import javax.sound.sampled.FloatControl
+import javax.sound.sampled.LineEvent
 import kotlin.math.log10
 import kotlin.math.pow
 
@@ -22,6 +28,8 @@ class JVMPlayer() : Player {
     private val mutex = Mutex()
     private var volume: Float = 1f
     private var replayGainDB: Float = 0f
+    private var replayGainEnabled: Boolean = true
+    private var currentItemReplayGainDb: Float = 0f
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean): Unit = withContext(Dispatchers.IO) {
         val item = item as SongItem.Local
@@ -109,7 +117,8 @@ class JVMPlayer() : Player {
                 clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
             } else null
 
-            replayGainDB = item.replayGainDB
+            currentItemReplayGainDb = item.replayGainDB
+            replayGainDB = if (replayGainEnabled) currentItemReplayGainDb else 0f
             setVolume(volume)
             Logger.i("player", "volumeControl = $volumeControl")
             Logger.i("player", "masterGainControl = $masterGainControl")
@@ -219,6 +228,13 @@ class JVMPlayer() : Player {
                 }
             }
         }
+    }
+
+    override suspend fun setReplayGainEnabled(enabled: Boolean) {
+        replayGainEnabled = enabled
+        replayGainDB = if (enabled) currentItemReplayGainDb else 0f
+        // Re-apply effective output gain immediately
+        setVolume(volume)
     }
 
     private fun linearToDb(volume: Float): Float = 20f * log10(volume)

@@ -18,6 +18,7 @@ class RustPlayer : Player {
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
+    private var replayGainEnabled: Boolean = true
 
     init {
 //        JniLoader().javaInit()
@@ -94,8 +95,14 @@ class RustPlayer : Player {
 
     override suspend fun setVolume(value: Float) {
         this.userVolume = value
-        val volume = mixVolume(replayGain = replayGainDb, volume = value)
+        val rg = if (replayGainEnabled) replayGainDb else 0f
+        val volume = mixVolume(replayGain = rg, volume = value)
         player.setVolume(volume)
+    }
+
+    override suspend fun setReplayGainEnabled(enabled: Boolean) {
+        replayGainEnabled = enabled
+        setVolume(userVolume)
     }
 
     override suspend fun prepare(

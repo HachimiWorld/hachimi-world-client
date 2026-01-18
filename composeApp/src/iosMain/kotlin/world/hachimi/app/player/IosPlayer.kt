@@ -1,18 +1,52 @@
 package world.hachimi.app.player
 
-import kotlinx.cinterop.*
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.readValue
+import kotlinx.cinterop.useContents
+import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
-import platform.AVFoundation.*
+import platform.AVFoundation.AVPlayer
+import platform.AVFoundation.AVPlayerItem
+import platform.AVFoundation.AVPlayerItemDidPlayToEndTimeNotification
+import platform.AVFoundation.AVPlayerRateDidChangeNotification
+import platform.AVFoundation.AVPlayerTimeControlStatusPaused
+import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
+import platform.AVFoundation.CMTimeRangeValue
+import platform.AVFoundation.currentItem
+import platform.AVFoundation.currentTime
+import platform.AVFoundation.duration
+import platform.AVFoundation.loadedTimeRanges
+import platform.AVFoundation.pause
+import platform.AVFoundation.play
+import platform.AVFoundation.removeTimeObserver
+import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.seekToTime
+import platform.AVFoundation.timeControlStatus
+import platform.AVFoundation.volume
 import platform.CoreMedia.CMTimeCompare
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
-import platform.Foundation.*
-import platform.MediaPlayer.*
+import platform.Foundation.NSData
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSURL
+import platform.Foundation.NSURLSession
+import platform.Foundation.NSValue
+import platform.Foundation.dataTaskWithURL
+import platform.Foundation.dataWithBytes
+import platform.Foundation.temporaryDirectory
+import platform.MediaPlayer.MPMediaItemArtwork
+import platform.MediaPlayer.MPMediaItemPropertyArtist
+import platform.MediaPlayer.MPMediaItemPropertyArtwork
+import platform.MediaPlayer.MPMediaItemPropertyPlaybackDuration
+import platform.MediaPlayer.MPMediaItemPropertyTitle
+import platform.MediaPlayer.MPNowPlayingInfoCenter
 import platform.UIKit.UIImage
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.Player.Companion.mixVolume
@@ -27,6 +61,7 @@ class IosPlayer : Player {
     val nowPlayingCenter = MPNowPlayingInfoCenter.defaultCenter()
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
+    private var replayGainEnabled: Boolean = true
     private var currentSongId: String? = null
 
     override val supportRemotePlay: Boolean
@@ -106,10 +141,16 @@ class IosPlayer : Player {
 
     override suspend fun setVolume(value: Float) {
         this.userVolume = value
-        val volume = mixVolume(replayGain = replayGainDb, volume = value)
+        val rg = if (replayGainEnabled) replayGainDb else 0f
+        val volume = mixVolume(replayGain = rg, volume = value)
         withContext(Dispatchers.Main) {
             player?.volume = volume
         }
+    }
+
+    override suspend fun setReplayGainEnabled(enabled: Boolean) {
+        replayGainEnabled = enabled
+        setVolume(userVolume)
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {

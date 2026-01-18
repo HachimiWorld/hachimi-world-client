@@ -107,6 +107,7 @@ class GlobalStore(
 
     fun updateLoudnessNormalization(enabled: Boolean) = scope.launch {
         this@GlobalStore.enableLoudnessNormalization = enabled
+        player.setReplayGainEnabled(enabled)
         dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
     }
 

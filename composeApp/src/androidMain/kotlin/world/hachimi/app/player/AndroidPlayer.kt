@@ -24,6 +24,7 @@ class AndroidPlayer(
     private var initialized = MutableStateFlow<Boolean>(false)
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
+    private var replayGainEnabled: Boolean = true
 
     init {
         Logger.i("player", "Waiting for MediaController")
@@ -117,8 +118,14 @@ class AndroidPlayer(
 
     override suspend fun setVolume(value: Float) = withContext(Dispatchers.Main) {
         userVolume = value
-        val volume = mixVolume(replayGain = replayGainDb, volume = value)
+        val rg = if (replayGainEnabled) replayGainDb else 0f
+        val volume = mixVolume(replayGain = rg, volume = value)
         controller?.volume = volume
+    }
+
+    override suspend fun setReplayGainEnabled(enabled: Boolean) = withContext(Dispatchers.Main) {
+        replayGainEnabled = enabled
+        setVolume(userVolume)
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
