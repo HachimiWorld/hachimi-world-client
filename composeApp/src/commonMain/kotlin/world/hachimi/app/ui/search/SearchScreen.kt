@@ -38,6 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.search_no_results
+import hachimiworld.composeapp.generated.resources.search_tab_songs
+import hachimiworld.composeapp.generated.resources.search_tab_users
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -101,7 +106,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
                 Modifier.fillMaxWidth().padding(vertical = 128.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("什么也没有找到")
+                Text(stringResource(Res.string.search_no_results))
             }
         }
 
@@ -149,7 +154,7 @@ private fun Header(processTimeMillis: Long) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "搜索结果",
+            text = stringResource(Res.string.search_no_results),
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(Modifier.width(8.dp))
@@ -177,13 +182,13 @@ private fun Tab(
                 selected = searchType == SearchViewModel.SearchType.SONG,
                 onClick = { onTypeChange(SearchViewModel.SearchType.SONG) },
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                label = { Text("歌曲") }
+                label = { Text(stringResource(Res.string.search_tab_songs)) }
             )
             SegmentedButton(
                 selected = searchType == SearchViewModel.SearchType.USER,
                 onClick = { onTypeChange(SearchViewModel.SearchType.USER) },
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                label = { Text("神人") }
+                label = { Text(stringResource(Res.string.search_tab_users)) }
             )
         }
 
@@ -195,12 +200,12 @@ private fun Tab(
                     expanded = true
                 }) {
                     Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
-                    Text(sortMethod.label)
+                    Text(stringResource(sortMethod.labelRes))
                 }
                 DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
                     SearchViewModel.SortMethod.entries.fastForEach {
                         DropdownMenuItem(
-                            text = { Text(it.label) },
+                            text = { Text(stringResource(it.labelRes)) },
                             onClick = {
                                 onSortMethodChange(it)
                                 expanded = false

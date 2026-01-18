@@ -11,6 +11,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_create_playlist_cancel
+import hachimiworld.composeapp.generated.resources.player_create_playlist_create
+import hachimiworld.composeapp.generated.resources.player_create_playlist_description_placeholder
+import hachimiworld.composeapp.generated.resources.player_create_playlist_name_placeholder
+import hachimiworld.composeapp.generated.resources.player_create_playlist_private_label
+import hachimiworld.composeapp.generated.resources.player_create_playlist_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.PlaylistViewModel
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -48,26 +56,26 @@ private fun CreatePlaylistDialog(
     processing: Boolean
 ) {
     AlertDialog(
-        title = { Text("新建歌单") },
+        title = { Text(stringResource(Res.string.player_create_playlist_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 TextField(
                     modifier = Modifier.width(280.dp),
                     value = name,
                     onValueChange = onNameChange,
-                    placeholder = { Text("名称") },
+                    placeholder = { Text(stringResource(Res.string.player_create_playlist_name_placeholder)) },
                     singleLine = true
                 )
                 TextField(
                     modifier = Modifier.width(280.dp),
                     value = description,
                     onValueChange = onDescriptionChange,
-                    placeholder = { Text("描述") },
+                    placeholder = { Text(stringResource(Res.string.player_create_playlist_description_placeholder)) },
                     minLines = 3,
                     maxLines = 3
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("私有歌单")
+                    Text(stringResource(Res.string.player_create_playlist_private_label))
                     Switch(
                         modifier = Modifier.padding(start = 16.dp),
                         checked = private,
@@ -81,12 +89,12 @@ private fun CreatePlaylistDialog(
                 onClick = onConfirm,
                 enabled = name.isNotBlank() && !processing
             ) {
-                Text("创建")
+                Text(stringResource(Res.string.player_create_playlist_create))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(Res.string.player_create_playlist_cancel))
             }
         },
         onDismissRequest = onDismiss

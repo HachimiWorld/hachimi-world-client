@@ -22,6 +22,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.playlist_empty
+import hachimiworld.composeapp.generated.resources.playlist_my_playlists_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -51,7 +55,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                     .padding(LocalContentInsets.current.asPaddingValues()),
                 contentAlignment = Alignment.Center
             ) {
-                Text("什么也没有")
+                Text(stringResource(Res.string.playlist_empty))
             } else BoxWithConstraints {
                 LazyVerticalGrid(
                     modifier = Modifier.fillMaxSize(),
@@ -63,7 +67,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Text(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                            text = "我的歌单",
+                            text = stringResource(Res.string.playlist_my_playlists_title),
                             style = MaterialTheme.typography.titleLarge
                         )
                     }

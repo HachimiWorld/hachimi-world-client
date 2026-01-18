@@ -57,6 +57,9 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_not_playing
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisYIn
 import soup.compose.material.motion.animation.materialSharedAxisYOut
@@ -110,8 +113,10 @@ fun ExpandedFooterPlayer2(
                         Column(
                             modifier = Modifier.layoutId("info").padding(top = 8.dp, start = 24.dp)
                         ) {
-                            Title(uiState.displayedTitle)
-                            Author(uiState.displayedAuthor)
+                            val title = uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
+                            val author = uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
+                            Title(title)
+                            Author(author)
                         }
                         ControlButton(
                             modifier = Modifier.layoutId("control").padding(top = 8.dp),

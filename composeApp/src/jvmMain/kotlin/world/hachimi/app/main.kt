@@ -30,6 +30,7 @@ import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
+import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
@@ -98,7 +99,10 @@ fun main() {
                         darkMode,
                         ::onCloseRequest
                     ) {
-                        App(global)
+                        // Apply locale environment before rendering App
+                        AppEnvironment(global.locale) {
+                            App(global)
+                        }
                         if (showCloseAskDialog) CloseAskDialog(
                             onCancel = {
                                 showCloseAskDialog = false

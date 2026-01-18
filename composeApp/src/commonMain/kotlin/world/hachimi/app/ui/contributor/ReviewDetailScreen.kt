@@ -27,6 +27,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_details_title
+import hachimiworld.composeapp.generated.resources.contributor_submitter
+import hachimiworld.composeapp.generated.resources.review_approve
+import hachimiworld.composeapp.generated.resources.review_reject
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PublishModule
@@ -83,7 +89,7 @@ private fun Content(
         vm.data?.let { data ->
             Text(text = "Review 详情", style = MaterialTheme.typography.titleLarge)
             PropertyItem(label = {
-                Text("投稿人")
+                Text(stringResource(Res.string.contributor_submitter))
             }) {
                 Text(
                     modifier = Modifier.clickable {
@@ -114,16 +120,16 @@ private fun Content(
                 )
                 Row {
                     Button(onClick = { vm.approve() }, enabled = !vm.operating) {
-                        Text("通过")
+                        Text(stringResource(Res.string.review_approve))
                     }
                     Spacer(Modifier.width(12.dp))
                     TextButton(onClick = { vm.reject() }, enabled = !vm.operating) {
-                        Text("退回")
+                        Text(stringResource(Res.string.review_reject))
                     }
                 }
             }
 
-            Text("作品详情", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(Res.string.artwork_details_title), style = MaterialTheme.typography.titleLarge)
 
             PropertyItem("基米ID", data.displayId)
             PropertyItem({ Text("音频") }) {

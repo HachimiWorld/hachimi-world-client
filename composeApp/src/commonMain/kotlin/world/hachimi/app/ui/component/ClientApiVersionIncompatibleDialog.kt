@@ -10,6 +10,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_client_api_version_client_label
+import hachimiworld.composeapp.generated.resources.player_client_api_version_message
+import hachimiworld.composeapp.generated.resources.player_client_api_version_server_label
+import hachimiworld.composeapp.generated.resources.player_client_api_version_server_min_label
+import hachimiworld.composeapp.generated.resources.player_client_api_version_title
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Icon
@@ -21,17 +28,17 @@ fun ClientApiVersionIncompatibleDialog(global: GlobalStore) {
         AlertDialog(
             modifier = Modifier.width(280.dp),
             title = {
-                Text("客户端版本过低")
+                Text(stringResource(Res.string.player_client_api_version_title))
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("您的客户端已低于服务器支持的最低版本，请更新客户端至最新版本，否则将无法使用！")
+                    Text(stringResource(Res.string.player_client_api_version_message))
                     HorizontalDivider()
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Client API Ver: ${global.clientApiVersion}", style = MaterialTheme.typography.bodySmall)
-                        Text("Server API Ver: ${global.serverVersion}", style = MaterialTheme.typography.bodySmall)
+                        Text("${stringResource(Res.string.player_client_api_version_client_label)} ${global.clientApiVersion}", style = MaterialTheme.typography.bodySmall)
+                        Text("${stringResource(Res.string.player_client_api_version_server_label)} ${global.serverVersion}", style = MaterialTheme.typography.bodySmall)
                         Text(
-                            "Server Min API Ver: ${global.serverMinVersion}",
+                            "${stringResource(Res.string.player_client_api_version_server_min_label)} ${global.serverMinVersion}",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }

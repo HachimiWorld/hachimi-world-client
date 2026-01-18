@@ -2,7 +2,18 @@ package world.hachimi.app.ui.root.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,7 +21,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,11 +35,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_login
+import hachimiworld.composeapp.generated.resources.auth_register
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.Logo
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.AccentButton
+import world.hachimi.app.ui.design.components.CardShadow
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.SubtleButton
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 
 @Composable
@@ -110,12 +134,12 @@ fun ExpandedTopAppBar(
                 AccentButton(onClick = {
                     global.nav.push(Route.Auth())
                 }) {
-                    Text("登录")
+                    Text(stringResource(Res.string.auth_login))
                 }
                 SubtleButton(onClick = {
                     global.nav.push(Route.Auth(false))
                 }) {
-                    Text("注册")
+                    Text(stringResource(Res.string.auth_register))
                 }
             }
         }

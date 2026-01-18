@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.publish_image_too_large
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
@@ -161,7 +163,7 @@ class PlaylistDetailViewModel(
                 // 1. Validate image
                 val size = image.size()
                 if (size > 4 * 1024 * 1024) {
-                    global.alert("Image too large")
+                    global.alert(Res.string.publish_image_too_large)
                     return@launch
                 }
                 // TODO[opt]: Here might be a memory copy

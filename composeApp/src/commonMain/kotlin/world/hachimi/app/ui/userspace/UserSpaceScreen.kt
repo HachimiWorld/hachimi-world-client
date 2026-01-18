@@ -38,6 +38,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_logout
+import hachimiworld.composeapp.generated.resources.common_cancel
+import hachimiworld.composeapp.generated.resources.common_change
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.player_play_all
+import hachimiworld.composeapp.generated.resources.user_change_bio
+import hachimiworld.composeapp.generated.resources.user_change_nickname
+import hachimiworld.composeapp.generated.resources.user_space_all_works
+import hachimiworld.composeapp.generated.resources.user_space_empty
+import hachimiworld.composeapp.generated.resources.user_space_female_cd
+import hachimiworld.composeapp.generated.resources.user_space_intro_label
+import hachimiworld.composeapp.generated.resources.user_space_male_cd
+import hachimiworld.composeapp.generated.resources.user_space_title
+import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
+import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -105,11 +122,11 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = "神人空间",
+                text = stringResource(Res.string.user_space_title),
                 style = MaterialTheme.typography.titleLarge
             )
             if (vm.myself) TextButton(onClick = { global.logout() }) {
-                Text("退出登录")
+                Text(stringResource(Res.string.auth_logout))
             }
         }
 
@@ -131,7 +148,7 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                         ) {
                             AsyncImage(
                                 model = profile.avatarUrl,
-                                contentDescription = "User Avatar",
+                                contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
                                 modifier = Modifier.fillMaxSize(),
                                 filterQuality = FilterQuality.High,
                                 contentScale = ContentScale.Crop
@@ -154,8 +171,8 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                         profile.gender?.let {
                             Box(Modifier.padding(start = 4.dp).size(16.dp)) {
                                 when (profile.gender) {
-                                    0 -> Icon(Icons.Default.Male, contentDescription = "Male")
-                                    1 -> Icon(Icons.Default.Female, contentDescription = "Female")
+                                    0 -> Icon(Icons.Default.Male, contentDescription = stringResource(Res.string.user_space_male_cd))
+                                    1 -> Icon(Icons.Default.Female, contentDescription = stringResource(Res.string.user_space_female_cd))
                                 }
                             }
                         }
@@ -164,9 +181,9 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                 Spacer(Modifier.width(24.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SelectionContainer {
-                        Text(text = "UID: ${profile.uid}", style = MaterialTheme.typography.labelMedium)
+                        Text(text = stringResource(Res.string.user_space_uid_prefix, profile.uid), style = MaterialTheme.typography.labelMedium)
                     }
-                    Text(text = "介绍", style = MaterialTheme.typography.labelMedium)
+                    Text(text = stringResource(Res.string.user_space_intro_label), style = MaterialTheme.typography.labelMedium)
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().height(100.dp),
@@ -193,7 +210,7 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
 
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "全部作品",
+                text = stringResource(Res.string.user_space_all_works),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
             )
@@ -202,9 +219,9 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                 modifier = Modifier,
                 onClick = { vm.playAll() }
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
                 Spacer(Modifier.width(8.dp))
-                Text("播放全部")
+                Text(stringResource(Res.string.player_play_all))
             }
         }
 
@@ -212,11 +229,12 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
             CircularProgressIndicator()
         } else if (vm.songs.isEmpty()) {
             Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
-                Text(text = "什么也没有")
+                Text(text = stringResource(Res.string.user_space_empty))
             }
         }
     }
 }
+
 
 
 @Composable
@@ -224,7 +242,7 @@ private fun ChangeUsernameDialog(vm: UserSpaceViewModel) {
     if (vm.showEditUsername) AlertDialog(
         onDismissRequest = { vm.cancelEdit() },
         title = {
-            Text("更改昵称")
+            Text(stringResource(Res.string.user_change_nickname))
         },
         text = {
             TextField(
@@ -238,12 +256,12 @@ private fun ChangeUsernameDialog(vm: UserSpaceViewModel) {
                 onClick = { vm.confirmEditUsername() },
                 enabled = !vm.operating && vm.editUsernameValue.isNotBlank()
             ) {
-                Text("更改")
+                Text(stringResource(Res.string.common_change))
             }
         },
         dismissButton = {
             TextButton(onClick = { vm.cancelEdit() }) {
-                Text("取消")
+                Text(stringResource(Res.string.common_cancel))
             }
         }
     )
@@ -254,7 +272,7 @@ private fun ChangeBioDialog(vm: UserSpaceViewModel) {
     if (vm.showEditBio) AlertDialog(
         onDismissRequest = { vm.cancelEdit() },
         title = {
-            Text("更改简介")
+            Text(stringResource(Res.string.user_change_bio))
         },
         text = {
             TextField(
@@ -268,12 +286,12 @@ private fun ChangeBioDialog(vm: UserSpaceViewModel) {
                 onClick = { vm.confirmEditBio() },
                 enabled = !vm.operating && vm.editBioValue.isNotBlank()
             ) {
-                Text("更改")
+                Text(stringResource(Res.string.common_change))
             }
         },
         dismissButton = {
             TextButton(onClick = { vm.cancelEdit() }) {
-                Text("取消")
+                Text(stringResource(Res.string.common_cancel))
             }
         }
     )

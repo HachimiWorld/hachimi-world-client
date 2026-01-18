@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_done
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,7 +79,7 @@ class ReviewDetailViewModel(
                 reviewId, commentInput.takeIf { it.isNotBlank() }
             ))
             if (resp.ok) {
-                global.alert("完成")
+                global.alert(Res.string.common_done)
                 commentInput = ""
                 refresh()
             } else {
@@ -99,7 +101,7 @@ class ReviewDetailViewModel(
                     reviewId, commentInput
                 ))
             if (resp.ok) {
-                global.alert("完成")
+                global.alert(Res.string.common_done)
                 commentInput = ""
                 refresh()
             } else {

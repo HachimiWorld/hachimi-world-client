@@ -19,7 +19,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import world.hachimi.app.ui.design.components.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.search_placeholder
+import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.singleLined
 
@@ -58,7 +65,7 @@ fun SearchBox(
                 Icon(Icons.Default.Search, "Search")
             }
         },
-        placeholder = { Text("搜索...") },
+        placeholder = { Text(stringResource(Res.string.search_placeholder)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {

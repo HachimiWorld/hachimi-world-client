@@ -15,6 +15,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.PlatformContext
 import coil3.compose.LocalPlatformContext
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_close
+import hachimiworld.composeapp.generated.resources.player_share_copied_clipboard
+import hachimiworld.composeapp.generated.resources.share
+import hachimiworld.composeapp.generated.resources.share_share_music_title
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
@@ -37,7 +43,7 @@ fun ShareDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text("分享音乐")
+            Text(stringResource(Res.string.share_share_music_title))
         },
         text = {
             Column {
@@ -47,7 +53,7 @@ fun ShareDialog(
 
                 if (copied) Text(
                     modifier = Modifier.padding(top = 8.dp).align(Alignment.End),
-                    text = "已复制到剪切板",
+                    text = stringResource(Res.string.player_share_copied_clipboard),
                     fontSize = 12.sp
                 )
             }
@@ -57,12 +63,12 @@ fun ShareDialog(
                 share(ctx, text)
                 copied = true
             }) {
-                Text("分享")
+                Text(stringResource(Res.string.share))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("关闭")
+                Text(stringResource(Res.string.common_close))
             }
         }
     )

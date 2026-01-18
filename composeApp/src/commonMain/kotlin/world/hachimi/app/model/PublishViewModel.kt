@@ -6,11 +6,49 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.vinceglb.filekit.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_jmid_already_used
+import hachimiworld.composeapp.generated.resources.artwork_jmid_prefix_not_set
+import hachimiworld.composeapp.generated.resources.publish_audio_file_required
+import hachimiworld.composeapp.generated.resources.publish_audio_too_large
+import hachimiworld.composeapp.generated.resources.publish_cover_required
+import hachimiworld.composeapp.generated.resources.publish_derive_info_required
+import hachimiworld.composeapp.generated.resources.publish_description_too_long
+import hachimiworld.composeapp.generated.resources.publish_explicit_required
+import hachimiworld.composeapp.generated.resources.publish_fetch_jmid_failed
+import hachimiworld.composeapp.generated.resources.publish_fetch_user_failed
+import hachimiworld.composeapp.generated.resources.publish_https_format
+import hachimiworld.composeapp.generated.resources.publish_https_required
+import hachimiworld.composeapp.generated.resources.publish_image_too_large
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_invalid_format
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_prefix_used
+import hachimiworld.composeapp.generated.resources.publish_invalid_uid
+import hachimiworld.composeapp.generated.resources.publish_jmid_number_format
+import hachimiworld.composeapp.generated.resources.publish_jmid_required
+import hachimiworld.composeapp.generated.resources.publish_lyrics_invalid_lrc
+import hachimiworld.composeapp.generated.resources.publish_lyrics_required
+import hachimiworld.composeapp.generated.resources.publish_origin_info_required
+import hachimiworld.composeapp.generated.resources.publish_subtitle_too_long
+import hachimiworld.composeapp.generated.resources.publish_tag_already_exists
+import hachimiworld.composeapp.generated.resources.publish_tag_name_empty
+import hachimiworld.composeapp.generated.resources.publish_title_required
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
-import io.ktor.http.*
-import kotlinx.coroutines.*
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readBytes
+import io.github.vinceglb.filekit.size
+import io.ktor.http.URLParserException
+import io.ktor.http.URLProtocol
+import io.ktor.http.Url
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
@@ -289,7 +327,7 @@ class PublishViewModel(
                 val data = api.publishModule.jmidGetNext()
                 if (data.ok) {
                     val jmid = data.ok().jmid
-                    val (prefix, number) = parseJmid(jmid) ?: return@launch global.alert("获取可用基米ID失败")
+                    val (prefix, number) = parseJmid(jmid) ?: return@launch global.alert(Res.string.publish_fetch_jmid_failed)
                     jmidPrefix = prefix
                     updateJmidNumber(number)
                 } else {
@@ -329,7 +367,7 @@ class PublishViewModel(
                 // 1. Validate
                 val size = audio.size()
                 if (size > 20 * 1024 * 1024) {
-                    global.alert("音频文件过大，最大支持20MB")
+                    global.alert(Res.string.publish_audio_too_large)
                     return@launch
                 }
                 val buffer = Buffer().apply { write(audio.readBytes()) }
@@ -384,7 +422,7 @@ class PublishViewModel(
                 // 1. Validate image
                 val size = image.size()
                 if (size > 10 * 1024 * 1024) {
-                    global.alert("图片过大，最大支持 10MB")
+                    global.alert(Res.string.publish_image_too_large)
                     return@launch
                 }
                 val buffer = Buffer().apply { write(image.readBytes()) }
@@ -493,11 +531,11 @@ class PublishViewModel(
     fun addTag() {
         val label = tagInput
         if (label.isBlank()) {
-            global.alert("标签名称不可为空")
+            global.alert(Res.string.publish_tag_name_empty)
             return
         }
         if (tags.any { item -> item.name == label }) {
-            global.alert("标签已存在")
+            global.alert(Res.string.publish_tag_already_exists)
             return
         }
         viewModelScope.launch {
@@ -534,7 +572,7 @@ class PublishViewModel(
 
     fun selectTag(item: SongModule.TagItem) {
         if (tags.any { it -> it.name == item.name }) {
-            global.alert("标签已存在")
+            global.alert(Res.string.publish_tag_already_exists)
             return
         }
         tags += item
@@ -681,7 +719,7 @@ class PublishViewModel(
             if (addStaffUid.isNotBlank()) {
                 val uid = addStaffUid.toLongOrNull()
                 if (uid == null) {
-                    global.alert("请输入正确的 UID")
+                    global.alert(Res.string.publish_invalid_uid)
                     return@launch
                 }
                 try {
@@ -696,7 +734,7 @@ class PublishViewModel(
                     }
                 } catch (e: Throwable) {
                     Logger.e("publish", "Failed to get user info", e)
-                    global.alert("获取用户信息失败")
+                    global.alert(Res.string.publish_fetch_user_failed)
                     return@launch
                 } finally {
                     addStaffOperating = false
@@ -717,17 +755,17 @@ class PublishViewModel(
 
     private fun checkInputForCreate(): Boolean {
         if (audioTempId == null) {
-            global.alert("请选择音频文件")
+            global.alert(Res.string.publish_audio_file_required)
             return false
         }
 
         if (coverTempId == null) {
-            global.alert("请上传封面")
+            global.alert(Res.string.publish_cover_required)
             return false
         }
 
         if (jmidPrefix == null || jmidNumber == null) {
-            global.alert("请设置基米ID")
+            global.alert(Res.string.publish_jmid_required)
             return false
         }
 
@@ -740,7 +778,7 @@ class PublishViewModel(
 
     private fun checkInputsCommon(): Boolean {
         if (title.isBlank()) {
-            global.alert("请填写标题")
+            global.alert(Res.string.publish_title_required)
             return false
         }
 
@@ -748,7 +786,7 @@ class PublishViewModel(
             // Do nothing
         }
         if (subtitle.length > 32) {
-            global.alert("副标题过长")
+            global.alert(Res.string.publish_subtitle_too_long)
             return false
         }
 
@@ -756,12 +794,12 @@ class PublishViewModel(
             // Do nothing
         }
         if (description.length > 500) {
-            global.alert("简介过长")
+            global.alert(Res.string.publish_description_too_long)
             return false
         }
 
         if (lyricsType != LyricsType.NONE && lyrics.isBlank()) {
-            global.alert("请填写歌词")
+            global.alert(Res.string.publish_lyrics_required)
             return false
         }
 
@@ -769,25 +807,25 @@ class PublishViewModel(
             val lines = try {
                 LrcParser.parse(lyrics)
             } catch (_: Throwable) {
-                global.alert("请填写正确的 LRC 格式歌词")
+                global.alert(Res.string.publish_lyrics_invalid_lrc)
                 return false
             }
             if (lines.isEmpty()) {
-                global.alert("请填写正确的 LRC 格式歌词")
+                global.alert(Res.string.publish_lyrics_invalid_lrc)
                 return false
             }
         }
 
         if (creationType > 0) {
             if (originId.isBlank() && originTitle.isBlank()) {
-                global.alert("请填写原作信息")
+                global.alert(Res.string.publish_origin_info_required)
                 return false
             }
         }
 
         if (creationType > 1) {
             if (deriveId.isBlank() && deriveTitle.isBlank()) {
-                global.alert("请填写二作信息")
+                global.alert(Res.string.publish_derive_info_required)
                 return false
             }
         }
@@ -797,18 +835,18 @@ class PublishViewModel(
                 try {
                     val url = Url(it)
                     if (url.protocolOrNull != URLProtocol.HTTPS) {
-                        global.alert("请填写 HTTPS 的原作链接，请勿使用 HTTP")
+                        global.alert(Res.string.publish_https_required)
                         return false
                     }
                 } catch (_: URLParserException) {
-                    global.alert("请填写正确的 HTTPS 格式的原作链接 https://xxxx")
+                    global.alert(Res.string.publish_https_format)
                     return false
                 }
             }
         }
 
         if (explicit == null) {
-            global.alert("请选择是否包含露骨内容")
+            global.alert(Res.string.publish_explicit_required)
             return false
         }
 
@@ -853,7 +891,9 @@ class PublishViewModel(
                                         initJmidSupportText = null
                                     } else {
                                         initJmidValid = false
-                                        initJmidSupportText = "该前缀已被使用，如被抢占请联系维护者"
+                                        viewModelScope.launch {
+                                            initJmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_init_jmid_prefix_used)
+                                        }
                                     }
                                 } else {
                                     initJmidValid = false
@@ -869,7 +909,9 @@ class PublishViewModel(
                 }
             }
         } else {
-            initJmidSupportText = "请填写 3 到 4 位字母"
+            viewModelScope.launch {
+                initJmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_init_jmid_invalid_format)
+            }
             initJmidValid = false
         }
     }
@@ -897,8 +939,10 @@ class PublishViewModel(
         jmidNumber = mappedInput
         val prefix = jmidPrefix ?: run {
             // unreachable
-            jmidSupportText = "未设置基米ID前缀"
             jmidValid = false
+            viewModelScope.launch {
+                jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_prefix_not_set)
+            }
             return
         }
 
@@ -922,7 +966,9 @@ class PublishViewModel(
                                         jmidSupportText = null
                                     } else {
                                         jmidValid = false
-                                        jmidSupportText = "该基米ID已被使用"
+                                        viewModelScope.launch {
+                                            jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
+                                        }
                                     }
                                 } else {
                                     jmidValid = false
@@ -939,7 +985,10 @@ class PublishViewModel(
             }
         } else {
             jmidValid = false
-            jmidSupportText = "数字段必须为 3 位，如 001"
+            viewModelScope.launch {
+                jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_jmid_number_format)
+            }
         }
     }
 }
+

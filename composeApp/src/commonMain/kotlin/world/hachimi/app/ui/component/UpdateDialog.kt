@@ -14,6 +14,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.update_changelog_title
+import hachimiworld.composeapp.generated.resources.update_confirm
+import hachimiworld.composeapp.generated.resources.update_current_version
+import hachimiworld.composeapp.generated.resources.update_found_title
+import hachimiworld.composeapp.generated.resources.update_icon_cd
+import hachimiworld.composeapp.generated.resources.update_ignore
+import hachimiworld.composeapp.generated.resources.update_new_version
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -31,15 +40,15 @@ fun UpgradeDialog(
     AlertDialog(
         modifier = Modifier.width(280.dp),
         title = {
-            Text("发现新版本")
+            Text(stringResource(Res.string.update_found_title))
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("当前版本: $currentVersion")
-                Text("新版本: $newVersion")
+                Text(stringResource(Res.string.update_current_version, currentVersion))
+                Text(stringResource(Res.string.update_new_version, newVersion))
                 HorizontalDivider()
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("更新日志")
+                    Text(stringResource(Res.string.update_changelog_title))
                     Text(
                         modifier = Modifier.verticalScroll(rememberScrollState()),
                         text = changelog, style = MaterialTheme.typography.bodySmall
@@ -48,17 +57,17 @@ fun UpgradeDialog(
             }
         },
         icon = {
-            Icon(Icons.Default.Upgrade, "Upgrade")
+            Icon(Icons.Default.Upgrade, stringResource(Res.string.update_icon_cd))
         },
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("立即升级")
+                Text(stringResource(Res.string.update_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("忽略")
+                Text(stringResource(Res.string.update_ignore))
             }
         }
     )

@@ -7,9 +7,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.search_sort_newest
+import hachimiworld.composeapp.generated.resources.search_sort_oldest
+import hachimiworld.composeapp.generated.resources.search_sort_relevance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
@@ -28,12 +33,12 @@ class SearchViewModel(
     }
 
     enum class SortMethod(
-        val label: String,
+        val labelRes: StringResource,
         val value: String
     ) {
-        RELEVANCE("最相关", SongModule.SearchReq.SORT_BY_RELEVANCE),
-        NEWEST("最新发布", SongModule.SearchReq.SORT_BY_RELEASE_TIME_DESC),
-        OLDEST("最早发布", SongModule.SearchReq.SORT_BY_RELEASE_TIME_ASC),
+        RELEVANCE(Res.string.search_sort_relevance, SongModule.SearchReq.SORT_BY_RELEVANCE),
+        NEWEST(Res.string.search_sort_newest, SongModule.SearchReq.SORT_BY_RELEASE_TIME_DESC),
+        OLDEST(Res.string.search_sort_oldest, SongModule.SearchReq.SORT_BY_RELEASE_TIME_ASC),
     }
 
     data class SearchSongItem(

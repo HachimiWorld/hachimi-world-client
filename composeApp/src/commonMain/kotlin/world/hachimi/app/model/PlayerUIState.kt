@@ -67,8 +67,8 @@ class PlayerUIState() {
 
 
     val displayedCover by derivedStateOf { if (fetchingMetadata) previewMetadata?.coverUrl else songInfo?.coverUrl }
-    val displayedTitle by derivedStateOf { if (fetchingMetadata) { previewMetadata?.title } else { songInfo?.title } ?: "暂未播放" }
-    val displayedAuthor by derivedStateOf { if (fetchingMetadata) { previewMetadata?.author } else { songInfo?.uploaderName } ?: "暂未播放" }
+    val displayedTitle by derivedStateOf { if (fetchingMetadata) { previewMetadata?.title } else { songInfo?.title } ?: "" }
+    val displayedAuthor by derivedStateOf { if (fetchingMetadata) { previewMetadata?.author } else { songInfo?.uploaderName } ?: "" }
     val displayedDurationMillis by derivedStateOf {
         if (fetchingMetadata) {
             previewMetadata?.duration?.inWholeMilliseconds

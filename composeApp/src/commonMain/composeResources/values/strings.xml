@@ -1,0 +1,290 @@
+<resources>
+    <!-- Kids mode dialog -->
+    <string name="player_kids_mode_title">Kids mode enabled</string>
+    <string name="player_kids_mode_message">This work is marked by the author as containing content unsuitable for children; since kids mode is enabled, please confirm whether to continue playback.</string>
+    <string name="player_kids_mode_play">Play</string>
+    <string name="player_kids_mode_cancel">Cancel</string>
+
+    <!-- Player / Playlist strings -->
+    <string name="player_add_to_playlist_title">Add to playlist</string>
+    <string name="player_add_to_playlist_create">Create playlist</string>
+    <string name="player_add_to_playlist_confirm">Confirm</string>
+    <string name="player_add_to_playlist_cancel">Cancel</string>
+
+    <string name="player_create_playlist_title">Create playlist</string>
+    <string name="player_create_playlist_name_placeholder">Name</string>
+    <string name="player_create_playlist_description_placeholder">Description</string>
+    <string name="player_create_playlist_private_label">Private playlist</string>
+    <string name="player_create_playlist_create">Create</string>
+    <string name="player_create_playlist_cancel">Cancel</string>
+
+    <string name="player_share">Share</string>
+    <string name="share_share_music_title">Share music</string>
+    <string name="share">Share</string>
+    <string name="player_share_copied_clipboard">Copied to clipboard</string>
+
+    <string name="player_queue_title">Playback queue</string>
+    <string name="player_queue_clear">Clear</string>
+    <string name="player_cover_cd">Cover</string>
+    <string name="player_remove_from_playlist_cd">Remove from playlist</string>
+
+    <string name="play_all">Play all</string>
+
+    <string name="contributor_submitter">Submitter</string>
+    <string name="artwork_details_title">Artwork details</string>
+
+    <string name="auth_logout">Logout</string>
+    <string name="auth_login">Login</string>
+    <string name="auth_register">Register</string>
+    <string name="auth_auth_token_invalid">Login token expired, please sign in again</string>
+    <string name="auth_forget_send_code_failed">Failed to send verification code, please try again later</string>
+    <string name="auth_forget_reset_failed">Failed to reset password, please try again later</string>
+    <string name="auth_forget_captcha_failed">Captcha verification failed, please try again later</string>
+    <string name="auth_captcha_title">Please complete verification</string>
+    <string name="auth_captcha_message">Please complete the captcha in the opened browser page.</string>
+    <string name="auth_captcha_help_label">No popup?</string>
+    <string name="auth_captcha_help_message">For Safari: open Settings > App > Safari and disable "Block Pop-ups", or use Chrome; on desktop check if blocked by security software.</string>
+    <string name="auth_captcha_confirm">I've completed it, continue</string>
+
+    <!-- New auth UI strings for AuthScreen -->
+    <string name="auth_welcome_home">Welcome back</string>
+    <string name="auth_become_god">Become a Hachimi</string>
+    <string name="auth_email_placeholder">Email</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_forget_password">Forgot password?</string>
+    <string name="auth_confirm_password_placeholder">Confirm password</string>
+    <string name="auth_next_step">Next</string>
+    <string name="auth_passwords_not_match">Passwords do not match</string>
+    <string name="auth_almost_there">Almost there</string>
+    <string name="auth_verification_sent_subtitle">Verification code has been sent to your email. If you don't receive it, check your spam folder.</string>
+    <string name="auth_code_placeholder">Verification code</string>
+    <string name="auth_resend">Resend</string>
+    <string name="auth_resend_with_seconds">Resend (%1$d s)</string>
+    <string name="auth_previous">Previous</string>
+    <string name="auth_one_more_step">One more step</string>
+    <string name="auth_complete_profile_subtitle">Complete your profile</string>
+    <string name="auth_nickname_placeholder">Nickname</string>
+    <string name="auth_intro_placeholder">Tell us about yourself</string>
+    <string name="auth_gender_male">Male</string>
+    <string name="auth_gender_female">Female</string>
+    <string name="auth_gender_none">No gender</string>
+    <string name="auth_finish">Finish</string>
+    <string name="auth_skip">Skip</string>
+
+    <!-- Common small labels -->
+    <string name="common_info">Info</string>
+    <string name="common_refresh_cd">Refresh</string>
+    <string name="common_no_more">No more</string>
+
+    <string name="user_change_nickname">Change Nickname</string>
+    <string name="user_change_bio">Change bio</string>
+
+    <string name="player_play_all">Play all</string>
+
+    <string name="common_change">Change</string>
+    <string name="common_close">Close</string>
+    <string name="common_cancel">Cancel</string>
+
+    <string name="common_clear">Clear</string>
+    <string name="common_search_placeholder">Search...</string>
+
+    <string name="review_approve">Approve</string>
+    <string name="review_reject">Reject</string>
+
+    <!-- Client API version incompatible dialog -->
+    <string name="player_client_api_version_title">Client version too old</string>
+    <string name="player_client_api_version_message">Your client is below the minimum version supported by the server. Please update to the latest client to continue using the app.</string>
+    <string name="player_client_api_version_client_label">Client API Ver:</string>
+    <string name="player_client_api_version_server_label">Server API Ver:</string>
+    <string name="player_client_api_version_server_min_label">Server Min API Ver:</string>
+
+    <string name="global_check_update_failed">Check for update failed</string>
+    <string name="global_error_check_min_api_failed">Failed to check min API version</string>
+    <string name="recent_error_fetch_recommend_failed">Failed to fetch recommendations: %1$s</string>
+
+    <string name="player_not_playing">Not playing yet</string>
+    <string name="app_menu_show_window">Show window</string>
+    <string name="app_menu_quit">Quit</string>
+    <string name="common_done">Done</string>
+    <string name="artwork_jmid_prefix_not_set">Jmid prefix not set</string>
+    <string name="artwork_jmid_already_used">This Jmid is already used</string>
+
+    <string name="auth_not_logged_in">Not logged in</string>
+    <string name="playlist_login_required">Playlist features require login</string>
+
+    <!-- Publish -->
+    <string name="publish_image_too_large">Image too large</string>
+    <string name="publish_audio_too_large">Audio file is too large (max 20MB)</string>
+    <string name="publish_fetch_jmid_failed">Failed to get available Jmid</string>
+    <string name="publish_jmid_number_format">Number must be 3 digits, e.g. 001</string>
+    <string name="publish_change_success">Changed successfully</string>
+    <string name="publish_cover_required">Please upload cover</string>
+    <string name="publish_jmid_required">Please set Jmid</string>
+    <string name="publish_title_required">Please enter a title</string>
+    <string name="publish_subtitle_too_long">Subtitle is too long</string>
+    <string name="publish_description_too_long">Description is too long</string>
+    <string name="publish_tag_name_empty">Tag name cannot be empty</string>
+    <string name="publish_tag_already_exists">Tag already exists</string>
+    <string name="publish_invalid_uid">Please enter a valid UID</string>
+    <string name="publish_fetch_user_failed">Failed to fetch user info</string>
+    <string name="publish_audio_file_required">Please select an audio file</string>
+    <string name="publish_lyrics_required">Please enter lyrics</string>
+    <string name="publish_lyrics_invalid_lrc">Please provide valid LRC format lyrics</string>
+    <string name="publish_origin_info_required">Please enter origin work info</string>
+    <string name="publish_derive_info_required">Please enter derivative work info</string>
+    <string name="publish_https_required">Please provide an HTTPS origin link, do not use HTTP</string>
+    <string name="publish_https_format">Please provide a valid HTTPS link like https://xxxx</string>
+    <string name="publish_explicit_required">Please select whether explicit content is included</string>
+    <string name="publish_init_jmid_prefix_used">This prefix is already used; contact maintainers if it's taken</string>
+    <string name="publish_init_jmid_invalid_format">Please enter 3 to 4 letters</string>
+
+    <!-- Search sort labels -->
+    <string name="search_sort_relevance">Most relevant</string>
+    <string name="search_sort_newest">Newest</string>
+    <string name="search_sort_oldest">Oldest</string>
+    <string name="search_placeholder">Search...</string>
+
+    <!-- Auth validation -->
+    <string name="auth_invalid_email">Invalid email address</string>
+    <string name="auth_password_too_short">Password must be at least 6 characters</string>
+
+    <!-- Player errors -->
+    <string name="player_play_failed">Playback failed: %1$s</string>
+
+    <!-- Date/time labels -->
+    <string name="date_after_tomorrow">Day after tomorrow</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_today">Today</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="date_before_yesterday">Day before yesterday</string>
+    <string name="time_seconds_format">%1$d s</string>
+    <string name="time_minutes_seconds_format">%1$d m %2$d s</string>
+
+    <!-- Search UI strings -->
+    <string name="search_no_results">Nothing found</string>
+    <string name="search_tab_songs">Songs</string>
+    <string name="search_tab_users">Users</string>
+
+    <!-- Navigation labels -->
+    <string name="nav_home_title">Home</string>
+    <string name="nav_recent_like">Recent likes</string>
+    <string name="nav_recent_play">Recently played</string>
+    <string name="nav_my_playlist">My playlists</string>
+    <string name="nav_my_subscribe">My follows</string>
+    <string name="nav_creation_center">Creation Center</string>
+    <string name="nav_committee_center">Committee Center</string>
+    <string name="nav_contributor_center">Contributor Center</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="auth_forget_title">Reset password</string>
+    <string name="auth_forget_subtitle">Forgetting password is the first step to becoming a god</string>
+
+    <string name="auth_new_password_placeholder">New password</string>
+
+    <string name="auth_verify_code_placeholder">Verification code</string>
+    <string name="auth_send">Send</string>
+    <string name="auth_resend_seconds">Resend (%1$d s)</string>
+
+    <string name="auth_back">Back</string>
+    <string name="common_ok">OK</string>
+
+    <string name="auth_reset_success_title">Success</string>
+    <string name="auth_reset_success_text">Your password has been reset successfully</string>
+
+    <!-- CloseAskDialog strings -->
+    <string name="closeask_title">Minimize the window?</string>
+    <string name="closeask_text">After minimizing you can restore the window from the system tray</string>
+    <string name="closeask_minimize">Minimize</string>
+    <string name="closeask_quit">Quit</string>
+
+    <!-- Developing page -->
+    <string name="developing_page_title">Under development</string>
+
+    <!-- NeedLogin screen -->
+    <string name="need_login_message">You need to log in to use this</string>
+
+    <!-- Pagination component -->
+    <string name="pagination_total_items">Total %1$d items</string>
+    <string name="pagination_page_size">%1$d items/page</string>
+    <string name="pagination_previous_cd">Previous</string>
+    <string name="pagination_next_cd">Next</string>
+
+    <!-- ReloadPage strings -->
+    <string name="reload_page_message">It seems Hachimi has gone to heaven</string>
+    <string name="reload_retry">Retry</string>
+
+    <!-- Update / Upgrade dialog -->
+    <string name="update_found_title">Update available</string>
+    <string name="update_current_version">Current: %1$s</string>
+    <string name="update_new_version">New: %1$s</string>
+    <string name="update_changelog_title">Changelog</string>
+    <string name="update_confirm">Upgrade now</string>
+    <string name="update_ignore">Ignore</string>
+    <string name="update_icon_cd">Upgrade</string>
+
+    <!-- Home / Recommend / Weekly / Common strings -->
+    <string name="home_recent_title">Recent releases</string>
+    <string name="home_recommend_title">Daily picks</string>
+    <string name="home_recommend_subtitle">Not personalized recommendations</string>
+    <string name="home_weekly_title">Weekly hot</string>
+    <string name="home_weekly_subtitle">Calculated by play counts this week</string>
+    <string name="common_empty">No items</string>
+    <string name="common_more">More</string>
+    <string name="common_play_cd">Play</string>
+    <string name="recent_play_title">Recent plays</string>
+
+    <!-- InfoTab / Player fullscreen labels -->
+    <string name="info_author">Author</string>
+    <string name="info_tags">Tags</string>
+    <string name="info_release_date">Release date</string>
+    <string name="info_pv">PV</string>
+    <string name="info_origin">Origin</string>
+    <string name="info_listen_cd">Listen to this music</string>
+    <string name="info_open_in_new_tab_cd">Open in new window</string>
+
+    <!-- Playlist package strings -->
+    <string name="playlist_empty">No items</string>
+    <string name="playlist_my_playlists_title">My playlists</string>
+    <string name="playlist_description_placeholder">No description</string>
+    <string name="playlist_private_badge">Private</string>
+    <string name="playlist_songs_list">Songs</string>
+    <string name="playlist_song_count">%1$d tracks</string>
+    <string name="playlist_remove_item">Remove from playlist</string>
+    <string name="playlist_cover_cd">Playlist cover</string>
+    <string name="song_cover_cd">Song cover</string>
+    <string name="playlist_edit_title">Edit playlist</string>
+
+    <!-- User space strings -->
+    <string name="user_space_title">User space</string>
+    <string name="user_space_user_avatar_cd">User avatar</string>
+    <string name="user_space_uid_prefix">UID: %1$d</string>
+    <string name="user_space_intro_label">Introduction</string>
+    <string name="user_space_all_works">All works</string>
+    <string name="user_space_empty">No items</string>
+    <string name="user_space_male_cd">Male</string>
+    <string name="user_space_female_cd">Female</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_dark_mode_label">Dark mode</string>
+    <string name="settings_dark_mode_follow_system">Follow system</string>
+    <string name="settings_dark_mode_on">Always on</string>
+    <string name="settings_dark_mode_off">Always off</string>
+    <string name="settings_dropdown_cd">Dropdown</string>
+    <string name="settings_loudness">Loudness normalization</string>
+    <string name="settings_kids_mode">Kids mode</string>
+    <string name="settings_client_type">Client type</string>
+    <string name="settings_version_name">Version name</string>
+    <string name="settings_version_code">Version code</string>
+    <string name="settings_feedback">Feedback</string>
+    <string name="settings_official_website">Official site</string>
+    <string name="settings_github_text">GitHub</string>
+    <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_open_in_browser_cd">Open in browser</string>
+    <!-- Language selection -->
+    <string name="settings_language_label">Language</string>
+    <string name="settings_language_follow_system">Follow system</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_zh">简体中文</string>
+
+</resources>

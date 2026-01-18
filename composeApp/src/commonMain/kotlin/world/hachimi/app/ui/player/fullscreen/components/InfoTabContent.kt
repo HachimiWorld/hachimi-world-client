@@ -32,7 +32,18 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_info
+import hachimiworld.composeapp.generated.resources.common_ok
+import hachimiworld.composeapp.generated.resources.info_author
+import hachimiworld.composeapp.generated.resources.info_listen_cd
+import hachimiworld.composeapp.generated.resources.info_open_in_new_tab_cd
+import hachimiworld.composeapp.generated.resources.info_origin
+import hachimiworld.composeapp.generated.resources.info_pv
+import hachimiworld.composeapp.generated.resources.info_release_date
+import hachimiworld.composeapp.generated.resources.info_tags
 import kotlinx.datetime.LocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.PlayerUIState
@@ -70,7 +81,7 @@ fun InfoTabContent(
                 modifier = Modifier.padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                PropertyLine("作者") {
+                PropertyLine(stringResource(Res.string.info_author)) {
                     UserChip(
                         onClick = {
                             uiState.readySongInfo?.uploaderUid?.let {
@@ -99,7 +110,7 @@ fun InfoTabContent(
 
                 readySongInfo?.tags?.let { tags ->
                     if (tags.isNotEmpty()) PropertyLine(
-                        label = "标签",
+                        label = stringResource(Res.string.info_tags),
                         verticalAlignment = if (tags.size > 1) Alignment.Top else Alignment.CenterVertically,
                     ) {
                         FlowRow(
@@ -117,7 +128,7 @@ fun InfoTabContent(
                 }
 
                 readySongInfo?.releaseTime?.let { releaseTime ->
-                    PropertyLine("发行日期") {
+                    PropertyLine(stringResource(Res.string.info_release_date)) {
                         HintChip {
                             Text(
                                 text = formatTime(
@@ -147,7 +158,7 @@ fun InfoTabContent(
 private fun PVs(songInfo: SongDetailInfo) {
     if (songInfo.externalLinks.isEmpty()) return
     PropertyLine(
-        label = "PV",
+        label = stringResource(Res.string.info_pv),
         verticalAlignment = if (songInfo.externalLinks.size > 1) Alignment.Top else Alignment.CenterVertically
     ) {
         songInfo.externalLinks.forEach {
@@ -176,10 +187,10 @@ private fun Staffs(songInfo: SongDetailInfo, onUserClick: (Long) -> Unit) {
                     UserChip(
                         onClick = { onUserClick(it.uid) },
                         avatar = null,
-                        name = it.personName ?: "Unknown"
+                        name = it.personName ?: stringResource(Res.string.common_info)
                     )
                 } else {
-                    HintUserChip(name = it.personName ?: "Unknown")
+                    HintUserChip(name = it.personName ?: stringResource(Res.string.common_info))
                 }
             }
         )
@@ -190,7 +201,7 @@ private fun Staffs(songInfo: SongDetailInfo, onUserClick: (Long) -> Unit) {
 private fun Origins(songInfo: SongDetailInfo) {
     if (songInfo.originInfos.isEmpty()) return
     PropertyLine(
-        label = "原作",
+        label = stringResource(Res.string.info_origin),
         verticalAlignment = if (songInfo.originInfos.size > 1) Alignment.Top else Alignment.CenterVertically,
         content = {
             Column(
@@ -239,7 +250,7 @@ private fun InternalOriginChip(title: String?, artist: String?, onClick: () -> U
             modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp),
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             tint = LocalContentColor.current.copy(0.6f),
-            contentDescription = "Listen this music"
+            contentDescription = stringResource(Res.string.info_listen_cd)
         )
     }
 }
@@ -252,7 +263,7 @@ private fun ExternalOriginChip(title: String?, artist: String?, onClick: () -> U
             modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp),
             imageVector = Icons.Filled.ArrowOutward,
             tint = LocalContentColor.current.copy(0.6f),
-            contentDescription = "Open in new tab"
+            contentDescription = stringResource(Res.string.info_open_in_new_tab_cd)
         )
     }
 }
@@ -268,7 +279,7 @@ private fun NoLinkOriginChip(title: String?, artist: String?) {
 private fun RowScope.TitleArtist(title: String?, artist: String?, modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
-        text = title ?: "unknown",
+        text = title ?: stringResource(Res.string.common_ok).lowercase(),
         overflow = TextOverflow.Ellipsis,
     )
     if (artist != null) Text(" - $artist")

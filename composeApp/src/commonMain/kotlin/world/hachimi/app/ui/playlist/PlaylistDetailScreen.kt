@@ -46,6 +46,17 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_more
+import hachimiworld.composeapp.generated.resources.play_all
+import hachimiworld.composeapp.generated.resources.playlist_cover_cd
+import hachimiworld.composeapp.generated.resources.playlist_description_placeholder
+import hachimiworld.composeapp.generated.resources.playlist_private_badge
+import hachimiworld.composeapp.generated.resources.playlist_remove_item
+import hachimiworld.composeapp.generated.resources.playlist_song_count
+import hachimiworld.composeapp.generated.resources.playlist_songs_list
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PlaylistModule
@@ -162,7 +173,7 @@ private fun Header(
                         .data(info.coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Playlist Cover Image",
+                    contentDescription = stringResource(Res.string.playlist_cover_cd),
                     contentScale = ContentScale.Crop,
                     placeholder = ColorPainter(LocalContentColor.current.copy(alpha = 0.12f))
                 )
@@ -173,7 +184,7 @@ private fun Header(
                 if (!info.isPublic) {
                     TagBadge(
                         hazeState,
-                        tag = "私有",
+                        tag = stringResource(Res.string.playlist_private_badge),
                         modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
                     )
                 }
@@ -191,7 +202,7 @@ private fun Header(
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    text = info.description ?: "暂无介绍",
+                    text = info.description ?: stringResource(Res.string.playlist_description_placeholder),
                     style = MaterialTheme.typography.bodySmall,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -204,12 +215,12 @@ private fun Header(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "歌曲列表", style = MaterialTheme.typography.titleLarge
+                text = stringResource(Res.string.playlist_songs_list), style = MaterialTheme.typography.titleLarge
             )
 
             Text(
                 modifier = Modifier.padding(start = 16.dp),
-                text = "${vm.songs.size} 首",
+                text = stringResource(Res.string.playlist_song_count, vm.songs.size),
                 style = MaterialTheme.typography.bodySmall
             )
 
@@ -218,9 +229,9 @@ private fun Header(
                 modifier = Modifier,
                 onClick = { vm.playAll() }
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.song_cover_cd))
                 Spacer(Modifier.width(16.dp))
-                Text("播放全部")
+                Text(stringResource(Res.string.play_all))
             }
         }
     }
@@ -257,7 +268,7 @@ private fun SongItem(
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Song Cover Image",
+                    contentDescription = stringResource(Res.string.song_cover_cd),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -281,7 +292,7 @@ private fun SongItem(
 
             Box {
                 HachimiIconButton(onClick = { dropdownExpanded = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Dropdown")
+                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(Res.string.common_more))
                 }
                 DropdownMenu(
                     expanded = dropdownExpanded,
@@ -290,7 +301,7 @@ private fun SongItem(
                         onRemoveClick()
                         dropdownExpanded = false
                     }, text = {
-                        Text("移出歌单")
+                        Text(stringResource(Res.string.playlist_remove_item))
                     })
                 }
             }

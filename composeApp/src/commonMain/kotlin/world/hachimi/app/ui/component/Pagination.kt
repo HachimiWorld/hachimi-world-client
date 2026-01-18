@@ -1,18 +1,40 @@
 package world.hachimi.app.ui.component
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.pagination_next_cd
+import hachimiworld.composeapp.generated.resources.pagination_page_size
+import hachimiworld.composeapp.generated.resources.pagination_previous_cd
+import hachimiworld.composeapp.generated.resources.pagination_total_items
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.WindowSize
 
@@ -58,7 +80,7 @@ fun Pagination(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("共 $total 条", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(Res.string.pagination_total_items, total), style = MaterialTheme.typography.labelMedium)
 
                     PageSizeButton(
                         pageSize = pageSize,
@@ -81,7 +103,7 @@ fun Pagination(
                 )
                 NextButton(currentPage, pageCount, pageChange)
 
-                Text("共 $total 条", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(Res.string.pagination_total_items, total), style = MaterialTheme.typography.labelMedium)
 
                 PageSizeButton(
                     pageSize = pageSize,
@@ -104,7 +126,7 @@ private fun PreviousButton(
             onPageChange(currentPage - 1)
         }
     }) {
-        Icon(Icons.Default.ChevronLeft, "Previous")
+        Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(Res.string.pagination_previous_cd))
     }
 }
 
@@ -119,7 +141,7 @@ private fun NextButton(
             onPageChange(currentPage + 1)
         }
     }) {
-        Icon(Icons.Default.ChevronRight, "Next")
+        Icon(Icons.Default.ChevronRight, contentDescription = stringResource(Res.string.pagination_next_cd))
     }
 }
 
@@ -159,7 +181,7 @@ private fun PageSizeButton(
     var expanded by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { expanded = true }) {
-            Text("$pageSize 条/页")
+            Text(stringResource(Res.string.pagination_page_size, pageSize))
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             for (x in pageSizes) {
