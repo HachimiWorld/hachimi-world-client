@@ -188,4 +188,10 @@
 
     <string name="auth_reset_success_title">成功</string>
     <string name="auth_reset_success_text">已成功将您的密码重置</string>
+
+    <!-- CloseAskDialog strings -->
+    <string name="closeask_title">要最小化吗？</string>
+    <string name="closeask_text">最小化后可从系统托盘唤出窗口</string>
+    <string name="closeask_minimize">最小化</string>
+    <string name="closeask_quit">直接退出</string>
 </resources>

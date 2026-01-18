@@ -2,6 +2,12 @@ package world.hachimi.app.ui.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.closeask_minimize
+import hachimiworld.composeapp.generated.resources.closeask_quit
+import hachimiworld.composeapp.generated.resources.closeask_text
+import hachimiworld.composeapp.generated.resources.closeask_title
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.SubtleButton
 import world.hachimi.app.ui.design.components.Text
@@ -16,17 +22,17 @@ fun CloseAskDialog(
     AlertDialog(
         onDismissRequest = onCancel,
         title = {
-            Text("要最小化吗？")
+            Text(stringResource(Res.string.closeask_title))
         },
         text = {
-            Text("最小化后可从系统托盘唤出窗口")
+            Text(stringResource(Res.string.closeask_text))
         },
         confirmButton = {
             TextButton(onClick = onMinimizeClick) {
-                Text("最小化")
+                Text(stringResource(Res.string.closeask_minimize))
             }
             SubtleButton(onClick = onQuitClick) {
-                Text("直接退出")
+                Text(stringResource(Res.string.closeask_quit))
             }
         }
     )
