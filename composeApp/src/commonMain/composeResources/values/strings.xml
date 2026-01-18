@@ -40,6 +40,14 @@
     <string name="auth_forget_send_code_failed">Failed to send verification code, please try again later</string>
     <string name="auth_forget_reset_failed">Failed to reset password, please try again later</string>
     <string name="auth_forget_captcha_failed">Captcha verification failed, please try again later</string>
+    <string name="auth_captcha_title">Please complete verification</string>
+    <string name="auth_captcha_message">Please complete the captcha in the opened browser page.</string>
+    <string name="auth_captcha_help_label">No popup?</string>
+    <string name="auth_captcha_help_message">For Safari: open Settings > App > Safari and disable "Block Pop-ups", or use Chrome; on desktop check if blocked by security software.</string>
+    <string name="auth_captcha_confirm">I've completed it, continue</string>
+
+    <!-- Common small labels -->
+    <string name="common_info">Info</string>
 
     <string name="user_change_nickname">Change Nickname</string>
     <string name="user_change_bio">Change bio</string>

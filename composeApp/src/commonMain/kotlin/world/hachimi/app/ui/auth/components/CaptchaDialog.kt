@@ -19,6 +19,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_captcha_confirm
+import hachimiworld.composeapp.generated.resources.auth_captcha_help_label
+import hachimiworld.composeapp.generated.resources.auth_captcha_help_message
+import hachimiworld.composeapp.generated.resources.auth_captcha_message
+import hachimiworld.composeapp.generated.resources.auth_captcha_title
+import hachimiworld.composeapp.generated.resources.common_info
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -33,13 +41,13 @@ fun CaptchaDialog(
     AlertDialog(
         onDismissRequest = {},
         title = {
-            Text("请完成人机验证")
+            Text(stringResource(Res.string.auth_captcha_title))
         },
         text = {
             Column(Modifier.fillMaxWidth()) {
                 var showHelp by remember { mutableStateOf(false) }
 
-                Text("请在打开的浏览器页面中完成人机验证。")
+                Text(stringResource(Res.string.auth_captcha_message))
 
                 Row(
                     modifier = Modifier.padding(top = 8.dp).clickable(
@@ -49,18 +57,18 @@ fun CaptchaDialog(
                     ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Outlined.Info, contentDescription = "Info")
+                    Icon(Icons.Outlined.Info, contentDescription = stringResource(Res.string.common_info))
                     Text(
                         modifier = Modifier.padding(start = 4.dp),
                         style = TextStyle(fontSize = 12.sp),
-                        text = "未弹出页面？"
+                        text = stringResource(Res.string.auth_captcha_help_label)
                     )
                 }
 
                 AnimatedVisibility(showHelp) {
                     Text(
                         modifier = Modifier.padding(top = 8.dp),
-                        text = "Safari 浏览器请前往“设置”>“App”>“Safari 浏览器” 中关闭 “阻止弹出式窗口”，或使用 Chrome 浏览器访问；\n电脑端请检查是否被安全软件拦截",
+                        text = stringResource(Res.string.auth_captcha_help_message),
                         style = TextStyle(fontSize = 12.sp),
                     )
                 }
@@ -68,7 +76,7 @@ fun CaptchaDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm, enabled = !processing) {
-                Text("我已完成，继续")
+                Text(stringResource(Res.string.auth_captcha_confirm))
             }
         }
     )

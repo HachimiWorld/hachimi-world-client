@@ -40,6 +40,14 @@
     <string name="auth_forget_send_code_failed">发送验证码失败，请稍后再试</string>
     <string name="auth_forget_reset_failed">重置密码失败，请稍后再试</string>
     <string name="auth_forget_captcha_failed">人机验证失败，请稍后重试</string>
+    <string name="auth_captcha_title">请完成验证</string>
+    <string name="auth_captcha_message">请在打开的浏览器页面中完成人机验证。</string>
+    <string name="auth_captcha_help_label">未弹出页面？</string>
+    <string name="auth_captcha_help_message">Safari 浏览器请前往“设置”>“App”>“Safari 浏览器” 中关闭 “阻止弹出式窗口”，或使用 Chrome 浏览器访问；\n电脑端请检查是否被安全软件拦截</string>
+    <string name="auth_captcha_confirm">我已完成，继续</string>
+
+    <!-- Common small labels -->
+    <string name="common_info">信息</string>
 
     <string name="user_change_nickname">更改昵称</string>
     <string name="user_change_bio">更改简介</string>
