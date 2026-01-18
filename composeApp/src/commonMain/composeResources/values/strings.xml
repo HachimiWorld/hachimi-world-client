@@ -73,6 +73,8 @@
 
     <!-- Common small labels -->
     <string name="common_info">Info</string>
+    <string name="common_refresh_cd">Refresh</string>
+    <string name="common_no_more">No more</string>
 
     <string name="user_change_nickname">Change Nickname</string>
     <string name="user_change_bio">Change bio</string>
@@ -219,5 +221,16 @@
     <string name="update_confirm">Upgrade now</string>
     <string name="update_ignore">Ignore</string>
     <string name="update_icon_cd">Upgrade</string>
+
+    <!-- Home / Recommend / Weekly / Common strings -->
+    <string name="home_recent_title">Recent releases</string>
+    <string name="home_recommend_title">Daily picks</string>
+    <string name="home_recommend_subtitle">Not personalized recommendations</string>
+    <string name="home_weekly_title">Weekly hot</string>
+    <string name="home_weekly_subtitle">Calculated by play counts this week</string>
+    <string name="common_empty">No items</string>
+    <string name="common_more">More</string>
+    <string name="common_play_cd">Play</string>
+    <string name="recent_play_title">Recent plays</string>
 
 </resources>

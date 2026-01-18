@@ -39,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onFirstVisible
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.SongModule
@@ -84,7 +86,7 @@ fun HomeMainScreen(
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {
             Segment(
-                label = "最近发布",
+                label = stringResource(Res.string.home_recent_title),
                 status = vm.recentStatus,
                 loading = vm.recentLoading,
                 items = vm.recentSongs,
@@ -95,7 +97,7 @@ fun HomeMainScreen(
             )
 
             Segment(
-                label = "每日推荐",
+                label = stringResource(Res.string.home_recommend_title),
                 status = vm.recommendStatus,
                 loading = vm.recommendLoading,
                 items = vm.recommendSongs,
@@ -106,7 +108,7 @@ fun HomeMainScreen(
             )
 
             Segment(
-                label = "本周热门",
+                label = stringResource(Res.string.home_weekly_title),
                 status = vm.hotStatus,
                 loading = vm.hotLoading,
                 items = vm.hotSongs,
@@ -148,7 +150,7 @@ private fun Segment(
             onLoad = {}
         ) {
             if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("空空如也")
+                Text(stringResource(Res.string.common_empty))
             } else LazyHorizontalGrid(
                 modifier = Modifier.fillMaxSize(),
                 rows = GridCells.Fixed(2),
@@ -203,7 +205,7 @@ private fun CategorySegment(
             val songs = state?.songs?.value ?: emptyList()
             if (songs.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("空空如也")
+                    Text(stringResource(Res.string.common_empty))
                 }
             } else LazyHorizontalGrid(
                 modifier = Modifier.fillMaxSize(),
@@ -228,8 +230,8 @@ private fun CategorySegment(
                                 GlobalStore.MusicQueueItem.fromSearchSongItem(item),
                                 true,
                                 false
-                            )
-                        },
+                    )
+                },
                     )
                 }
             }
@@ -264,9 +266,9 @@ private fun SegmentHeader(
             modifier = Modifier,
             onClick = onMoreClick
         ) {
-            Text("更多")
+            Text(stringResource(Res.string.common_more))
             Spacer(Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Play")
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.common_play_cd))
         }
     }
 }

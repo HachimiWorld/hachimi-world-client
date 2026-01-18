@@ -28,6 +28,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.recent_play_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
@@ -69,7 +72,7 @@ fun RecentPlayScreen(
                     item {
                         Text(
                             modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
-                            text ="最近播放", style = MaterialTheme.typography.titleLarge
+                            text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
                         )
                     }
                     items(vm.history, key = { item -> item.id }) { item ->

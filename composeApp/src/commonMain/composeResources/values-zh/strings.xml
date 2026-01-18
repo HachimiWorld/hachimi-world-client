@@ -73,6 +73,8 @@
 
     <!-- Common small labels -->
     <string name="common_info">信息</string>
+    <string name="common_refresh_cd">刷新</string>
+    <string name="common_no_more">没有更多了</string>
 
     <string name="user_change_nickname">更改昵称</string>
     <string name="user_change_bio">更改简介</string>
@@ -219,5 +221,16 @@
     <string name="update_confirm">立即升级</string>
     <string name="update_ignore">忽略</string>
     <string name="update_icon_cd">升级</string>
+
+    <!-- Home / Recommend / Weekly / Common strings -->
+    <string name="home_recent_title">最近发布</string>
+    <string name="home_recommend_title">每日推荐</string>
+    <string name="home_recommend_subtitle">并非根据你的口味进行推荐</string>
+    <string name="home_weekly_title">本周热门</string>
+    <string name="home_weekly_subtitle">根据本周的播放量计算</string>
+    <string name="common_empty">空空如也</string>
+    <string name="common_more">更多</string>
+    <string name="common_play_cd">播放</string>
+    <string name="recent_play_title">最近播放</string>
 
 </resources>
