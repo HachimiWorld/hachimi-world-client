@@ -46,6 +46,31 @@
     <string name="auth_captcha_help_message">For Safari: open Settings > App > Safari and disable "Block Pop-ups", or use Chrome; on desktop check if blocked by security software.</string>
     <string name="auth_captcha_confirm">I've completed it, continue</string>
 
+    <!-- New auth UI strings for AuthScreen -->
+    <string name="auth_welcome_home">Welcome back</string>
+    <string name="auth_become_god">Become a Hachimi</string>
+    <string name="auth_email_placeholder">Email</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_forget_password">Forgot password?</string>
+    <string name="auth_confirm_password_placeholder">Confirm password</string>
+    <string name="auth_next_step">Next</string>
+    <string name="auth_passwords_not_match">Passwords do not match</string>
+    <string name="auth_almost_there">Almost there</string>
+    <string name="auth_verification_sent_subtitle">Verification code has been sent to your email. If you don't receive it, check your spam folder.</string>
+    <string name="auth_code_placeholder">Verification code</string>
+    <string name="auth_resend">Resend</string>
+    <string name="auth_resend_with_seconds">Resend (%d s)</string>
+    <string name="auth_previous">Previous</string>
+    <string name="auth_one_more_step">One more step</string>
+    <string name="auth_complete_profile_subtitle">Complete your profile</string>
+    <string name="auth_nickname_placeholder">Nickname</string>
+    <string name="auth_intro_placeholder">Tell us about yourself</string>
+    <string name="auth_gender_male">Male</string>
+    <string name="auth_gender_female">Female</string>
+    <string name="auth_gender_none">No gender</string>
+    <string name="auth_finish">Finish</string>
+    <string name="auth_skip">Skip</string>
+
     <!-- Common small labels -->
     <string name="common_info">Info</string>
 

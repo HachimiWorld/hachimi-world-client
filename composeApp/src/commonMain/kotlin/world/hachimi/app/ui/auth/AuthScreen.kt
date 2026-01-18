@@ -36,8 +36,33 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_almost_there
+import hachimiworld.composeapp.generated.resources.auth_become_god
+import hachimiworld.composeapp.generated.resources.auth_code_placeholder
+import hachimiworld.composeapp.generated.resources.auth_complete_profile_subtitle
+import hachimiworld.composeapp.generated.resources.auth_confirm_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_email_placeholder
+import hachimiworld.composeapp.generated.resources.auth_finish
+import hachimiworld.composeapp.generated.resources.auth_forget_password
+import hachimiworld.composeapp.generated.resources.auth_gender_female
+import hachimiworld.composeapp.generated.resources.auth_gender_male
+import hachimiworld.composeapp.generated.resources.auth_gender_none
+import hachimiworld.composeapp.generated.resources.auth_intro_placeholder
+import hachimiworld.composeapp.generated.resources.auth_invalid_email
 import hachimiworld.composeapp.generated.resources.auth_login
+import hachimiworld.composeapp.generated.resources.auth_next_step
+import hachimiworld.composeapp.generated.resources.auth_nickname_placeholder
+import hachimiworld.composeapp.generated.resources.auth_one_more_step
+import hachimiworld.composeapp.generated.resources.auth_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_password_too_short
+import hachimiworld.composeapp.generated.resources.auth_passwords_not_match
+import hachimiworld.composeapp.generated.resources.auth_previous
 import hachimiworld.composeapp.generated.resources.auth_register
+import hachimiworld.composeapp.generated.resources.auth_resend
+import hachimiworld.composeapp.generated.resources.auth_resend_with_seconds
+import hachimiworld.composeapp.generated.resources.auth_skip
+import hachimiworld.composeapp.generated.resources.auth_verification_sent_subtitle
+import hachimiworld.composeapp.generated.resources.auth_welcome_home
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -137,7 +162,7 @@ private enum class Form {
 @Composable
 private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
     FormContent(
-        title = { Text("欢迎回家") },
+        title = { Text(stringResource(Res.string.auth_welcome_home)) },
         subtitle = {}
     ) {
         Column(Modifier) {
@@ -145,7 +170,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.email,
                 onValueChange = { vm.email = it.singleLined() },
-                placeholder = { Text("邮箱") },
+                placeholder = { Text(stringResource(Res.string.auth_email_placeholder)) },
                 leadingIcon = { Icon(Icons.Outlined.Mail, null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -160,7 +185,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
                 value = vm.password,
                 onValueChange = { vm.password = it.singleLined() },
                 leadingIcon = { Icon(Icons.Outlined.Lock, null) },
-                placeholder = { Text("密码") },
+                placeholder = { Text(stringResource(Res.string.auth_password_placeholder)) },
                 trailingIcon = {
                     PasswordToggleButton(
                         showPassword,
@@ -183,7 +208,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
                 modifier = Modifier.align(Alignment.End),
                 onClick = { vm.forgetPassword() }
             ) {
-                Text("忘记密码？")
+                Text(stringResource(Res.string.auth_forget_password))
             }
             Spacer(Modifier.height(24.dp))
             Row(Modifier.fillMaxWidth()) {
@@ -208,22 +233,20 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
 @Composable
 private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
     FormContent(
-        title = { Text("成为神人") },
+        title = { Text(stringResource(Res.string.auth_become_god)) },
         subtitle = {}
     ) {
         Column(Modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            var emailHelp by remember { mutableStateOf("") }
+            // Compute help texts during composition (avoid calling stringResource from non-composable callbacks)
+            val emailHelp = if (validateEmailPattern(vm.regEmail)) "" else stringResource(Res.string.auth_invalid_email)
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regEmail,
                 onValueChange = {
                     vm.regEmail = it.singleLined()
-                    emailHelp =
-                        if (validateEmailPattern(vm.regEmail)) ""
-                        else "邮箱格式不正确"
                 },
                 leadingIcon = { Icon(Icons.Outlined.Mail, null) },
-                placeholder = { Text("邮箱") },
+                placeholder = { Text(stringResource(Res.string.auth_email_placeholder)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -234,18 +257,15 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                 }
             )
             var showPassword by remember { mutableStateOf(false) }
-            var passwordHelp by remember { mutableStateOf("") }
+            val passwordHelp = if (validatePasswordPattern(vm.regPassword)) "" else stringResource(Res.string.auth_password_too_short)
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPassword,
                 onValueChange = {
                     vm.regPassword = it.singleLined()
-                    passwordHelp =
-                        if (validatePasswordPattern(vm.regPassword)) ""
-                        else "密码长度至少为 6 位"
                 },
                 leadingIcon = { Icon(Icons.Outlined.Lock, null) },
-                placeholder = { Text("密码") },
+                placeholder = { Text(stringResource(Res.string.auth_password_placeholder)) },
                 trailingIcon = {
                     PasswordToggleButton(
                         showPassword,
@@ -263,18 +283,15 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                 }
             )
             var showRepeatPassword by remember { mutableStateOf(false) }
-            var repeatPasswordHelp by remember { mutableStateOf("") }
+            val repeatPasswordHelp = if (vm.regPasswordRepeat != vm.regPassword) stringResource(Res.string.auth_passwords_not_match) else ""
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPasswordRepeat,
                 onValueChange = {
                     vm.regPasswordRepeat = it.singleLined()
-                    repeatPasswordHelp =
-                        if (vm.regPasswordRepeat != vm.regPassword) "两次输入不一致"
-                        else ""
                 },
                 leadingIcon = { Icon(Icons.Outlined.SettingsBackupRestore, null) },
-                placeholder = { Text("确认密码") },
+                placeholder = { Text(stringResource(Res.string.auth_confirm_password_placeholder)) },
                 trailingIcon = {
                     PasswordToggleButton(
                         showRepeatPassword,
@@ -314,7 +331,7 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                     onClick = { vm.regNextStep() },
                     enabled = enabled && !vm.isOperating,
                 ) {
-                    Text("下一步")
+                    Text(stringResource(Res.string.auth_next_step))
                 }
             }
         }
@@ -324,8 +341,8 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
 @Composable
 private fun RegisterVerifyForm(vm: AuthViewModel) {
     FormContent(
-        title = { Text("离神人很近了") },
-        subtitle = { Text("已将验证码发送至邮箱，如未收到请检查垃圾箱") }
+        title = { Text(stringResource(Res.string.auth_almost_there)) },
+        subtitle = { Text(stringResource(Res.string.auth_verification_sent_subtitle)) }
     ) {
         Column {
             Row(
@@ -337,7 +354,7 @@ private fun RegisterVerifyForm(vm: AuthViewModel) {
                     value = vm.regCode,
                     onValueChange = { vm.regCode = it.singleLined() },
                     leadingIcon = { Icon(Icons.Outlined.Security, null) },
-                    placeholder = { Text("验证码") },
+                    placeholder = { Text(stringResource(Res.string.auth_code_placeholder)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
@@ -358,8 +375,8 @@ private fun RegisterVerifyForm(vm: AuthViewModel) {
                 enabled = sendCodeEnabled && !vm.isOperating
             ) {
                 Text(
-                    if (sendCodeEnabled) "重新发送"
-                    else "重新发送 (${vm.regCodeRemainSecs} 秒)"
+                    if (sendCodeEnabled) stringResource(Res.string.auth_resend)
+                    else stringResource(Res.string.auth_resend_with_seconds, vm.regCodeRemainSecs)
                 )
             }
             Spacer(Modifier.height(24.dp))
@@ -368,7 +385,7 @@ private fun RegisterVerifyForm(vm: AuthViewModel) {
                     modifier = Modifier.size(width = 112.dp, height = 48.dp),
                     onClick = { vm.regStep = 0 }
                 ) {
-                    Text("上一步")
+                    Text(stringResource(Res.string.auth_previous))
                 }
 
                 Spacer(Modifier.weight(1f))
@@ -378,7 +395,7 @@ private fun RegisterVerifyForm(vm: AuthViewModel) {
                     onClick = { vm.regNextStep() },
                     enabled = vm.regCode.isNotBlank() && !vm.isOperating
                 ) {
-                    Text("下一步")
+                    Text(stringResource(Res.string.auth_next_step))
                 }
             }
         }
@@ -388,15 +405,15 @@ private fun RegisterVerifyForm(vm: AuthViewModel) {
 @Composable
 private fun RegisterProfileForm(vm: AuthViewModel) {
     FormContent(
-        title = { Text("只差一步") },
-        subtitle = { Text("完善你的资料") }
+        title = { Text(stringResource(Res.string.auth_one_more_step)) },
+        subtitle = { Text(stringResource(Res.string.auth_complete_profile_subtitle)) }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.name,
                 onValueChange = { vm.name = it.singleLined() },
-                placeholder = { Text("昵称") },
+                placeholder = { Text(stringResource(Res.string.auth_nickname_placeholder)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -407,7 +424,7 @@ private fun RegisterProfileForm(vm: AuthViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.intro,
                 onValueChange = { vm.intro = it },
-                placeholder = { Text("介绍一下") },
+                placeholder = { Text(stringResource(Res.string.auth_intro_placeholder)) },
                 maxLines = 4,
                 minLines = 4,
                 keyboardOptions = KeyboardOptions(
@@ -418,13 +435,13 @@ private fun RegisterProfileForm(vm: AuthViewModel) {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(selected = vm.gender == 0, onClick = { vm.gender = 0 })
-                Text("男")
+                Text(stringResource(Res.string.auth_gender_male))
 
                 RadioButton(selected = vm.gender == 1, onClick = { vm.gender = 1 })
-                Text("女")
+                Text(stringResource(Res.string.auth_gender_female))
 
                 RadioButton(selected = vm.gender == 2, onClick = { vm.gender = 2 })
-                Text("神没有性别")
+                Text(stringResource(Res.string.auth_gender_none))
             }
 
             AccentButton(
@@ -432,14 +449,14 @@ private fun RegisterProfileForm(vm: AuthViewModel) {
                 onClick = { vm.finishRegister() },
                 enabled = vm.name.isNotBlank() && vm.intro.isNotBlank() && vm.gender != null && !vm.isOperating
             ) {
-                Text("完成")
+                Text(stringResource(Res.string.auth_finish))
             }
 
             TextButton(
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 onClick = { vm.skipProfile() }
             ) {
-                Text("跳过")
+                Text(stringResource(Res.string.auth_skip))
             }
         }
     }
