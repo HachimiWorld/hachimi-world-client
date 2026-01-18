@@ -254,6 +254,16 @@
     <string name="song_cover_cd">Song cover</string>
     <string name="playlist_edit_title">Edit playlist</string>
 
+    <!-- User space strings -->
+    <string name="user_space_title">User space</string>
+    <string name="user_space_user_avatar_cd">User avatar</string>
+    <string name="user_space_uid_prefix">UID: %d</string>
+    <string name="user_space_intro_label">Introduction</string>
+    <string name="user_space_all_works">All works</string>
+    <string name="user_space_empty">No items</string>
+    <string name="user_space_male_cd">Male</string>
+    <string name="user_space_female_cd">Female</string>
+
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
     <string name="settings_dark_mode_label">Dark mode</string>

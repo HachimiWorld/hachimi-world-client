@@ -254,6 +254,16 @@
     <string name="song_cover_cd">歌曲封面</string>
     <string name="playlist_edit_title">编辑歌单</string>
 
+    <!-- User space strings -->
+    <string name="user_space_title">个人主页</string>
+    <string name="user_space_user_avatar_cd">用户头像</string>
+    <string name="user_space_uid_prefix">UID：%d</string>
+    <string name="user_space_intro_label">简介</string>
+    <string name="user_space_all_works">全部作品</string>
+    <string name="user_space_empty">什么也没有</string>
+    <string name="user_space_male_cd">男</string>
+    <string name="user_space_female_cd">女</string>
+
     <!-- Settings screen -->
     <string name="settings_title">设置</string>
     <string name="settings_dark_mode_label">深色模式</string>
@@ -276,3 +286,4 @@
     <string name="settings_language_follow_system">跟随系统</string>
 
 </resources>
+
