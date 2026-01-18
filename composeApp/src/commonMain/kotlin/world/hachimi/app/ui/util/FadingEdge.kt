@@ -51,6 +51,9 @@ fun Modifier.horizontalFadingEdges(
     startEdgeWidth: Dp = 72.dp,
     endEdgeWidth: Dp = 72.dp
 ): Modifier = this
+    .graphicsLayer {
+        compositingStrategy = CompositingStrategy.Offscreen
+    }
     .drawWithCache {
         val startColors = listOf(Color.Transparent, Color.Black)
         val startBrush = Brush.horizontalGradient(
