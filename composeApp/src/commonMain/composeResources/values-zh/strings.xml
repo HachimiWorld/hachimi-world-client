@@ -200,4 +200,10 @@
 
     <!-- NeedLogin screen -->
     <string name="need_login_message">登录后才可以使用哦</string>
+
+    <!-- Pagination component -->
+    <string name="pagination_total_items">共 %d 条</string>
+    <string name="pagination_page_size">%d 条/页</string>
+    <string name="pagination_previous_cd">上一页</string>
+    <string name="pagination_next_cd">下一页</string>
 </resources>

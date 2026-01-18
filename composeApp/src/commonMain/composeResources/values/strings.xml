@@ -201,4 +201,10 @@
     <!-- NeedLogin screen -->
     <string name="need_login_message">You need to log in to use this</string>
 
+    <!-- Pagination component -->
+    <string name="pagination_total_items">Total %d items</string>
+    <string name="pagination_page_size">%d items/page</string>
+    <string name="pagination_previous_cd">Previous</string>
+    <string name="pagination_next_cd">Next</string>
+
 </resources>
