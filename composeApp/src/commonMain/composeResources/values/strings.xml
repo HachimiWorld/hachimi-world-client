@@ -59,7 +59,7 @@
     <string name="auth_verification_sent_subtitle">Verification code has been sent to your email. If you don't receive it, check your spam folder.</string>
     <string name="auth_code_placeholder">Verification code</string>
     <string name="auth_resend">Resend</string>
-    <string name="auth_resend_with_seconds">Resend (%d s)</string>
+    <string name="auth_resend_with_seconds">Resend (%1$d s)</string>
     <string name="auth_previous">Previous</string>
     <string name="auth_one_more_step">One more step</string>
     <string name="auth_complete_profile_subtitle">Complete your profile</string>
@@ -100,7 +100,7 @@
 
     <string name="global_check_update_failed">Check for update failed</string>
     <string name="global_error_check_min_api_failed">Failed to check min API version</string>
-    <string name="recent_error_fetch_recommend_failed">Failed to fetch recommendations: %s</string>
+    <string name="recent_error_fetch_recommend_failed">Failed to fetch recommendations: %1$s</string>
 
     <string name="player_not_playing">Not playing yet</string>
     <string name="app_menu_show_window">Show window</string>
@@ -149,7 +149,7 @@
     <string name="auth_password_too_short">Password must be at least 6 characters</string>
 
     <!-- Player errors -->
-    <string name="player_play_failed">Playback failed: %s</string>
+    <string name="player_play_failed">Playback failed: %1$s</string>
 
     <!-- Date/time labels -->
     <string name="date_after_tomorrow">Day after tomorrow</string>
@@ -157,8 +157,8 @@
     <string name="date_today">Today</string>
     <string name="date_yesterday">Yesterday</string>
     <string name="date_before_yesterday">Day before yesterday</string>
-    <string name="time_seconds_format">%d s</string>
-    <string name="time_minutes_seconds_format">%d m %d s</string>
+    <string name="time_seconds_format">%1$d s</string>
+    <string name="time_minutes_seconds_format">%1$d m %2$d s</string>
 
     <!-- Search UI strings -->
     <string name="search_no_results">Nothing found</string>
@@ -183,7 +183,7 @@
 
     <string name="auth_verify_code_placeholder">Verification code</string>
     <string name="auth_send">Send</string>
-    <string name="auth_resend_seconds">Resend (%d s)</string>
+    <string name="auth_resend_seconds">Resend (%1$d s)</string>
 
     <string name="auth_back">Back</string>
     <string name="common_ok">OK</string>
@@ -204,8 +204,8 @@
     <string name="need_login_message">You need to log in to use this</string>
 
     <!-- Pagination component -->
-    <string name="pagination_total_items">Total %d items</string>
-    <string name="pagination_page_size">%d items/page</string>
+    <string name="pagination_total_items">Total %1$d items</string>
+    <string name="pagination_page_size">%1$d items/page</string>
     <string name="pagination_previous_cd">Previous</string>
     <string name="pagination_next_cd">Next</string>
 
@@ -215,8 +215,8 @@
 
     <!-- Update / Upgrade dialog -->
     <string name="update_found_title">Update available</string>
-    <string name="update_current_version">Current: %s</string>
-    <string name="update_new_version">New: %s</string>
+    <string name="update_current_version">Current: %1$s</string>
+    <string name="update_new_version">New: %1$s</string>
     <string name="update_changelog_title">Changelog</string>
     <string name="update_confirm">Upgrade now</string>
     <string name="update_ignore">Ignore</string>
@@ -248,7 +248,7 @@
     <string name="playlist_description_placeholder">No description</string>
     <string name="playlist_private_badge">Private</string>
     <string name="playlist_songs_list">Songs</string>
-    <string name="playlist_song_count">%d tracks</string>
+    <string name="playlist_song_count">%1$d tracks</string>
     <string name="playlist_remove_item">Remove from playlist</string>
     <string name="playlist_cover_cd">Playlist cover</string>
     <string name="song_cover_cd">Song cover</string>
@@ -257,7 +257,7 @@
     <!-- User space strings -->
     <string name="user_space_title">User space</string>
     <string name="user_space_user_avatar_cd">User avatar</string>
-    <string name="user_space_uid_prefix">UID: %d</string>
+    <string name="user_space_uid_prefix">UID: %1$d</string>
     <string name="user_space_intro_label">Introduction</string>
     <string name="user_space_all_works">All works</string>
     <string name="user_space_empty">No items</string>

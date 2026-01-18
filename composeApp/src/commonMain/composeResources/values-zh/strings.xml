@@ -59,7 +59,7 @@
     <string name="auth_verification_sent_subtitle">已将验证码发送至邮箱，如未收到请检查垃圾箱</string>
     <string name="auth_code_placeholder">验证码</string>
     <string name="auth_resend">重新发送</string>
-    <string name="auth_resend_with_seconds">重新发送 (%d 秒)</string>
+    <string name="auth_resend_with_seconds">重新发送 (%1$d 秒)</string>
     <string name="auth_previous">上一步</string>
     <string name="auth_one_more_step">只差一步</string>
     <string name="auth_complete_profile_subtitle">完善你的资料</string>
@@ -100,7 +100,7 @@
 
     <string name="global_check_update_failed">检查更新失败</string>
     <string name="global_error_check_min_api_failed">检查最小版本失败</string>
-    <string name="recent_error_fetch_recommend_failed">获取推荐音乐失败：%s</string>
+    <string name="recent_error_fetch_recommend_failed">获取推荐音乐失败：%1$s</string>
 
     <string name="player_not_playing">暂未播放</string>
     <string name="app_menu_show_window">显示窗口</string>
@@ -148,7 +148,7 @@
     <string name="auth_password_too_short">密码长度至少为 6 位</string>
 
     <!-- Player errors -->
-    <string name="player_play_failed">播放失败：%s</string>
+    <string name="player_play_failed">播放失败：%1$s</string>
 
     <!-- Date/time labels -->
     <string name="date_after_tomorrow">后天</string>
@@ -156,8 +156,8 @@
     <string name="date_today">今天</string>
     <string name="date_yesterday">昨天</string>
     <string name="date_before_yesterday">前天</string>
-    <string name="time_seconds_format">%d 秒</string>
-    <string name="time_minutes_seconds_format">%d 分 %d 秒</string>
+    <string name="time_seconds_format">%1$d 秒</string>
+    <string name="time_minutes_seconds_format">%1$d 分 %2$d 秒</string>
 
     <!-- Search UI strings -->
     <string name="search_no_results">什么也没有找到</string>
@@ -183,7 +183,7 @@
 
     <string name="auth_verify_code_placeholder">验证码</string>
     <string name="auth_send">发送</string>
-    <string name="auth_resend_seconds">重新发送 (%d 秒)</string>
+    <string name="auth_resend_seconds">重新发送 (%1$d 秒)</string>
 
     <string name="auth_back">返回</string>
     <string name="common_ok">确定</string>
@@ -204,8 +204,8 @@
     <string name="need_login_message">登录后才可以使用哦</string>
 
     <!-- Pagination component -->
-    <string name="pagination_total_items">共 %d 条</string>
-    <string name="pagination_page_size">%d 条/页</string>
+    <string name="pagination_total_items">共 %1$d 条</string>
+    <string name="pagination_page_size">%1$d 条/页</string>
     <string name="pagination_previous_cd">上一页</string>
     <string name="pagination_next_cd">下一页</string>
 
@@ -215,8 +215,8 @@
 
     <!-- Update / Upgrade dialog -->
     <string name="update_found_title">发现新版本</string>
-    <string name="update_current_version">当前版本：%s</string>
-    <string name="update_new_version">新版本：%s</string>
+    <string name="update_current_version">当前版本：%1$s</string>
+    <string name="update_new_version">新版本：%1$s</string>
     <string name="update_changelog_title">更新日志</string>
     <string name="update_confirm">立即升级</string>
     <string name="update_ignore">忽略</string>
@@ -248,7 +248,7 @@
     <string name="playlist_description_placeholder">暂无介绍</string>
     <string name="playlist_private_badge">私有</string>
     <string name="playlist_songs_list">歌曲列表</string>
-    <string name="playlist_song_count">%d 首</string>
+    <string name="playlist_song_count">%1$d 首</string>
     <string name="playlist_remove_item">移出歌单</string>
     <string name="playlist_cover_cd">歌单封面</string>
     <string name="song_cover_cd">歌曲封面</string>
@@ -257,7 +257,7 @@
     <!-- User space strings -->
     <string name="user_space_title">个人主页</string>
     <string name="user_space_user_avatar_cd">用户头像</string>
-    <string name="user_space_uid_prefix">UID：%d</string>
+    <string name="user_space_uid_prefix">UID：%1$d</string>
     <string name="user_space_intro_label">简介</string>
     <string name="user_space_all_works">全部作品</string>
     <string name="user_space_empty">什么也没有</string>
