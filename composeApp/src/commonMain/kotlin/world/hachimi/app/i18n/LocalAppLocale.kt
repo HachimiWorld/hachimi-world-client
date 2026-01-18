@@ -13,7 +13,7 @@ expect object LocalAppLocale {
 
 @Composable
 fun AppEnvironment(
-    locale: String,
+    locale: String?,
     content: @Composable () -> Unit
 ) {
     CompositionLocalProvider(

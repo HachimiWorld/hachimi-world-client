@@ -55,6 +55,9 @@ class GlobalStore(
         private set
     var kidsMode by mutableStateOf(false)
         private set
+    // New locale setting: null = follow system, otherwise locale string like "en" or "zh" or "zh_CN"
+    var locale by mutableStateOf<String?>(null)
+        private set
     val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
         private set
@@ -107,9 +110,20 @@ class GlobalStore(
         dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
     }
 
+    // Persist and update locale. null => follow system (delete stored key)
+    fun updateLocale(locale: String?) = scope.launch {
+        this@GlobalStore.locale = locale
+        if (locale == null) {
+            dataStore.delete(PreferencesKeys.SETTINGS_LOCALE)
+        } else {
+            dataStore.set(PreferencesKeys.SETTINGS_LOCALE, locale)
+        }
+    }
+
     private suspend fun loadSettings() {
         this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
         this.enableLoudnessNormalization = dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
+        this.locale = dataStore.get(PreferencesKeys.SETTINGS_LOCALE)
     }
 
     private suspend fun loadLoginStatus() {

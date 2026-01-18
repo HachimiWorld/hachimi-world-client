@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.font.WithFont
+import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.WasmPlayerHelper
 import world.hachimi.app.ui.App
@@ -85,7 +86,10 @@ fun main() {
         }
 
         WithFont(global) {
-            App(global)
+            // Apply locale environment so the app follows the selected locale
+            AppEnvironment(global.locale) {
+                App(global)
+            }
         }
     }
 }

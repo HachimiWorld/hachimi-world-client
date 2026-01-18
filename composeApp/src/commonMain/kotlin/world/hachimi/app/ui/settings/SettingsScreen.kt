@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -45,6 +47,10 @@ import hachimiworld.composeapp.generated.resources.settings_dropdown_cd
 import hachimiworld.composeapp.generated.resources.settings_feedback
 import hachimiworld.composeapp.generated.resources.settings_github_text
 import hachimiworld.composeapp.generated.resources.settings_kids_mode
+import hachimiworld.composeapp.generated.resources.settings_language_en
+import hachimiworld.composeapp.generated.resources.settings_language_follow_system
+import hachimiworld.composeapp.generated.resources.settings_language_label
+import hachimiworld.composeapp.generated.resources.settings_language_zh
 import hachimiworld.composeapp.generated.resources.settings_loudness
 import hachimiworld.composeapp.generated.resources.settings_official_site_text
 import hachimiworld.composeapp.generated.resources.settings_official_website
@@ -58,6 +64,7 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.util.WindowSize
 
 @Composable
 fun SettingsScreen() {
@@ -66,11 +73,13 @@ fun SettingsScreen() {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)
             .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues()),
+            .padding(LocalContentInsets.current.asPaddingValues())
+            .wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.titleLarge)
 
+        LanguageSetting(globalStore)
         PropertyItem(label = {
             Text(stringResource(Res.string.settings_dark_mode_label), style = MaterialTheme.typography.bodyLarge)
         }) {
@@ -132,6 +141,44 @@ fun SettingsScreen() {
         }
         PropertyItem(label = { Text(stringResource(Res.string.settings_official_website)) }) {
             LinkButton(stringResource(Res.string.settings_official_site_text), "https://hachimi.world")
+        }
+    }
+}
+
+@Composable
+private fun LanguageSetting(globalStore: GlobalStore) {
+    PropertyItem(label = { Text(stringResource(Res.string.settings_language_label)) }) {
+        var expandedLang by remember { mutableStateOf(false) }
+        Box {
+            TextButton(onClick = { expandedLang = true }) {
+                Text(
+                    when (globalStore.locale) {
+                        "en" -> stringResource(Res.string.settings_language_en)
+                        "zh", "zh_CN", "zh-CN" -> stringResource(Res.string.settings_language_zh)
+                        null -> stringResource(Res.string.settings_language_follow_system)
+                        else -> globalStore.locale
+                            ?: stringResource(Res.string.settings_language_follow_system)
+                    }
+                )
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
+                )
+            }
+            DropdownMenu(expandedLang, onDismissRequest = { expandedLang = false }) {
+                DropdownMenuItem(onClick = {
+                    globalStore.updateLocale(null)
+                    expandedLang = false
+                }, text = { Text(stringResource(Res.string.settings_language_follow_system)) })
+                DropdownMenuItem(onClick = {
+                    globalStore.updateLocale("en")
+                    expandedLang = false
+                }, text = { Text(stringResource(Res.string.settings_language_en)) })
+                DropdownMenuItem(onClick = {
+                    globalStore.updateLocale("zh")
+                    expandedLang = false
+                }, text = { Text(stringResource(Res.string.settings_language_zh)) })
+            }
         }
     }
 }

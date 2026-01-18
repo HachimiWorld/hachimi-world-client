@@ -271,5 +271,8 @@
     <string name="settings_github_text">GitHub</string>
     <string name="settings_official_site_text">hachimi.world</string>
     <string name="settings_open_in_browser_cd">在浏览器中打开</string>
+    <!-- Language selection -->
+    <string name="settings_language_label">语言</string>
+    <string name="settings_language_follow_system">跟随系统</string>
 
 </resources>
