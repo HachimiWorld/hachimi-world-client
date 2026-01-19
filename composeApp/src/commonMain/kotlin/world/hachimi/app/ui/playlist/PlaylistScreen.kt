@@ -69,7 +69,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Text(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             text = stringResource(Res.string.playlist_my_playlists_title),
                             style = MaterialTheme.typography.titleLarge
                         )

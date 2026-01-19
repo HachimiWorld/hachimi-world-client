@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.search_no_results
+import hachimiworld.composeapp.generated.resources.search_result_title
 import hachimiworld.composeapp.generated.resources.search_tab_songs
 import hachimiworld.composeapp.generated.resources.search_tab_users
 import org.jetbrains.compose.resources.stringResource
@@ -154,7 +155,7 @@ private fun Header(processTimeMillis: Long) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(Res.string.search_no_results),
+            text = stringResource(Res.string.search_result_title),
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(Modifier.width(8.dp))

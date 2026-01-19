@@ -87,7 +87,7 @@ fun HomeMainScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-            contentPadding = PaddingValues(24.dp)
+            contentPadding = PaddingValues(vertical = 24.dp)
         ) {
             item(contentType = "recent_section") {
                 Segment(

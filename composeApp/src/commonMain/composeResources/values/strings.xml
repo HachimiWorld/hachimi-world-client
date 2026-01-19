@@ -138,12 +138,6 @@
     <string name="publish_init_jmid_prefix_used">This prefix is already used; contact maintainers if it's taken</string>
     <string name="publish_init_jmid_invalid_format">Please enter 3 to 4 letters</string>
 
-    <!-- Search sort labels -->
-    <string name="search_sort_relevance">Most relevant</string>
-    <string name="search_sort_newest">Newest</string>
-    <string name="search_sort_oldest">Oldest</string>
-    <string name="search_placeholder">Search...</string>
-
     <!-- Auth validation -->
     <string name="auth_invalid_email">Invalid email address</string>
     <string name="auth_password_too_short">Password must be at least 6 characters</string>
@@ -164,6 +158,11 @@
     <string name="search_no_results">Nothing found</string>
     <string name="search_tab_songs">Songs</string>
     <string name="search_tab_users">Users</string>
+    <string name="search_placeholder">Search...</string>
+    <string name="search_result_title">Search Results</string>
+    <string name="search_sort_relevance">Most relevant</string>
+    <string name="search_sort_newest">Newest</string>
+    <string name="search_sort_oldest">Oldest</string>
 
     <!-- Navigation labels -->
     <string name="nav_home_title">Home</string>
@@ -281,6 +280,7 @@
     <string name="settings_github_text">GitHub</string>
     <string name="settings_official_site_text">hachimi.world</string>
     <string name="settings_open_in_browser_cd">Open in browser</string>
+
     <!-- Language selection -->
     <string name="settings_language_label">Language</string>
     <string name="settings_language_follow_system">Follow system</string>

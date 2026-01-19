@@ -138,11 +138,6 @@
     <string name="publish_init_jmid_prefix_used">该前缀已被使用，如被抢占请联系维护者</string>
     <string name="publish_init_jmid_invalid_format">请填写 3 到 4 位字母</string>
 
-    <!-- Search sort labels -->
-    <string name="search_sort_relevance">最相关</string>
-    <string name="search_sort_newest">最新发布</string>
-    <string name="search_sort_oldest">最早发布</string>
-
     <!-- Auth validation -->
     <string name="auth_invalid_email">邮箱地址不正确</string>
     <string name="auth_password_too_short">密码长度至少为 6 位</string>
@@ -164,6 +159,10 @@
     <string name="search_tab_songs">歌曲</string>
     <string name="search_tab_users">神人</string>
     <string name="search_placeholder">搜索...</string>
+    <string name="search_result_title">搜索结果</string>
+    <string name="search_sort_relevance">最相关</string>
+    <string name="search_sort_newest">最新发布</string>
+    <string name="search_sort_oldest">最早发布</string>
 
     <!-- Navigation labels -->
     <string name="nav_home_title">主页</string>
@@ -281,6 +280,7 @@
     <string name="settings_github_text">GitHub</string>
     <string name="settings_official_site_text">hachimi.world</string>
     <string name="settings_open_in_browser_cd">在浏览器中打开</string>
+
     <!-- Language selection -->
     <string name="settings_language_label">语言</string>
     <string name="settings_language_follow_system">跟随系统</string>

@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -147,7 +148,11 @@ fun SettingsScreen() {
 
 @Composable
 private fun LanguageSetting(globalStore: GlobalStore) {
-    PropertyItem(label = { Text(stringResource(Res.string.settings_language_label)) }) {
+    PropertyItem(label = {
+        Icon(Icons.Default.Language, stringResource(Res.string.settings_language_label))
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(Res.string.settings_language_label)) }
+    ) {
         var expandedLang by remember { mutableStateOf(false) }
         Box {
             TextButton(onClick = { expandedLang = true }) {
