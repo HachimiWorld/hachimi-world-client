@@ -46,6 +46,8 @@ class HomeViewModel(
         private set
     var hotLoading by mutableStateOf(false)
         private set
+    var recommendTags by mutableStateOf<List<String>>(emptyList())
+        private set
 
     val categoryState = mutableStateMapOf<String, CategoryState>()
 
@@ -69,6 +71,18 @@ class HomeViewModel(
 
     private fun init() = viewModelScope.launch {
         // Do nothing
+        try {
+            val resp = if (global.isLoggedIn) {
+                api.songModule.tagRecommend()
+            } else {
+                api.songModule.tagRecommendAnonymous()
+            }
+
+            recommendTags = resp.ok().result.map { it.name }
+        } catch (e: Throwable) {
+            global.alert("Failed to get recommend tags: ${e.message}")
+            Logger.e("home", "Failed to get recommend tags", e)
+        }
     }
 
     fun mountRecommend() {

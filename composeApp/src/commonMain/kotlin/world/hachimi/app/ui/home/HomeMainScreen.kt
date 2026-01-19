@@ -23,11 +23,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.MaterialTheme
@@ -84,51 +84,63 @@ fun HomeMainScreen(
         onRefresh = { vm.fakeRefresh() },
         screenWidth = LocalWindowSize.current.width
     ) {
-        Column(
-            Modifier.fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(LocalContentInsets.current.asPaddingValues())
-                .padding(vertical = 24.dp)
-                .wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
-            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+            contentPadding = PaddingValues(24.dp)
         ) {
-            Segment(
-                label = stringResource(Res.string.home_recent_title),
-                status = vm.recentStatus,
-                loading = vm.recentLoading,
-                items = vm.recentSongs,
-                onMoreClick = { global.nav.push(Route.Root.Home.Recent) },
-                onLoad = vm::mountRecent,
-                onRefresh = {},
-                onRetryClick = vm::retryRecent
-            )
+            item(contentType = "recent_section") {
+                Segment(
+                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    label = stringResource(Res.string.home_recent_title),
+                    status = vm.recentStatus,
+                    loading = vm.recentLoading,
+                    items = vm.recentSongs,
+                    onMoreClick = { global.nav.push(Route.Root.Home.Recent) },
+                    onLoad = vm::mountRecent,
+                    onRefresh = {},
+                    onRetryClick = vm::retryRecent
+                )
+            }
 
-            Segment(
-                label = stringResource(Res.string.home_recommend_title),
-                status = vm.recommendStatus,
-                loading = vm.recommendLoading,
-                items = vm.recommendSongs,
-                onMoreClick = { global.nav.push(Route.Root.Home.Recommend) },
-                onLoad = vm::mountRecommend,
-                onRefresh = {},
-                onRetryClick = vm::retryRecommend
-            )
+            item(contentType = "recommend_section") {
+                Segment(
+                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    label = stringResource(Res.string.home_recommend_title),
+                    status = vm.recommendStatus,
+                    loading = vm.recommendLoading,
+                    items = vm.recommendSongs,
+                    onMoreClick = { global.nav.push(Route.Root.Home.Recommend) },
+                    onLoad = vm::mountRecommend,
+                    onRefresh = {},
+                    onRetryClick = vm::retryRecommend
+                )
+            }
 
-            Segment(
-                label = stringResource(Res.string.home_weekly_title),
-                status = vm.hotStatus,
-                loading = vm.hotLoading,
-                items = vm.hotSongs,
-                onMoreClick = { global.nav.push(Route.Root.Home.WeeklyHot) },
-                onLoad = vm::mountHot,
-                onRefresh = {},
-                onRetryClick = vm::retryHot
-            )
+            item(contentType = "hot_section") {
+                Segment(
+                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    label = stringResource(Res.string.home_weekly_title),
+                    status = vm.hotStatus,
+                    loading = vm.hotLoading,
+                    items = vm.hotSongs,
+                    onMoreClick = { global.nav.push(Route.Root.Home.WeeklyHot) },
+                    onLoad = vm::mountHot,
+                    onRefresh = {},
+                    onRetryClick = vm::retryHot
+                )
+            }
 
-            CategorySegment(category = "纯净哈基米")
-            CategorySegment(category = "古典")
-            CategorySegment(category = "原曲不使用")
+            items(vm.recommendTags, key = { it }, contentType = { "tag_section" }) { tag ->
+                CategorySegment(
+                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    category = tag
+                )
+            }
+
+            item {
+                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+            }
         }
     }
 }
@@ -160,7 +172,8 @@ private fun Segment(
             if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(Res.string.common_empty))
             } else LazyHorizontalGrid(
-                modifier = Modifier.fillMaxSize().horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
+                modifier = Modifier.fillMaxSize()
+                    .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
                 rows = GridCells.Fixed(2),
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
@@ -216,7 +229,8 @@ private fun CategorySegment(
                     Text(stringResource(Res.string.common_empty))
                 }
             } else LazyHorizontalGrid(
-                modifier = Modifier.fillMaxSize().horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
+                modifier = Modifier.fillMaxSize()
+                    .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
                 rows = GridCells.Fixed(2),
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
@@ -238,8 +252,8 @@ private fun CategorySegment(
                                 GlobalStore.MusicQueueItem.fromSearchSongItem(item),
                                 true,
                                 false
-                    )
-                },
+                            )
+                        },
                     )
                 }
             }
@@ -276,7 +290,10 @@ private fun SegmentHeader(
         ) {
             Text(stringResource(Res.string.common_more))
             Spacer(Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.common_play_cd))
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = stringResource(Res.string.common_play_cd)
+            )
         }
     }
 }
@@ -295,17 +312,23 @@ private fun LoadableContent(
     val slideOffset = with(LocalDensity.current) {
         32.dp.roundToPx()
     }
-    AnimatedContent(initializeStatus, modifier = modifier.onFirstVisible { onLoad() }, transitionSpec = {
-        if (targetState == InitializeStatus.LOADED) {
-            (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                    slideInVertically(initialOffsetY = { slideOffset }, animationSpec = tween(220, delayMillis = 90)))
-                .togetherWith(fadeOut(animationSpec = tween(90)))
-        } else {
-            (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                    scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90)))
-                .togetherWith(fadeOut(animationSpec = tween(90)))
-        }
-    }) {
+    AnimatedContent(
+        initializeStatus,
+        modifier = modifier.onFirstVisible { onLoad() },
+        transitionSpec = {
+            if (targetState == InitializeStatus.LOADED) {
+                (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                        slideInVertically(
+                            initialOffsetY = { slideOffset },
+                            animationSpec = tween(220, delayMillis = 90)
+                        ))
+                    .togetherWith(fadeOut(animationSpec = tween(90)))
+            } else {
+                (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                        scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90)))
+                    .togetherWith(fadeOut(animationSpec = tween(90)))
+            }
+        }) {
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onRetryClick)

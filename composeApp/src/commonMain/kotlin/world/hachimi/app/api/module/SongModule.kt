@@ -339,6 +339,25 @@ class SongModule(
         = client.get("/song/tag/search", req)
 
     @Serializable
+    data class TagRecommendItem(
+        val id: Long,
+        val name: String,
+        val description: String?,
+        val score: Long
+    )
+
+    @Serializable
+    data class TagRecommendResp(
+        val result: List<TagRecommendItem>
+    )
+
+    suspend fun tagRecommend(): WebResult<TagRecommendResp>
+        = client.get("/song/tag/recommend")
+
+    suspend fun tagRecommendAnonymous(): WebResult<TagRecommendResp>
+        = client.get("/song/tag/recommend_anonymous")
+
+    @Serializable
     data class PageByUserReq(
         val userId: Long,
         val page: Long?,
