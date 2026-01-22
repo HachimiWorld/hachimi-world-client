@@ -23,6 +23,7 @@ class PlaylistModule(
         val coverUrl: String?,
         val description: String?,
         val createTime: Instant,
+        val updateTime: Instant,
         val isPublic: Boolean,
         val songsCount: Int,
     )

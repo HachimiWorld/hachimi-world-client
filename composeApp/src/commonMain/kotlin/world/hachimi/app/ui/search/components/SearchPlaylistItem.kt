@@ -1,15 +1,19 @@
 package world.hachimi.app.ui.search.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +27,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
@@ -40,21 +45,36 @@ fun SearchPlaylistItem(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.wrapContentHeight(),
+        modifier = modifier.height(100.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(Modifier.clickable(onClick = onClick)) {
-            Cover(coverUrl)
+            Cover(
+                coverUrl = coverUrl,
+                modifier = Modifier.fillMaxHeight().aspectRatio(1f)
+            )
 
-            Column(Modifier.padding(12.dp)) {
+            Column(Modifier.padding(8.dp)) {
                 Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(description ?: "", style = TextStyle(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(songCount.toString(), style = TextStyle(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+
                 Spacer(Modifier.weight(1f))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Avatar(avatarUrl)
-                    Spacer(Modifier.width(8.dp))
-                    Text(text = username, style = TextStyle(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+//                    Avatar(avatarUrl)
+//                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = username,
+                        style = TextStyle(fontSize = 12.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = null)
+                    Text(
+                        text = "$songCount 首",
+                        style = TextStyle(fontSize = 12.sp)
+                    )
                 }
             }
         }
@@ -62,9 +82,12 @@ fun SearchPlaylistItem(
 }
 
 @Composable
-private fun Cover(coverUrl: String?) {
+private fun Cover(
+    coverUrl: String?,
+    modifier: Modifier
+) {
     Surface(
-        modifier = Modifier.size(88.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(8.dp),
         color = LocalContentColor.current.copy(0.12f)
     ) {

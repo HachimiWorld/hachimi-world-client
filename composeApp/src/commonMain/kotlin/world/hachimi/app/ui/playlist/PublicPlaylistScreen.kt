@@ -24,14 +24,17 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
@@ -47,7 +50,9 @@ import hachimiworld.composeapp.generated.resources.playlist_favorite
 import hachimiworld.composeapp.generated.resources.playlist_song_count
 import hachimiworld.composeapp.generated.resources.playlist_songs_list
 import hachimiworld.composeapp.generated.resources.playlist_unfavorite
+import hachimiworld.composeapp.generated.resources.playlist_update_time
 import hachimiworld.composeapp.generated.resources.song_cover_cd
+import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -65,11 +70,15 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LinearProgressIndicator
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.player.fullscreen.components.UserChip
+import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.playlist.components.SongItem
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.YMD
 import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.util.formatTime
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 @Composable
 fun PublicPlaylistScreen(
@@ -107,6 +116,7 @@ fun PublicPlaylistScreen(
                             description = playlistInfo.description,
                             title = playlistInfo.name,
                             coverUrl = playlistInfo.coverUrl,
+                            updateTime = playlistInfo.updateTime,
                             count = vm.songs.size,
                             onNavToUserClick = { global.nav.push(Route.Root.PublicUserSpace(userInfo.uid)) },
                             onPlayAllClick = { vm.playAll() },
@@ -153,6 +163,7 @@ private fun Header(
     coverUrl: String?,
     username: String,
     avatarUrl: String?,
+    updateTime: Instant,
     count: Int,
     onPlayAllClick: () -> Unit,
     onNavToUserClick: () -> Unit,
@@ -190,6 +201,39 @@ private fun Header(
                     text = title,
                     style = MaterialTheme.typography.titleMedium
                 )
+
+                Row(
+                    modifier = Modifier.padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val avatar = avatarUrl?.let {
+                        rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalPlatformContext.current)
+                                .crossfade(true)
+                                .data(it)
+                                .build()
+                        )
+                    }
+
+                    AmbientUserChip(
+                        onClick = onNavToUserClick,
+                        avatar = avatar,
+                        name = username
+                    )
+
+                    Text(
+                        text = stringResource(
+                            Res.string.playlist_update_time, formatTime(
+                                updateTime,
+                                fullFormat = LocalDateTime.Formats.YMD,
+                                precise = false
+                            )
+                        ),
+                        style = TextStyle(fontSize = 12.sp)
+                    )
+                }
+
+
                 Text(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     text = description
@@ -197,26 +241,36 @@ private fun Header(
                     style = MaterialTheme.typography.bodySmall,
                     overflow = TextOverflow.Ellipsis
                 )
-
-
-                val avatar = avatarUrl?.let {
-                    rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalPlatformContext.current)
-                            .crossfade(true)
-                            .data(it)
-                            .build()
-                    )
-                }
-
-                UserChip(
-                    modifier = Modifier.padding(top = 8.dp),
-                    onClick = onNavToUserClick,
-                    avatar = avatar,
-                    name = username
-                )
             }
         }
 
+        Row(Modifier.padding(top = 16.dp)) {
+            Button(
+                modifier = Modifier,
+                onClick = onPlayAllClick
+            ) {
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = stringResource(Res.string.song_cover_cd)
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(stringResource(Res.string.play_all))
+            }
+
+            isFavorite?.let { isFavorite ->
+                Spacer(Modifier.width(16.dp))
+
+                if (isFavorite) Button(onClick = {
+                    onFavoriteClick(!isFavorite)
+                }, enabled = !operating) {
+                    Text(stringResource(Res.string.playlist_unfavorite))
+                } else AccentButton(onClick = {
+                    onFavoriteClick(!isFavorite)
+                }, enabled = !operating) {
+                    Text(stringResource(Res.string.playlist_favorite))
+                }
+            }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
@@ -232,31 +286,6 @@ private fun Header(
                 text = stringResource(Res.string.playlist_song_count, count),
                 style = MaterialTheme.typography.bodySmall
             )
-
-            Spacer(Modifier.weight(1f))
-            Button(
-                modifier = Modifier,
-                onClick = onPlayAllClick
-            ) {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = stringResource(Res.string.song_cover_cd)
-                )
-                Spacer(Modifier.width(16.dp))
-                Text(stringResource(Res.string.play_all))
-            }
-
-            isFavorite?.let { isFavorite ->
-                if (isFavorite) Button(onClick = {
-                    onFavoriteClick(!isFavorite)
-                }, enabled = !operating) {
-                    Text(stringResource(Res.string.playlist_unfavorite))
-                } else AccentButton(onClick = {
-                    onFavoriteClick(!isFavorite)
-                }, enabled = !operating) {
-                    Text(stringResource(Res.string.playlist_favorite))
-                }
-            }
         }
     }
 }
@@ -272,6 +301,7 @@ private fun PreviewHeader() {
             description = "Description",
             coverUrl = null,
             username = "username",
+            updateTime = remember { Clock.System.now() },
             avatarUrl = null,
             count = 10,
             onPlayAllClick = {},

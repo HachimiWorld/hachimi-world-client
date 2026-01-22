@@ -255,6 +255,7 @@
     <string name="playlist_edit_title">Edit playlist</string>
     <string name="playlist_favorite">Favorite</string>
     <string name="playlist_unfavorite">Unfavorite</string>
+    <string name="playlist_update_time">Update Time: %1$s</string>
 
     <!-- User space strings -->
     <string name="user_space_title">User space</string>
