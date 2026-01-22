@@ -39,6 +39,7 @@ import hachimiworld.composeapp.generated.resources.info_author
 import hachimiworld.composeapp.generated.resources.info_listen_cd
 import hachimiworld.composeapp.generated.resources.info_open_in_new_tab_cd
 import hachimiworld.composeapp.generated.resources.info_origin
+import hachimiworld.composeapp.generated.resources.info_play_count
 import hachimiworld.composeapp.generated.resources.info_pv
 import hachimiworld.composeapp.generated.resources.info_release_date
 import hachimiworld.composeapp.generated.resources.info_tags
@@ -137,6 +138,12 @@ fun InfoTabContent(
                                 )
                             )
                         }
+                    }
+                }
+
+                readySongInfo?.playCount?.let {
+                    PropertyLine(stringResource(Res.string.info_play_count)) {
+                        HintChip { Text(text = it.toString()) }
                     }
                 }
             }

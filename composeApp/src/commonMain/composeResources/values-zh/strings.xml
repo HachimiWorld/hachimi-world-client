@@ -241,6 +241,7 @@
     <string name="info_origin">原作</string>
     <string name="info_listen_cd">收听此音乐</string>
     <string name="info_open_in_new_tab_cd">在新窗口打开</string>
+    <string name="info_play_count">播放量</string>
 
     <!-- Playlist package strings (zh originals) -->
     <string name="playlist_empty">什么也没有</string>

@@ -241,6 +241,7 @@
     <string name="info_origin">Origin</string>
     <string name="info_listen_cd">Listen to this music</string>
     <string name="info_open_in_new_tab_cd">Open in new window</string>
+    <string name="info_play_count">Play Count</string>
 
     <!-- Playlist package strings -->
     <string name="playlist_empty">No items</string>
