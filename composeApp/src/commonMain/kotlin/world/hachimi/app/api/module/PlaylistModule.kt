@@ -56,7 +56,11 @@ class PlaylistModule(
     @Serializable
     data class DetailResp(
         val playlistInfo: PlaylistItem,
-        val songs: List<SongItem>
+        val songs: List<SongItem>,
+        /**
+         * @since 260121
+         */
+        val creatorProfile: UserModule.PublicUserProfile
     )
 
     @Serializable
@@ -158,4 +162,112 @@ class PlaylistModule(
             )
             onUpload(listener)
         }
+
+    @Serializable
+    data class SearchReq(
+        val q: String,
+        val limit: Long?,
+        val offset: Long?,
+        val sortBy: String?,
+        val userId: Long?,
+    )
+
+    @Serializable
+    data class SearchResp(
+        val hits: List<PlaylistMetadata>,
+        val query: String,
+        val processingTimeMs: Long,
+        val totalHits: Long?,
+        val limit: Long,
+        val offset: Long,
+    )
+
+    @Serializable
+    data class PlaylistMetadata (
+        val id: Long,
+        val userId: Long,
+        val userName: String,
+        val userAvatarUrl: String?,
+        val name: String,
+        val description: String?,
+        val coverUrl: String?,
+        val songsCount: Long,
+        val createTime: Instant,
+        val updateTime: Instant,
+    )
+
+    suspend fun search(req: SearchReq): WebResult<SearchResp> =
+        client.get("/playlist/search", req)
+
+    suspend fun detail(req: PlaylistIdReq): WebResult<DetailResp> =
+        client.get("/playlist/detail", req)
+
+    @Serializable
+    data class ListPublicByUserReq(
+        val userId: Long
+    )
+
+    @Serializable
+    data class ListPublicByUserResp(
+        val playlists: List<PlaylistMetadata>
+    )
+
+    suspend fun listPublicByUser(req: ListPublicByUserReq): WebResult<ListPublicByUserResp> =
+        client.get("/playlist/list_public_by_user", req)
+
+
+    @Serializable
+    data class PageFavoritesReq (
+        val pageIndex: Long,
+        val pageSize: Long,
+        )
+
+    @Serializable
+    data class PageFavoritesResp (
+        val data: List<FavoritePlaylistItem>,
+        val pageIndex: Long,
+        val pageSize: Long,
+        val total: Long,
+    )
+
+    @Serializable
+    data class FavoritePlaylistItem (
+        val metadata: PlaylistMetadata,
+        val orderIndex: Int,
+        val addTime: Instant,
+    )
+
+    suspend fun pageFavorite(req: PageFavoritesReq): WebResult<PageFavoritesResp> =
+        client.get("/playlist/favorite/page", req)
+
+    @Serializable
+    data class AddFavoriteReq(
+        val playlistId: Long,
+    )
+
+    suspend fun addFavorite(req: AddFavoriteReq): WebResult<Unit> =
+        client.post("/playlist/favorite/add", req)
+
+    @Serializable
+    data class RemoveFavoriteReq(
+        val playlistId: Long,
+    )
+
+    suspend fun removeFavorite(req: RemoveFavoriteReq): WebResult<Unit> =
+        client.post("/playlist/favorite/remove", req)
+
+    @Serializable
+    data class CheckFavoriteReq(
+        val playlistId: Long,
+    )
+
+    @Serializable
+    data class CheckFavoriteResp(
+        val playlistId: Long,
+        val isFavorite: Boolean,
+        val addTime: Instant?
+    )
+
+    suspend fun checkFavorite(req: CheckFavoriteReq): WebResult<CheckFavoriteResp> =
+        client.get("/playlist/favorite/check", req)
 }

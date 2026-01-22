@@ -60,7 +60,7 @@ class ApiClient(
     private val baseUrl: String,
 ) {
     companion object {
-        const val VERSION: Int = 260114
+        const val VERSION: Int = 260122
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -222,7 +222,7 @@ class ApiClient(
                             authModule.rawRefreshToken(
                                 AuthModule.RefreshTokenReq(
                                     refreshToken = refreshToken!!,
-                                    deviceInfo = "Desktop Client" // TODO: Get device info
+                                    deviceInfo = "Desktop Client" // TODO: Get device infoa
                                 )
                             )
                         } catch (e: Throwable) {

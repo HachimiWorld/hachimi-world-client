@@ -2,11 +2,13 @@ package world.hachimi.app.util
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -15,6 +17,9 @@ import world.hachimi.app.ui.LocalWindowSize
 
 fun Modifier.fillMaxWithLimit(maxWidth: Dp = 1000.dp): Modifier =
     this.fillMaxSize().wrapContentWidth().widthIn(max = maxWidth)
+
+fun Modifier.fillMaxWidthIn(maxWidth: Dp = WindowSize.EXPANDED, contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier =
+    this.fillMaxWidth().wrapContentWidth(align = contentAlignment).widthIn(max = maxWidth)
 
 object WindowSize {
     val COMPACT = 600.dp

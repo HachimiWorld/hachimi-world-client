@@ -33,13 +33,19 @@ class PlaylistViewModel(
     var addingToPlaylistOperating by mutableStateOf(false)
     var containingPlaylist by mutableStateOf(setOf<Long>())
         private set
+    var favoritePlaylists by mutableStateOf<List<PlaylistModule.FavoritePlaylistItem>>(emptyList())
+        private set
+    var favoritePlaylistsLoading by mutableStateOf(false)
+        private set
 
     fun mounted() {
         viewModelScope.launch {
             if (initializeStatus == InitializeStatus.INIT) {
-                refreshPlaylist()
+                launch { refreshPlaylist() }
+                launch { refreshFavoritePlaylist() }
             } else {
-                refreshPlaylist()
+                launch { refreshPlaylist() }
+                launch { refreshFavoritePlaylist() }
             }
         }
     }
@@ -50,8 +56,10 @@ class PlaylistViewModel(
 
     fun retry() {
         initializeStatus = InitializeStatus.INIT
+
         viewModelScope.launch {
-            refreshPlaylist()
+            launch { refreshPlaylist() }
+            launch { refreshFavoritePlaylist() }
         }
     }
 
@@ -96,18 +104,44 @@ class PlaylistViewModel(
             if (resp.ok) {
                 val data = resp.ok()
                 playlists = data.playlists
-                if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
+                if (initializeStatus == InitializeStatus.INIT) initializeStatus =
+                    InitializeStatus.LOADED
             } else {
                 val data = resp.err()
                 global.alert(data.msg)
-                if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                if (initializeStatus == InitializeStatus.INIT) initializeStatus =
+                    InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
             Logger.e("player", "Failed to play playlist", e)
             global.alert(e.message)
-            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+            if (initializeStatus == InitializeStatus.INIT) initializeStatus =
+                InitializeStatus.FAILED
         } finally {
             playlistIsLoading = false
+        }
+    }
+
+    private suspend fun refreshFavoritePlaylist() {
+        favoritePlaylistsLoading = true
+        try {
+            val resp = api.playlistModule.pageFavorite(
+                PlaylistModule.PageFavoritesReq(
+                    pageIndex = 0,
+                    pageSize = 50
+                )
+            )
+            if (resp.ok) {
+                val data = resp.ok()
+                favoritePlaylists = data.data
+            } else {
+                val data = resp.err()
+                global.alert(data.msg)
+            }
+        } catch (e: Throwable) {
+            Logger.e("player", "Failed to refresh favorite playlist", e)
+        } finally {
+            favoritePlaylistsLoading = false
         }
     }
 
@@ -156,11 +190,13 @@ class PlaylistViewModel(
             createPlaylistOperating = true
             // Do something
             try {
-                val resp = api.playlistModule.create(PlaylistModule.CreatePlaylistReq(
-                    name = createPlaylistName,
-                    description = createPlaylistDescription.takeIf { it.isNotBlank() },
-                    isPublic = !createPlaylistPrivate
-                ))
+                val resp = api.playlistModule.create(
+                    PlaylistModule.CreatePlaylistReq(
+                        name = createPlaylistName,
+                        description = createPlaylistDescription.takeIf { it.isNotBlank() },
+                        isPublic = !createPlaylistPrivate
+                    )
+                )
                 if (resp.ok) {
                     showCreatePlaylistDialog = false
                     refreshPlaylist()

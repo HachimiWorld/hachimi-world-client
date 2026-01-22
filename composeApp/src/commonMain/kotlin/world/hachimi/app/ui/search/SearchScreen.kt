@@ -41,6 +41,7 @@ import androidx.compose.ui.util.fastForEach
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.search_no_results
 import hachimiworld.composeapp.generated.resources.search_result_title
+import hachimiworld.composeapp.generated.resources.search_tab_playlists
 import hachimiworld.composeapp.generated.resources.search_tab_songs
 import hachimiworld.composeapp.generated.resources.search_tab_users
 import org.jetbrains.compose.resources.stringResource
@@ -52,6 +53,7 @@ import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.SubtleButton
+import world.hachimi.app.ui.search.components.SearchPlaylistItem
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
 import world.hachimi.app.util.AdaptiveListSpacing
@@ -82,8 +84,8 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
 
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize(),
-        columns = if (vm.searchType == SearchViewModel.SearchType.SONG) GridCells.Adaptive(minSize = 320.dp)
-        else GridCells.Adaptive(152.dp),
+        columns = if (vm.searchType == SearchViewModel.SearchType.USER) GridCells.Adaptive(152.dp)
+                else GridCells.Adaptive(minSize = 320.dp),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
@@ -101,8 +103,14 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
             )
         }
 
-        val data = if (vm.searchType == SearchViewModel.SearchType.SONG) vm.songData else vm.userData
-        if (data.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
+        val showEmpty = when (vm.searchType) {
+            SearchViewModel.SearchType.SONG -> vm.songData.isEmpty()
+            SearchViewModel.SearchType.USER -> vm.userData.isEmpty()
+            SearchViewModel.SearchType.PLAYLIST -> vm.playlistData.isEmpty()
+            else -> false
+        }
+
+        if (showEmpty) item(span = { GridItemSpan(maxLineSpan) }) {
             Box(
                 Modifier.fillMaxWidth().padding(vertical = 128.dp),
                 contentAlignment = Alignment.Center
@@ -139,6 +147,23 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
                 name = item.username,
                 avatarUrl = item.avatarUrl,
                 onClick = { global.nav.push(Route.Root.PublicUserSpace(item.uid)) },
+            )
+        }
+
+        if (vm.searchType == SearchViewModel.SearchType.PLAYLIST) items(
+            items = vm.playlistData,
+            key = { it },
+            contentType  = { _ -> "playlist" }
+        ) { item ->
+            SearchPlaylistItem(
+                modifier = Modifier.fillMaxWidth(),
+                title = item.name,
+                username = item.userName,
+                coverUrl = item.coverUrl,
+                avatarUrl = item.userAvatarUrl,
+                songCount = item.songsCount,
+                onClick = { global.nav.push(Route.Root.PublicPlaylist(item.id)) },
+                description = item.description
             )
         }
 
@@ -182,14 +207,20 @@ private fun Tab(
             SegmentedButton(
                 selected = searchType == SearchViewModel.SearchType.SONG,
                 onClick = { onTypeChange(SearchViewModel.SearchType.SONG) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3),
                 label = { Text(stringResource(Res.string.search_tab_songs)) }
             )
             SegmentedButton(
                 selected = searchType == SearchViewModel.SearchType.USER,
                 onClick = { onTypeChange(SearchViewModel.SearchType.USER) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3),
                 label = { Text(stringResource(Res.string.search_tab_users)) }
+            )
+            SegmentedButton(
+                selected = searchType == SearchViewModel.SearchType.PLAYLIST,
+                onClick = { onTypeChange(SearchViewModel.SearchType.PLAYLIST) },
+                shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3),
+                label = { Text(stringResource(Res.string.search_tab_playlists)) }
             )
         }
 

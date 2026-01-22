@@ -25,6 +25,9 @@ sealed class Route {
             data object List: MyPlaylist()
             data class Detail(val playlistId: Long): MyPlaylist()
         }
+
+        data class PublicPlaylist(val playlistId: Long): Root()
+
         sealed class CreationCenter: Root() {
             companion object Companion {
                 val Default = MyArtwork

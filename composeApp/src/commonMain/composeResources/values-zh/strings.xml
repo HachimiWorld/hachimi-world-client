@@ -158,6 +158,7 @@
     <string name="search_no_results">什么也没有找到</string>
     <string name="search_tab_songs">歌曲</string>
     <string name="search_tab_users">神人</string>
+    <string name="search_tab_playlists">歌单</string>
     <string name="search_placeholder">搜索...</string>
     <string name="search_result_title">搜索结果</string>
     <string name="search_sort_relevance">最相关</string>
@@ -252,9 +253,11 @@
     <string name="playlist_cover_cd">歌单封面</string>
     <string name="song_cover_cd">歌曲封面</string>
     <string name="playlist_edit_title">编辑歌单</string>
+    <string name="playlist_favorite">收藏</string>
+    <string name="playlist_unfavorite">取消收藏</string>
 
     <!-- User space strings -->
-    <string name="user_space_title">个人主页</string>
+    <string name="user_space_title">神人空间</string>
     <string name="user_space_user_avatar_cd">用户头像</string>
     <string name="user_space_uid_prefix">UID：%1$d</string>
     <string name="user_space_intro_label">简介</string>

@@ -1,10 +1,8 @@
 package world.hachimi.app.model
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
@@ -17,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
+import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
@@ -109,7 +108,11 @@ class SearchViewModel(
         private set
     var loading by mutableStateOf(false)
     var songData by mutableStateOf<List<SearchSongItem>>(emptyList())
-    val userData = mutableStateListOf<UserModule.PublicUserProfile>()
+        private set
+    var userData by mutableStateOf<List<UserModule.PublicUserProfile>>(emptyList())
+        private set
+    var playlistData by mutableStateOf<List<PlaylistModule.PlaylistMetadata>>(emptyList())
+        private set
     var searchProcessingTimeMs by mutableStateOf(0L)
         private set
 
@@ -133,7 +136,7 @@ class SearchViewModel(
             SearchType.SONG -> searchSongs()
             SearchType.USER -> searchUsers()
             SearchType.ALBUM -> {}
-            SearchType.PLAYLIST -> {}
+            SearchType.PLAYLIST -> searchPlaylists()
         }
     }
 
@@ -197,15 +200,13 @@ class SearchViewModel(
     private suspend fun searchUsers() {
         loading = true
         try {
-            userData.clear()
+            val result = mutableListOf<UserModule.PublicUserProfile>()
             if (query.toLongOrNull() != null) {
                 val resp = api.userModule.profile(query.toLong())
                 if (resp.ok) {
                     val data = resp.ok()
-                    Snapshot.withMutableSnapshot {
-                        userData.add(data)
-                        searchProcessingTimeMs = 0
-                    }
+                    result.add(data)
+                    searchProcessingTimeMs = 0
                 } else {
                     val err = resp.err()
                     global.alert(err.msg)
@@ -221,14 +222,29 @@ class SearchViewModel(
             )
             if (resp.ok) {
                 val data = resp.ok()
-                Snapshot.withMutableSnapshot {
-                    userData.addAll(data.hits)
-                    searchProcessingTimeMs = data.processingTimeMs
-                }
+                result.addAll(data.hits)
+                searchProcessingTimeMs = data.processingTimeMs
             } else {
                 val err = resp.err()
                 global.alert(err.msg)
             }
+
+            userData = result
+        } catch (e: Throwable) {
+            Logger.e("search", "Failed to search", e)
+            global.alert(e.message)
+        } finally {
+            loading = false
+        }
+    }
+
+    private suspend fun searchPlaylists() {
+        loading = true
+        try {
+            val resp = api.playlistModule.search(PlaylistModule.SearchReq(q = query, limit = null, offset = null, sortBy = null, userId = null))
+            val data = resp.ok()
+            searchProcessingTimeMs = data.processingTimeMs
+            playlistData = data.hits
         } catch (e: Throwable) {
             Logger.e("search", "Failed to search", e)
             global.alert(e.message)

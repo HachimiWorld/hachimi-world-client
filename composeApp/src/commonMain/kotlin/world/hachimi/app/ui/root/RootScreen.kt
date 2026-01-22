@@ -53,6 +53,7 @@ import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
 import world.hachimi.app.ui.player.footer.ExpandedFooterHeight
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
+import world.hachimi.app.ui.playlist.PublicPlaylistScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
 import world.hachimi.app.ui.root.component.CompactTopAppBar
 import world.hachimi.app.ui.root.component.ExpandedTopAppBar
@@ -92,6 +93,7 @@ fun RootScreen(routeContent: Route.Root) {
                     Route.Root.UserSpace -> UserSpaceScreen(null)
                     Route.Root.Settings -> SettingsScreen()
                     is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
+                    is Route.Root.PublicPlaylist -> if (global.isLoggedIn) PublicPlaylistScreen(routeContent.playlistId) else NeedLoginScreen()
                 }
             }
         }

@@ -158,6 +158,7 @@
     <string name="search_no_results">Nothing found</string>
     <string name="search_tab_songs">Songs</string>
     <string name="search_tab_users">Users</string>
+    <string name="search_tab_playlists">Playlists</string>
     <string name="search_placeholder">Search...</string>
     <string name="search_result_title">Search Results</string>
     <string name="search_sort_relevance">Most relevant</string>
@@ -252,6 +253,8 @@
     <string name="playlist_cover_cd">Playlist cover</string>
     <string name="song_cover_cd">Song cover</string>
     <string name="playlist_edit_title">Edit playlist</string>
+    <string name="playlist_favorite">Favorite</string>
+    <string name="playlist_unfavorite">Unfavorite</string>
 
     <!-- User space strings -->
     <string name="user_space_title">User space</string>
