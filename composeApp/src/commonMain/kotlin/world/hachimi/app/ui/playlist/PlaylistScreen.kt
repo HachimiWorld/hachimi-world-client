@@ -79,7 +79,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                         )
                     }
 
-                    items(vm.playlists, key = { item -> item.id }, contentType = { "my" }) { item ->
+                    items(vm.playlists, key = { item -> "my_${item.id}" }, contentType = { "my" }) { item ->
                         PlaylistItem(
                             modifier = Modifier.fillMaxWidth(),
                             coverUrl = item.coverUrl,
@@ -100,7 +100,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                         )
                     }
 
-                    items(vm.favoritePlaylists, key = { item -> item.metadata.id }, contentType = { "favorite" }) { item ->
+                    items(vm.favoritePlaylists, key = { item -> "favorite_${item.metadata.id}" }, contentType = { "favorite" }) { item ->
                         FavoritePlaylistItem(
                             modifier = Modifier.fillMaxWidth(),
                             coverUrl = item.metadata.coverUrl,

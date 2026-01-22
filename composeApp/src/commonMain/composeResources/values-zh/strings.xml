@@ -255,7 +255,7 @@
     <string name="song_cover_cd">歌曲封面</string>
     <string name="playlist_edit_title">编辑歌单</string>
     <string name="playlist_favorite">收藏</string>
-    <string name="playlist_unfavorite">取消收藏</string>
+    <string name="playlist_unfavorite">已收藏</string>
     <string name="playlist_update_time">更新时间：%1$s</string>
 
     <!-- User space strings -->
