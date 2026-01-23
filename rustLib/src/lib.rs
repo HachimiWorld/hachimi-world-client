@@ -132,6 +132,7 @@ impl Player {
                         },
                         PlayerControl::Append(source) => {
                             sink.append(source);
+                            sink.pause();
                             thread::spawn({
                                 let sink = Arc::clone(&sink);
                                 let event_tx = event_tx.clone();
