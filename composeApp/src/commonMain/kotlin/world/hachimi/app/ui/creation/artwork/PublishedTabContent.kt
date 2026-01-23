@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -30,6 +28,7 @@ import coil3.compose.AsyncImage
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishedTabViewModel
@@ -39,10 +38,12 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.TopWithFooter
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
@@ -56,12 +57,20 @@ fun PublishedTabContent(
         vm.mounted()
         onDispose { vm.dispose() }
     }
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+
+    AnimatedContent(
+        targetState = vm.initializeStatus,
+        transitionSpec = { materialFadeThrough() },
+        modifier = Modifier.fillMaxSize()
+    ) {
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
             InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
-                LazyColumn(Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = TopWithFooter
+                ) {
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(24.dp),
@@ -93,21 +102,17 @@ fun PublishedTabContent(
                     }
                     item {
                         Pagination(
-                            Modifier.fillMaxWidth().padding(24.dp),
-                            vm.total.toInt(),
-                            vm.currentPage,
-                            vm.pageSize,
+                            modifier = Modifier.fillMaxWidth().padding(24.dp)
+                                .navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()),
+                            total = vm.total.toInt(),
+                            currentPage = vm.currentPage,
+                            pageSize = vm.pageSize,
                             pageSizeChange = { vm.setPage(it, vm.currentPage) },
                             pageChange = { vm.setPage(vm.pageSize, it) }
                         )
                     }
-                    item {
-                        Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
-                    }
                 }
-                if (vm.loading) Box(Modifier.fillMaxSize(), Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+                if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
     }
