@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -65,7 +63,7 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.LocalContentInsets
-import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun SettingsScreen() {
@@ -75,7 +73,7 @@ fun SettingsScreen() {
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)
             .navigationBarsPadding()
             .padding(LocalContentInsets.current.asPaddingValues())
-            .wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+            .fillMaxWidthIn(),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.titleLarge)

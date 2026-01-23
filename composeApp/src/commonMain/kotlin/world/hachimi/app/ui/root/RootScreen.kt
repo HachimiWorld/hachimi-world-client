@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -62,6 +60,7 @@ import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun RootScreen(routeContent: Route.Root) {
@@ -225,7 +224,7 @@ private fun ExpandedScreen(
                         .fillMaxSize()
                         .wrapContentHeight(Alignment.Bottom)
                         .padding(24.dp)
-                        .wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                        .fillMaxWidthIn(),
                     hazeState
                 )
             }

@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -67,7 +65,7 @@ import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.util.horizontalFadingEdges
 import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun HomeMainScreen(
@@ -91,7 +89,7 @@ fun HomeMainScreen(
         ) {
             item(contentType = "recent_section") {
                 Segment(
-                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    modifier = Modifier.fillMaxWidthIn(),
                     label = stringResource(Res.string.home_recent_title),
                     status = vm.recentStatus,
                     loading = vm.recentLoading,
@@ -105,7 +103,7 @@ fun HomeMainScreen(
 
             item(contentType = "recommend_section") {
                 Segment(
-                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    modifier = Modifier.fillMaxWidthIn(),
                     label = stringResource(Res.string.home_recommend_title),
                     status = vm.recommendStatus,
                     loading = vm.recommendLoading,
@@ -119,7 +117,7 @@ fun HomeMainScreen(
 
             item(contentType = "hot_section") {
                 Segment(
-                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    modifier = Modifier.fillMaxWidthIn(),
                     label = stringResource(Res.string.home_weekly_title),
                     status = vm.hotStatus,
                     loading = vm.hotLoading,
@@ -133,7 +131,7 @@ fun HomeMainScreen(
 
             items(vm.recommendTags, key = { it }, contentType = { "tag_section" }) { tag ->
                 CategorySegment(
-                    modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    modifier = Modifier.fillMaxWidthIn(),
                     category = tag
                 )
             }

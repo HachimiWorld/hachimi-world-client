@@ -16,10 +16,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.LocalWindowSize
 
-fun Modifier.fillMaxWithLimit(maxWidth: Dp = 1000.dp): Modifier =
+fun Modifier.fillMaxWithLimit(maxWidth: Dp = 1040.dp): Modifier =
     this.fillMaxSize().wrapContentWidth().widthIn(max = maxWidth)
 
-fun Modifier.fillMaxWidthIn(maxWidth: Dp = WindowSize.EXPANDED, contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier =
+fun Modifier.fillMaxWidthIn(maxWidth: Dp = 1040.dp, contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier =
     this.fillMaxWidth().wrapContentWidth(align = contentAlignment).widthIn(max = maxWidth)
 
 object WindowSize {

@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -42,7 +40,7 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
 
@@ -69,7 +67,7 @@ fun RecentPlayScreen(
             InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = state,
-                    modifier = Modifier.fillMaxSize().wrapContentWidth().widthIn(max = WindowSize.EXPANDED),
+                    modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
                     contentPadding = PaddingValues(vertical = 24.dp)
                 ) {
                     item {
