@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.userspace
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,7 +28,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -49,7 +49,6 @@ import hachimiworld.composeapp.generated.resources.user_change_nickname
 import hachimiworld.composeapp.generated.resources.user_space_all_works
 import hachimiworld.composeapp.generated.resources.user_space_empty
 import hachimiworld.composeapp.generated.resources.user_space_female_cd
-import hachimiworld.composeapp.generated.resources.user_space_intro_label
 import hachimiworld.composeapp.generated.resources.user_space_male_cd
 import hachimiworld.composeapp.generated.resources.user_space_title
 import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
@@ -57,12 +56,14 @@ import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
@@ -71,6 +72,7 @@ import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
@@ -84,30 +86,33 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
 
     BoxWithConstraints {
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
             columns = calculateGridColumns(maxWidth),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             contentPadding = PaddingValues(24.dp)
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Header(vm, global)
+                Header(vm, global, Modifier.fillMaxWidth())
             }
             items(vm.songs, key = { it.id }) { song ->
                 SongCard(
                     item = song,
                     onClick = {
                         global.player.insertToQueue(
-                            GlobalStore.MusicQueueItem.fromPublicDetail(song),
-                            true,
-                            false
+                            item = GlobalStore.MusicQueueItem.fromPublicDetail(song),
+                            instantPlay = true,
+                            append = false
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+                Spacer(
+                    Modifier.navigationBarsPadding()
+                        .padding(LocalContentInsets.current.asPaddingValues())
+                )
             }
         }
     }
@@ -117,9 +122,11 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
 }
 
 @Composable
-private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+private fun Header(
+    vm: UserSpaceViewModel, global: GlobalStore, modifier: Modifier = Modifier
+) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Row(modifier, verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
                 text = stringResource(Res.string.user_space_title),
@@ -130,77 +137,94 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
             }
         }
 
-        if (vm.loadingProfile) Box(Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        } else vm.profile?.let { profile ->
-            Row(Modifier.fillMaxWidth()) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Surface(
-                        modifier = Modifier.size(128.dp),
-                        shape = CircleShape
-                    ) {
-                        Box(
-                            modifier = Modifier.clickable(
-                                enabled = vm.myself,
-                                onClick = { vm.editAvatar() }
-                            ),
-                            contentAlignment = Alignment.Center
+        AnimatedContent(
+            targetState = vm.loadingProfile,
+            transitionSpec = { materialFadeThrough() }
+        ) {
+            if (it) Box(modifier.height(300.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            } else vm.profile?.let { profile ->
+                Row(modifier) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Surface(
+                            modifier = Modifier.size(128.dp),
+                            shape = CircleShape
                         ) {
-                            AsyncImage(
-                                model = profile.avatarUrl,
-                                contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
-                                modifier = Modifier.fillMaxSize(),
-                                filterQuality = FilterQuality.High,
-                                contentScale = ContentScale.Crop
-                            )
+                            Box(
+                                modifier = Modifier.clickable(
+                                    enabled = vm.myself,
+                                    onClick = { vm.editAvatar() }
+                                ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AsyncImage(
+                                    model = profile.avatarUrl,
+                                    contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
+                                    modifier = Modifier.fillMaxSize(),
+                                    filterQuality = FilterQuality.High,
+                                    contentScale = ContentScale.Crop
+                                )
 
-                            if (vm.avatarUploading) {
-                                if (vm.avatarUploadProgress > 0f && vm.avatarUploadProgress < 1f)
-                                    CircularProgressIndicator(progress = { vm.avatarUploadProgress })
-                                else CircularProgressIndicator()
+                                if (vm.avatarUploading) {
+                                    if (vm.avatarUploadProgress > 0f && vm.avatarUploadProgress < 1f)
+                                        CircularProgressIndicator(progress = { vm.avatarUploadProgress })
+                                    else CircularProgressIndicator()
+                                }
                             }
                         }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            modifier = Modifier.clickable(enabled = vm.myself) { vm.editUsername() },
-                            text = profile.username,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                        profile.gender?.let {
-                            Box(Modifier.padding(start = 4.dp).size(16.dp)) {
-                                when (profile.gender) {
-                                    0 -> Icon(Icons.Default.Male, contentDescription = stringResource(Res.string.user_space_male_cd))
-                                    1 -> Icon(Icons.Default.Female, contentDescription = stringResource(Res.string.user_space_female_cd))
+                        Spacer(Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            SelectionContainer {
+                                Text(
+                                    modifier = Modifier.clickable(enabled = vm.myself) { vm.editUsername() },
+                                    text = profile.username,
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                            profile.gender?.let {
+                                Box(Modifier.padding(start = 4.dp).size(16.dp)) {
+                                    when (profile.gender) {
+                                        0 -> Icon(
+                                            Icons.Default.Male,
+                                            contentDescription = stringResource(Res.string.user_space_male_cd)
+                                        )
+
+                                        1 -> Icon(
+                                            Icons.Default.Female,
+                                            contentDescription = stringResource(Res.string.user_space_female_cd)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                Spacer(Modifier.width(24.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SelectionContainer {
-                        Text(text = stringResource(Res.string.user_space_uid_prefix, profile.uid), style = MaterialTheme.typography.labelMedium)
-                    }
-                    Text(text = stringResource(Res.string.user_space_intro_label), style = MaterialTheme.typography.labelMedium)
-
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Box(
-                            Modifier.clickable(
-                                enabled = vm.myself,
-                                onClick = { vm.editBio() }
-                            ).padding(12.dp)
+                    Spacer(Modifier.width(24.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SelectionContainer {
+                            Text(
+                                text = stringResource(
+                                    Res.string.user_space_uid_prefix,
+                                    profile.uid
+                                ), style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        Surface(
+                            modifier = modifier.height(100.dp),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
-                            SelectionContainer {
-                                Text(
-                                    text = profile.bio ?: "",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                            Box(
+                                Modifier.clickable(
+                                    enabled = vm.myself,
+                                    onClick = { vm.editBio() }
+                                ).padding(12.dp)
+                            ) {
+                                SelectionContainer {
+                                    Text(
+                                        text = profile.bio ?: "",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                         }
                     }
@@ -208,7 +232,7 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
             }
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
             Text(
                 text = stringResource(Res.string.user_space_all_works),
                 style = MaterialTheme.typography.titleLarge,
@@ -219,22 +243,24 @@ private fun Header(vm: UserSpaceViewModel, global: GlobalStore) {
                 modifier = Modifier,
                 onClick = { vm.playAll() }
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = stringResource(Res.string.common_play_cd)
+                )
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(Res.string.player_play_all))
             }
         }
 
-        if (vm.loadingSongs) Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
+        if (vm.loadingSongs) Box(modifier.height(300.dp), Alignment.Center) {
             CircularProgressIndicator()
         } else if (vm.songs.isEmpty()) {
-            Box(Modifier.fillMaxWidth().height(300.dp), Alignment.Center) {
+            Box(modifier.height(300.dp), Alignment.Center) {
                 Text(text = stringResource(Res.string.user_space_empty))
             }
         }
     }
 }
-
 
 
 @Composable

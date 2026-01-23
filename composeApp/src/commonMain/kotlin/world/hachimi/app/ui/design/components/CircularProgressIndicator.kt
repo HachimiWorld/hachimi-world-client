@@ -16,3 +16,16 @@ fun CircularProgressIndicator(
         color = color,
     )
 }
+
+@Composable
+fun CircularProgressIndicator(
+    modifier: Modifier = Modifier,
+    color: Color = LocalContentColor.current,
+    progress: () -> Float
+) {
+    MDCircularProgressIndicator(
+        modifier = modifier,
+        color = color,
+        progress = progress
+    )
+}
