@@ -3,6 +3,7 @@ package world.hachimi.app.ui.search
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,22 +13,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -44,15 +38,21 @@ import hachimiworld.composeapp.generated.resources.search_result_title
 import hachimiworld.composeapp.generated.resources.search_tab_playlists
 import hachimiworld.composeapp.generated.resources.search_tab_songs
 import hachimiworld.composeapp.generated.resources.search_tab_users
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
-import world.hachimi.app.ui.design.components.SubtleButton
+import world.hachimi.app.ui.component.LoadingPage
+import world.hachimi.app.ui.design.components.AccentButton
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.search.components.SearchPlaylistItem
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
@@ -72,10 +72,11 @@ fun SearchScreen(
         }
     }
 
-    AnimatedContent(vm.loading) { loading ->
-        if (loading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        } else Content(vm, global)
+    AnimatedContent(
+        targetState = vm.loading,
+        transitionSpec = { materialFadeThrough() }
+    ) { loading ->
+        if (loading) LoadingPage() else Content(vm, global)
     }
 }
 
@@ -85,7 +86,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize(),
         columns = if (vm.searchType == SearchViewModel.SearchType.USER) GridCells.Adaptive(152.dp)
-                else GridCells.Adaptive(minSize = 320.dp),
+        else GridCells.Adaptive(minSize = 320.dp),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
@@ -152,8 +153,8 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
 
         if (vm.searchType == SearchViewModel.SearchType.PLAYLIST) items(
             items = vm.playlistData,
-            key = { it },
-            contentType  = { _ -> "playlist" }
+            key = { it.id },
+            contentType = { _ -> "playlist" }
         ) { item ->
             SearchPlaylistItem(
                 modifier = Modifier.fillMaxWidth(),
@@ -168,17 +169,17 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
         }
 
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+            Spacer(
+                Modifier.navigationBarsPadding()
+                    .padding(LocalContentInsets.current.asPaddingValues())
+            )
         }
     }
 }
 
 @Composable
 private fun Header(processTimeMillis: Long) {
-    Row(
-        modifier = Modifier.padding(bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = stringResource(Res.string.search_result_title),
             style = MaterialTheme.typography.titleLarge
@@ -191,6 +192,15 @@ private fun Header(processTimeMillis: Long) {
     }
 }
 
+private enum class Tabs(
+    val type: SearchViewModel.SearchType,
+    val label: StringResource
+) {
+    SONG(SearchViewModel.SearchType.SONG, Res.string.search_tab_songs),
+    USER(SearchViewModel.SearchType.USER, Res.string.search_tab_users),
+    PLAYLIST(SearchViewModel.SearchType.PLAYLIST, Res.string.search_tab_playlists)
+}
+
 @Composable
 private fun Tab(
     searchType: SearchViewModel.SearchType,
@@ -198,40 +208,26 @@ private fun Tab(
     sortMethod: SearchViewModel.SortMethod,
     onSortMethodChange: (SearchViewModel.SortMethod) -> Unit
 ) {
-    Row(
+    FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SingleChoiceSegmentedButtonRow(Modifier.weight(1f).wrapContentWidth(align = Alignment.Start)) {
-            SegmentedButton(
-                selected = searchType == SearchViewModel.SearchType.SONG,
-                onClick = { onTypeChange(SearchViewModel.SearchType.SONG) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3),
-                label = { Text(stringResource(Res.string.search_tab_songs)) }
-            )
-            SegmentedButton(
-                selected = searchType == SearchViewModel.SearchType.USER,
-                onClick = { onTypeChange(SearchViewModel.SearchType.USER) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3),
-                label = { Text(stringResource(Res.string.search_tab_users)) }
-            )
-            SegmentedButton(
-                selected = searchType == SearchViewModel.SearchType.PLAYLIST,
-                onClick = { onTypeChange(SearchViewModel.SearchType.PLAYLIST) },
-                shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3),
-                label = { Text(stringResource(Res.string.search_tab_playlists)) }
-            )
+        Tabs.entries.fastForEach {
+            if (searchType == it.type) AccentButton(onClick = {}) {
+                Text(stringResource(it.label))
+            } else Button(onClick = { onTypeChange(it.type) }) {
+                Text(stringResource(it.label))
+            }
         }
 
         if (searchType == SearchViewModel.SearchType.SONG) {
             var expanded by remember { mutableStateOf(false) }
 
-            Box {
-                SubtleButton(onClick = {
-                    expanded = true
-                }) {
+            Box(Modifier.weight(1f), Alignment.CenterEnd) {
+                Button(onClick = { expanded = true }) {
                     Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
+                    Spacer(Modifier.width(8.dp))
                     Text(stringResource(sortMethod.labelRes))
                 }
                 DropdownMenu(expanded, onDismissRequest = { expanded = false }) {

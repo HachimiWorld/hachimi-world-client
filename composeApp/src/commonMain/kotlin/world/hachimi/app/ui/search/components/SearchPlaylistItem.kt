@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,11 +52,11 @@ fun SearchPlaylistItem(
         Row(Modifier.clickable(onClick = onClick)) {
             Cover(
                 coverUrl = coverUrl,
-                modifier = Modifier.fillMaxHeight().aspectRatio(1f)
+                modifier = Modifier.fillMaxHeight().aspectRatio(1f).padding(8.dp)
             )
 
             Column(Modifier.padding(8.dp)) {
-                Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(description ?: "", style = TextStyle(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                 Spacer(Modifier.weight(1f))
@@ -67,13 +68,14 @@ fun SearchPlaylistItem(
                         text = username,
                         style = TextStyle(fontSize = 12.sp),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = LocalContentColor.current.copy(0.72f)
                     )
 
                     Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = null)
                     Text(
-                        text = "$songCount 首",
-                        style = TextStyle(fontSize = 12.sp)
+                        text = songCount.toString(),
+                        style = TextStyle(fontSize = 12.sp),
                     )
                 }
             }

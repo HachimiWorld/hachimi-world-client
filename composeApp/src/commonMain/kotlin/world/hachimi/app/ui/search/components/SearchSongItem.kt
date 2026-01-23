@@ -50,8 +50,8 @@ fun SearchSongItem(
     ) {
         Row(Modifier.clickable(onClick = onClick)) {
             Surface(
-                Modifier.aspectRatio(1f).fillMaxHeight(),
-                shape = RoundedCornerShape(16.dp),
+                Modifier.aspectRatio(1f).fillMaxHeight().padding(8.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = LocalContentColor.current.copy(0.12f)
             ) {
                 AsyncImage(

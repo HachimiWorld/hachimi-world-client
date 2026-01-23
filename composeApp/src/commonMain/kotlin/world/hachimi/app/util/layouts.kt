@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.LocalWindowSize
 
@@ -46,6 +47,53 @@ class VerticalWithLastArrangement(
             } else {
                 outPositions[index] = current
                 current += it
+            }
+        }
+    }
+}
+
+class StartWithLastArrangement(
+    val lastItemArrangement: Arrangement.Horizontal = Arrangement.Center
+) : Arrangement.Horizontal {
+    override fun Density.arrange(
+        totalSize: Int,
+        sizes: IntArray,
+        layoutDirection: LayoutDirection,
+        outPositions: IntArray
+    ) {
+        if (layoutDirection == LayoutDirection.Ltr) {
+            var current = 0
+            sizes.forEachIndexed { index, it ->
+                if (index == sizes.lastIndex && current + it < totalSize) {
+                    // Arrange the last item with `lastItemArrangement`
+                    val lastItemSize = intArrayOf(it)
+                    val lastItemPosition = IntArray(1)
+                    with(lastItemArrangement) {
+                        arrange(totalSize - current, lastItemSize, layoutDirection, lastItemPosition)
+                    }
+                    outPositions[index] = current + lastItemPosition[0]
+                } else {
+                    outPositions[index] = current
+                    current += it
+                }
+            }
+        } else {
+            val consumedSize = sizes.fold(0) { a, b -> a + b }
+            var current = totalSize - consumedSize
+            for (index in (sizes.size - 1) downTo 0) {
+                val it = sizes[index]
+                if (index == 0 && current + it < totalSize) {
+                    // Arrange the last item with `lastItemArrangement`
+                    val lastItemSize = intArrayOf(it)
+                    val lastItemPosition = IntArray(1)
+                    with(lastItemArrangement) {
+                        arrange(totalSize - current, lastItemSize, layoutDirection, lastItemPosition)
+                    }
+                    outPositions[index] = current + lastItemPosition[0]
+                } else {
+                    outPositions[index] = current
+                    current += it
+                }
             }
         }
     }
