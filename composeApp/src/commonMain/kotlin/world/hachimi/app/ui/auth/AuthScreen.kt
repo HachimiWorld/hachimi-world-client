@@ -238,12 +238,13 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
     ) {
         Column(Modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             // Compute help texts during composition (avoid calling stringResource from non-composable callbacks)
-            val emailHelp = if (validateEmailPattern(vm.regEmail)) "" else stringResource(Res.string.auth_invalid_email)
+            var showEmailHelp by remember { mutableStateOf(false) }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regEmail,
                 onValueChange = {
                     vm.regEmail = it.singleLined()
+                    showEmailHelp = !validateEmailPattern(vm.regEmail)
                 },
                 leadingIcon = { Icon(Icons.Outlined.Mail, null) },
                 placeholder = { Text(stringResource(Res.string.auth_email_placeholder)) },
@@ -253,16 +254,17 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                     imeAction = ImeAction.Next
                 ),
                 supportingText = {
-                    Text(emailHelp)
+                    Text(if (showEmailHelp) stringResource(Res.string.auth_invalid_email) else "")
                 }
             )
             var showPassword by remember { mutableStateOf(false) }
-            val passwordHelp = if (validatePasswordPattern(vm.regPassword)) "" else stringResource(Res.string.auth_password_too_short)
+            var showPasswordHelp by remember { mutableStateOf(false) }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPassword,
                 onValueChange = {
                     vm.regPassword = it.singleLined()
+                    showPasswordHelp = !validatePasswordPattern(vm.regPassword)
                 },
                 leadingIcon = { Icon(Icons.Outlined.Lock, null) },
                 placeholder = { Text(stringResource(Res.string.auth_password_placeholder)) },
@@ -279,16 +281,17 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                     imeAction = ImeAction.Next
                 ),
                 supportingText = {
-                    Text(passwordHelp)
+                    Text(if (showPasswordHelp) stringResource(Res.string.auth_password_too_short) else "")
                 }
             )
             var showRepeatPassword by remember { mutableStateOf(false) }
-            val repeatPasswordHelp = if (vm.regPasswordRepeat != vm.regPassword) stringResource(Res.string.auth_passwords_not_match) else ""
+            var showRepeatPasswordHelp by remember { mutableStateOf(false) }
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = vm.regPasswordRepeat,
                 onValueChange = {
                     vm.regPasswordRepeat = it.singleLined()
+                    showRepeatPasswordHelp = vm.regPasswordRepeat != vm.regPassword
                 },
                 leadingIcon = { Icon(Icons.Outlined.SettingsBackupRestore, null) },
                 placeholder = { Text(stringResource(Res.string.auth_confirm_password_placeholder)) },
@@ -305,7 +308,7 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
                     imeAction = ImeAction.Next
                 ),
                 supportingText = {
-                    Text(repeatPasswordHelp)
+                    Text(if (showRepeatPasswordHelp) stringResource(Res.string.auth_passwords_not_match) else "")
                 }
             )
 
