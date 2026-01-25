@@ -42,10 +42,14 @@ sealed class Route {
         data object CommitteeCenter: Root()
         sealed class ContributorCenter: Root() {
             companion object {
-                val Default = ReviewList
+                val Default = Entry
             }
+            data object Entry: ContributorCenter()
             data object ReviewList: ContributorCenter()
             data class ReviewDetail(val reviewId: Long): ContributorCenter()
+            data object PostCenter: ContributorCenter()
+            data object CreatePost: ContributorCenter()
+            data class EditPost(val postId: Long): ContributorCenter()
         }
 
         data class Search(
