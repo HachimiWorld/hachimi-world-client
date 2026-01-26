@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.1.0 (2026-01-26)
+
 ## Features 新功能
 
 1. Added support for minimizing to system tray. 支持最小化到系统托盘。
@@ -24,6 +26,7 @@
 
 1. Fixed the flickering issue when expanding the player. 修复展开播放器时闪烁的问题。
 2. Fixed issues where UI could be obscured by navigation bar. 修复界面会被导航栏遮挡的问题。
+3. Fixed some crashing issues. 修复一些闪退的问题。
 
 # 1.0.8-beta (2025-12-16)
 
