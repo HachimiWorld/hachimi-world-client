@@ -4,7 +4,16 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,6 +41,12 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_cover_cd
+import hachimiworld.composeapp.generated.resources.player_queue_clear
+import hachimiworld.composeapp.generated.resources.player_queue_title
+import hachimiworld.composeapp.generated.resources.player_remove_from_playlist_cd
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -53,7 +68,9 @@ fun MusicQueue(
 ) {
     val scrollState = rememberLazyListState(
         initialFirstVisibleItemIndex = remember(queue) {
-            queue.indexOfFirst { it.id == playingSongId }
+            val idx = queue.indexOfFirst { it.id == playingSongId }
+            if (idx == -1) 0
+            else idx
         }
     )
     LazyColumn(
@@ -87,7 +104,7 @@ fun MusicQueueHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = "播放队列", style = headStyle)
+        Text(text = stringResource(Res.string.player_queue_title), style = headStyle)
         ClearButton(onClick = onClearClick)
     }
 }
@@ -106,7 +123,7 @@ private fun ClearButton(onClick: () -> Unit) {
         contentColor = HachimiTheme.colorScheme.onSurface
     ) {
         Box(Modifier.clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("清除")
+            Text(stringResource(Res.string.player_queue_clear))
         }
     }
 }
@@ -137,7 +154,7 @@ private fun Item(
                 model = ImageRequest.Builder(LocalPlatformContext.current)
                     .data(coverUrl).crossfade(true)
                     .build(),
-                contentDescription = "Cover",
+                contentDescription = stringResource(Res.string.player_cover_cd),
                 contentScale = ContentScale.Crop,
                 placeholder = ColorPainter(LocalContentColor.current.copy(0.12f)),
             )
@@ -169,7 +186,7 @@ private fun Item(
             color = HachimiTheme.colorScheme.onSurfaceVariant
         )
         HachimiIconButton(onClick = onRemoveClick) {
-            Icon(Icons.Filled.Close, contentDescription = "Remove from playlist")
+            Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.player_remove_from_playlist_cd))
         }
     }
 }

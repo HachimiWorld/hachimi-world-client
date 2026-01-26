@@ -6,11 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import org.koin.compose.koinInject
+import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
+import world.hachimi.app.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +37,12 @@ class MainActivity : ComponentActivity() {
                     finish()
                 }
             }
-            App()
+
+            AppTheme(global.darkMode ?: isSystemInDarkTheme()) {
+                AppEnvironment(global.locale) {
+                    App(global)
+                }
+            }
         }
     }
 }

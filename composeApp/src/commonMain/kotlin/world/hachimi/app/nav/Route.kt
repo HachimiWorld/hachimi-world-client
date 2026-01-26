@@ -7,6 +7,11 @@ sealed class Route {
         companion object {
             val Default = Home.Main
         }
+        sealed class Events: Root() {
+            data object Feed: Events()
+            data class Detail(val postId: Long): Events()
+        }
+
         sealed class Home: Root() {
             data object Main: Home()
             data object Recent: Home()
@@ -25,6 +30,9 @@ sealed class Route {
             data object List: MyPlaylist()
             data class Detail(val playlistId: Long): MyPlaylist()
         }
+
+        data class PublicPlaylist(val playlistId: Long): Root()
+
         sealed class CreationCenter: Root() {
             companion object Companion {
                 val Default = MyArtwork
@@ -39,10 +47,14 @@ sealed class Route {
         data object CommitteeCenter: Root()
         sealed class ContributorCenter: Root() {
             companion object {
-                val Default = ReviewList
+                val Default = Entry
             }
+            data object Entry: ContributorCenter()
             data object ReviewList: ContributorCenter()
             data class ReviewDetail(val reviewId: Long): ContributorCenter()
+            data object PostCenter: ContributorCenter()
+            data object CreatePost: ContributorCenter()
+            data class EditPost(val postId: Long): ContributorCenter()
         }
 
         data class Search(

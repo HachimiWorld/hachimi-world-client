@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.awt.ComposeWindow
 import world.hachimi.app.LocalWindow
+import world.hachimi.app.ui.design.HachimiPalette
 import world.hachimi.app.ui.window.LocalWindowFrameState
 import world.hachimi.app.ui.window.WindowFrameState
 import java.awt.Color
@@ -14,7 +15,7 @@ class JvmSystemUIController(
 ): SystemUIController {
     override fun setSystemBarsTheme(darkTheme: Boolean) {
         // FIXME: Not work on Windows
-        val bg = if (darkTheme) backgroundDark else backgroundLight
+        val bg = if (darkTheme) HachimiPalette.backgroundDark else HachimiPalette.backgroundLight
         window.background = Color(bg.red, bg.green, bg.blue, bg.alpha)
         windowFrameState?.darkMode = darkTheme
     }

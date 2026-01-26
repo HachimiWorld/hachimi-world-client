@@ -1,0 +1,130 @@
+name: JVM Compile Check
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    types:
+      - opened
+    branches:
+      - dev
+concurrency:
+  group: jvm-compile-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create local properties
+        run: |
+          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
+          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
+          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rustLib/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build rust library
+        working-directory: ./rustLib
+        run: |
+          cargo build --lib
+          cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
+          cargo run --bin uniffi-bindgen generate \
+            --library target/debug/libhachimi.dylib \
+            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Compile
+        run: ./gradlew compileKotlinJvm
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create local properties
+        run: |
+          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
+          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
+          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rustLib/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build rust library
+        working-directory: ./rustLib
+        shell: bash
+        run: |
+          cargo build --lib
+          cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
+          cargo run --bin uniffi-bindgen generate \
+            --library target/debug/hachimi.dll \
+            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Compile
+        run: ./gradlew compileKotlinJvm
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create local properties
+        run: |
+          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
+          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
+          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rustLib/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install dependencies
+        run: |
+          sudo apt install libasound2-dev # This is essential for build `rodio` dependency.
+          sudo apt install libdbus-1-dev
+      - name: Build rust library
+        working-directory: ./rustLib
+        run: |
+          cargo build --lib
+          cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
+          cargo run --bin uniffi-bindgen generate \
+            --library target/debug/libhachimi.so \
+            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Compile
+        run: ./gradlew compileKotlinJvm

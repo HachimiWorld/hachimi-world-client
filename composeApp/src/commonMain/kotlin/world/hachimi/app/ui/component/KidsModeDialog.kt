@@ -1,10 +1,16 @@
 package world.hachimi.app.ui.component
 
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_kids_mode_cancel
+import hachimiworld.composeapp.generated.resources.player_kids_mode_message
+import hachimiworld.composeapp.generated.resources.player_kids_mode_play
+import hachimiworld.composeapp.generated.resources.player_kids_mode_title
+import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
@@ -15,19 +21,19 @@ fun KidsModeDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text("你已启用宝宝模式")
+            Text(stringResource(Res.string.player_kids_mode_title))
         },
         text = {
-            Text("本作品被作者标记为含有儿童不宜内容，由于你已启用宝宝模式，请确认是否继续播放。")
+            Text(stringResource(Res.string.player_kids_mode_message))
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("播放")
+                Text(stringResource(Res.string.player_kids_mode_play))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("取消")
+                Text(stringResource(Res.string.player_kids_mode_cancel))
             }
         }
     )

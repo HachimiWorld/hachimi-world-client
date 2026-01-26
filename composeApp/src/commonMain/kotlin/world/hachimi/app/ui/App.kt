@@ -1,11 +1,20 @@
 package world.hachimi.app.ui
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -19,18 +28,21 @@ import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisZ
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.nav.Route.*
+import world.hachimi.app.nav.Route.Auth
+import world.hachimi.app.nav.Route.ForgetPassword
+import world.hachimi.app.nav.Route.Root
 import world.hachimi.app.ui.auth.AuthScreen
 import world.hachimi.app.ui.auth.ForgetPasswordScreen
+import world.hachimi.app.ui.component.ClientApiVersionIncompatibleDialog
 import world.hachimi.app.ui.component.KidsModeDialog
 import world.hachimi.app.ui.component.UpgradeDialog
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
-import world.hachimi.app.ui.theme.AppTheme
 
 
-val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope> { error("not provided") }
+val LocalAnimatedVisibilityScope =
+    compositionLocalOf<AnimatedVisibilityScope> { error("not provided") }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("not provided") }
@@ -46,48 +58,36 @@ val LocalContentInsets = compositionLocalOf { WindowInsets() }
 val LocalWindowSize = compositionLocalOf { DpSize.Zero }
 
 @Composable
-fun App() {
+fun App(global: GlobalStore = koinInject()) {
     setupCoil()
-
-    val global = koinInject<GlobalStore>()
-
-    BoxWithConstraints {
-        CompositionLocalProvider(LocalWindowSize provides DpSize(maxWidth, maxHeight)) {
-            AppTheme(darkTheme = global.darkMode ?: isSystemInDarkTheme()) {
-                Surface(
-                    Modifier.fillMaxSize(),
-                    color = HachimiTheme.colorScheme.background,
-                    contentColor = HachimiTheme.colorScheme.onSurface
-                ) {
-                    Box(Modifier.fillMaxSize()) {
-                        SharedTransitionLayout {
-                            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                Content(global.nav.backStack)
-                                AnimatedVisibility(
-                                    global.playerExpanded,
-                                    enter = slideInVertically(initialOffsetY = { it }),
-                                    exit = slideOutVertically(targetOffsetY = { it })
-                                ) {
-                                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                                        PlayerScreen2()
-                                    }
-                                }
+    ProvideLocalWindowSize {
+        Surface(
+            Modifier.fillMaxSize(),
+            color = HachimiTheme.colorScheme.background,
+            contentColor = HachimiTheme.colorScheme.onSurface
+        ) {
+            Box(Modifier.fillMaxSize()) {
+                SharedTransitionLayout {
+                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                        Content(global.nav.backStack)
+                        AnimatedVisibility(
+                            global.playerExpanded,
+                            enter = slideInVertically(initialOffsetY = { it }),
+                            exit = slideOutVertically(targetOffsetY = { it })
+                        ) {
+                            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                PlayerScreen2()
                             }
                         }
-                        SnackbarHost(
-                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
-                            hostState = global.snackbarHostState,
-                        )
                     }
                 }
-                ClientApiVersionIncompatibleDialog(global)
-                UpgradeDialog(global)
-                if (global.showKidsDialog) KidsModeDialog(
-                    onDismissRequest = { global.confirmKidsPlay(false) },
-                    onConfirm = { global.confirmKidsPlay(true) }
+                SnackbarHost(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                    hostState = global.snackbarHostState,
                 )
             }
         }
+        GlobalDialogs(global)
     }
 }
 
@@ -104,9 +104,9 @@ private fun Content(
             if (initialState is Root) materialSharedAxisZ(true)
             else if (initialState is Auth && targetState is ForgetPassword) materialSharedAxisZ(true)
             else materialSharedAxisZ(false)
-         },
+        },
         contentKey = {
-            when(it) {
+            when (it) {
                 is Root -> "root"
                 is Auth -> "auth"
                 is ForgetPassword -> "forget_password"
@@ -120,6 +120,16 @@ private fun Content(
             is ForgetPassword -> ForgetPasswordScreen()
         }
     }
+}
+
+@Composable
+private fun GlobalDialogs(global: GlobalStore) {
+    ClientApiVersionIncompatibleDialog(global)
+    UpgradeDialog(global)
+    if (global.showKidsDialog) KidsModeDialog(
+        onDismissRequest = { global.confirmKidsPlay(false) },
+        onConfirm = { global.confirmKidsPlay(true) }
+    )
 }
 
 @Suppress("ComposableNaming")
@@ -136,51 +146,11 @@ fun setupCoil() {
 }
 
 @Composable
-private fun ClientApiVersionIncompatibleDialog(global: GlobalStore) {
-    if (global.showApiVersionIncompatible) {
-        AlertDialog(
-            modifier = Modifier.width(280.dp),
-            title = {
-                Text("客户端版本过低")
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("您的客户端已低于服务器支持的最低版本，请更新客户端至最新版本，否则将无法使用！")
-                    HorizontalDivider()
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Client API Ver: ${global.clientApiVersion}", style = MaterialTheme.typography.bodySmall)
-                        Text("Server API Ver: ${global.serverVersion}", style = MaterialTheme.typography.bodySmall)
-                        Text(
-                            "Server Min API Ver: ${global.serverMinVersion}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            },
-            icon = {
-                Icon(Icons.Default.Warning, "Warning")
-            },
-            onDismissRequest = {
-                // Do nothing
-            },
-            confirmButton = {
-                // No confirm button
-            },
+private fun ProvideLocalWindowSize(content: @Composable () -> Unit) {
+    BoxWithConstraints {
+        CompositionLocalProvider(
+            LocalWindowSize provides DpSize(maxWidth, maxHeight),
+            content = content
         )
     }
-}
-
-@Composable
-private fun UpgradeDialog(global: GlobalStore) {
-    if (global.showUpdateDialog) UpgradeDialog(
-        currentVersion = global.currentVersion,
-        newVersion = global.newVersionInfo!!.versionName,
-        changelog = global.newVersionInfo!!.changelog,
-        onDismiss = {
-            global.dismissUpgrade()
-        },
-        onConfirm = {
-            global.confirmUpgrade()
-        }
-    )
 }

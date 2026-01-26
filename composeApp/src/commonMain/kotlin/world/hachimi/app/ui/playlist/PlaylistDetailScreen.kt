@@ -1,19 +1,30 @@
 package world.hachimi.app.ui.playlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +38,15 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.play_all
+import hachimiworld.composeapp.generated.resources.playlist_cover_cd
+import hachimiworld.composeapp.generated.resources.playlist_description_placeholder
+import hachimiworld.composeapp.generated.resources.playlist_private_badge
+import hachimiworld.composeapp.generated.resources.playlist_song_count
+import hachimiworld.composeapp.generated.resources.playlist_songs_list
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PlaylistModule
@@ -36,10 +56,13 @@ import world.hachimi.app.model.PlaylistDetailViewModel
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.TagBadge
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.EditDialog
-import world.hachimi.app.util.formatSongDuration
-import kotlin.time.Duration
+import world.hachimi.app.ui.playlist.components.SongItem
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -90,6 +113,7 @@ fun PlaylistDetailScreen(
                             coverUrl = song.coverUrl,
                             artist = song.uploaderName,
                             duration = song.durationSeconds.seconds,
+                            editable = true,
                             onRemoveClick = {
                                 vm.removeFromPlaylist(song.songId)
                             }
@@ -97,7 +121,10 @@ fun PlaylistDetailScreen(
                     }
 
                     item {
-                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
+                        Spacer(
+                            Modifier.navigationBarsPadding()
+                                .padding(LocalContentInsets.current.asPaddingValues())
+                        )
                     }
                 }
             }
@@ -123,18 +150,18 @@ private fun Header(
                     .clickable(
                         onClick = { vm.editCover() },
                         enabled = !vm.coverUploading
-                    ),
+                    )
+                    .background(LocalContentColor.current.copy(0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 val hazeState = rememberHazeState()
-
                 AsyncImage(
                     modifier = Modifier.hazeSource(hazeState).fillMaxSize(),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
                         .data(info.coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Playlist Cover Image",
+                    contentDescription = stringResource(Res.string.playlist_cover_cd),
                     contentScale = ContentScale.Crop,
                     placeholder = ColorPainter(LocalContentColor.current.copy(alpha = 0.12f))
                 )
@@ -143,7 +170,11 @@ private fun Header(
                     else CircularProgressIndicator(progress = { vm.coverUploadingProgress })
                 }
                 if (!info.isPublic) {
-                    TagBadge(hazeState, tag = "私有", modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp))
+                    TagBadge(
+                        hazeState,
+                        tag = stringResource(Res.string.playlist_private_badge),
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
+                    )
                 }
             }
 
@@ -159,7 +190,7 @@ private fun Header(
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    text = info.description ?: "暂无介绍",
+                    text = info.description ?: stringResource(Res.string.playlist_description_placeholder),
                     style = MaterialTheme.typography.bodySmall,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -172,12 +203,12 @@ private fun Header(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "歌曲列表", style = MaterialTheme.typography.titleLarge
+                text = stringResource(Res.string.playlist_songs_list), style = MaterialTheme.typography.titleLarge
             )
 
             Text(
                 modifier = Modifier.padding(start = 16.dp),
-                text = "${vm.songs.size} 首",
+                text = stringResource(Res.string.playlist_song_count, vm.songs.size),
                 style = MaterialTheme.typography.bodySmall
             )
 
@@ -186,72 +217,9 @@ private fun Header(
                 modifier = Modifier,
                 onClick = { vm.playAll() }
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.song_cover_cd))
                 Spacer(Modifier.width(16.dp))
-                Text("播放全部")
-            }
-        }
-    }
-}
-
-@Composable
-private fun SongItem(
-    orderIndex: Int,
-    coverUrl: String,
-    title: String,
-    artist: String,
-    duration: Duration,
-    onClick: () -> Unit,
-    onRemoveClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var dropdownExpanded by remember { mutableStateOf(false) }
-
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.combinedClickable(
-                onClick = onClick,
-                onLongClick = { dropdownExpanded = true }
-            ).padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                modifier = Modifier.width(40.dp),
-                text = "#" + (orderIndex + 1).toString(),
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Box(Modifier.size(48.dp).clip(MaterialTheme.shapes.small)) {
-                AsyncImage(
-                    model = coverUrl,
-                    contentDescription = "Song Cover Image",
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.bodyMedium)
-                Text(artist, style = MaterialTheme.typography.bodySmall)
-            }
-
-            Text(formatSongDuration(duration), style = MaterialTheme.typography.bodySmall)
-
-            Box {
-                HachimiIconButton(onClick = { dropdownExpanded = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Dropdown")
-                }
-                DropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
-                    DropdownMenuItem(onClick = {
-                        onRemoveClick()
-                        dropdownExpanded = false
-                    }, text = {
-                        Text("移出歌单")
-                    })
-                }
+                Text(stringResource(Res.string.play_all))
             }
         }
     }

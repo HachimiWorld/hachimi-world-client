@@ -1,0 +1,295 @@
+<resources>
+    <!-- Kids mode dialog -->
+    <string name="player_kids_mode_title">你已启用宝宝模式</string>
+    <string name="player_kids_mode_message">本作品被作者标记为含有儿童不宜内容，由于你已启用宝宝模式，请确认是否继续播放。</string>
+    <string name="player_kids_mode_play">播放</string>
+    <string name="player_kids_mode_cancel">取消</string>
+
+    <!-- Player / Playlist strings -->
+    <string name="player_add_to_playlist_title">收藏到歌单</string>
+    <string name="player_add_to_playlist_create">新建歌单</string>
+    <string name="player_add_to_playlist_confirm">确定</string>
+    <string name="player_add_to_playlist_cancel">取消</string>
+
+    <string name="player_create_playlist_title">新建歌单</string>
+    <string name="player_create_playlist_name_placeholder">名称</string>
+    <string name="player_create_playlist_description_placeholder">描述</string>
+    <string name="player_create_playlist_private_label">私有歌单</string>
+    <string name="player_create_playlist_create">创建</string>
+    <string name="player_create_playlist_cancel">取消</string>
+
+    <string name="player_share">分享</string>
+    <string name="share_share_music_title">分享音乐</string>
+    <string name="share">分享</string>
+    <string name="player_share_copied_clipboard">已复制到剪切板</string>
+
+    <string name="player_queue_title">播放队列</string>
+    <string name="player_queue_clear">清除</string>
+    <string name="player_cover_cd">封面</string>
+    <string name="player_remove_from_playlist_cd">从歌单移除</string>
+
+    <string name="play_all">播放全部</string>
+
+    <string name="contributor_submitter">投稿人</string>
+    <string name="artwork_details_title">作品详情</string>
+
+    <string name="auth_logout">退出登录</string>
+    <string name="auth_login">登录</string>
+    <string name="auth_register">注册</string>
+    <string name="auth_auth_token_invalid">登录令牌失效，请重新登录</string>
+    <string name="auth_forget_send_code_failed">发送验证码失败，请稍后再试</string>
+    <string name="auth_forget_reset_failed">重置密码失败，请稍后再试</string>
+    <string name="auth_forget_captcha_failed">人机验证失败，请稍后重试</string>
+    <string name="auth_captcha_title">请完成验证</string>
+    <string name="auth_captcha_message">请在打开的浏览器页面中完成人机验证。</string>
+    <string name="auth_captcha_help_label">未弹出页面？</string>
+    <string name="auth_captcha_help_message">Safari 浏览器请前往“设置”>“App”>“Safari 浏览器” 中关闭 “阻止弹出式窗口”，或使用 Chrome 浏览器访问；\n电脑端请检查是否被安全软件拦截</string>
+    <string name="auth_captcha_confirm">我已完成，继续</string>
+
+    <!-- New auth UI strings for AuthScreen (zh) -->
+    <string name="auth_welcome_home">欢迎回家</string>
+    <string name="auth_become_god">成为神人</string>
+    <string name="auth_email_placeholder">邮箱</string>
+    <string name="auth_password_placeholder">密码</string>
+    <string name="auth_forget_password">忘记密码？</string>
+    <string name="auth_confirm_password_placeholder">确认密码</string>
+    <string name="auth_next_step">下一步</string>
+    <string name="auth_passwords_not_match">两次输入不一致</string>
+    <string name="auth_almost_there">离神人很近了</string>
+    <string name="auth_verification_sent_subtitle">已将验证码发送至邮箱，如未收到请检查垃圾箱</string>
+    <string name="auth_code_placeholder">验证码</string>
+    <string name="auth_resend">重新发送</string>
+    <string name="auth_resend_with_seconds">重新发送 (%1$d 秒)</string>
+    <string name="auth_previous">上一步</string>
+    <string name="auth_one_more_step">只差一步</string>
+    <string name="auth_complete_profile_subtitle">完善你的资料</string>
+    <string name="auth_nickname_placeholder">昵称</string>
+    <string name="auth_intro_placeholder">介绍一下</string>
+    <string name="auth_gender_male">男</string>
+    <string name="auth_gender_female">女</string>
+    <string name="auth_gender_none">神没有性别</string>
+    <string name="auth_finish">完成</string>
+    <string name="auth_skip">跳过</string>
+
+    <!-- Common small labels -->
+    <string name="common_info">信息</string>
+    <string name="common_refresh_cd">刷新</string>
+    <string name="common_no_more">没有更多了</string>
+
+    <string name="user_change_nickname">更改昵称</string>
+    <string name="user_change_bio">更改简介</string>
+
+    <string name="player_play_all">播放全部</string>
+
+    <string name="common_change">更改</string>
+    <string name="common_close">关闭</string>
+    <string name="common_cancel">取消</string>
+
+    <string name="common_clear">清空</string>
+    <string name="common_search_placeholder">搜索...</string>
+
+    <string name="review_approve">通过</string>
+    <string name="review_reject">退回</string>
+
+    <!-- Client API version incompatible dialog -->
+    <string name="player_client_api_version_title">客户端版本过低</string>
+    <string name="player_client_api_version_message">您的客户端已低于服务器支持的最低版本，请更新客户端至最新版本，否则将无法使用！</string>
+    <string name="player_client_api_version_client_label">客户端 API 版本：</string>
+    <string name="player_client_api_version_server_label">服务器 API 版本：</string>
+    <string name="player_client_api_version_server_min_label">服务器最小 API 版本：</string>
+
+    <string name="global_check_update_failed">检查更新失败</string>
+    <string name="global_error_check_min_api_failed">检查最小版本失败</string>
+    <string name="recent_error_fetch_recommend_failed">获取推荐音乐失败：%1$s</string>
+
+    <string name="player_not_playing">暂未播放</string>
+    <string name="app_menu_show_window">显示窗口</string>
+    <string name="app_menu_quit">退出</string>
+    <string name="common_done">完成</string>
+    <string name="artwork_jmid_prefix_not_set">未设置基米ID前缀</string>
+    <string name="artwork_jmid_already_used">该基米ID已被使用</string>
+
+    <string name="auth_not_logged_in">未登录</string>
+    <string name="playlist_login_required">歌单功能登录后可用</string>
+
+    <!-- Publish -->
+    <string name="publish_image_too_large">图片过大</string>
+    <string name="publish_audio_too_large">音频文件过大，最大支持20MB</string>
+    <string name="publish_fetch_jmid_failed">获取可用基米ID失败</string>
+    <string name="publish_jmid_number_format">数字段必须为 3 位，如 001</string>
+    <string name="publish_change_success">更改成功</string>
+    <string name="publish_cover_required">请上传封面</string>
+    <string name="publish_jmid_required">请设置基米ID</string>
+    <string name="publish_title_required">请填写标题</string>
+    <string name="publish_subtitle_too_long">副标题过长</string>
+    <string name="publish_description_too_long">简介过长</string>
+    <string name="publish_tag_name_empty">标签名称不可为空</string>
+    <string name="publish_tag_already_exists">标签已存在</string>
+    <string name="publish_invalid_uid">请输入正确的 UID</string>
+    <string name="publish_fetch_user_failed">获取用户信息失败</string>
+    <string name="publish_audio_file_required">请选择音频文件</string>
+    <string name="publish_lyrics_required">请填写歌词</string>
+    <string name="publish_lyrics_invalid_lrc">请填写正确的 LRC 格式歌词</string>
+    <string name="publish_origin_info_required">请填写原作信息</string>
+    <string name="publish_derive_info_required">请填写二作信息</string>
+    <string name="publish_https_required">请填写 HTTPS 的原作链接，请勿使用 HTTP</string>
+    <string name="publish_https_format">请填写正确的 HTTPS 格式的原作链接 https://xxxx</string>
+    <string name="publish_explicit_required">请选择是否包含露骨内容</string>
+    <string name="publish_init_jmid_prefix_used">该前缀已被使用，如被抢占请联系维护者</string>
+    <string name="publish_init_jmid_invalid_format">请填写 3 到 4 位字母</string>
+
+    <!-- Auth validation -->
+    <string name="auth_invalid_email">邮箱地址不正确</string>
+    <string name="auth_password_too_short">密码长度至少为 6 位</string>
+
+    <!-- Player errors -->
+    <string name="player_play_failed">播放失败：%1$s</string>
+
+    <!-- Date/time labels -->
+    <string name="date_after_tomorrow">后天</string>
+    <string name="date_tomorrow">明天</string>
+    <string name="date_today">今天</string>
+    <string name="date_yesterday">昨天</string>
+    <string name="date_before_yesterday">前天</string>
+    <string name="time_seconds_format">%1$d 秒</string>
+    <string name="time_minutes_seconds_format">%1$d 分 %2$d 秒</string>
+
+    <!-- Search UI strings -->
+    <string name="search_no_results">什么也没有找到</string>
+    <string name="search_tab_songs">歌曲</string>
+    <string name="search_tab_users">神人</string>
+    <string name="search_tab_playlists">歌单</string>
+    <string name="search_placeholder">搜索...</string>
+    <string name="search_result_title">搜索结果</string>
+    <string name="search_sort_relevance">最相关</string>
+    <string name="search_sort_newest">最新发布</string>
+    <string name="search_sort_oldest">最早发布</string>
+
+    <!-- Navigation labels -->
+    <string name="nav_home_events">活动公告</string>
+    <string name="nav_home_title">主页</string>
+    <string name="nav_recent_like">最近点赞</string>
+    <string name="nav_recent_play">最近播放</string>
+    <string name="nav_my_playlist">我的歌单</string>
+    <string name="nav_my_subscribe">我的关注</string>
+    <string name="nav_creation_center">创作中心</string>
+    <string name="nav_committee_center">委员会中心</string>
+    <string name="nav_contributor_center">贡献者中心</string>
+    <string name="nav_settings">设置</string>
+
+    <string name="auth_forget_title">重置密码</string>
+    <string name="auth_forget_subtitle">忘记密码是成为神人的第一步</string>
+
+    <string name="auth_new_password_placeholder">新密码</string>
+
+    <string name="auth_verify_code_placeholder">验证码</string>
+    <string name="auth_send">发送</string>
+    <string name="auth_resend_seconds">重新发送 (%1$d 秒)</string>
+
+    <string name="auth_back">返回</string>
+    <string name="common_ok">确定</string>
+
+    <string name="auth_reset_success_title">成功</string>
+    <string name="auth_reset_success_text">已成功将您的密码重置</string>
+
+    <!-- CloseAskDialog strings -->
+    <string name="closeask_title">要最小化吗？</string>
+    <string name="closeask_text">最小化后可从系统托盘唤出窗口</string>
+    <string name="closeask_minimize">最小化</string>
+    <string name="closeask_quit">直接退出</string>
+
+    <!-- Developing page -->
+    <string name="developing_page_title">绝赞开发中</string>
+
+    <!-- NeedLogin screen -->
+    <string name="need_login_message">登录后才可以使用哦</string>
+
+    <!-- Pagination component -->
+    <string name="pagination_total_items">共 %1$d 条</string>
+    <string name="pagination_page_size">%1$d 条/页</string>
+    <string name="pagination_previous_cd">上一页</string>
+    <string name="pagination_next_cd">下一页</string>
+
+    <!-- ReloadPage strings -->
+    <string name="reload_page_message">基米好像去往了天堂</string>
+    <string name="reload_retry">重试</string>
+
+    <!-- Update / Upgrade dialog -->
+    <string name="update_found_title">发现新版本</string>
+    <string name="update_current_version">当前版本：%1$s</string>
+    <string name="update_new_version">新版本：%1$s</string>
+    <string name="update_changelog_title">更新日志</string>
+    <string name="update_confirm">立即升级</string>
+    <string name="update_ignore">忽略</string>
+    <string name="update_icon_cd">升级</string>
+
+    <!-- Home / Recommend / Weekly / Common strings -->
+    <string name="home_recent_title">最近发布</string>
+    <string name="home_recommend_title">每日推荐</string>
+    <string name="home_recommend_subtitle">并非根据你的口味进行推荐</string>
+    <string name="home_weekly_title">本周热门</string>
+    <string name="home_weekly_subtitle">根据本周的播放量计算</string>
+    <string name="common_empty">空空如也</string>
+    <string name="common_more">更多</string>
+    <string name="common_play_cd">播放</string>
+    <string name="recent_play_title">最近播放</string>
+
+    <!-- InfoTab / Player fullscreen labels (zh originals) -->
+    <string name="info_author">作者</string>
+    <string name="info_tags">标签</string>
+    <string name="info_release_date">发行日期</string>
+    <string name="info_pv">PV</string>
+    <string name="info_origin">原作</string>
+    <string name="info_listen_cd">收听此音乐</string>
+    <string name="info_open_in_new_tab_cd">在新窗口打开</string>
+    <string name="info_play_count">播放量</string>
+
+    <!-- Playlist package strings (zh originals) -->
+    <string name="playlist_empty">什么也没有</string>
+    <string name="playlist_my_playlists_title">我的歌单</string>
+    <string name="playlist_description_placeholder">暂无介绍</string>
+    <string name="playlist_private_badge">私有</string>
+    <string name="playlist_songs_list">歌曲列表</string>
+    <string name="playlist_song_count">%1$d 首</string>
+    <string name="playlist_remove_item">移出歌单</string>
+    <string name="playlist_cover_cd">歌单封面</string>
+    <string name="song_cover_cd">歌曲封面</string>
+    <string name="playlist_edit_title">编辑歌单</string>
+    <string name="playlist_favorite">收藏</string>
+    <string name="playlist_unfavorite">已收藏</string>
+    <string name="playlist_update_time">更新时间：%1$s</string>
+
+    <!-- User space strings -->
+    <string name="user_space_title">神人空间</string>
+    <string name="user_space_user_avatar_cd">用户头像</string>
+    <string name="user_space_uid_prefix">UID：%1$d</string>
+    <string name="user_space_intro_label">简介</string>
+    <string name="user_space_all_works">全部作品</string>
+    <string name="user_space_empty">什么也没有</string>
+    <string name="user_space_male_cd">男</string>
+    <string name="user_space_female_cd">女</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">设置</string>
+    <string name="settings_dark_mode_label">深色模式</string>
+    <string name="settings_dark_mode_follow_system">跟随系统</string>
+    <string name="settings_dark_mode_on">始终开启</string>
+    <string name="settings_dark_mode_off">始终关闭</string>
+    <string name="settings_dropdown_cd">下拉菜单</string>
+    <string name="settings_loudness">响度均衡</string>
+    <string name="settings_kids_mode">宝宝模式</string>
+    <string name="settings_client_type">客户端类型</string>
+    <string name="settings_version_name">版本名</string>
+    <string name="settings_version_code">版本号</string>
+    <string name="settings_feedback">反馈与建议</string>
+    <string name="settings_official_website">官方网站</string>
+    <string name="settings_github_text">GitHub</string>
+    <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_open_in_browser_cd">在浏览器中打开</string>
+
+    <!-- Language selection -->
+    <string name="settings_language_label">语言</string>
+    <string name="settings_language_follow_system">跟随系统</string>
+
+</resources>
+

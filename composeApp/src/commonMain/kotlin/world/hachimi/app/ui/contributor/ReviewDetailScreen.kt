@@ -2,7 +2,17 @@ package world.hachimi.app.ui.contributor
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +27,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_details_title
+import hachimiworld.composeapp.generated.resources.contributor_submitter
+import hachimiworld.composeapp.generated.resources.review_approve
+import hachimiworld.composeapp.generated.resources.review_reject
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.PublishModule
@@ -29,7 +45,12 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.LocalTextStyle
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.formatTime
 import kotlin.time.Duration.Companion.seconds
@@ -61,14 +82,14 @@ private fun Content(
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
             .navigationBarsPadding()
-            .windowInsetsPadding(LocalContentInsets.current)
+            .padding(LocalContentInsets.current.asPaddingValues())
             .padding(24.dp),
         Arrangement.spacedBy(16.dp)
     ) {
         vm.data?.let { data ->
             Text(text = "Review 详情", style = MaterialTheme.typography.titleLarge)
             PropertyItem(label = {
-                Text("投稿人")
+                Text(stringResource(Res.string.contributor_submitter))
             }) {
                 Text(
                     modifier = Modifier.clickable {
@@ -99,16 +120,16 @@ private fun Content(
                 )
                 Row {
                     Button(onClick = { vm.approve() }, enabled = !vm.operating) {
-                        Text("通过")
+                        Text(stringResource(Res.string.review_approve))
                     }
                     Spacer(Modifier.width(12.dp))
                     TextButton(onClick = { vm.reject() }, enabled = !vm.operating) {
-                        Text("退回")
+                        Text(stringResource(Res.string.review_reject))
                     }
                 }
             }
 
-            Text("作品详情", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(Res.string.artwork_details_title), style = MaterialTheme.typography.titleLarge)
 
             PropertyItem("基米ID", data.displayId)
             PropertyItem({ Text("音频") }) {

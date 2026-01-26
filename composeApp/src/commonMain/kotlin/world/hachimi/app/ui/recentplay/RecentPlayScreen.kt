@@ -2,7 +2,17 @@ package world.hachimi.app.ui.recentplay
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,6 +28,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.recent_play_title
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
@@ -27,6 +40,7 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
 
@@ -53,13 +67,13 @@ fun RecentPlayScreen(
             InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = state,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
                     contentPadding = PaddingValues(vertical = 24.dp)
                 ) {
                     item {
                         Text(
                             modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
-                            text ="最近播放", style = MaterialTheme.typography.titleLarge
+                            text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
                         )
                     }
                     items(vm.history, key = { item -> item.id }) { item ->
@@ -73,7 +87,7 @@ fun RecentPlayScreen(
                         )
                     }
                     item {
-                        Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
+                        Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
                     }
                 }
                 if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))

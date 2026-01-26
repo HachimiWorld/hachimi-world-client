@@ -1,7 +1,16 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +32,19 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_info
+import hachimiworld.composeapp.generated.resources.common_ok
+import hachimiworld.composeapp.generated.resources.info_author
+import hachimiworld.composeapp.generated.resources.info_listen_cd
+import hachimiworld.composeapp.generated.resources.info_open_in_new_tab_cd
+import hachimiworld.composeapp.generated.resources.info_origin
+import hachimiworld.composeapp.generated.resources.info_play_count
+import hachimiworld.composeapp.generated.resources.info_pv
+import hachimiworld.composeapp.generated.resources.info_release_date
+import hachimiworld.composeapp.generated.resources.info_tags
+import kotlinx.datetime.LocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.PlayerUIState
@@ -30,6 +52,8 @@ import world.hachimi.app.model.SongDetailInfo
 import world.hachimi.app.ui.component.Chip
 import world.hachimi.app.ui.component.HintChip
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.util.YMDHM
+import world.hachimi.app.util.formatTime
 import world.hachimi.app.util.isValidHttpsUrl
 
 @Composable
@@ -37,7 +61,8 @@ fun InfoTabContent(
     modifier: Modifier,
     uiState: PlayerUIState,
     contentPadding: PaddingValues = PaddingValues(),
-    onNavToUser: (Long) -> Unit
+    onNavToUser: (Long) -> Unit,
+    onSearchTag: (Long, String) -> Unit
 ) {
     Crossfade(uiState.readySongInfo) { readySongInfo ->
         Column(modifier.verticalScroll(rememberScrollState()).padding(contentPadding)) {
@@ -57,7 +82,7 @@ fun InfoTabContent(
                 modifier = Modifier.padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                PropertyLine("作者") {
+                PropertyLine(stringResource(Res.string.info_author)) {
                     UserChip(
                         onClick = {
                             uiState.readySongInfo?.uploaderUid?.let {
@@ -83,6 +108,44 @@ fun InfoTabContent(
                     // Origin infos
                     Origins(songInfo)
                 }
+
+                readySongInfo?.tags?.let { tags ->
+                    if (tags.isNotEmpty()) PropertyLine(
+                        label = stringResource(Res.string.info_tags),
+                        verticalAlignment = if (tags.size > 1) Alignment.Top else Alignment.CenterVertically,
+                    ) {
+                        FlowRow(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            tags.forEach {
+                                Chip(onClick = { onSearchTag(it.id, it.name) }) {
+                                    Text(it.name)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                readySongInfo?.releaseTime?.let { releaseTime ->
+                    PropertyLine(stringResource(Res.string.info_release_date)) {
+                        HintChip {
+                            Text(
+                                text = formatTime(
+                                    releaseTime,
+                                    fullFormat = LocalDateTime.Formats.YMDHM
+                                )
+                            )
+                        }
+                    }
+                }
+
+                readySongInfo?.playCount?.let {
+                    PropertyLine(stringResource(Res.string.info_play_count)) {
+                        HintChip { Text(text = it.toString()) }
+                    }
+                }
             }
             // Description
             readySongInfo?.description?.takeIf { it.isNotBlank() }?.let {
@@ -102,7 +165,7 @@ fun InfoTabContent(
 private fun PVs(songInfo: SongDetailInfo) {
     if (songInfo.externalLinks.isEmpty()) return
     PropertyLine(
-        label = "PV",
+        label = stringResource(Res.string.info_pv),
         verticalAlignment = if (songInfo.externalLinks.size > 1) Alignment.Top else Alignment.CenterVertically
     ) {
         songInfo.externalLinks.forEach {
@@ -131,10 +194,10 @@ private fun Staffs(songInfo: SongDetailInfo, onUserClick: (Long) -> Unit) {
                     UserChip(
                         onClick = { onUserClick(it.uid) },
                         avatar = null,
-                        name = it.personName ?: "Unknown"
+                        name = it.personName ?: stringResource(Res.string.common_info)
                     )
                 } else {
-                    HintUserChip(name = it.personName ?: "Unknown")
+                    HintUserChip(name = it.personName ?: stringResource(Res.string.common_info))
                 }
             }
         )
@@ -145,7 +208,7 @@ private fun Staffs(songInfo: SongDetailInfo, onUserClick: (Long) -> Unit) {
 private fun Origins(songInfo: SongDetailInfo) {
     if (songInfo.originInfos.isEmpty()) return
     PropertyLine(
-        label = "原作",
+        label = stringResource(Res.string.info_origin),
         verticalAlignment = if (songInfo.originInfos.size > 1) Alignment.Top else Alignment.CenterVertically,
         content = {
             Column(
@@ -189,12 +252,12 @@ private fun OriginChip(
 @Composable
 private fun InternalOriginChip(title: String?, artist: String?, onClick: () -> Unit) {
     Chip(onClick = onClick) {
-        TitleArtist(title, artist)
+        TitleArtist(modifier = Modifier.weight(1f, fill = false), title = title, artist = artist)
         Icon(
             modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp),
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             tint = LocalContentColor.current.copy(0.6f),
-            contentDescription = "Listen this music"
+            contentDescription = stringResource(Res.string.info_listen_cd)
         )
     }
 }
@@ -202,12 +265,12 @@ private fun InternalOriginChip(title: String?, artist: String?, onClick: () -> U
 @Composable
 private fun ExternalOriginChip(title: String?, artist: String?, onClick: () -> Unit) {
     Chip(onClick = onClick) {
-        TitleArtist(title, artist)
+        TitleArtist(modifier = Modifier.weight(1f, fill = false), title = title, artist = artist)
         Icon(
             modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp),
             imageVector = Icons.Filled.ArrowOutward,
             tint = LocalContentColor.current.copy(0.6f),
-            contentDescription = "Open in new tab"
+            contentDescription = stringResource(Res.string.info_open_in_new_tab_cd)
         )
     }
 }
@@ -215,15 +278,15 @@ private fun ExternalOriginChip(title: String?, artist: String?, onClick: () -> U
 @Composable
 private fun NoLinkOriginChip(title: String?, artist: String?) {
     HintChip {
-        TitleArtist(title, artist)
+        TitleArtist(modifier = Modifier.weight(1f, fill = false), title = title, artist = artist)
     }
 }
 
 @Composable
-private fun RowScope.TitleArtist(title: String?, artist: String?) {
+private fun RowScope.TitleArtist(title: String?, artist: String?, modifier: Modifier = Modifier) {
     Text(
-        modifier = Modifier,
-        text = title ?: "unknown",
+        modifier = modifier,
+        text = title ?: stringResource(Res.string.common_ok).lowercase(),
         overflow = TextOverflow.Ellipsis,
     )
     if (artist != null) Text(" - $artist")

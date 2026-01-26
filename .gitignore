@@ -22,3 +22,8 @@ composeApp/release
 .run
 /wix
 /kotlin-js-store
+
+# The rustplayer lib
+libhachimi.dylib
+libhachimi.so
+hachimi.dll

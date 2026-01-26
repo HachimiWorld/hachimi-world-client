@@ -1,6 +1,10 @@
 package world.hachimi.app.model
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +46,8 @@ class HomeViewModel(
         private set
     var hotLoading by mutableStateOf(false)
         private set
+    var recommendTags by mutableStateOf<List<String>>(emptyList())
+        private set
 
     val categoryState = mutableStateMapOf<String, CategoryState>()
 
@@ -65,6 +71,18 @@ class HomeViewModel(
 
     private fun init() = viewModelScope.launch {
         // Do nothing
+        try {
+            val resp = if (global.isLoggedIn) {
+                api.songModule.tagRecommend()
+            } else {
+                api.songModule.tagRecommendAnonymous()
+            }
+
+            recommendTags = resp.ok().result.map { it.name }
+        } catch (e: Throwable) {
+            global.alert("Failed to get recommend tags: ${e.message}")
+            Logger.e("home", "Failed to get recommend tags", e)
+        }
     }
 
     fun mountRecommend() {
@@ -214,7 +232,8 @@ class HomeViewModel(
                     q = "",
                     limit = 12,
                     offset = null,
-                    filter = "tags = \"$category\""
+                    filter = "tags = \"$category\"",
+                    sortBy = SongModule.SearchReq.SORT_BY_RELEASE_TIME_DESC
                 )
             )
             if (resp.ok) {

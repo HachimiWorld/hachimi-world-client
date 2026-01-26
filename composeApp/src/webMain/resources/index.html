@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#FFF8F2" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#2B2625" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#EBE9E7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#2B2A25" media="(prefers-color-scheme: dark)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>（实验性）基米天堂 Web 端</title>
+
     <!--    <link type="text/css" rel="stylesheet" href="styles.css">-->
     <!--    <script type="application/javascript" src="composeApp.js"></script>-->
     <style>
@@ -26,6 +27,7 @@
             width: 100%;
 
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
@@ -42,18 +44,40 @@
 
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #2B2625;
-                color: #F1DFD8;
+                background-color: #2B2A25;
+                color: rgba(255, 255, 255, 0.87);
             }
         }
 
         @media (prefers-color-scheme: light) {
             body {
-                background-color: #FFF8F2;
-                color: #1F1B13;
+                background-color: #EBE9E7;
+                color: rgba(0, 0, 0, 0.87);
             }
         }
+
+        #tip2 {
+            position: fixed;
+            font-size: 12px;
+            bottom: 12px;
+            margin-left: 24px;
+            margin-right: 24px;
+        }
     </style>
+    <script>
+        var currentLanguagesImplementation = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
+        var newLanguagesImplementation = Object.assign({}, currentLanguagesImplementation, {
+            get: function () {
+                if (window.__customLocale) {
+                    return [window.__customLocale];
+                } else {
+                    return currentLanguagesImplementation.get.apply(this);
+                }
+            }
+        });
+
+        Object.defineProperty(Navigator.prototype, "languages", newLanguagesImplementation)
+    </script>
     <script>
         let fallback = false
 
@@ -109,15 +133,24 @@
         setTimeout(() => {
             let tip = document.getElementById("tip")
             if (tip) {
-                tip.style.display = "block"
+                tip.innerText = "首次加载需要较长时间，请耐心等待"
             }
         }, 5000)
+
+        setTimeout(() => {
+            let tip2 = document.getElementById("tip2")
+            if (tip2) {
+                tip2.style.display = "block"
+            }
+        })
     </script>
 </head>
 <body>
 <div id="loading">
-    加载中，请稍候
-    <span id="tip" style="display: none"><br>首次加载需要较长时间</span>
+    <p id="tip">加载中，请稍候</p>
+    <p id="tip2" style="display: block">
+        网页端为实验性功能<br>若无法访问请尝试使用最新版 Google Chrome 浏览器
+    </p>
 </div>
 </body>
 </html>

@@ -7,17 +7,39 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,17 +58,34 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_share
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.ToggleButton
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
-import world.hachimi.app.ui.player.fullscreen.components.*
+import world.hachimi.app.ui.player.fullscreen.components.AuthorAndPV
+import world.hachimi.app.ui.player.fullscreen.components.Cover
+import world.hachimi.app.ui.player.fullscreen.components.InfoTabContent
+import world.hachimi.app.ui.player.fullscreen.components.JmidLabel
+import world.hachimi.app.ui.player.fullscreen.components.Lyrics2
+import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
+import world.hachimi.app.ui.player.fullscreen.components.Page
+import world.hachimi.app.ui.player.fullscreen.components.PagerButtons2
+import world.hachimi.app.ui.player.fullscreen.components.Titles
+import world.hachimi.app.ui.player.fullscreen.components.rememberTabTransitionSpec
 import world.hachimi.app.ui.util.fadingEdges
 import kotlin.random.Random
 
@@ -122,6 +161,10 @@ fun CompactPlayerScreen2(
                                 uiState,
                                 onNavToUser = {
                                     global.nav.push(Route.Root.PublicUserSpace(it))
+                                    global.shrinkPlayer()
+                                },
+                                onSearchTag = { _, name ->
+                                    global.nav.push(Route.Root.Search(name, SearchViewModel.SearchType.SONG))
                                     global.shrinkPlayer()
                                 }
                             )
@@ -270,16 +313,16 @@ private fun MoreDropdownMenu(
                 onShareClick()
                 onDismissRequest()
             },
-            text = { Text("分享") },
+            text = { Text(stringResource(Res.string.player_share)) },
             leadingIcon = { Icon(Icons.Default.Share, "Share") },
         )
     }
 }
 
 @Composable
-private fun InfoTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
+private fun InfoTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onSearchTag: (Long, String) -> Unit) {
     Column(Modifier.fillMaxSize().padding(top = 32.dp).padding(horizontal = 32.dp)) {
-        InfoTabContent(Modifier.weight(1f), uiState, onNavToUser = onNavToUser)
+        InfoTabContent(Modifier.weight(1f), uiState, onNavToUser = onNavToUser, onSearchTag = onSearchTag)
     }
 }
 

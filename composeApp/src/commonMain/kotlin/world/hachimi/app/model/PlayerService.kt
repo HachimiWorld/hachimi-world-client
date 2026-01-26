@@ -3,15 +3,29 @@ package world.hachimi.app.model
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.utils.io.*
-import kotlinx.coroutines.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_play_failed
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.request.get
+import io.ktor.client.request.head
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsBytes
+import io.ktor.http.HttpHeaders
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.exhausted
+import io.ktor.utils.io.readBuffer
+import io.ktor.utils.io.readRemaining
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
@@ -43,7 +57,7 @@ private val downloadHttpClient = HttpClient() {
     }
 }
 
-private val TAG = "PlayerService"
+private const val TAG = "PlayerService"
 
 /**
  * TODO(player): There are too fucking many racing conditions here. I think I should totally rewrite this.
@@ -68,50 +82,58 @@ class PlayerService(
     private val profileCache = mutableMapOf<Long, UserModule.PublicUserProfile?>()
 
     init {
-        scope.launch(Dispatchers.Default) {
-            player.addListener(object : Player.Listener {
-                override fun onEvent(event: PlayEvent) {
-                    when (event) {
-                        PlayEvent.End -> {
-                            playerState.isPlaying = false
-                            autoNext()
-                        }
+        player.addListener(object : Player.Listener {
+            override fun onEvent(event: PlayEvent) {
+                when (event) {
+                    PlayEvent.End -> {
+                        playerState.isPlaying = false
+                        autoNext()
+                    }
 
-                        is PlayEvent.Error -> {
-                            global.alert(event.e.message)
-                        }
+                    is PlayEvent.Error -> {
+                        global.alert(event.e.message)
+                    }
 
-                        PlayEvent.Pause -> {
-                            playerState.isPlaying = false
-                        }
+                    PlayEvent.Pause -> {
+                        playerState.isPlaying = false
+                    }
 
-                        PlayEvent.Play -> {
-                            playerState.isPlaying = true
-                        }
+                    PlayEvent.Play -> {
+                        playerState.isPlaying = true
+                    }
 
-                        is PlayEvent.Seek -> {
+                    is PlayEvent.Seek -> {
 
-                        }
                     }
                 }
+            }
+        })
 
-            })
+        scope.launch {
+            player.initialize()
+            Logger.i(TAG, "Inner player initialized")
+            restorePlayerState()
+
+            // Apply initial replay gain toggle immediately for the current runtime.
+            player.setReplayGainEnabled(global.enableLoudnessNormalization)
+
+            startSyncingJob()
+        }
+    }
+
+    private fun startSyncingJob() {
+        scope.launch(Dispatchers.Default) {
             while (isActive) {
                 if (player.isPlaying()) {
                     val currentPosition = player.currentPosition()
                     playerState.updateCurrentMillis(currentPosition)
                 }
                 playerState.isPlaying = player.isPlaying()
-                if (player.supportRemotePlay) {
+                if (player.supportRemotePlay && player.isPlaying()) {
                     playerState.downloadProgress = player.bufferedProgress()
                 }
                 delay(100)
             }
-        }
-        scope.launch {
-            player.initialize()
-            Logger.i(TAG, "Inner player initialized")
-            restorePlayerState()
         }
     }
 
@@ -228,7 +250,7 @@ class PlayerService(
         }
 
         Logger.e(TAG, "Failed to play song", lastError)
-        global.alert("播放失败：${lastError?.message}")
+        global.alert(Res.string.player_play_failed, lastError?.message ?: "")
     }
 
     private var playPrepareJob: Job? = null
@@ -534,7 +556,7 @@ class PlayerService(
                 coverBytes = coverBytes,
                 format = extension,
                 durationSeconds = metadata.durationSeconds,
-                replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                replayGainDB = metadata.gain ?: 0f
             )
             return@coroutineScope item
         } else {
@@ -562,7 +584,7 @@ class PlayerService(
                     coverUrl = metadata.coverUrl,
                     format = extension,
                     durationSeconds = metadata.durationSeconds,
-                    replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                    replayGainDB = metadata.gain ?: 0f
                 )
 
                 // TODO: Reuse the cached data from player core
@@ -592,7 +614,7 @@ class PlayerService(
                     coverBytes = coverBytes,
                     format = extension,
                     durationSeconds = metadata.durationSeconds,
-                    replayGainDB = if (global.enableLoudnessNormalization) metadata.gain ?: 0f else 0f
+                    replayGainDB = metadata.gain ?: 0f
                 )
                 return@coroutineScope item
             }
@@ -657,20 +679,26 @@ class PlayerService(
         }
 
         val job = scope.launch {
-            Logger.d(TAG, "Caching ${metadata.id} in background")
-            val audioBuffer = downloadAudio(metadata.audioUrl, onProgress = {
-                // Do nothing
-            })
-            val coverBytes = api.httpClient.get(metadata.coverUrl).bodyAsBytes()
+            try {
+                Logger.d(TAG, "Caching ${metadata.id} in background")
+                val audioBuffer = downloadAudio(metadata.audioUrl, onProgress = {
+                    // Do nothing
+                })
+                val coverBytes = api.httpClient.get(metadata.coverUrl).bodyAsBytes()
 
-            val cacheItem = SongCache.Item(
-                key = metadata.id.toString(),
-                metadata = metadata,
-                audio = audioBuffer,
-                cover = Buffer().also { it.write(coverBytes) }
-            )
-            songCache.save(cacheItem)
-            Logger.d(TAG, "Caching ${metadata.id} completed")
+                val cacheItem = SongCache.Item(
+                    key = metadata.id.toString(),
+                    metadata = metadata,
+                    audio = audioBuffer,
+                    cover = Buffer().also { it.write(coverBytes) }
+                )
+                songCache.save(cacheItem)
+                Logger.d(TAG, "Caching ${metadata.id} completed")
+            } catch (e: CancellationException) {
+                Logger.w(TAG, "Caching ${metadata.id} cancelled")
+            } catch (e: Throwable) {
+                Logger.e(TAG, "Failed to cache ${metadata.id}", e)
+            }
         }
 
         cacheQueueMutex.withLock {
@@ -833,5 +861,9 @@ class PlayerService(
         val playingSongId = playerState.songInfo?.id
         val data = PlayerStatePersistence(playingSongId, musicQueue)
         dataStore.set(PreferencesKeys.PLAYER_MUSIC_QUEUE, Json.encodeToString(data))
+    }
+
+    suspend fun setReplayGainEnabled(enabled: Boolean) {
+        player.setReplayGainEnabled(enabled)
     }
 }

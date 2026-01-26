@@ -5,7 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_forget_captcha_failed
+import hachimiworld.composeapp.generated.resources.auth_forget_reset_failed
+import hachimiworld.composeapp.generated.resources.auth_forget_send_code_failed
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.module.AuthModule
@@ -54,7 +63,7 @@ class ForgetPasswordViewModel(
             }
         } catch (e: Throwable) {
             Logger.e(TAG, "Failed to send verify code", e)
-            global.alert("发送验证码失败，请稍后再试")
+            global.alert(Res.string.auth_forget_send_code_failed)
         } finally {
             operating = false
         }
@@ -65,7 +74,6 @@ class ForgetPasswordViewModel(
     }
 
     fun captchaContinue() = viewModelScope.launch {
-        showCaptchaDialog = false
         try {
             operating = true
             val resp = api.authModule.resetPassword(AuthModule.ResetPasswordReq(
@@ -83,7 +91,10 @@ class ForgetPasswordViewModel(
             }
         } catch (e: Throwable) {
             Logger.e(TAG, "Failed to reset password", e)
-            global.alert("重置密码失败，请稍后再试")
+            global.alert(Res.string.auth_forget_reset_failed)
+        } finally {
+            showCaptchaDialog = false
+            operating = false
         }
     }
 
@@ -112,7 +123,7 @@ class ForgetPasswordViewModel(
             }
         } catch (e: Throwable) {
             Logger.e(TAG, "Failed to generate captcha", e)
-            global.alert("人机验证失败，请稍后重试")
+            global.alert(Res.string.auth_forget_captcha_failed)
         } finally {
             operating = false
         }

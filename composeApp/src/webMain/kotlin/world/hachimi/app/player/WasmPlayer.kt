@@ -24,30 +24,23 @@ class WasmPlayer : Player {
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var rgDb = 0f
     private var userVolume = 1f
+    private var replayGainEnabled: Boolean = true
 
     override val supportRemotePlay: Boolean
         get() = true
 
     override suspend fun isPlaying(): Boolean {
-        return if (isReady()) {
-            howl!!.playing().toBoolean()
-        } else {
-            false
-        }
+        return howl?.playing()?.toBoolean() ?: false
     }
 
     override suspend fun isEnd(): Boolean {
-        if (isReady()) {
-            return howl!!.seek().toDouble() >= howl!!.duration().toDouble()
-        } else {
-            return true
-        }
+        return howl?.let {
+            it.seek().toDouble() >= it.duration().toDouble()
+        } ?: true
     }
 
     override suspend fun currentPosition(): Long {
-        val seconds = if (isReady()) {
-            howl!!.seek().toDouble()
-        } else 0.0
+        val seconds = howl?.seek()?.toDouble() ?: 0.0
         return (seconds * 1000L).toLong()
     }
 
@@ -56,15 +49,11 @@ class WasmPlayer : Player {
     }
 
     override suspend fun play() {
-        if (isReady()) {
-            howl!!.play()
-        }
+        howl?.play()
     }
 
     override suspend fun pause() {
-        if (isReady()) {
-            howl!!.pause()
-        }
+        howl?.pause()
     }
 
     override suspend fun stop() {
@@ -76,11 +65,9 @@ class WasmPlayer : Player {
     }
 
     override suspend fun seek(position: Long, autoStart: Boolean) {
-        if (isReady()) {
-            val seconds = position.toDouble() / 1000
-            Logger.d("player", "seek to $seconds s")
-            howl!!.seek(seconds)
-        }
+        val seconds = position.toDouble() / 1000
+        Logger.d("player", "seek to $seconds s")
+        howl?.seek(seconds)
     }
 
     override suspend fun getVolume(): Float {
@@ -89,14 +76,20 @@ class WasmPlayer : Player {
 
     override suspend fun setVolume(value: Float) {
         this.userVolume = value
-        val volume = mixVolume(replayGain = rgDb, volume = value)
+        val rg = if (replayGainEnabled) rgDb else 0f
+        val volume = mixVolume(replayGain = rg, volume = value)
         howl?.volume(volume.toDouble().toJsNumber())
+    }
+
+    override suspend fun setReplayGainEnabled(enabled: Boolean) {
+        replayGainEnabled = enabled
+        // Re-apply effective output volume immediately
+        setVolume(userVolume)
     }
 
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
         mutex.withLock {
             val time = measureTime {
-                val previousVolume = getVolume()
                 howl?.let {
                     it.unload()
                     howl = null
@@ -142,7 +135,7 @@ class WasmPlayer : Player {
                 val howl = buildHowl(options)
                 this.howl = howl
                 rgDb = item.replayGainDB
-                setVolume(previousVolume)
+                setVolume(userVolume)
                 isReadyMutex.withLock {
                     this.isReady = true
                 }

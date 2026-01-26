@@ -24,6 +24,11 @@ interface Player {
     suspend fun setVolume(value: Float)
 
     /**
+     * Enable/disable replay gain (loudness normalization) immediately.
+     */
+    suspend fun setReplayGainEnabled(enabled: Boolean)
+
+    /**
      * Download from URL and prepare to play
      * Might throw Exception
      */

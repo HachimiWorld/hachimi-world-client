@@ -1,6 +1,11 @@
 package world.hachimi.app.ui.auth.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -63,8 +68,8 @@ fun FormContent(
 private fun Preview() {
     PreviewTheme(background = false) {
         FormContent(
-            title = { Text("成为神人") },
-            subtitle = { Text("验证码已发送到您的邮箱") }
+            title = { Text("Test") },
+            subtitle = { Text("Test") }
         ) {
 
         }

@@ -8,13 +8,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.need_login_message
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
 fun NeedLoginScreen(modifier: Modifier = Modifier.fillMaxSize()) {
     Box(modifier, Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("登录后才可以使用哦")
+            Text(stringResource(Res.string.need_login_message))
         }
     }
 }

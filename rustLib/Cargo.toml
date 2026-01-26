@@ -1,0 +1,35 @@
+[package]
+name = "hachimi"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+#rodio = { git = "https://github.com/RustAudio/rodio.git" }
+rodio = "0.21.1"
+uniffi = { version = "0.30", features = ["cli"] }
+log = "0.4.29"
+souvlaki = "0.8.3"
+url = "2.5.7"
+winit = "0.30.12"
+stream-download = { version = "0.22.9", features = ["async-read", "reqwest-rustls"] }
+tokio = { version = "1.48.0", features = ["full"] }
+tracing-subscriber = { version = "0.3.22", features = ["json"] }
+tracing = "0.1.44"
+thiserror = "2.0.17"
+anyhow = "1.0.100"
+once_cell = "1.21.3"
+jni = "0.21.1"
+oneshot = "0.1.11"
+
+[build-dependencies]
+uniffi = { version = "0.30", features = ["build"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cacao = "0.3.2"

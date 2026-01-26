@@ -1,24 +1,57 @@
 package world.hachimi.app.api
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.compression.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.content.ProgressListener
+import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.cache.HttpCache
+import io.ktor.client.plugins.compression.ContentEncoding
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.onUpload
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.forms.InputProvider
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.http.headersOf
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.Source
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
-import world.hachimi.app.api.module.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNamingStrategy
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
+import world.hachimi.app.api.module.AuthModule
+import world.hachimi.app.api.module.ContributorModule
+import world.hachimi.app.api.module.PlayHistoryModule
+import world.hachimi.app.api.module.PlaylistModule
+import world.hachimi.app.api.module.PostModule
+import world.hachimi.app.api.module.PublishModule
+import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.api.module.UserModule
+import world.hachimi.app.api.module.VersionModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import kotlin.io.encoding.Base64
@@ -37,7 +70,7 @@ class ApiClient(
     private val baseUrl: String,
 ) {
     companion object {
-        const val VERSION: Int = 251119
+        const val VERSION: Int = 260122
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -99,6 +132,27 @@ class ApiClient(
 
     private fun HttpRequestBuilder.applyRequestId(id: String) {
         header("X-Request-Id", id)
+    }
+
+    internal suspend inline fun <reified T> upload(
+        path: String,
+        filename: String,
+        source: Source,
+        listener: ProgressListener? = null,
+        auth: Boolean = true,
+    ): WebResult<T> = postWith(path, auth) {
+        setBody(
+            MultiPartFormDataContent(
+                formData {
+                    append(
+                        "image",
+                        InputProvider { source },
+                        headersOf(HttpHeaders.ContentDisposition, "filename=\"${filename}\"")
+                    )
+                }
+            )
+        )
+        onUpload(listener)
     }
 
     internal suspend inline fun <reified T> postWith(
@@ -199,7 +253,7 @@ class ApiClient(
                             authModule.rawRefreshToken(
                                 AuthModule.RefreshTokenReq(
                                     refreshToken = refreshToken!!,
-                                    deviceInfo = "Desktop Client" // TODO: Get device info
+                                    deviceInfo = "Desktop Client" // TODO: Get device infoa
                                 )
                             )
                         } catch (e: Throwable) {
@@ -271,6 +325,8 @@ class ApiClient(
     val publishModule by lazy { PublishModule(this) }
     val playlistModule by lazy { PlaylistModule(this) }
     val versionModule by lazy { VersionModule(this) }
+    val contributorModule by lazy { ContributorModule(this) }
+    val postModule by lazy { PostModule(this) }
 }
 
 interface AuthenticationListener {
@@ -350,10 +406,12 @@ data class WebResp<T, E>(
         }
     }
 
+    @Deprecated("Use ok() instead", ReplaceWith("ok()"))
     inline fun <reified U : T> okData(): U {
         return json.decodeFromJsonElement<U>(this.data)
     }
 
+    @Deprecated("Use ok() instead", ReplaceWith("err()"))
     inline fun <reified D : E> errData(): E {
         return json.decodeFromJsonElement<D>(this.data)
     }
@@ -370,10 +428,11 @@ data class CommonError(
 // Ohh! I like extension function! :p
 inline fun <reified T> WebResp<T, *>.ok(): T {
     if (!ok) error("Trying to decode ok data with error response!")
-    return okData<T>()
+    return WebResp.json.decodeFromJsonElement<T>(this.data)
 }
 
 inline fun <reified E> WebResp<*, E>.err(): E {
     if (ok) error("Trying to decode error data with ok response!")
-    return errData<E>()
+    @Suppress("DEPRECATION")
+    return WebResp.json.decodeFromJsonElement<E>(this.data)
 }

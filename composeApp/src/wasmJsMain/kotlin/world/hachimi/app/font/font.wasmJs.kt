@@ -5,24 +5,18 @@ package world.hachimi.app.font
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
+import io.ktor.util.toJsArray
 import kotlinx.browser.window
 import kotlinx.coroutines.await
-import kotlinx.io.Buffer
-import kotlinx.io.readByteArray
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.w3c.fetch.Response
 import org.w3c.files.Blob
 import org.w3c.files.FileReader
+import org.w3c.workers.Cache
+import org.w3c.workers.CacheQueryOptions
 import world.hachimi.app.logging.Logger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -216,49 +210,17 @@ suspend fun loadFonts(enableEmoji: Boolean): FontFamily {
     return fontFamily
 }
 
+actual suspend fun loadFontFromCache(url: String) : ByteArray? {
+    val caches = window.caches.open("font-cache").await<Cache>()
+    val response = caches.match(url, CacheQueryOptions()).await<Response?>()
+        ?: return null
 
-actual suspend fun loadFontFromWeb(
-    identify: String,
-    url: String,
-    size: Long,
-    onProgress: (bytesRead: Long, bytesTotal: Long?) -> Unit
-): FontFamily {
-    val client = HttpClient {
-        install(HttpTimeout) {
-            connectTimeoutMillis = 10_000
-            requestTimeoutMillis = 60_000
-            socketTimeoutMillis = 60_000
-        }
-    }
-    /*val contentLength = client.head("https://storage.hachimi.world/fonts/MiSansVF.ttf")
-        .headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: -1
-    Logger.d("Font", "Content length: $contentLength bytes")*/
+    val arrayBuffer = response.arrayBuffer().await<ArrayBuffer>()
+    val bytes = arrayBuffer.toByteArray()
+    return bytes
+}
 
-    val buffer = client.prepareGet(url).execute {
-        val buffer = Buffer()
-        val channel = it.bodyAsChannel()
-        var totalBytesRead = 0L
-
-        while (!channel.exhausted()) {
-            val chunk = channel.readRemaining(1024 * 8)
-            totalBytesRead += chunk.remaining
-            chunk.transferTo(buffer)
-            onProgress(totalBytesRead, size)
-        }
-        buffer
-    }
-
-    val bytes = buffer.readByteArray()
-    val weights = listOf(FontWeight.Light, FontWeight.Thin, FontWeight.Normal, FontWeight.Medium, FontWeight.Bold)
-
-    val fonts = weights.map { weight ->
-        Font(
-            identity = "$identify w_${weight.weight}",
-            getData = { bytes },
-            variationSettings = FontVariation.Settings(
-                FontVariation.weight(weight.weight),
-            )
-        )
-    }
-    return FontFamily(fonts)
+actual suspend fun saveFontCache(url: String, data: ByteArray) {
+    val caches = window.caches.open("font-cache").await<Cache>()
+    caches.put(url, Response(data.toJsArray()))
 }

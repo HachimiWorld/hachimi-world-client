@@ -1,14 +1,28 @@
 package world.hachimi.app.ui.creation.publish.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_close
+import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.theme.PreviewTheme
 
 /**
@@ -33,7 +47,7 @@ fun InitJmidDialog(
         },
         dismissButton = {
             TextButton(onDismissRequest) {
-                Text("关闭")
+                Text(stringResource(Res.string.common_close))
             }
         },
         title = {
@@ -47,7 +61,7 @@ fun InitJmidDialog(
                 TextField(
                     value = value,
                     onValueChange = onValueChange,
-                    label = { Text("前缀")},
+                    placeholder = { Text("前缀")},
                     trailingIcon = {
                         when(valid) {
                             true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = MaterialTheme.colorScheme.primary)

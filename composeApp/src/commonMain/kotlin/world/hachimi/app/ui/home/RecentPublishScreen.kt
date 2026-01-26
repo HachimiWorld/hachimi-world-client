@@ -1,7 +1,20 @@
 package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -19,8 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_empty
+import hachimiworld.composeapp.generated.resources.common_no_more
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.common_refresh_cd
+import hachimiworld.composeapp.generated.resources.home_recent_title
+import hachimiworld.composeapp.generated.resources.play_all
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -78,7 +99,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
             }
 
             if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("空空如也")
+                Text(stringResource(Res.string.common_empty))
             } else LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
@@ -90,7 +111,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "最近发布", style = MaterialTheme.typography.titleLarge
+                            text = stringResource(Res.string.home_recent_title), style = MaterialTheme.typography.titleLarge
                         )
                         if (maxWidth >= WindowSize.COMPACT) {
                             HachimiIconButton(
@@ -98,7 +119,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                                 enabled = !vm.loading,
                                 onClick = { vm.fakeRefresh() }
                             ) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                                Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.common_refresh_cd))
                             }
                         }
 
@@ -108,9 +129,9 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                             modifier = Modifier,
                             onClick = { vm.playAllRecent() }
                         ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                            Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
                             Spacer(Modifier.width(8.dp))
-                            Text("播放全部")
+                            Text(stringResource(Res.string.play_all))
                         }
                     }
                 }
@@ -163,11 +184,11 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         span = { GridItemSpan(maxLineSpan) },
                         contentType = "loading_indicator"
                     ) {
-                        Text(text = "没有更多了", modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
+                        Text(text = stringResource(Res.string.common_no_more), modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
                     }
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
+                    Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
                 }
             }
         }

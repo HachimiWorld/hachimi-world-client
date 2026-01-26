@@ -1,7 +1,19 @@
 package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -14,6 +26,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_empty
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.home_recommend_subtitle
+import hachimiworld.composeapp.generated.resources.home_recommend_title
+import hachimiworld.composeapp.generated.resources.play_all
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -51,7 +70,7 @@ fun RecommendScreen(
 private fun Content(vm: RecommendViewModel, global: GlobalStore) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("空空如也")
+            Text(stringResource(Res.string.common_empty))
         } else LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
@@ -66,10 +85,10 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
                 ) {
                     Column {
                         Text(
-                            text = "每日推荐", style = MaterialTheme.typography.titleLarge
+                            text = stringResource(Res.string.home_recommend_title), style = MaterialTheme.typography.titleLarge
                         )
                         Text(
-                            text = "并非根据你的口味进行推荐",
+                            text = stringResource(Res.string.home_recommend_subtitle),
                             style = MaterialTheme.typography.titleSmall
                         )
                     }
@@ -85,9 +104,9 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
                             global.player.playAll(items)
                         }
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                        Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
                         Spacer(Modifier.width(8.dp))
-                        Text("播放全部")
+                        Text(stringResource(Res.string.play_all))
                     }
                 }
             }
@@ -105,7 +124,7 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }){
-                Spacer(Modifier.navigationBarsPadding().windowInsetsBottomHeight(LocalContentInsets.current))
+                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
             }
         }
     }

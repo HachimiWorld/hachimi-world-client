@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_invalid_email
+import hachimiworld.composeapp.generated.resources.auth_password_too_short
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,6 +26,8 @@ import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.Route
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
+import world.hachimi.app.util.validateEmailPattern
+import world.hachimi.app.util.validatePasswordPattern
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
@@ -110,13 +115,13 @@ class AuthViewModel(
     fun regNextStep() {
         if (regStep == 0) {
             // Validate
-            if (!regEmail.matches(Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))) {
-                global.alert("邮箱地址不正确")
+            if (!validateEmailPattern(regEmail)) {
+                global.alert(Res.string.auth_invalid_email)
                 return
             }
 
-            if (regPassword.length < 8) {
-                global.alert("密码长度至少为8位")
+            if (!validatePasswordPattern(regPassword)) {
+                global.alert(Res.string.auth_password_too_short)
                 return
             }
 
@@ -280,7 +285,6 @@ class AuthViewModel(
     }
 
     fun finishCaptcha() {
-        showCaptchaDialog = false
         captchaCont?.resume(Unit)
     }
 
@@ -289,6 +293,7 @@ class AuthViewModel(
             generateCaptcha()
             waitForCaptcha()
             doLogin()
+            showCaptchaDialog = false
         }
     }
 
@@ -297,6 +302,7 @@ class AuthViewModel(
             generateCaptcha()
             waitForCaptcha()
             doRegister()
+            showCaptchaDialog = false
         }
     }
 

@@ -2,7 +2,17 @@ package world.hachimi.app.ui.root
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -34,6 +44,7 @@ import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.events.EventsRouteScreen
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.footer.CompactFooterHeight
@@ -41,6 +52,7 @@ import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
 import world.hachimi.app.ui.player.footer.ExpandedFooterHeight
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
+import world.hachimi.app.ui.playlist.PublicPlaylistScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
 import world.hachimi.app.ui.root.component.CompactTopAppBar
 import world.hachimi.app.ui.root.component.ExpandedTopAppBar
@@ -49,6 +61,7 @@ import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun RootScreen(routeContent: Route.Root) {
@@ -68,6 +81,7 @@ fun RootScreen(routeContent: Route.Root) {
                 transitionSpec = { materialSharedAxisY(true, slideDistance) }
             ) { routeContent ->
                 when (routeContent) {
+                    is Route.Root.Events -> EventsRouteScreen(routeContent)
                     is Route.Root.Home -> HomeScreen(routeContent)
                     is Route.Root.Search -> SearchScreen(routeContent.query, routeContent.type)
                     Route.Root.RecentLike -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
@@ -80,6 +94,7 @@ fun RootScreen(routeContent: Route.Root) {
                     Route.Root.UserSpace -> UserSpaceScreen(null)
                     Route.Root.Settings -> SettingsScreen()
                     is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
+                    is Route.Root.PublicPlaylist -> if (global.isLoggedIn) PublicPlaylistScreen(routeContent.playlistId) else NeedLoginScreen()
                 }
             }
         }
@@ -131,8 +146,9 @@ private fun CompactScreen(
             ) {
                 Column(
                     Modifier.padding(top = currentSafeAreaInsets().top)
-                        .consumeWindowInsets(WindowInsets.statusBars)
-                        .navigationBarsPadding()
+                        .padding(bottom = currentSafeAreaInsets().bottom)
+////                        .consumeWindowInsets(WindowInsets.statusBars)
+//                        .navigationBarsPadding()
                 ) {
                     Logo(Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp))
                     Box(Modifier.padding(12.dp)) {
@@ -209,7 +225,8 @@ private fun ExpandedScreen(
                     Modifier
                         .fillMaxSize()
                         .wrapContentHeight(Alignment.Bottom)
-                        .padding(24.dp),
+                        .padding(24.dp)
+                        .fillMaxWidthIn(),
                     hazeState
                 )
             }

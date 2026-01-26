@@ -1,21 +1,45 @@
 package world.hachimi.app.ui.player.footer
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateDp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidthIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.VolumeDown
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.*
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +53,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_not_playing
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisYIn
 import soup.compose.material.motion.animation.materialSharedAxisYOut
@@ -39,12 +69,19 @@ import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.HachimiIconToggleButton
+import world.hachimi.app.ui.design.components.HachimiSlider
+import world.hachimi.app.ui.design.components.SliderChangeApplyMode
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
+import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
 import world.hachimi.app.ui.player.footer.components.Title
+import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueueHeader
 import kotlin.random.Random
@@ -70,14 +107,16 @@ fun ExpandedFooterPlayer2(
                     FooterPlayerLayout {
                         Cover(
                             modifier = Modifier.layoutId("cover").padding(8.dp),
-                            model = uiState.displayedCover,
+                            url = uiState.displayedCover,
                             onClick = { global.expandPlayer() }
                         )
                         Column(
                             modifier = Modifier.layoutId("info").padding(top = 8.dp, start = 24.dp)
                         ) {
-                            Title(uiState.displayedTitle)
-                            Author(uiState.displayedAuthor)
+                            val title = uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
+                            val author = uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
+                            Title(title)
+                            Author(author)
                         }
                         ControlButton(
                             modifier = Modifier.layoutId("control").padding(top = 8.dp),
@@ -88,7 +127,8 @@ fun ExpandedFooterPlayer2(
                             onPauseClick = { global.player.playOrPause() }
                         )
                         PlayerProgress(
-                            modifier = Modifier.layoutId("progress").padding(start = 24.dp, bottom = 6.dp),
+                            modifier = Modifier.layoutId("progress")
+                                .padding(start = 24.dp, bottom = 6.dp),
                             durationMillis = uiState.displayedDurationMillis,
                             currentMillis = { uiState.displayedCurrentMillis },
                             bufferingProgress = uiState.downloadProgress,
@@ -101,20 +141,21 @@ fun ExpandedFooterPlayer2(
                             onVolumeChange = { global.player.updateVolume(it) }
                         )
                         FunctionButtons(
-                            modifier = Modifier.layoutId("function-buttons").padding(top = 8.dp, end = 8.dp),
+                            modifier = Modifier.layoutId("function-buttons")
+                                .padding(top = 8.dp, end = 8.dp),
                             shuffleOn = global.player.shuffleMode,
                             repeatOn = global.player.repeatMode,
                             onShuffleChange = { global.player.updateShuffleMode(it) },
                             onRepeatChange = { global.player.updateRepeatMode(it) },
                             onAddToPlaylistClick = {
-                                tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
+                                tobeAddedSong =
+                                    uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                             },
                             onMusicQueueClick = { musicQueueExpanded = true },
                             onOpenInFullClick = { global.expandPlayer() },
                         )
                     }
-                },
-                shape = RoundedCornerShape(size = 24.dp)
+                }
             )
         }
     }
@@ -209,30 +250,47 @@ private fun FooterPlayerLayout(
     }
 }
 
+val FooterPlayerCoverCornerRadius = 16.dp
+
 @Composable
 private fun Cover(
-    model: Any?,
+    url: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
+    val animatedVisibility = LocalAnimatedVisibilityScope.current
+
+    val cornerRadius by animatedVisibility.transition.animateDp(label = "rounded corner") { enterExitState ->
+        when(enterExitState) {
+            EnterExitState.PreEnter -> FullScreenCoverCornerRadius
+            EnterExitState.Visible -> FooterPlayerCoverCornerRadius
+            EnterExitState.PostExit -> FullScreenCoverCornerRadius
+        }
+    }
 
     with(LocalSharedTransitionScope.current) {
         Box(
             modifier
                 .sharedElement(
                     rememberSharedContentState(SharedTransitionKeys.Cover),
-                    LocalAnimatedVisibilityScope.current
+                    LocalAnimatedVisibilityScope.current,
+                    zIndexInOverlay = 2f
                 )
                 .size(88.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.Gray)
+                .clip(RoundedCornerShape(cornerRadius))
+                .background(LocalContentColor.current.copy(0.12f))
                 .clickable(interactionSource = interactionSource) { onClick() }
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = model,
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(url)
+                    .crossfade(true)
+                    .placeholderMemoryCacheKey(url)
+                    .memoryCacheKey(url)
+                    .build(),
                 contentDescription = "Cover",
                 contentScale = ContentScale.Crop
             )

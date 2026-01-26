@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.recent_error_fetch_recommend_failed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -20,7 +22,6 @@ import world.hachimi.app.logging.Logger
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 class RecentPublishViewModel(
@@ -96,11 +97,11 @@ class RecentPublishViewModel(
             }
         } catch (e: Throwable) {
             Logger.e("home", "Failed to get recommend songs", e)
-            global.alert("获取推荐音乐失败：${e.message}")
-            if (initializeStatus == InitializeStatus.INIT) {
-                initializeStatus = InitializeStatus.FAILED
-            }
-        } finally {
+            global.alert(Res.string.recent_error_fetch_recommend_failed, e.message ?: "")
+             if (initializeStatus == InitializeStatus.INIT) {
+                 initializeStatus = InitializeStatus.FAILED
+             }
+         } finally {
             loading = false
         }
     }
