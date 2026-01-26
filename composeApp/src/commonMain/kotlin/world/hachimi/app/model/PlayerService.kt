@@ -679,20 +679,26 @@ class PlayerService(
         }
 
         val job = scope.launch {
-            Logger.d(TAG, "Caching ${metadata.id} in background")
-            val audioBuffer = downloadAudio(metadata.audioUrl, onProgress = {
-                // Do nothing
-            })
-            val coverBytes = api.httpClient.get(metadata.coverUrl).bodyAsBytes()
+            try {
+                Logger.d(TAG, "Caching ${metadata.id} in background")
+                val audioBuffer = downloadAudio(metadata.audioUrl, onProgress = {
+                    // Do nothing
+                })
+                val coverBytes = api.httpClient.get(metadata.coverUrl).bodyAsBytes()
 
-            val cacheItem = SongCache.Item(
-                key = metadata.id.toString(),
-                metadata = metadata,
-                audio = audioBuffer,
-                cover = Buffer().also { it.write(coverBytes) }
-            )
-            songCache.save(cacheItem)
-            Logger.d(TAG, "Caching ${metadata.id} completed")
+                val cacheItem = SongCache.Item(
+                    key = metadata.id.toString(),
+                    metadata = metadata,
+                    audio = audioBuffer,
+                    cover = Buffer().also { it.write(coverBytes) }
+                )
+                songCache.save(cacheItem)
+                Logger.d(TAG, "Caching ${metadata.id} completed")
+            } catch (e: CancellationException) {
+                Logger.w(TAG, "Caching ${metadata.id} cancelled")
+            } catch (e: Throwable) {
+                Logger.e(TAG, "Failed to cache ${metadata.id}", e)
+            }
         }
 
         cacheQueueMutex.withLock {
