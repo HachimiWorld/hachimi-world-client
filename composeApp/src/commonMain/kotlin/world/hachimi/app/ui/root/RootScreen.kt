@@ -44,6 +44,7 @@ import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.events.EventsRouteScreen
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.footer.CompactFooterHeight
@@ -80,6 +81,7 @@ fun RootScreen(routeContent: Route.Root) {
                 transitionSpec = { materialSharedAxisY(true, slideDistance) }
             ) { routeContent ->
                 when (routeContent) {
+                    is Route.Root.Events -> EventsRouteScreen(routeContent)
                     is Route.Root.Home -> HomeScreen(routeContent)
                     is Route.Root.Search -> SearchScreen(routeContent.query, routeContent.type)
                     Route.Root.RecentLike -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()

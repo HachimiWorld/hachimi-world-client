@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.nav_committee_center
 import hachimiworld.composeapp.generated.resources.nav_contributor_center
 import hachimiworld.composeapp.generated.resources.nav_creation_center
+import hachimiworld.composeapp.generated.resources.nav_home_events
 import hachimiworld.composeapp.generated.resources.nav_home_title
 import hachimiworld.composeapp.generated.resources.nav_my_playlist
 import hachimiworld.composeapp.generated.resources.nav_my_subscribe
@@ -63,6 +65,15 @@ fun SideNavigation(
             Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            NavItem(
+                modifier = Modifier.fillMaxWidth(),
+                icon = Icons.Default.Newspaper,
+                label = stringResource(Res.string.nav_home_events),
+                selected = content is Route.Root.Events,
+                onSelectedChange = {
+                    onChange(Route.Root.Events.Feed)
+                }
+            )
             NavItem(
                 modifier = Modifier.fillMaxWidth(),
                 icon = Icons.Default.Home,

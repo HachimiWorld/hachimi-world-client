@@ -5,7 +5,8 @@
 1. Added support for minimizing to system tray. 支持最小化到系统托盘。
 2. Added multiple language support. 添加多语言支持。
 3. Show recommend tags based on play history. 根据播放历史显示推荐标签。
-4. Add searching and adding playlists to favorites feature. 新增搜索和收藏歌单功能。
+4. Added searching and adding playlists to favorites feature. 新增搜索和收藏歌单功能。
+5. Added events page. 新增活动公告页面。
 
 ## Enhancements 改进
 

@@ -166,6 +166,7 @@
     <string name="search_sort_oldest">Oldest</string>
 
     <!-- Navigation labels -->
+    <string name="nav_home_events">Events</string>
     <string name="nav_home_title">Home</string>
     <string name="nav_recent_like">Recent likes</string>
     <string name="nav_recent_play">Recently played</string>

@@ -2,11 +2,16 @@ package world.hachimi.app.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.content.ProgressListener
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.onUpload
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.forms.InputProvider
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -15,14 +20,17 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.Source
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -39,6 +47,7 @@ import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.api.module.ContributorModule
 import world.hachimi.app.api.module.PlayHistoryModule
 import world.hachimi.app.api.module.PlaylistModule
+import world.hachimi.app.api.module.PostModule
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
@@ -123,6 +132,27 @@ class ApiClient(
 
     private fun HttpRequestBuilder.applyRequestId(id: String) {
         header("X-Request-Id", id)
+    }
+
+    internal suspend inline fun <reified T> upload(
+        path: String,
+        filename: String,
+        source: Source,
+        listener: ProgressListener? = null,
+        auth: Boolean = true,
+    ): WebResult<T> = postWith(path, auth) {
+        setBody(
+            MultiPartFormDataContent(
+                formData {
+                    append(
+                        "image",
+                        InputProvider { source },
+                        headersOf(HttpHeaders.ContentDisposition, "filename=\"${filename}\"")
+                    )
+                }
+            )
+        )
+        onUpload(listener)
     }
 
     internal suspend inline fun <reified T> postWith(
@@ -296,6 +326,7 @@ class ApiClient(
     val playlistModule by lazy { PlaylistModule(this) }
     val versionModule by lazy { VersionModule(this) }
     val contributorModule by lazy { ContributorModule(this) }
+    val postModule by lazy { PostModule(this) }
 }
 
 interface AuthenticationListener {

@@ -7,6 +7,11 @@ sealed class Route {
         companion object {
             val Default = Home.Main
         }
+        sealed class Events: Root() {
+            data object Feed: Events()
+            data class Detail(val postId: Long): Events()
+        }
+
         sealed class Home: Root() {
             data object Main: Home()
             data object Recent: Home()

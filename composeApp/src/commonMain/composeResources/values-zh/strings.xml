@@ -166,6 +166,7 @@
     <string name="search_sort_oldest">最早发布</string>
 
     <!-- Navigation labels -->
+    <string name="nav_home_events">活动公告</string>
     <string name="nav_home_title">主页</string>
     <string name="nav_recent_like">最近点赞</string>
     <string name="nav_recent_play">最近播放</string>

@@ -6,6 +6,9 @@ import world.hachimi.app.model.ArtworkDetailViewModel
 import world.hachimi.app.model.AuthViewModel
 import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.ContributorEntryViewModel
+import world.hachimi.app.model.CreatePostViewModel
+import world.hachimi.app.model.EventDetailViewModel
+import world.hachimi.app.model.EventsListViewModel
 import world.hachimi.app.model.ForgetPasswordViewModel
 import world.hachimi.app.model.HomeViewModel
 import world.hachimi.app.model.MyPRViewModel
@@ -44,4 +47,7 @@ fun Module.applyViewModels() {
     viewModelOf(::ArtworkDetailViewModel)
     viewModelOf(::PublicPlaylistViewModel)
     viewModelOf(::ContributorEntryViewModel)
+    viewModelOf(::CreatePostViewModel)
+    viewModelOf(::EventsListViewModel)
+    viewModelOf(::EventDetailViewModel)
 }
