@@ -68,7 +68,9 @@ fun MusicQueue(
 ) {
     val scrollState = rememberLazyListState(
         initialFirstVisibleItemIndex = remember(queue) {
-            queue.indexOfFirst { it.id == playingSongId }
+            val idx = queue.indexOfFirst { it.id == playingSongId }
+            if (idx == -1) 0
+            else idx
         }
     )
     LazyColumn(
