@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PostModule
 import world.hachimi.app.api.ok
@@ -91,11 +90,11 @@ class CreatePostViewModel(
                         }
                     )
                     if (!resp.ok) {
-                        val err = resp.errData<CommonError>()
+                        val err = resp.err()
                         global.alert(err.msg)
                         return@launch
                     }
-                    resp.okData<PostModule.UploadImageResp>()
+                    resp.ok()
                 } catch (e: Throwable) {
                     Logger.e("post", "Failed to upload cover image", e)
                     global.alert(e.message)

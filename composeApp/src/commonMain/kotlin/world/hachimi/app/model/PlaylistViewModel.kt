@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.ok
@@ -158,7 +157,7 @@ class PlaylistViewModel(
                 if (resp.ok) {
                     showPlaylistDialog = false
                 } else {
-                    global.alert(resp.errData<CommonError>().msg)
+                    global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
                 Logger.e("player", "Failed to add playlist", e)
@@ -201,7 +200,7 @@ class PlaylistViewModel(
                     showCreatePlaylistDialog = false
                     refreshPlaylist()
                 } else {
-                    global.alert(resp.errData<CommonError>().msg)
+                    global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
                 Logger.e("player", "Failed to create playlist", e)

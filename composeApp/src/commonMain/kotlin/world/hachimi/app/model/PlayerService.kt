@@ -33,7 +33,6 @@ import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
@@ -372,7 +371,7 @@ class PlayerService(
                     songCache.saveMetadata(data)
                     data
                 } else {
-                    val err = resp.errData<CommonError>()
+                    val err = resp.err()
                     global.alert(err.msg)
                     return@launch
                 }
@@ -565,7 +564,7 @@ class PlayerService(
             onProgress(0f)
             val metadata = songCache.getMetadata(songId.toString()) ?: run {
                 val resp = api.songModule.detailById(songId)
-                if (!resp.ok) error(resp.errData<CommonError>().msg)
+                if (!resp.ok) error(resp.err().msg)
                 resp.ok()
             }
             onMetadata(metadata)

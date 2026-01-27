@@ -87,6 +87,7 @@ class WasmPlayer : Player {
         setVolume(userVolume)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override suspend fun prepare(item: SongItem, autoPlay: Boolean) {
         mutex.withLock {
             val time = measureTime {

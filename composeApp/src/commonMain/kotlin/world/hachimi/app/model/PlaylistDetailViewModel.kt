@@ -18,8 +18,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
+import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Duration.Companion.seconds
 
@@ -95,7 +96,7 @@ class PlaylistDetailViewModel(
                         showEditDialog = false
                         refresh()
                     } else {
-                        val data = resp.errData<CommonError>()
+                        val data = resp.err()
                         global.alert(data.msg)
                     }
                 } catch (e: Throwable) {
@@ -134,14 +135,14 @@ class PlaylistDetailViewModel(
         try {
             val resp = api.playlistModule.detailPrivate(PlaylistModule.PlaylistIdReq(playlistId!!))
             if (resp.ok) {
-                val data = resp.okData<PlaylistModule.DetailResp>()
+                val data = resp.ok()
                 playlistInfo = data.playlistInfo
                 songs = data.songs
                 if (initStatus == InitializeStatus.INIT) {
                     initStatus = InitializeStatus.LOADED
                 }
             } else {
-                global.alert(resp.errData<CommonError>().msg)
+                global.alert(resp.err().msg)
                 if (initStatus == InitializeStatus.INIT) {
                     initStatus = InitializeStatus.FAILED
                 }
@@ -181,7 +182,7 @@ class PlaylistDetailViewModel(
                     if (resp.ok) {
                         refresh()
                     } else {
-                        val error = resp.errData<CommonError>()
+                        val error = resp.err()
                         global.alert(error.msg)
                         return@launch
                     }
