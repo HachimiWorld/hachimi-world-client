@@ -266,12 +266,12 @@ class ApiClient(
                             val result = checkAndDecode<AuthModule.TokenPair>(resp, "refresh_token", requestId)
 
                             if (result.ok) {
-                                val data = result.okData<AuthModule.TokenPair>()
+                                val data = result.ok()
                                 accessToken = data.accessToken
                                 refreshToken = data.refreshToken
                                 authListener.onTokenChange(data.accessToken, data.refreshToken)
                             } else {
-                                val data = result.errData<CommonError>()
+                                val data = result.err()
                                 Logger.w(TAG, "refreshToken: Refreshing token returns error: ${data.code}, ${data.msg}")
                                 authListener.onAuthenticationError(
                                     AuthError.RefreshTokenError(

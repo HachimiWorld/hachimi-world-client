@@ -16,8 +16,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.AuthModule
+import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.Route
@@ -58,7 +59,7 @@ class ForgetPasswordViewModel(
             if (resp.ok) {
                 codeRemainSecs = 60
             } else {
-                val err = resp.errData<CommonError>()
+                val err = resp.err()
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
@@ -86,7 +87,7 @@ class ForgetPasswordViewModel(
             if (resp.ok) {
                 showSuccessDialog = true
             } else {
-                val err = resp.errData<CommonError>()
+                val err = resp.err()
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
@@ -108,7 +109,7 @@ class ForgetPasswordViewModel(
         try {
             val resp = api.authModule.generateCaptcha()
             if (resp.ok) {
-                val data = resp.okData<AuthModule.GenerateCaptchaResp>()
+                val data = resp.ok()
                 captchaKey = data.captchaKey
                 try {
                     getPlatform().openUrl(data.url)
@@ -118,7 +119,7 @@ class ForgetPasswordViewModel(
                     return
                 }
             } else {
-                val err = resp.errData<CommonError>()
+                val err = resp.err()
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {

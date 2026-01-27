@@ -4,6 +4,7 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
+@Suppress("NOTHING_TO_INLINE")
 actual object Logger {
     actual inline fun e(tag: String, message: String, throwable: Throwable?) {
         println("${Clock.System.now()}  ERROR [$tag] $message ${throwable?.stackTraceToString()}")
