@@ -39,8 +39,43 @@ object JVMPlatform : Platform {
     }
 
     override fun openUrl(url: String) {
-        val desktop = Desktop.getDesktop()
-        desktop.browse(URI(url))
+        try {
+            // Try Desktop.browse() first (works on Windows, macOS, and some Linux desktops)
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI(url))
+                return
+            }
+        } catch (e: Exception) {
+            // Desktop.browse() failed, will try fallback methods
+        }
+
+        // Fallback for Linux: try xdg-open and common browsers
+        if (hostOs == OS.Linux) {
+            val commands = listOf(
+                listOf("xdg-open", url),
+                listOf("gnome-open", url),
+                listOf("kde-open", url),
+                listOf("firefox", url),
+                listOf("chromium", url),
+                listOf("google-chrome", url)
+            )
+
+            for (command in commands) {
+                try {
+                    val process = Runtime.getRuntime().exec(command.toTypedArray())
+                    // Wait briefly to check if command succeeded
+                    Thread.sleep(100)
+                    if (!process.isAlive || process.exitValue() == 0) {
+                        return
+                    }
+                } catch (e: Exception) {
+                    // Try next command
+                }
+            }
+            throw Exception("Failed to open URL. Please install xdg-utils or a web browser.")
+        } else {
+            throw Exception("Desktop browse is not supported on this system")
+        }
     }
 }
 
