@@ -39,10 +39,18 @@ object JVMPlatform : Platform {
     }
 
     override fun openUrl(url: String) {
+        // Validate URL format to prevent command injection
+        // URI constructor will throw if URL is malformed
+        val uri = try {
+            URI(url)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Invalid URL: $url", e)
+        }
+
         try {
             // Try Desktop.browse() first (works on Windows, macOS, and some Linux desktops)
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI(url))
+                Desktop.getDesktop().browse(uri)
                 return
             }
         } catch (e: Exception) {
