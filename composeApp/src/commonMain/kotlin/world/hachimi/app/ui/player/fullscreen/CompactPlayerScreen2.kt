@@ -1,9 +1,6 @@
 package world.hachimi.app.ui.player.fullscreen
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -62,6 +59,8 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_share
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import soup.compose.material.motion.animation.materialSharedAxisY
+import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.SearchViewModel
@@ -113,10 +112,14 @@ fun CompactPlayerScreen2(
             Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Shrink")
         }
 
+        val slideDistance = rememberSlideDistance()
         AnimatedContent(
             targetState = showTab,
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            transitionSpec = { fadeIn() togetherWith fadeOut() }
+            transitionSpec = {
+                if (targetState) materialSharedAxisY(forward = true, slideDistance)
+                else materialSharedAxisY(forward = false, slideDistance)
+            }
         ) { showTab ->
             if (!showTab) {
                 PlayerTab(
