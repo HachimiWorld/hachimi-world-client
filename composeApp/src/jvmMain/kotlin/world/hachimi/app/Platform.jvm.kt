@@ -64,15 +64,20 @@ object JVMPlatform : Platform {
                 try {
                     val process = Runtime.getRuntime().exec(command.toTypedArray())
                     // Wait briefly to check if command succeeded
-                    Thread.sleep(100)
-                    if (!process.isAlive || process.exitValue() == 0) {
+                    if (process.waitFor(100, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                        // Process completed within timeout
+                        if (process.exitValue() == 0) {
+                            return
+                        }
+                    } else {
+                        // Process is still running (likely succeeded in opening the URL)
                         return
                     }
                 } catch (e: Exception) {
                     // Try next command
                 }
             }
-            throw Exception("Failed to open URL. Please install xdg-utils or a web browser.")
+            throw Exception("Failed to open URL. Please install xdg-utils (xdg-open) or a web browser (firefox, chromium, or google-chrome).")
         } else {
             throw Exception("Desktop browse is not supported on this system")
         }
