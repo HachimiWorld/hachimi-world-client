@@ -61,9 +61,9 @@ fun main() {
             icon = icon, state = trayState,
             onAction = { showWindow = true },
             menu = {
-                Item("显示窗口", onClick = { showWindow = true })
+                Item("Show Window", onClick = { showWindow = true })
                 Separator()
-                Item("退出", onClick = ::exitApplication)
+                Item("Exit", onClick = ::exitApplication)
             }
         )
 
