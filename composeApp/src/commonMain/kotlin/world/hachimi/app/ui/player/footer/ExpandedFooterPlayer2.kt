@@ -80,6 +80,7 @@ import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
+import world.hachimi.app.ui.player.footer.components.PlayPauseStatus
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
@@ -121,6 +122,7 @@ fun ExpandedFooterPlayer2(
                         ControlButton(
                             modifier = Modifier.layoutId("control").padding(top = 8.dp),
                             playing = uiState.isPlaying,
+                            fetching = uiState.fetchingMetadata,
                             onPreviousClick = { global.player.previous() },
                             onNextClick = { global.player.next() },
                             onPlayClick = { global.player.playOrPause() },
@@ -309,6 +311,7 @@ private fun Cover(
 private fun ControlButton(
     modifier: Modifier,
     playing: Boolean,
+    fetching: Boolean,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onPlayClick: () -> Unit,
@@ -319,7 +322,11 @@ private fun ControlButton(
         Spacer(Modifier.width(8.dp))
         PlayPauseButton(
             modifier = Modifier.size(78.dp),
-            playing = playing,
+            status = when {
+                fetching -> PlayPauseStatus.Fetching
+                playing -> PlayPauseStatus.Playing
+                else -> PlayPauseStatus.Paused
+            },
             onClick = {
                 if (playing) onPauseClick()
                 else onPlayClick()

@@ -44,6 +44,7 @@ import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
+import world.hachimi.app.ui.player.footer.components.PlayPauseStatus
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -73,15 +74,21 @@ fun CompactFooterPlayer2(
                     Cover(uiState.displayedCover)
 
                     Column(Modifier.weight(1f)) {
-                        val title = uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
-                        val author = uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
+                        val title =
+                            uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
+                        val author =
+                            uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
                         Title(title)
                         Author(author)
                     }
 
                     PlayPauseButton(
                         modifier = Modifier.size(48.dp),
-                        playing = uiState.isPlaying,
+                        status = when {
+                            uiState.fetchingMetadata -> PlayPauseStatus.Fetching
+                            uiState.isPlaying -> PlayPauseStatus.Playing
+                            else -> PlayPauseStatus.Paused
+                        },
                         onClick = {
                             global.player.playOrPause()
                         }
@@ -113,7 +120,7 @@ private fun Cover(
     val animatedVisibility = LocalAnimatedVisibilityScope.current
 
     val cornerRadius by animatedVisibility.transition.animateDp(label = "rounded corner") { enterExitState ->
-        when(enterExitState) {
+        when (enterExitState) {
             EnterExitState.PreEnter -> FullScreenCoverCornerRadius
             EnterExitState.Visible -> FooterPlayerCoverCornerRadius
             EnterExitState.PostExit -> FullScreenCoverCornerRadius
