@@ -34,6 +34,8 @@ cargo run --bin uniffi-bindgen generate \
 4. Add properties in `./local.properties`
 
 ```properties
+app.release.apiBaseUrl=https://api.hachimi.world
+app.release.assetsBaseUrl=https://api.hachimi.world
 app.dev.apiBaseUrl=https://your-api-host
 app.dev.assetsBaseUrl=https://your-assets-host
 ```
