@@ -34,7 +34,7 @@ import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
-import world.hachimi.app.ui.theme.AppTheme
+import world.hachimi.app.ui.theme.JvmTheme
 import world.hachimi.app.ui.window.WindowFrame
 import java.awt.Dimension
 
@@ -93,7 +93,7 @@ fun main() {
         ) {
             CompositionLocalProvider(LocalWindow provides window) {
                 val darkMode = global.darkMode ?: isSystemInDarkTheme()
-                AppTheme(darkTheme = darkMode) {
+                JvmTheme(darkMode = darkMode) {
                     PlatformWindowFrame(
                         windowState,
                         darkMode,

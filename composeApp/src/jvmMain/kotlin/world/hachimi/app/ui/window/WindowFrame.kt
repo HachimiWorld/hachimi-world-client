@@ -1,7 +1,19 @@
 package world.hachimi.app.ui.window
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
@@ -61,7 +73,7 @@ fun WindowFrame(
             }
         )
     }
-    val state = remember(window) { WindowFrameStateImpl(initialDarkMode) }
+    val state = remember(window, initialDarkMode) { WindowFrameStateImpl(initialDarkMode) }
 
     CompositionLocalProvider(LocalWindowFrameState provides state) {
         Box(Modifier.fillMaxSize().padding(windowInsets.asPaddingValues())) {

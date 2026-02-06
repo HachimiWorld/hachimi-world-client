@@ -94,6 +94,9 @@ private val darkScheme = darkColorScheme(
 
 val LocalDarkMode = compositionLocalOf { false }
 
+/**
+ * @param typography Default TextStyle for default Text component.
+ */
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -111,7 +114,8 @@ fun AppTheme(
             typography = buildMdTypo(typography),
         ) {
             HachimiTheme(
-                colorScheme = hachimiColorScheme
+                colorScheme = hachimiColorScheme,
+                typography = typography
             ) {
                 SystemAppearance(darkTheme)
                 content()

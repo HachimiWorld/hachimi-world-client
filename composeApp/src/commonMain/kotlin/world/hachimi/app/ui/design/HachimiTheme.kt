@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import world.hachimi.app.ui.design.components.LocalDefaultFontFamily
 import world.hachimi.app.ui.design.components.LocalTextStyle
 
 val LocalColorScheme = staticCompositionLocalOf<ColorScheme> { hachimiLightScheme }
@@ -41,7 +42,8 @@ fun HachimiTheme(
         LocalColorScheme provides colorScheme,
         LocalTextSelectionColors provides selectionColors,
         LocalTextStyle provides typography,
-        LocalContentColor provides colorScheme.onSurface
+        LocalContentColor provides colorScheme.onSurface,
+        LocalDefaultFontFamily provides (typography.fontFamily ?: FontFamily.Default)
     ) {
         content()
     }

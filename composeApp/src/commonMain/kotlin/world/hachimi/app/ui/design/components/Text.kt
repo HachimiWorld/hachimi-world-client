@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorProducer
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.TextUnit
 
 // TODO(design): Remove m3 alias
 val LocalTextStyle = androidx.compose.material3.LocalTextStyle
+val LocalDefaultFontFamily = compositionLocalOf<FontFamily> { FontFamily.Default }
 val LocalContentColor = androidx.compose.material3.LocalContentColor
 
 @Composable
@@ -47,6 +49,7 @@ fun Text(
 ) {
 
     val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
+    val defaultFontFamily = LocalDefaultFontFamily.current
 
     BasicText(
         text = text,
@@ -58,7 +61,7 @@ fun Text(
                 fontWeight = fontWeight,
                 textAlign = textAlign ?: TextAlign.Unspecified,
                 lineHeight = lineHeight,
-                fontFamily = fontFamily,
+                fontFamily = fontFamily ?: defaultFontFamily,
                 textDecoration = textDecoration,
                 fontStyle = fontStyle,
                 letterSpacing = letterSpacing,
@@ -94,6 +97,7 @@ fun Text(
     style: TextStyle = LocalTextStyle.current,
 ) {
 
+    val defaultFontFamily = LocalDefaultFontFamily.current
     BasicText(
         text = text,
         modifier = modifier,
@@ -103,7 +107,7 @@ fun Text(
                 fontWeight = fontWeight,
                 textAlign = textAlign ?: TextAlign.Unspecified,
                 lineHeight = lineHeight,
-                fontFamily = fontFamily,
+                fontFamily = fontFamily ?: defaultFontFamily,
                 textDecoration = textDecoration,
                 fontStyle = fontStyle,
                 letterSpacing = letterSpacing,
