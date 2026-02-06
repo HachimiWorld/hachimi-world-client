@@ -5,6 +5,10 @@
 1. Show fetching status at footer play bar. 在播放底栏显示加载状态。
 2. Use HarmonyOS-Sans as default font on Windows. 在 Windows 使用 HarmonyOS-Sans 作为默认字体。
 
+## Fixes 修复
+
+1. Fixed an issue where there is white border around the app window on Windows. 修复 Windows 平台应用窗口周围有白色边框的问题。
+
 # 1.1.0 (2026-01-26)
 
 ## Features 新功能

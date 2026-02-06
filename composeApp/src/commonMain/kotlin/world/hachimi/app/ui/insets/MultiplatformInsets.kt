@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -18,11 +19,13 @@ data class SafeAreaInsets(
     val end: Dp = 0.dp
 )
 
+val LocalSafeAreaInsets = compositionLocalOf { SafeAreaInsets() }
+
 @Composable
 fun currentSafeAreaInsets(): SafeAreaInsets {
     return when (remember { getCurrentPlatform() }) {
         Platform.MacOS -> SafeAreaInsets(top = 28.dp)
-        Platform.Windows -> SafeAreaInsets(top = 32.dp)
+        Platform.Windows -> LocalSafeAreaInsets.current
         Platform.Linux -> SafeAreaInsets()
         Platform.Android, Platform.iOS -> {
             val density = LocalDensity.current

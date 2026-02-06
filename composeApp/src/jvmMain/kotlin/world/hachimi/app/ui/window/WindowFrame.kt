@@ -3,6 +3,8 @@ package world.hachimi.app.ui.window
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import com.sun.jna.platform.win32.User32
@@ -25,8 +28,11 @@ import com.sun.jna.platform.win32.WinUser
 import io.github.composefluent.gallery.jna.windows.ComposeWindowProcedure
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst
 import world.hachimi.app.LocalWindow
+import world.hachimi.app.ui.insets.LocalSafeAreaInsets
+import world.hachimi.app.ui.insets.SafeAreaInsets
 
-val LocalWindowFrameState: ProvidableCompositionLocal<WindowFrameState?> = staticCompositionLocalOf { null }
+val LocalWindowFrameState: ProvidableCompositionLocal<WindowFrameState?> =
+    staticCompositionLocalOf { null }
 
 interface WindowFrameState {
     var darkMode: Boolean
@@ -74,14 +80,29 @@ fun WindowFrame(
         )
     }
     val state = remember(window, initialDarkMode) { WindowFrameStateImpl(initialDarkMode) }
-
-    CompositionLocalProvider(LocalWindowFrameState provides state) {
-        Box(Modifier.fillMaxSize().padding(windowInsets.asPaddingValues())) {
+    val windowInsetsPaddings = windowInsets.asPaddingValues()
+    val safeAreaInsets = windowInsetsPaddings.let {
+        SafeAreaInsets(
+            it.calculateTopPadding() + CaptionBarHeight,
+            it.calculateBottomPadding(),
+            it.calculateStartPadding(LocalLayoutDirection.current),
+            it.calculateEndPadding(LocalLayoutDirection.current)
+        )
+    }
+    CompositionLocalProvider(
+        LocalWindowFrameState provides state,
+        LocalSafeAreaInsets provides safeAreaInsets
+    ) {
+        Box(Modifier.fillMaxSize()) {
             content()
             CaptionBar(
-                modifier = Modifier.fillMaxWidth().onGloballyPositioned {
-                    captionBarRect = it.boundsInWindow()
-                },
+                modifier = Modifier.padding(
+                    top = windowInsetsPaddings.calculateTopPadding(),
+                    start = windowInsetsPaddings.calculateStartPadding(LocalLayoutDirection.current),
+                    end = windowInsetsPaddings.calculateEndPadding(LocalLayoutDirection.current)
+                )
+                    .fillMaxWidth()
+                    .onGloballyPositioned { captionBarRect = it.boundsInWindow() },
                 darkMode = state.darkMode,
                 maximized = maximized,
                 onMinClick = {

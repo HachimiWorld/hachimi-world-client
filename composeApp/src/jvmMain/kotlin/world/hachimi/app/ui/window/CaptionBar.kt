@@ -43,6 +43,8 @@ private const val MaximizeGlyph = '\uE922'
 private const val RestoreGlyph = '\uE923'
 private const val CloseGlyph = '\uE8BB'
 
+val CaptionBarHeight = 32.dp
+
 @Composable
 fun CaptionBar(
     modifier: Modifier,
@@ -56,7 +58,7 @@ fun CaptionBar(
     onCloseBounds: (Rect) -> Unit,
 ) {
     CompositionLocalProvider(LocalContentColor provides if (darkMode) onSurfaceDark else onSurfaceLight) {
-        Row(modifier.height(32.dp), horizontalArrangement = Arrangement.End) {
+        Row(modifier.height(CaptionBarHeight), horizontalArrangement = Arrangement.End) {
             CaptionButton(
                 modifier = Modifier.onGloballyPositioned { onMinBounds(it.boundsInWindow()) },
                 onClick = onMinClick,
