@@ -197,7 +197,9 @@ private fun TabContent(
             Page.Info -> InfoTabContent(
                 modifier = Modifier.fillMaxSize()
                     .wrapContentWidth()
-                    .widthIn(max = 400.dp),
+                    .widthIn(max = 400.dp)
+                    .padding(vertical = 64.dp)
+                    .fadingEdges(),
                 uiState = uiState,
                 contentPadding = with(LocalDensity.current) {
                     PaddingValues(

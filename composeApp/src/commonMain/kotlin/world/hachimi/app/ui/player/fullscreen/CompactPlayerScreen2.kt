@@ -324,8 +324,14 @@ private fun MoreDropdownMenu(
 
 @Composable
 private fun InfoTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onSearchTag: (Long, String) -> Unit) {
-    Column(Modifier.fillMaxSize().padding(top = 32.dp).padding(horizontal = 32.dp)) {
-        InfoTabContent(Modifier.weight(1f), uiState, onNavToUser = onNavToUser, onSearchTag = onSearchTag)
+    Column(Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 32.dp)) {
+        InfoTabContent(
+            modifier = Modifier.fadingEdges(16.dp, 16.dp).weight(1f),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            uiState = uiState,
+            onNavToUser = onNavToUser,
+            onSearchTag = onSearchTag
+        )
     }
 }
 
@@ -362,7 +368,8 @@ private fun QueueTab(
             onRepeatChange = { global.player.updateRepeatMode(it) }
         )
         MusicQueue(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            modifier = Modifier.fillMaxWidth().fadingEdges(16.dp, 16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
             queue = global.player.musicQueue,
             playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
             onPlayClick = { global.player.playSongInQueue(it) },
