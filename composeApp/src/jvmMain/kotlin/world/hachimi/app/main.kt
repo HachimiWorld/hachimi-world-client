@@ -34,6 +34,7 @@ import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
+import world.hachimi.app.ui.design.HachimiPalette
 import world.hachimi.app.ui.theme.JvmTheme
 import world.hachimi.app.ui.window.WindowFrame
 import java.awt.Dimension
@@ -137,6 +138,7 @@ private fun PlatformWindowFrame(
         WindowFrame(
             state = windowState,
             initialDarkMode = darkMode,
+            backgroundColor = if (darkMode) HachimiPalette.backgroundDark else HachimiPalette.backgroundLight,
             onCloseRequest = onCloseRequest
         ) {
             content()

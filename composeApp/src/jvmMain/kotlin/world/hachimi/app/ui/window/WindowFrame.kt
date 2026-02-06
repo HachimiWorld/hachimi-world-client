@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.window
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -18,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -51,6 +53,7 @@ private class WindowFrameStateImpl(darkMode: Boolean) : WindowFrameState {
 fun WindowFrame(
     state: WindowState,
     initialDarkMode: Boolean,
+    backgroundColor: Color,
     onCloseRequest: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -93,7 +96,7 @@ fun WindowFrame(
         LocalWindowFrameState provides state,
         LocalSafeAreaInsets provides safeAreaInsets
     ) {
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().background(backgroundColor)) {
             content()
             CaptionBar(
                 modifier = Modifier.padding(
