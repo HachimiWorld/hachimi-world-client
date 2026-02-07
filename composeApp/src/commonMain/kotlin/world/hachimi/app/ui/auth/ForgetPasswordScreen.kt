@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.autofill.contentType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -98,7 +100,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().contentType(ContentType.Username),
                         value = vm.email,
                         onValueChange = { vm.email = it.singleLined() },
                         leadingIcon = { Icon(Icons.Outlined.Mail, null) },
@@ -114,7 +116,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                     var showPassword by remember { mutableStateOf(false) }
                     var showTooShortHelp by remember { mutableStateOf(false) }
                     TextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().contentType(ContentType.NewPassword),
                         value = vm.password,
                         onValueChange = {
                             vm.password = it.singleLined()
