@@ -212,7 +212,14 @@ private fun FooterPlayerLayout(
         val functionButton = map["function-buttons"]!!
 
         val coverPlaceable = cover.measure(constraints)
-        val volumeControlPlaceable = volumeControl.measure(constraints)
+        val volumeControlPlaceable = volumeControl.measure(
+            if (constraints.maxWidth.toDp() > 720.dp) {
+                // Breakpoint to let the progressbar display properly
+                constraints
+            } else {
+                constraints.copy(maxWidth = 160.dp.roundToPx())
+            }
+        )
         val functionButtonPlaceable = functionButton.measure(constraints)
 
         val progressPlaceable = progress.measure(
