@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onFirstVisible
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
@@ -65,6 +67,7 @@ import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.util.horizontalFadingEdges
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
@@ -159,36 +162,47 @@ private fun Segment(
     Column(modifier) {
         SegmentHeader(text = label, onMoreClick = onMoreClick, onLoad = onLoad)
         Spacer(Modifier.height(AdaptiveListSpacing))
-        LoadableContent(
-            modifier = Modifier.fillMaxWidth().height(228.dp * 2 + AdaptiveListSpacing),
-            initializeStatus = status,
-            loading = loading,
-            onRefresh = onRefresh,
-            onRetryClick = onRetryClick,
-            onLoad = {}
-        ) {
-            if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(Res.string.common_empty))
-            } else LazyHorizontalGrid(
-                modifier = Modifier.fillMaxSize()
-                    .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
-                rows = GridCells.Fixed(2),
-                contentPadding = PaddingValues(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-                verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        BoxWithConstraints {
+            val cardSize: DpSize
+
+            if (maxWidth < WindowSize.COMPACT) {
+                val widthTwoColumn = (maxWidth - 48.dp - AdaptiveListSpacing * 2) / 2
+                val width = minOf(widthTwoColumn, 180.dp)
+                cardSize = DpSize(width, width + 48.dp)
+            } else {
+                cardSize = DpSize(180.dp, 228.dp)
+            }
+            LoadableContent(
+                modifier = Modifier.fillMaxWidth().height(cardSize.height * 2 + AdaptiveListSpacing),
+                initializeStatus = status,
+                loading = loading,
+                onRefresh = onRefresh,
+                onRetryClick = onRetryClick,
+                onLoad = {}
             ) {
-                items(items = items, key = { it.id }) { item ->
-                    SongCard(
-                        modifier = Modifier.size(width = 180.dp, height = 228.dp),
-                        item = item,
-                        onClick = {
-                            global.player.insertToQueue(
-                                GlobalStore.MusicQueueItem.fromPublicDetail(item),
-                                true,
-                                false
-                            )
-                        },
-                    )
+                if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(Res.string.common_empty))
+                } else LazyHorizontalGrid(
+                    modifier = Modifier.fillMaxSize()
+                        .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
+                    rows = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                    verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                ) {
+                    items(items = items, key = { it.id }) { item ->
+                        SongCard(
+                            modifier = Modifier.size(cardSize),
+                            item = item,
+                            onClick = {
+                                global.player.insertToQueue(
+                                    GlobalStore.MusicQueueItem.fromPublicDetail(item),
+                                    true,
+                                    false
+                                )
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -203,56 +217,66 @@ private fun CategorySegment(
     vm: HomeViewModel = koinViewModel()
 ) {
     Column(modifier) {
-
         SegmentHeader(category, onLoad = {
             vm.mountCategory(category)
         }, onMoreClick = {
             global.nav.push(Route.Root.Home.Category(category))
         })
         Spacer(Modifier.height(AdaptiveListSpacing))
-        val state = vm.categoryState[category]
-        val status = state?.status?.value ?: InitializeStatus.INIT
-        val loading = state?.loading?.value ?: false
-        LoadableContent(
-            modifier = Modifier.fillMaxWidth().height(228.dp * 2 + AdaptiveListSpacing),
-            initializeStatus = status,
-            loading = loading,
-            onRefresh = { },
-            onRetryClick = { vm.retryCategory(category) },
-            onLoad = { }
-        ) {
-            val songs = state?.songs?.value ?: emptyList()
-            if (songs.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(Res.string.common_empty))
-                }
-            } else LazyHorizontalGrid(
-                modifier = Modifier.fillMaxSize()
-                    .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
-                rows = GridCells.Fixed(2),
-                contentPadding = PaddingValues(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-                verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        BoxWithConstraints {
+            val cardSize: DpSize
+
+            if (maxWidth < WindowSize.COMPACT) {
+                val widthTwoColumn = (maxWidth - 48.dp - AdaptiveListSpacing * 2) / 2
+                val width = minOf(widthTwoColumn, 180.dp)
+                cardSize = DpSize(width, width + 48.dp)
+            } else {
+                cardSize = DpSize(180.dp, 228.dp)
+            }
+            val state = vm.categoryState[category]
+            val status = state?.status?.value ?: InitializeStatus.INIT
+            val loading = state?.loading?.value ?: false
+            LoadableContent(
+                modifier = Modifier.fillMaxWidth().height(cardSize.height * 2 + AdaptiveListSpacing),
+                initializeStatus = status,
+                loading = loading,
+                onRefresh = { },
+                onRetryClick = { vm.retryCategory(category) },
+                onLoad = { }
             ) {
-                items(songs, key = { item -> item.id }) { item ->
-                    SongCard(
-                        modifier = Modifier.size(width = 180.dp, height = 228.dp),
-                        coverUrl = item.coverArtUrl,
-                        title = item.title,
-                        subtitle = item.subtitle,
-                        author = item.uploaderName,
-                        tags = remember { emptyList<String>() },
-                        playCount = item.playCount,
-                        likeCount = item.likeCount,
-                        explicit = item.explicit,
-                        onClick = {
-                            global.player.insertToQueue(
-                                GlobalStore.MusicQueueItem.fromSearchSongItem(item),
-                                true,
-                                false
-                            )
-                        },
-                    )
+                val songs = state?.songs?.value ?: emptyList()
+                if (songs.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(stringResource(Res.string.common_empty))
+                    }
+                } else LazyHorizontalGrid(
+                    modifier = Modifier.fillMaxSize()
+                        .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
+                    rows = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                    verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+                ) {
+                    items(songs, key = { item -> item.id }) { item ->
+                        SongCard(
+                            modifier = Modifier.size(cardSize),
+                            coverUrl = item.coverArtUrl,
+                            title = item.title,
+                            subtitle = item.subtitle,
+                            author = item.uploaderName,
+                            tags = remember { emptyList<String>() },
+                            playCount = item.playCount,
+                            likeCount = item.likeCount,
+                            explicit = item.explicit,
+                            onClick = {
+                                global.player.insertToQueue(
+                                    GlobalStore.MusicQueueItem.fromSearchSongItem(item),
+                                    true,
+                                    false
+                                )
+                            },
+                        )
+                    }
                 }
             }
         }
