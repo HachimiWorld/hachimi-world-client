@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -34,6 +33,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_login
@@ -101,7 +101,7 @@ fun ExpandedTopAppBar(
         Row(
             modifier = Modifier
                 .padding(top = currentSafeAreaInsets().top)
-                .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
+                .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 8.dp)
                 .consumeWindowInsets(WindowInsets.statusBars),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -153,13 +153,17 @@ private fun NameAvatar(
     onClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(4.dp),
+        modifier = Modifier.clip(CircleShape)
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End
     ) {
-        Text(text = name, fontWeight = FontWeight.Bold)
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            text = name,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
         Box(
             modifier = Modifier
                 .padding(start = 8.dp)
