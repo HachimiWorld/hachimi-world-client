@@ -4,7 +4,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.*
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -70,7 +70,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
             implementation(libs.compose.foundation)
-            implementation(libs.compose.uiToolingPreview)
+            implementation(libs.compose.ui.toolingPreview)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.components.uiToolingPreview)
 
@@ -248,7 +248,7 @@ android {
 }
 
 dependencies {
-    debugImplementation(compose.uiTooling)
+    debugImplementation(libs.compose.ui.tooling)
 }
 
 compose.desktop {
@@ -260,7 +260,6 @@ compose.desktop {
             "release" -> nativeDistributions {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
                 packageName = "Hachimi World"
-                description = "A community-driven open-source meme culture music community."
                 vendor = "Hachimi World, NPO"
                 copyright = "© 2025 Hachimi World Open Source Project"
                 packageVersion = gitVersionNameShort.get()
