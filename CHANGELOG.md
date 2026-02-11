@@ -5,10 +5,12 @@
 1. Show fetching status at footer play bar. 在播放底栏显示加载状态。
 2. Use HarmonyOS-Sans as default font on Windows. 在 Windows 使用 HarmonyOS-Sans 作为默认字体。
 3. Optimized the layout of footer player on compact width. 优化底部播放器在窄屏下的布局。
+4. Other ui optimizations. 其他 UI 改进。
 
 ## Fixes 修复
 
-1. Fixed an issue where there is white border around the app window on Windows. 修复 Windows 平台应用窗口周围有白色边框的问题。
+1. Fixed an issue where there is white border around the app window on Windows. 修复 Windows 应用窗口有白色边框。
+2. Fixed character error in system tray on windows. 修复 Windows 系统托盘字符错误。
 
 # 1.1.0 (2026-01-26)
 
