@@ -13,6 +13,8 @@ use stream_download::http::{HttpStream};
 use stream_download::source::SourceStream;
 use stream_download::storage::temp::TempStorageProvider;
 use stream_download::{Settings, StreamDownload, StreamPhase, StreamState};
+use stream_download::http::reqwest::Client;
+use stream_download::http::reqwest::header::{HeaderMap, HeaderValue};
 use url::Url;
 
 uniffi::setup_scaffolding!("hachimi");
@@ -276,7 +278,22 @@ impl Player {
                             }
                         });
 
-                        let stream = StreamDownload::new_http(audio_url.clone(), storage_provider, settings)
+                        let mut headers = HeaderMap::new();
+                        // For example, you may need to add some authentication headers with every request.
+                        // If you need to support a more complex authentication scheme, see the `custom_client` example
+                        // or consider using `reqwest_middleware` (https://docs.rs/reqwest-middleware/latest/reqwest_middleware).
+
+                        headers.insert("User-Agent", "HachimiWorld-Rust".parse().unwrap());
+                        headers.insert("Referer", "https://hachimi.world/".parse().unwrap());
+                        let client = Client::builder()
+                            .connect_timeout(Duration::from_secs(30))
+                            .default_headers(headers)
+                            .build().unwrap();
+
+                        let stream = HttpStream::new(client, audio_url.clone()).await
+                            .map_err(|x| IOError { msg: x.to_string() })?;
+
+                        let stream = StreamDownload::from_stream(stream, storage_provider, settings)
                             .await
                             .map_err(|x| IOError { msg: x.to_string() })?;
                         let length = stream.content_length().ok_or_else(|| IOError { msg: "Content length is not available!".to_string() })?;

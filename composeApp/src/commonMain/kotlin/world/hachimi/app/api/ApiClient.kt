@@ -317,6 +317,7 @@ class ApiClient(
             header("Authorization", "Bearer $accessToken")
         }
         header("X-Real-IP", "127.0.0.1")
+        header(HttpHeaders.Referrer, "https://hachimi.world/")
     }
 
     val authModule by lazy { AuthModule(this) }
@@ -439,5 +440,6 @@ inline fun <reified E> WebResp<*, E>.err(): E {
 }
 
 val CoilHeaders = NetworkHeaders.Builder().apply {
-    set("User-Agent", getPlatform().userAgent)
+    set(HttpHeaders.UserAgent, getPlatform().userAgent)
+    set(HttpHeaders.Referrer, "https://hachimi.world/")
 }.build()

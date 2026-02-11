@@ -626,7 +626,10 @@ class PlayerService(
 
     private suspend fun downloadAudio(url: String, onProgress: suspend (Float) -> Unit): Buffer {
         // Do not use HttpCache plugin because it will affect the progress (Bugs)
-        val statement = downloadHttpClient.prepareGet(url)
+        val statement = downloadHttpClient.prepareGet(url) {
+            headers[HttpHeaders.UserAgent] = getPlatform().userAgent
+            headers[HttpHeaders.Referrer] = "https://hachimi.world/"
+        }
 
         // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
         //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser
