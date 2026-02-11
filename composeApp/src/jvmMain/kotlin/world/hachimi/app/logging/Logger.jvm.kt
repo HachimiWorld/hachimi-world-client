@@ -2,6 +2,7 @@ package world.hachimi.app.logging
 
 import org.slf4j.LoggerFactory
 
+@Suppress("NOTHING_TO_INLINE")
 actual object Logger {
     val logger = LoggerFactory.getLogger(Logger::class.java)!!
 

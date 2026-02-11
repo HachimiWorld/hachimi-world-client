@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
@@ -47,6 +48,7 @@ import hachimiworld.composeapp.generated.resources.player_queue_clear
 import hachimiworld.composeapp.generated.resources.player_queue_title
 import hachimiworld.composeapp.generated.resources.player_remove_from_playlist_cd
 import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -152,6 +154,7 @@ private fun Item(
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
                     .data(coverUrl).crossfade(true)
                     .build(),
                 contentDescription = stringResource(Res.string.player_cover_cd),

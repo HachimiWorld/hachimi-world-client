@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
@@ -98,7 +98,7 @@ class AuthViewModel(
 
                 val result = api.authModule.sendEmailCode(AuthModule.SendEmailCodeReq(email = regEmail))
                 if (!result.ok) {
-                    val errData = result.errData<CommonError>()
+                    val errData = result.err()
                     global.alert(errData.msg)
                     return@launch
                 }
@@ -148,7 +148,7 @@ class AuthViewModel(
                     global.setLoginUser(uid.toLong(), name, null, false)
                     global.nav.replace(Route.Root.Home.Main)
                 } else {
-                    global.alert(resp.errData<CommonError>().msg)
+                    global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
                 global.alert(e.message)
@@ -176,7 +176,7 @@ class AuthViewModel(
                 )
             )
             if (resp.ok) {
-                val data = resp.okData<AuthModule.LoginResp>()
+                val data = resp.ok()
 
                 // Set token
                 api.setToken(data.token.accessToken, data.token.refreshToken)
@@ -185,7 +185,7 @@ class AuthViewModel(
 
                 val profile = api.userModule.profile(data.uid)
                 if (!profile.ok) {
-                    global.alert(profile.errData<CommonError>().msg)
+                    global.alert(profile.err().msg)
                     return
                 }
                 val profileData = profile.ok()
@@ -195,7 +195,7 @@ class AuthViewModel(
                 global.setLoginUser(data.uid, data.username, profileData.avatarUrl, false)
                 global.nav.replace(Route.Root.Home.Main)
             } else {
-                global.alert(resp.errData<CommonError>().msg)
+                global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
             Logger.e("auth", "Failed to login", e)
@@ -218,7 +218,7 @@ class AuthViewModel(
                 )
             )
             if (resp.ok) {
-                val data: AuthModule.RegisterResp = resp.okData()
+                val data: AuthModule.RegisterResp = resp.ok()
                 uid = data.uid.toString()
                 name = data.generatedUsername
 
@@ -236,7 +236,7 @@ class AuthViewModel(
                 dataStore.set(PreferencesKeys.USER_NAME, data.generatedUsername)
                 global.setLoginUser(data.uid, data.generatedUsername, null, false)
             } else {
-                global.alert(resp.errData<CommonError>().msg)
+                global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
             Logger.e("auth", "Failed to register", e)
@@ -255,7 +255,7 @@ class AuthViewModel(
         try {
             val resp = api.authModule.generateCaptcha()
             if (resp.ok) {
-                val data = resp.okData<AuthModule.GenerateCaptchaResp>()
+                val data = resp.ok()
                 captchaKey = data.captchaKey
                 try {
                     getPlatform().openUrl(data.url)
@@ -264,7 +264,7 @@ class AuthViewModel(
                     return
                 }
             } else {
-                val err = resp.errData<CommonError>()
+                val err = resp.err()
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {

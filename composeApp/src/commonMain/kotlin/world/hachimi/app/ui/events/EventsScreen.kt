@@ -43,11 +43,13 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PostModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.model.EventsListViewModel
@@ -306,6 +308,7 @@ private fun EventCardFeatured(
                 if (item.coverUrl != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
+                            .httpHeaders(CoilHeaders)
                             .data(item.coverUrl)
                             .crossfade(true)
                             .build(),
@@ -324,6 +327,7 @@ private fun EventCardFeatured(
                     onClick = {},
                     avatar = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalPlatformContext.current)
+                            .httpHeaders(CoilHeaders)
                             .data(item.author.avatarUrl)
                             .crossfade(true)
                             .build()
@@ -372,6 +376,7 @@ private fun EventCardVertical(
                 if (item.coverUrl != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
+                            .httpHeaders(CoilHeaders)
                             .data(item.coverUrl)
                             .crossfade(true)
                             .build(),
@@ -398,6 +403,7 @@ private fun EventCardVertical(
                         onClick = {},
                         avatar = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalPlatformContext.current)
+                                .httpHeaders(CoilHeaders)
                                 .data(item.author.avatarUrl)
                                 .crossfade(true)
                                 .build()

@@ -13,8 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.getPlatform
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
@@ -35,6 +37,7 @@ fun AuthorAndPV(
             onClick = onUserClick,
             avatar = rememberAsyncImagePainter(
                 ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
                     .data(avatar)
                     .crossfade(true)
                     .build(),

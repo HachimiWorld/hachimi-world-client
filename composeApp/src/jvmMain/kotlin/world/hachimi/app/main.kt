@@ -34,7 +34,8 @@ import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
-import world.hachimi.app.ui.theme.AppTheme
+import world.hachimi.app.ui.design.HachimiPalette
+import world.hachimi.app.ui.theme.JvmTheme
 import world.hachimi.app.ui.window.WindowFrame
 import java.awt.Dimension
 
@@ -61,9 +62,9 @@ fun main() {
             icon = icon, state = trayState,
             onAction = { showWindow = true },
             menu = {
-                Item("显示窗口", onClick = { showWindow = true })
+                Item("Show Window", onClick = { showWindow = true })
                 Separator()
-                Item("退出", onClick = ::exitApplication)
+                Item("Exit", onClick = ::exitApplication)
             }
         )
 
@@ -93,7 +94,7 @@ fun main() {
         ) {
             CompositionLocalProvider(LocalWindow provides window) {
                 val darkMode = global.darkMode ?: isSystemInDarkTheme()
-                AppTheme(darkTheme = darkMode) {
+                JvmTheme(darkMode = darkMode) {
                     PlatformWindowFrame(
                         windowState,
                         darkMode,
@@ -137,6 +138,7 @@ private fun PlatformWindowFrame(
         WindowFrame(
             state = windowState,
             initialDarkMode = darkMode,
+            backgroundColor = if (darkMode) HachimiPalette.backgroundDark else HachimiPalette.backgroundLight,
             onCloseRequest = onCloseRequest
         ) {
             content()

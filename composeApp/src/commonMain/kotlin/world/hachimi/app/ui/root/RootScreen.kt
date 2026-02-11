@@ -4,10 +4,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.hazeSource
@@ -49,12 +49,12 @@ import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.footer.CompactFooterHeight
 import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
-import world.hachimi.app.ui.player.footer.ExpandedFooterHeight
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
 import world.hachimi.app.ui.playlist.PlaylistRouteScreen
 import world.hachimi.app.ui.playlist.PublicPlaylistScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
 import world.hachimi.app.ui.root.component.CompactTopAppBar
+import world.hachimi.app.ui.root.component.ExpandedScaffoldLayout
 import world.hachimi.app.ui.root.component.ExpandedTopAppBar
 import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.search.SearchScreen
@@ -160,7 +160,10 @@ private fun CompactScreen(
     ) {
         val hazeState = rememberHazeState()
         Box(Modifier.fillMaxSize()) {
-            Column(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
+            Column(
+                Modifier.fillMaxSize().hazeSource(hazeState)
+                    .background(HachimiTheme.colorScheme.background)
+            ) {
                 CompactTopAppBar(
                     modifier = Modifier.zIndex(2f).fillMaxWidth(),
                     global = global,
@@ -181,7 +184,8 @@ private fun CompactScreen(
                 }
             }
             CompactFooterPlayer2(
-                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom).padding(24.dp)
+                modifier = Modifier.fillMaxSize().wrapContentHeight(align = Alignment.Bottom)
+                    .padding(24.dp)
                     .padding(bottom = currentSafeAreaInsets().bottom),
                 hazeState = hazeState
             )
@@ -195,41 +199,51 @@ private fun ExpandedScreen(
     content: @Composable () -> Unit,
     global: GlobalStore = koinInject()
 ) {
-    Column(Modifier.fillMaxSize()) {
-        ExpandedTopAppBar(
-            modifier = Modifier.zIndex(2f).fillMaxWidth(),
-            global = global,
-        )
+    val hazeState = rememberHazeState()
 
-        Row(Modifier.weight(1f).fillMaxWidth()) {
+    ExpandedScaffoldLayout(
+        modifier = Modifier.fillMaxSize(),
+        appbar = {
+            ExpandedTopAppBar(
+                modifier = Modifier.zIndex(2f).fillMaxWidth(),
+                global = global,
+            )
+        },
+        navigation = {
             Card(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
                 Box(Modifier.padding(8.dp)) {
                     navigationContent()
                 }
             }
-            Spacer(Modifier.width(24.dp))
-
-            val hazeState = rememberHazeState()
-
-            Box(Modifier.weight(1f).fillMaxHeight()) {
-                Box(Modifier.fillMaxSize().hazeSource(hazeState).background(HachimiTheme.colorScheme.background)) {
-                    CompositionLocalProvider(
-                        LocalContentInsets provides WindowInsets(
-                            bottom = ExpandedFooterHeight + 24.dp // Bottom padding
-                        )
-                    ) {
-                        content()
-                    }
+        },
+        footerPlayer = {
+            ExpandedFooterPlayer2(
+                Modifier.wrapContentHeight(Alignment.Bottom).padding(
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = 24.dp
+                ).fillMaxWidthIn(),
+                hazeState
+            )
+        },
+        content = { contentPadding ->
+            Box(
+                Modifier.fillMaxSize().hazeSource(hazeState)
+                    .background(HachimiTheme.colorScheme.background)
+                    .padding(
+                        top = contentPadding.calculateTopPadding(),
+                        start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
+                        end = contentPadding.calculateEndPadding(LocalLayoutDirection.current)
+                    )
+            ) {
+                CompositionLocalProvider(
+                    LocalContentInsets provides WindowInsets(
+                        bottom = contentPadding.calculateBottomPadding()
+                    )
+                ) {
+                    content()
                 }
-                ExpandedFooterPlayer2(
-                    Modifier
-                        .fillMaxSize()
-                        .wrapContentHeight(Alignment.Bottom)
-                        .padding(24.dp)
-                        .fillMaxWidthIn(),
-                    hazeState
-                )
             }
         }
-    }
+    )
 }

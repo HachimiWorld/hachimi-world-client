@@ -14,12 +14,14 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.compose.asPainter
+import coil3.network.httpHeaders
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.size.Size
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.calculateAvgColor
 
 @Composable
@@ -32,6 +34,7 @@ fun rememberAsyncPainterAndColor(
 
     LaunchedEffect(model) {
         val request = ImageRequest.Builder(context)
+            .httpHeaders(CoilHeaders)
             .data(model)
             .placeholderMemoryCacheKey(model)
             .memoryCacheKey(model)

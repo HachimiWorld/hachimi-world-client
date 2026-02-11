@@ -8,6 +8,7 @@ import hachimiworld.composeapp.generated.resources.player_play_failed
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.UserAgent
 import io.ktor.client.request.get
 import io.ktor.client.request.head
 import io.ktor.client.request.prepareGet
@@ -33,7 +34,6 @@ import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
@@ -54,6 +54,9 @@ private val downloadHttpClient = HttpClient() {
         connectTimeoutMillis = 60_000
         requestTimeoutMillis = 60_000
         socketTimeoutMillis = 60_000
+    }
+    install(UserAgent) {
+        agent = getPlatform().userAgent
     }
 }
 
@@ -372,7 +375,7 @@ class PlayerService(
                     songCache.saveMetadata(data)
                     data
                 } else {
-                    val err = resp.errData<CommonError>()
+                    val err = resp.err()
                     global.alert(err.msg)
                     return@launch
                 }
@@ -565,7 +568,7 @@ class PlayerService(
             onProgress(0f)
             val metadata = songCache.getMetadata(songId.toString()) ?: run {
                 val resp = api.songModule.detailById(songId)
-                if (!resp.ok) error(resp.errData<CommonError>().msg)
+                if (!resp.ok) error(resp.err().msg)
                 resp.ok()
             }
             onMetadata(metadata)
@@ -623,7 +626,10 @@ class PlayerService(
 
     private suspend fun downloadAudio(url: String, onProgress: suspend (Float) -> Unit): Buffer {
         // Do not use HttpCache plugin because it will affect the progress (Bugs)
-        val statement = downloadHttpClient.prepareGet(url)
+        val statement = downloadHttpClient.prepareGet(url) {
+            headers[HttpHeaders.UserAgent] = getPlatform().userAgent
+            headers[HttpHeaders.Referrer] = "https://hachimi.world/"
+        }
 
         // FIXME(wasm)(player): Due to the bugs of ktor client, we can't get the content length header in wasm target
         //  KTOR-8377 JS/WASM: response doesn't contain the Content-Length header in a browser

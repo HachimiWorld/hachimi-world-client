@@ -1,5 +1,6 @@
 package world.hachimi.app.api
 
+import coil3.network.NetworkHeaders
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.content.ProgressListener
@@ -266,12 +267,12 @@ class ApiClient(
                             val result = checkAndDecode<AuthModule.TokenPair>(resp, "refresh_token", requestId)
 
                             if (result.ok) {
-                                val data = result.okData<AuthModule.TokenPair>()
+                                val data = result.ok()
                                 accessToken = data.accessToken
                                 refreshToken = data.refreshToken
                                 authListener.onTokenChange(data.accessToken, data.refreshToken)
                             } else {
-                                val data = result.errData<CommonError>()
+                                val data = result.err()
                                 Logger.w(TAG, "refreshToken: Refreshing token returns error: ${data.code}, ${data.msg}")
                                 authListener.onAuthenticationError(
                                     AuthError.RefreshTokenError(
@@ -316,6 +317,7 @@ class ApiClient(
             header("Authorization", "Bearer $accessToken")
         }
         header("X-Real-IP", "127.0.0.1")
+        header(HttpHeaders.Referrer, "https://hachimi.world/")
     }
 
     val authModule by lazy { AuthModule(this) }
@@ -436,3 +438,8 @@ inline fun <reified E> WebResp<*, E>.err(): E {
     @Suppress("DEPRECATION")
     return WebResp.json.decodeFromJsonElement<E>(this.data)
 }
+
+val CoilHeaders = NetworkHeaders.Builder().apply {
+    set(HttpHeaders.UserAgent, getPlatform().userAgent)
+    set(HttpHeaders.Referrer, "https://hachimi.world/")
+}.build()

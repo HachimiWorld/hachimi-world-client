@@ -164,7 +164,7 @@ class SearchViewModel(
                 val displayId = "JM-$part1-$part2"
                 val resp = api.songModule.detail(displayId)
                 if (resp.ok) {
-                    val data = resp.okData<SongModule.PublicSongDetail>()
+                    val data = resp.ok()
                     result.add(SearchSongItem.fromItem(query, data))
                     searchProcessingTimeMs = 0
                 }
@@ -180,7 +180,7 @@ class SearchViewModel(
                 )
             )
             if (resp.ok) {
-                val data = resp.okData<SongModule.SearchResp>()
+                val data = resp.ok()
                 result.addAll(data.hits.map { SearchSongItem.fromItem(query, it) })
                 searchProcessingTimeMs = data.processingTimeMs
             } else {

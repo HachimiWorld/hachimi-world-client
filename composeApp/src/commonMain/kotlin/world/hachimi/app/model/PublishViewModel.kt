@@ -53,7 +53,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.SongModule
@@ -385,11 +384,11 @@ class PublishViewModel(
                         }
                     )
                     if (!resp.ok) {
-                        global.alert(resp.errData<CommonError>().msg)
+                        global.alert(resp.err().msg)
                         return@launch
                     }
 
-                    resp.okData<SongModule.UploadAudioFileResp>()
+                    resp.ok()
                 } catch (e: Throwable) {
                     Logger.e("creation", "Failed to upload audio file", e)
                     global.alert(e.message)
@@ -441,11 +440,11 @@ class PublishViewModel(
                         }
                     )
                     if (!resp.ok) {
-                        global.alert(resp.errData<CommonError>().msg)
+                        global.alert(resp.err().msg)
                         return@launch
                     }
 
-                    resp.okData<SongModule.UploadImageResp>()
+                    resp.ok()
                 } catch (e: Throwable) {
                     Logger.e("creation", "Failed to upload cover image", e)
                     global.alert(e.message)
@@ -486,14 +485,14 @@ class PublishViewModel(
                     delay(500) // delay to avoid too many requests
                     val resp = api.songModule.tagSearch(SongModule.TagSearchReq(content))
                     if (resp.ok) {
-                        val data = resp.okData<SongModule.TagSearchResp>()
+                        val data = resp.ok()
                         tagSearchMutex.withLock {
                             if (tagSearchSign == sign) {
                                 tagCandidates = data.result
                             }
                         }
                     } else {
-                        global.alert(resp.errData<CommonError>().msg)
+                        global.alert(resp.err().msg)
                         return@launch
                     }
                 } catch (_: CancellationException) {
@@ -659,7 +658,7 @@ class PublishViewModel(
                     showSuccessDialog = true
                     clearInput()
                 } else {
-                    val data = resp.errData<CommonError>()
+                    val data = resp.err()
                     global.alert(data.msg)
                 }
             } else {

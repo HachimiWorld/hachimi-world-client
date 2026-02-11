@@ -1,9 +1,6 @@
 package world.hachimi.app.ui.player.fullscreen
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -56,12 +53,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_share
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import soup.compose.material.motion.animation.materialSharedAxisY
+import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.SearchViewModel
@@ -113,10 +114,14 @@ fun CompactPlayerScreen2(
             Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Shrink")
         }
 
+        val slideDistance = rememberSlideDistance()
         AnimatedContent(
             targetState = showTab,
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            transitionSpec = { fadeIn() togetherWith fadeOut() }
+            transitionSpec = {
+                if (targetState) materialSharedAxisY(forward = true, slideDistance)
+                else materialSharedAxisY(forward = false, slideDistance)
+            }
         ) { showTab ->
             if (!showTab) {
                 PlayerTab(
@@ -321,8 +326,14 @@ private fun MoreDropdownMenu(
 
 @Composable
 private fun InfoTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onSearchTag: (Long, String) -> Unit) {
-    Column(Modifier.fillMaxSize().padding(top = 32.dp).padding(horizontal = 32.dp)) {
-        InfoTabContent(Modifier.weight(1f), uiState, onNavToUser = onNavToUser, onSearchTag = onSearchTag)
+    Column(Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 32.dp)) {
+        InfoTabContent(
+            modifier = Modifier.fadingEdges(16.dp, 16.dp).weight(1f),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            uiState = uiState,
+            onNavToUser = onNavToUser,
+            onSearchTag = onSearchTag
+        )
     }
 }
 
@@ -359,7 +370,8 @@ private fun QueueTab(
             onRepeatChange = { global.player.updateRepeatMode(it) }
         )
         MusicQueue(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            modifier = Modifier.fillMaxWidth().fadingEdges(16.dp, 16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
             queue = global.player.musicQueue,
             playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
             onPlayClick = { global.player.playSongInQueue(it) },
@@ -417,6 +429,7 @@ private fun Header(
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         AsyncImage(
             model = ImageRequest.Builder(LocalPlatformContext.current)
+                .httpHeaders(CoilHeaders)
                 .data(cover)
                 .crossfade(true)
                 .build(),

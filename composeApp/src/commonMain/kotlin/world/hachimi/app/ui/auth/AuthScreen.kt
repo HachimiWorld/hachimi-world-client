@@ -30,6 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.autofill.contentType
+import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -167,7 +170,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
     ) {
         Column(Modifier) {
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().contentType(ContentType.Username),
                 value = vm.email,
                 onValueChange = { vm.email = it.singleLined() },
                 placeholder = { Text(stringResource(Res.string.auth_email_placeholder)) },
@@ -181,7 +184,7 @@ private fun LoginForm(vm: AuthViewModel, toRegister: () -> Unit) {
             Spacer(Modifier.height(24.dp))
             var showPassword by remember { mutableStateOf(false) }
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().contentType(ContentType.Password),
                 value = vm.password,
                 onValueChange = { vm.password = it.singleLined() },
                 leadingIcon = { Icon(Icons.Outlined.Lock, null) },
@@ -238,9 +241,10 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
     ) {
         Column(Modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             // Compute help texts during composition (avoid calling stringResource from non-composable callbacks)
+            val autoFillManager = LocalAutofillManager.current
             var showEmailHelp by remember { mutableStateOf(false) }
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().contentType(ContentType.NewUsername),
                 value = vm.regEmail,
                 onValueChange = {
                     vm.regEmail = it.singleLined()
@@ -260,7 +264,7 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
             var showPassword by remember { mutableStateOf(false) }
             var showPasswordHelp by remember { mutableStateOf(false) }
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().contentType(ContentType.NewPassword),
                 value = vm.regPassword,
                 onValueChange = {
                     vm.regPassword = it.singleLined()
@@ -331,7 +335,10 @@ private fun RegisterForm(vm: AuthViewModel, toLogin: () -> Unit) {
 
                 AccentButton(
                     modifier = Modifier.size(width = 112.dp, height = 48.dp),
-                    onClick = { vm.regNextStep() },
+                    onClick = {
+                        autoFillManager?.commit()
+                        vm.regNextStep()
+                    },
                     enabled = enabled && !vm.isOperating,
                 ) {
                     Text(stringResource(Res.string.auth_next_step))

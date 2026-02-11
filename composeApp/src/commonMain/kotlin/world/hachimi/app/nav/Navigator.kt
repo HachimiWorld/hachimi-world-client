@@ -3,25 +3,26 @@ package world.hachimi.app.nav
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.navigation3.runtime.NavKey
 
-class Navigator(start: Any) {
-    val backStack: SnapshotStateList<Any> = mutableStateListOf(start)
+class Navigator(start: NavKey) {
+    val backStack: SnapshotStateList<NavKey> = mutableStateListOf(start)
 
-    fun replace(vararg routes: Any) {
+    fun replace(vararg routes: NavKey) {
         Snapshot.withMutableSnapshot {
             backStack.clear()
             backStack.addAll(routes)
         }
     }
 
-    fun navigateTo(route: Any) {
+    fun navigateTo(route: NavKey) {
         Snapshot.withMutableSnapshot {
             backStack.removeLastOrNull()
             backStack.add(route)
         }
     }
 
-    fun push(route: Any) {
+    fun push(route: NavKey) {
         backStack.add(route)
     }
 

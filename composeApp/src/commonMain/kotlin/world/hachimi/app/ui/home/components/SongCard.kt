@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.home.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,11 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.TagBadge
 import world.hachimi.app.ui.design.components.Text
@@ -80,11 +84,12 @@ fun SongCard(
         shape = RoundedCornerShape(16.dp),
     ) {
         Column(Modifier.clickable(onClick = onClick).padding(8.dp)) {
-            Box(Modifier.aspectRatio(1f)) {
+            Box(Modifier.aspectRatio(1f).background(LocalContentColor.current.copy(0.12f), RoundedCornerShape(8.dp))) {
                 val hazeState = rememberHazeState()
                 AsyncImage(
                     modifier = Modifier.hazeSource(hazeState).fillMaxSize().clip(RoundedCornerShape(8.dp)),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(coverUrl)
                         .crossfade(true)
                         .placeholderMemoryCacheKey(coverUrl)

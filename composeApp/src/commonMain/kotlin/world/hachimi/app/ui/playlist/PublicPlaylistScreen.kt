@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
@@ -57,6 +58,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialFadeThrough
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublicPlaylistViewModel
@@ -183,6 +185,7 @@ private fun Header(
                 AsyncImage(
                     modifier = Modifier.hazeSource(hazeState).fillMaxSize(),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),
@@ -209,6 +212,7 @@ private fun Header(
                     val avatar = avatarUrl?.let {
                         rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalPlatformContext.current)
+                                .httpHeaders(CoilHeaders)
                                 .crossfade(true)
                                 .data(it)
                                 .build()

@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
@@ -64,7 +65,9 @@ import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisYIn
 import soup.compose.material.motion.animation.materialSharedAxisYOut
 import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
@@ -80,6 +83,7 @@ import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
+import world.hachimi.app.ui.player.footer.components.PlayPauseStatus
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
@@ -94,101 +98,122 @@ fun ExpandedFooterPlayer2(
     hazeState: HazeState,
     global: GlobalStore = koinInject(),
 ) {
-    val uiState = global.player.playerState
-    var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
-    var musicQueueExpanded by remember { mutableStateOf(false) }
+    Box {
+        val uiState = global.player.playerState
+        var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+        var musicQueueExpanded by remember { mutableStateOf(false) }
 
-    AnimatedVisibility(visible = !global.playerExpanded) {
-        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedVisibility) {
-            Container(
-                modifier = modifier.requiredWidthIn(min = 400.dp).height(ExpandedFooterHeight),
-                hazeState = hazeState,
-                content = {
-                    FooterPlayerLayout {
-                        Cover(
-                            modifier = Modifier.layoutId("cover").padding(8.dp),
-                            url = uiState.displayedCover,
-                            onClick = { global.expandPlayer() }
-                        )
-                        Column(
-                            modifier = Modifier.layoutId("info").padding(top = 8.dp, start = 24.dp)
-                        ) {
-                            val title = uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
-                            val author = uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
-                            Title(title)
-                            Author(author)
-                        }
-                        ControlButton(
-                            modifier = Modifier.layoutId("control").padding(top = 8.dp),
-                            playing = uiState.isPlaying,
-                            onPreviousClick = { global.player.previous() },
-                            onNextClick = { global.player.next() },
-                            onPlayClick = { global.player.playOrPause() },
-                            onPauseClick = { global.player.playOrPause() }
-                        )
-                        PlayerProgress(
-                            modifier = Modifier.layoutId("progress")
-                                .padding(start = 24.dp, bottom = 6.dp),
-                            durationMillis = uiState.displayedDurationMillis,
-                            currentMillis = { uiState.displayedCurrentMillis },
-                            bufferingProgress = uiState.downloadProgress,
-                            onProgressChange = { global.player.setSongProgress(it) }
-                        )
-                        VolumeControl(
-                            modifier = Modifier.layoutId("volume-control")
-                                .padding(start = 24.dp, end = 24.dp, bottom = 6.dp),
-                            volume = uiState.volume,
-                            onVolumeChange = { global.player.updateVolume(it) }
-                        )
-                        FunctionButtons(
-                            modifier = Modifier.layoutId("function-buttons")
-                                .padding(top = 8.dp, end = 8.dp),
-                            shuffleOn = global.player.shuffleMode,
-                            repeatOn = global.player.repeatMode,
-                            onShuffleChange = { global.player.updateShuffleMode(it) },
-                            onRepeatChange = { global.player.updateRepeatMode(it) },
+        AnimatedVisibility(visible = !global.playerExpanded) {
+            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedVisibility) {
+                Container(
+                    modifier = modifier.requiredWidthIn(min = 400.dp).height(ExpandedFooterHeight),
+                    hazeState = hazeState,
+                    content = {
+                        ExpandedPlayerContent(
+                            global = global,
+                            uiState = uiState,
                             onAddToPlaylistClick = {
                                 tobeAddedSong =
                                     uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                             },
-                            onMusicQueueClick = { musicQueueExpanded = true },
-                            onOpenInFullClick = { global.expandPlayer() },
+                            onMusicQueueClick = { musicQueueExpanded = true }
                         )
                     }
-                }
-            )
-        }
-    }
-
-    // TODO: Extract this dialog to global scope
-    if (!global.playerExpanded) {
-        AddToPlaylistDialog(
-            tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
-            onDismiss = { tobeAddedSong = null },
-        )
-    }
-
-    MusicQueuePopup(
-        expanded = musicQueueExpanded,
-        onDismissRequest = { musicQueueExpanded = false }
-    ) {
-        Card(
-            modifier = Modifier.size(400.dp, 400.dp),
-            hazeState = hazeState
-        ) {
-            Column(modifier = Modifier.padding(16.dp),) {
-                MusicQueueHeader(
-                    onClearClick = { global.player.clearQueue() }, Modifier.fillMaxWidth()
-                )
-                MusicQueue(
-                    modifier = Modifier.padding(top = 16.dp).weight(1f),
-                    queue = global.player.musicQueue,
-                    playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
-                    onPlayClick = { global.player.playSongInQueue(it) },
-                    onRemoveClick = { global.player.removeFromQueue(it) },
                 )
             }
         }
+
+        // TODO: Extract this dialog to global scope
+        if (!global.playerExpanded) {
+            AddToPlaylistDialog(
+                tobeAddedSongId = tobeAddedSong?.first, random = tobeAddedSong?.second,
+                onDismiss = { tobeAddedSong = null },
+            )
+        }
+
+        MusicQueuePopup(
+            expanded = musicQueueExpanded,
+            onDismissRequest = { musicQueueExpanded = false }
+        ) {
+            Card(
+                modifier = Modifier.size(400.dp, 400.dp),
+                hazeState = hazeState
+            ) {
+                Column(modifier = Modifier.padding(16.dp),) {
+                    MusicQueueHeader(
+                        onClearClick = { global.player.clearQueue() }, Modifier.fillMaxWidth()
+                    )
+                    MusicQueue(
+                        modifier = Modifier.padding(top = 16.dp).weight(1f),
+                        queue = global.player.musicQueue,
+                        playingSongId = if (global.player.playerState.fetchingMetadata) global.player.playerState.fetchingSongId else global.player.playerState.songInfo?.id,
+                        onPlayClick = { global.player.playSongInQueue(it) },
+                        onRemoveClick = { global.player.removeFromQueue(it) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpandedPlayerContent(
+    global: GlobalStore,
+    uiState: PlayerUIState,
+    onAddToPlaylistClick: () -> Unit,
+    onMusicQueueClick: () -> Unit
+) {
+    FooterPlayerLayout {
+        Cover(
+            modifier = Modifier.layoutId("cover").padding(8.dp),
+            url = uiState.displayedCover,
+            onClick = { global.expandPlayer() }
+        )
+        Column(
+            modifier = Modifier.layoutId("info")
+                .padding(top = 8.dp, start = 24.dp)
+        ) {
+            val title =
+                uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
+            val author =
+                uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
+            Title(title)
+            Author(author)
+        }
+        ControlButton(
+            modifier = Modifier.layoutId("control").padding(top = 8.dp),
+            playing = uiState.isPlaying,
+            fetching = uiState.fetchingMetadata,
+            onPreviousClick = { global.player.previous() },
+            onNextClick = { global.player.next() },
+            onPlayClick = { global.player.playOrPause() },
+            onPauseClick = { global.player.playOrPause() }
+        )
+        PlayerProgress(
+            modifier = Modifier.layoutId("progress")
+                .padding(start = 24.dp, bottom = 6.dp),
+            durationMillis = uiState.displayedDurationMillis,
+            currentMillis = { uiState.displayedCurrentMillis },
+            bufferingProgress = uiState.downloadProgress,
+            onProgressChange = { global.player.setSongProgress(it) }
+        )
+        VolumeControl(
+            modifier = Modifier.layoutId("volume-control")
+                .padding(start = 24.dp, end = 24.dp, bottom = 6.dp),
+            volume = uiState.volume,
+            onVolumeChange = { global.player.updateVolume(it) }
+        )
+        FunctionButtons(
+            modifier = Modifier.layoutId("function-buttons")
+                .padding(top = 8.dp, end = 8.dp),
+            shuffleOn = global.player.shuffleMode,
+            repeatOn = global.player.repeatMode,
+            onShuffleChange = { global.player.updateShuffleMode(it) },
+            onRepeatChange = { global.player.updateRepeatMode(it) },
+            onAddToPlaylistClick = onAddToPlaylistClick,
+            onMusicQueueClick = onMusicQueueClick,
+            onOpenInFullClick = { global.expandPlayer() },
+        )
     }
 }
 
@@ -210,7 +235,14 @@ private fun FooterPlayerLayout(
         val functionButton = map["function-buttons"]!!
 
         val coverPlaceable = cover.measure(constraints)
-        val volumeControlPlaceable = volumeControl.measure(constraints)
+        val volumeControlPlaceable = volumeControl.measure(
+            if (constraints.maxWidth.toDp() > 720.dp) {
+                // Breakpoint to let the progressbar display properly
+                constraints
+            } else {
+                constraints.copy(maxWidth = 160.dp.roundToPx())
+            }
+        )
         val functionButtonPlaceable = functionButton.measure(constraints)
 
         val progressPlaceable = progress.measure(
@@ -286,6 +318,7 @@ private fun Cover(
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
                     .data(url)
                     .crossfade(true)
                     .placeholderMemoryCacheKey(url)
@@ -309,6 +342,7 @@ private fun Cover(
 private fun ControlButton(
     modifier: Modifier,
     playing: Boolean,
+    fetching: Boolean,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onPlayClick: () -> Unit,
@@ -319,7 +353,11 @@ private fun ControlButton(
         Spacer(Modifier.width(8.dp))
         PlayPauseButton(
             modifier = Modifier.size(78.dp),
-            playing = playing,
+            status = when {
+                fetching -> PlayPauseStatus.Fetching
+                playing -> PlayPauseStatus.Playing
+                else -> PlayPauseStatus.Paused
+            },
             onClick = {
                 if (playing) onPauseClick()
                 else onPlayClick()

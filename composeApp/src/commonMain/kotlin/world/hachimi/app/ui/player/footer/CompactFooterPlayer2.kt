@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
@@ -35,6 +36,7 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_not_playing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
@@ -44,6 +46,7 @@ import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.player.footer.components.Author
 import world.hachimi.app.ui.player.footer.components.Container
 import world.hachimi.app.ui.player.footer.components.PlayPauseButton
+import world.hachimi.app.ui.player.footer.components.PlayPauseStatus
 import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -73,15 +76,21 @@ fun CompactFooterPlayer2(
                     Cover(uiState.displayedCover)
 
                     Column(Modifier.weight(1f)) {
-                        val title = uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
-                        val author = uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
+                        val title =
+                            uiState.displayedTitle.ifBlank { stringResource(Res.string.player_not_playing) }
+                        val author =
+                            uiState.displayedAuthor.ifBlank { stringResource(Res.string.player_not_playing) }
                         Title(title)
                         Author(author)
                     }
 
                     PlayPauseButton(
                         modifier = Modifier.size(48.dp),
-                        playing = uiState.isPlaying,
+                        status = when {
+                            uiState.fetchingMetadata -> PlayPauseStatus.Fetching
+                            uiState.isPlaying -> PlayPauseStatus.Playing
+                            else -> PlayPauseStatus.Paused
+                        },
                         onClick = {
                             global.player.playOrPause()
                         }
@@ -113,7 +122,7 @@ private fun Cover(
     val animatedVisibility = LocalAnimatedVisibilityScope.current
 
     val cornerRadius by animatedVisibility.transition.animateDp(label = "rounded corner") { enterExitState ->
-        when(enterExitState) {
+        when (enterExitState) {
             EnterExitState.PreEnter -> FullScreenCoverCornerRadius
             EnterExitState.Visible -> FooterPlayerCoverCornerRadius
             EnterExitState.PostExit -> FullScreenCoverCornerRadius
@@ -135,6 +144,7 @@ private fun Cover(
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
                     .data(model)
                     .crossfade(true)
                     .placeholderMemoryCacheKey(model)

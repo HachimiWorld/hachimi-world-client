@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
@@ -33,6 +34,7 @@ import hachimiworld.composeapp.generated.resources.player_add_to_playlist_create
 import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.PlaylistViewModel
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -146,6 +148,7 @@ private fun Item(
                 AsyncImage(
                     modifier = Modifier.fillMaxSize(),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(item.coverUrl)
                         .crossfade(true)
                         .build(),

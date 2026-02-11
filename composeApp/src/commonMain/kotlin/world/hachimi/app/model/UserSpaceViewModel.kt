@@ -22,7 +22,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.CommonError
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
@@ -147,7 +146,7 @@ class UserSpaceViewModel(
                     if (resp.ok) {
                         refreshProfile()
                     } else {
-                        val error = resp.errData<CommonError>()
+                        val error = resp.err()
                         global.alert(error.msg)
                         return@launch
                     }
@@ -182,7 +181,7 @@ class UserSpaceViewModel(
                     showEditUsername = false
                     refreshProfile()
                 } else {
-                    val err = resp.errData<CommonError>()
+                    val err = resp.err()
                     global.alert(err.msg)
                 }
             } catch (e: Throwable) {
@@ -219,7 +218,7 @@ class UserSpaceViewModel(
                     showEditBio = false
                     refreshProfile()
                 } else {
-                    val err = resp.errData<CommonError>()
+                    val err = resp.err()
                     global.alert(err.msg)
                 }
             } catch (e: Throwable) {

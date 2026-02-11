@@ -6,7 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,7 +34,7 @@ import world.hachimi.app.ui.theme.onSurfaceLight
 
 @OptIn(ExperimentalTextApi::class)
 private val SegoeIconFont = FontFamily(
-    SystemFont("Segoe Fluent Icons"),
+//    SystemFont("Segoe Fluent Icons"), FIXME: The fallback doesn't work
     SystemFont("Segoe MDL2 Assets"),
 )
 
@@ -38,6 +42,8 @@ private const val MinimizeGlyph = '\uE921'
 private const val MaximizeGlyph = '\uE922'
 private const val RestoreGlyph = '\uE923'
 private const val CloseGlyph = '\uE8BB'
+
+val CaptionBarHeight = 32.dp
 
 @Composable
 fun CaptionBar(
@@ -52,7 +58,7 @@ fun CaptionBar(
     onCloseBounds: (Rect) -> Unit,
 ) {
     CompositionLocalProvider(LocalContentColor provides if (darkMode) onSurfaceDark else onSurfaceLight) {
-        Row(modifier.height(32.dp), horizontalArrangement = Arrangement.End) {
+        Row(modifier.height(CaptionBarHeight), horizontalArrangement = Arrangement.End) {
             CaptionButton(
                 modifier = Modifier.onGloballyPositioned { onMinBounds(it.boundsInWindow()) },
                 onClick = onMinClick,

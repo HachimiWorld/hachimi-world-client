@@ -2,6 +2,7 @@ package world.hachimi.app.logging
 
 import android.util.Log
 
+@Suppress("NOTHING_TO_INLINE")
 actual object Logger {
 
     actual inline fun e(tag: String, message: String, throwable: Throwable?) {
