@@ -26,8 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
@@ -95,6 +97,7 @@ private fun Cover(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalPlatformContext.current).data(coverUrl)
+                .httpHeaders(CoilHeaders)
                 .crossfade(true).build(),
             contentDescription = "Playlist Cover",
             contentScale = ContentScale.Crop
@@ -111,6 +114,7 @@ private fun Avatar(url: String?) {
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalPlatformContext.current).data(url)
+                .httpHeaders(CoilHeaders)
                 .crossfade(true).build(),
             contentDescription = "User Avatar",
             contentScale = ContentScale.Crop

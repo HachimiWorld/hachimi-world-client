@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
@@ -36,6 +37,7 @@ import hachimiworld.composeapp.generated.resources.common_more
 import hachimiworld.composeapp.generated.resources.playlist_remove_item
 import hachimiworld.composeapp.generated.resources.song_cover_cd
 import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
@@ -73,6 +75,7 @@ fun SongItem(
             Box(Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(LocalContentColor.current.copy(0.12f))) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),

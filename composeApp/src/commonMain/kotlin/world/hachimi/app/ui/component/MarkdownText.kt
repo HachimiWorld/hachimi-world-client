@@ -32,8 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.LocalTextStyle
@@ -104,6 +106,7 @@ fun MarkdownText(
                         ) {
                             AsyncImage(
                                 model = ImageRequest.Builder(ctx)
+                                    .httpHeaders(CoilHeaders)
                                     .data(block.url)
                                     .crossfade(true)
                                     .build(),

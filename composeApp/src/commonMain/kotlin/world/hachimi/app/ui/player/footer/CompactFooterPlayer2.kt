@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
@@ -35,6 +36,7 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_not_playing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
@@ -142,6 +144,7 @@ private fun Cover(
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
                     .data(model)
                     .crossfade(true)
                     .placeholderMemoryCacheKey(model)

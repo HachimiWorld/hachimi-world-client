@@ -30,11 +30,13 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PostModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.getPlatform
@@ -116,6 +118,7 @@ private fun EventDetailContent(
                     onClick = { onNavToUser(data.author.uid) },
                     avatar = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalPlatformContext.current)
+                            .httpHeaders(CoilHeaders)
                             .data(data.author.avatarUrl)
                             .crossfade(true)
                             .build()
@@ -149,6 +152,7 @@ private fun EventDetailContent(
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
+                            .httpHeaders(CoilHeaders)
                             .data(data.coverUrl)
                             .crossfade(true)
                             .build(),

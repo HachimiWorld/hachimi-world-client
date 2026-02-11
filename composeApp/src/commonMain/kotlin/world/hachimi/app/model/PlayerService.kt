@@ -8,6 +8,7 @@ import hachimiworld.composeapp.generated.resources.player_play_failed
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.UserAgent
 import io.ktor.client.request.get
 import io.ktor.client.request.head
 import io.ktor.client.request.prepareGet
@@ -53,6 +54,9 @@ private val downloadHttpClient = HttpClient() {
         connectTimeoutMillis = 60_000
         requestTimeoutMillis = 60_000
         socketTimeoutMillis = 60_000
+    }
+    install(UserAgent) {
+        agent = getPlatform().userAgent
     }
 }
 

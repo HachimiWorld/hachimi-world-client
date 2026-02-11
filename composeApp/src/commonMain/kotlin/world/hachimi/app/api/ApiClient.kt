@@ -1,5 +1,6 @@
 package world.hachimi.app.api
 
+import coil3.network.NetworkHeaders
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.content.ProgressListener
@@ -436,3 +437,7 @@ inline fun <reified E> WebResp<*, E>.err(): E {
     @Suppress("DEPRECATION")
     return WebResp.json.decodeFromJsonElement<E>(this.data)
 }
+
+val CoilHeaders = NetworkHeaders.Builder().apply {
+    set("User-Agent", getPlatform().userAgent)
+}.build()

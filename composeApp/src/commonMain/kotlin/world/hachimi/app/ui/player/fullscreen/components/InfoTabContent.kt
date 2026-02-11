@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
@@ -45,6 +46,7 @@ import hachimiworld.composeapp.generated.resources.info_release_date
 import hachimiworld.composeapp.generated.resources.info_tags
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.PlayerUIState
@@ -91,6 +93,7 @@ fun InfoTabContent(
                         },
                         avatar = rememberAsyncImagePainter(
                             model = ImageRequest.Builder(LocalPlatformContext.current)
+                                .httpHeaders(CoilHeaders)
                                 .data(uiState.userProfile?.avatarUrl)
                                 .crossfade(true)
                                 .build(),

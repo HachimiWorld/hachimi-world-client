@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
@@ -49,6 +50,7 @@ import hachimiworld.composeapp.generated.resources.song_cover_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
@@ -158,6 +160,7 @@ private fun Header(
                 AsyncImage(
                     modifier = Modifier.hazeSource(hazeState).fillMaxSize(),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(info.coverUrl)
                         .crossfade(true)
                         .build(),

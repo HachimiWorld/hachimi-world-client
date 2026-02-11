@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
@@ -64,6 +65,7 @@ import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisYIn
 import soup.compose.material.motion.animation.materialSharedAxisYOut
 import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
@@ -316,6 +318,7 @@ private fun Cover(
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
                     .data(url)
                     .crossfade(true)
                     .placeholderMemoryCacheKey(url)

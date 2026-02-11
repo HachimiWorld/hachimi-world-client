@@ -33,10 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
@@ -87,6 +89,7 @@ fun SongCard(
                 AsyncImage(
                     modifier = Modifier.hazeSource(hazeState).fillMaxSize().clip(RoundedCornerShape(8.dp)),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(coverUrl)
                         .crossfade(true)
                         .placeholderMemoryCacheKey(coverUrl)

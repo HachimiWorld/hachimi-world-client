@@ -18,8 +18,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
@@ -65,6 +67,7 @@ fun Cover(
                 AsyncImage(
                     modifier = Modifier.fillMaxSize(),
                     model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
                         .data(model)
                         .crossfade(true)
                         .placeholderMemoryCacheKey(model)
@@ -77,3 +80,4 @@ fun Cover(
         }
     }
 }
+

@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
@@ -61,6 +62,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.SearchViewModel
@@ -427,6 +429,7 @@ private fun Header(
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         AsyncImage(
             model = ImageRequest.Builder(LocalPlatformContext.current)
+                .httpHeaders(CoilHeaders)
                 .data(cover)
                 .crossfade(true)
                 .build(),
