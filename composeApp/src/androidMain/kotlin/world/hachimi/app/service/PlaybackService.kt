@@ -8,7 +8,9 @@ import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
@@ -47,7 +49,19 @@ class PlaybackService : MediaSessionService(), MediaSession.Callback {
 
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this).build()
+
+        val userAgentString = "HachimiWorld-android"
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setDefaultRequestProperties(mapOf("Referer" to "https://hachimi.world/"))
+            .setUserAgent(userAgentString)
+        val dataSourceFactory = androidx.media3.datasource.DefaultDataSource.Factory(
+            this,
+            httpDataSourceFactory
+        )
+
+        val player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .build()
         player.addAnalyticsListener(EventLogger())
 
         mediaSession = MediaSession.Builder(this, player)
