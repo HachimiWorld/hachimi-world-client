@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
+import kotlinx.io.InternalIoApi
 import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -522,7 +523,7 @@ class PlayerService(
         val cache = cacheFromId ?: cacheFromJmid
         val metadata: SongDetailInfo
 
-        if (cache != null) {
+        if (cache != null && !isCacheOutdated(cache)) {
             Logger.i(TAG, "Cache hit")
             val buffer = Buffer()
             metadata = cache.metadata
@@ -621,6 +622,16 @@ class PlayerService(
                 )
                 return@coroutineScope item
             }
+        }
+    }
+
+    @OptIn(InternalIoApi::class)
+    private fun isCacheOutdated(cache: SongCache.Item): Boolean {
+        // Magic content length for the anti hotlink mp3 file
+        if (cache.audio.peek().buffer.size == 2680727L) {
+            return true
+        } else {
+            return false
         }
     }
 

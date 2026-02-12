@@ -16,6 +16,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -38,7 +43,11 @@ fun SearchUserItem(
         ) {
             Surface(Modifier.size(120.dp), shape = CircleShape, color = LocalContentColor.current.copy(0.12f)) {
                 AsyncImage(
-                    model = avatarUrl,
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
+                        .data(avatarUrl)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Avatar",
                     contentScale = ContentScale.Crop
                 )

@@ -28,10 +28,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.recent_play_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
 import world.hachimi.app.ui.LocalContentInsets
@@ -119,7 +124,11 @@ private fun RecentPlayItem(
             ) {
                 AsyncImage(
                     modifier = Modifier.size(48.dp),
-                    model = coverUrl,
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
+                        .data(coverUrl)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Cover Image",
                     contentScale = ContentScale.Crop
                 )

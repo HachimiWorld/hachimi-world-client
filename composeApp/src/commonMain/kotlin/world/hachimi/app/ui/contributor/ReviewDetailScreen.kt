@@ -27,6 +27,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.artwork_details_title
 import hachimiworld.composeapp.generated.resources.contributor_submitter
@@ -35,6 +39,7 @@ import hachimiworld.composeapp.generated.resources.review_reject
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.PublishModule.SongPublishReviewBrief.Companion.STATUS_PENDING
 import world.hachimi.app.getPlatform
@@ -139,7 +144,11 @@ private fun Content(
             }
             PropertyItem({ Text("封面") }) {
                 Surface(Modifier.size(120.dp)) {
-                    AsyncImage(data.coverUrl, null, Modifier.size(120.dp))
+                    AsyncImage(ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
+                        .data(data.coverUrl)
+                        .crossfade(true)
+                        .build(), null, Modifier.size(120.dp))
                 }
             }
             PropertyItem("标题", data.title)
