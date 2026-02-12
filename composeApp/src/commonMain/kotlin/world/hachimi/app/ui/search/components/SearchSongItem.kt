@@ -26,6 +26,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.ui.design.HachimiTheme
@@ -55,7 +60,11 @@ fun SearchSongItem(
                 color = LocalContentColor.current.copy(0.12f)
             ) {
                 AsyncImage(
-                    model = data.info.coverArtUrl,
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
+                        .data(data.info.coverArtUrl)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Song Cover Image",
                     contentScale = ContentScale.Crop
                 )

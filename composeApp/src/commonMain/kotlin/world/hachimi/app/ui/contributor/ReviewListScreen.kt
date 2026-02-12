@@ -29,8 +29,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewViewModel
@@ -148,7 +153,11 @@ private fun ReviewItem(
         Surface(Modifier.size(42.dp), RoundedCornerShape(8.dp), LocalContentColor.current.copy(0.12f)) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = coverUrl,
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
+                    .data(coverUrl)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = "Cover Image",
                 contentScale = ContentScale.Crop
             )

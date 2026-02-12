@@ -38,6 +38,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_logout
 import hachimiworld.composeapp.generated.resources.common_cancel
@@ -57,6 +61,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialFadeThrough
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
@@ -158,7 +163,11 @@ private fun Header(
                                 contentAlignment = Alignment.Center
                             ) {
                                 AsyncImage(
-                                    model = profile.avatarUrl,
+                                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                                        .httpHeaders(CoilHeaders)
+                                        .data(profile.avatarUrl)
+                                        .crossfade(true)
+                                        .build(),
                                     contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
                                     modifier = Modifier.fillMaxSize(),
                                     filterQuality = FilterQuality.High,

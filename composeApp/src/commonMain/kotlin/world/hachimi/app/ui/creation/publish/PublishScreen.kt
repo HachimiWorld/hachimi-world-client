@@ -45,8 +45,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
@@ -170,7 +175,11 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (vm.type == Type.EDIT) AsyncImage(
-                                    model = vm.coverImage ?: vm.coverImageUrl,
+                                    model = vm.coverImage ?: ImageRequest.Builder(LocalPlatformContext.current)
+                                        .httpHeaders(CoilHeaders)
+                                        .data(vm.coverImageUrl)
+                                        .crossfade(true)
+                                        .build(),
                                     contentDescription = "Cover Image",
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop

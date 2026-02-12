@@ -35,10 +35,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_login
 import hachimiworld.composeapp.generated.resources.auth_register
 import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.Route
@@ -172,7 +177,11 @@ private fun NameAvatar(
                 .background(LocalContentColor.current.copy(0.12f))
         ) {
             AsyncImage(
-                model = avatarUrl,
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
+                    .data(avatarUrl)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = "User Avatar",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -192,7 +201,11 @@ private fun AvatarOnly(avatarUrl: String?, onClick: () -> Unit) {
             .clickable(onClick = onClick)
     ) {
         AsyncImage(
-            model = avatarUrl,
+            model = ImageRequest.Builder(LocalPlatformContext.current)
+                .httpHeaders(CoilHeaders)
+                .data(avatarUrl)
+                .crossfade(true)
+                .build(),
             contentDescription = "User Avatar",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
