@@ -51,6 +51,8 @@ class HomeViewModel(
 
     val categoryState = mutableStateMapOf<String, CategoryState>()
 
+    var showClaims by mutableStateOf(true)
+
     data class CategoryState(
         val status: MutableState<InitializeStatus>,
         val songs: MutableState<List<SongModule.SearchSongItem>>,

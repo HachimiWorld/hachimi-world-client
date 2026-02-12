@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -39,6 +40,7 @@ import androidx.compose.ui.layout.onFirstVisible
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
 import hachimiworld.composeapp.generated.resources.common_more
@@ -61,6 +63,8 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
@@ -90,6 +94,24 @@ fun HomeMainScreen(
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
+            if (vm.showClaims) item {
+                Card(Modifier.fillMaxWidthIn().padding(horizontal = 24.dp)) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Text(
+                            text = "声明：hachimi.world 是基米天堂官方域名。我们是非营利的开源项目，与任何商业项目无关，与任何虚拟货币无关，请仔细甄别防止诈骗。本应用内的所有作品均由二创原作者发布。",
+                            fontSize = 14.sp,
+                        )
+                        HachimiIconButton(
+                            modifier = Modifier.align(Alignment.End),
+                            onClick = { vm.showClaims = false }
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = "Confirm")
+                        }
+                    }
+                }
+            }
             item(contentType = "recent_section") {
                 Segment(
                     modifier = Modifier.fillMaxWidthIn(),
