@@ -14,6 +14,7 @@ import kotlin.js.toJsArray
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/MediaMetadata/MediaMetadata
  */
+@Suppress("UNUSED_PARAMETER")
 external class MediaMetadata : JsAny {
     constructor()
     constructor(init: MediaMetadataInit)
@@ -32,6 +33,7 @@ external class MediaMetadata : JsAny {
         set(value) = definedExternally
 }
 
+@Suppress("UNUSED_PARAMETER")
 external interface MediaMetadataInit : JsAny {
     var album: String
     var artist: String
@@ -39,7 +41,7 @@ external interface MediaMetadataInit : JsAny {
     var title: String
 }
 
-@Suppress("UNUSED_PARAMETER")
+@Suppress("UNUSED_PARAMETER", "MISSING_DEPENDENCY_SUPERCLASS") // FIXME: Suppress the compilation error
 fun MediaMetadataInit(
     artist: String = "",
     album: String = "",
@@ -54,6 +56,7 @@ fun MediaMetadataInit(
 })"""
 )
 
+@Suppress("UNUSED_PARAMETER")
 external interface MediaImage : JsAny {
     var src: String
     var sizes: String
@@ -81,6 +84,7 @@ external interface MediaSession : JsAny {
     fun setActionHandler(action: String, handler: () -> Unit)
 }
 
+@Suppress("UNUSED_PARAMETER")
 external interface ChapterInfo : JsAny {
 
 }
@@ -91,7 +95,7 @@ external interface Navigator : JsAny {
 
 external val navigator: Navigator
 
-class WasmPlayerHelper(
+class WebPlayerHelper(
     private val playerService: PlayerService
 ) {
     fun initialize() {

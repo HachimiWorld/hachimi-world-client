@@ -16,7 +16,7 @@ import kotlin.js.*
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalWasmJsInterop::class, ExperimentalUnsignedTypes::class)
-class WasmPlayer : AbstractPlatformPlayer() {
+class WebPlayer : AbstractPlatformPlayer() {
     private var howl: Howl? = null
     private val mutex = Mutex()
     private var isReady = false

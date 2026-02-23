@@ -6,8 +6,8 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.player.Player
-import world.hachimi.app.player.WasmPlayer
-import world.hachimi.app.player.WasmPlayerHelper
+import world.hachimi.app.player.WebPlayer
+import world.hachimi.app.player.WebPlayerHelper
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.MyDataStoreImpl
 import world.hachimi.app.storage.SongCache
@@ -18,11 +18,11 @@ val appModule = module {
         ApiClient(BuildKonfig.API_BASE_URL)
     }
     single<MyDataStore> { MyDataStoreImpl() }
-    single<Player> { WasmPlayer() }
+    single<Player> { WebPlayer() }
     single<SongCache> { SongCacheImpl() }
     singleOf(::GlobalStore)
     single {
-        WasmPlayerHelper(get<GlobalStore>().player)
+        WebPlayerHelper(get<GlobalStore>().player)
     }
 
     applyViewModels()

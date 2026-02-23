@@ -15,7 +15,7 @@ import world.hachimi.app.di.appModule
 import world.hachimi.app.font.WithFont
 import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.player.WasmPlayerHelper
+import world.hachimi.app.player.WebPlayerHelper
 import world.hachimi.app.ui.App
 import world.hachimi.app.util.parseJmid
 import kotlin.js.ExperimentalWasmJsInterop
@@ -32,12 +32,12 @@ fun main() {
     }
 
     val global = koin.koin.get<GlobalStore>()
-    val wasmPlayerHelper = koin.koin.get<WasmPlayerHelper>()
+    val webPlayerHelper = koin.koin.get<WebPlayerHelper>()
 
     GlobalScope.launch {
         global.initialize().join()
 
-        wasmPlayerHelper.initialize()
+        webPlayerHelper.initialize()
 
         playIntent?.let { jmid ->
             global.player.insertToQueueWithFetch(jmid, true, false)
