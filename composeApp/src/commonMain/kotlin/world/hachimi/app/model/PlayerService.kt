@@ -112,17 +112,17 @@ class PlayerService(
                 }
             }
         })
+    }
 
-        scope.launch {
-            player.initialize()
-            Logger.i(TAG, "Inner player initialized")
-            restorePlayerState()
+    suspend fun initialize() {
+        player.initialize()
+        Logger.i(TAG, "Inner player initialized")
+        restorePlayerState()
 
-            // Apply initial replay gain toggle immediately for the current runtime.
-            player.setReplayGainEnabled(global.enableLoudnessNormalization)
+        // Apply initial replay gain toggle immediately for the current runtime.
+        player.setReplayGainEnabled(global.enableLoudnessNormalization)
 
-            startSyncingJob()
-        }
+        startSyncingJob()
     }
 
     private fun startSyncingJob() {

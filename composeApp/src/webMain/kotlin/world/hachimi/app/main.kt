@@ -8,8 +8,6 @@ import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.font.WithFont
@@ -34,17 +32,6 @@ fun main() {
     val global = koin.koin.get<GlobalStore>()
     val webPlayerHelper = koin.koin.get<WebPlayerHelper>()
 
-    GlobalScope.launch {
-        global.initialize().join()
-
-        webPlayerHelper.initialize()
-
-        playIntent?.let { jmid ->
-            global.player.insertToQueueWithFetch(jmid, true, false)
-            global.expandPlayer()
-        }
-    }
-
     window.addEventListener("popstate") {
         it.preventDefault()
         if (global.playerExpanded) {
@@ -61,6 +48,14 @@ fun main() {
     ComposeViewport {
         LaunchedEffect(Unit) {
             document.querySelector("#loading")?.remove()
+            global.initialize().join()
+
+            webPlayerHelper.initialize()
+
+            playIntent?.let { jmid ->
+                global.player.insertToQueueWithFetch(jmid, true, false)
+                global.expandPlayer()
+            }
         }
         LaunchedEffect(Unit) {
             snapshotFlow { nav.backStack.toList() }

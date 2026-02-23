@@ -3,6 +3,7 @@ package world.hachimi.app
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,7 @@ import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.i18n.AppEnvironment
+import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
@@ -45,14 +47,18 @@ internal val LocalWindow = staticCompositionLocalOf<ComposeWindow> { error("Not 
 fun main() {
     System.setProperty("java.net.useSystemProxies", "true")
 
+    Logger.d("main", "Starting application")
     val koin = startKoin {
         modules(appModule)
     }
 
     val global = koin.koin.get<GlobalStore>()
-    global.initialize()
 
     application {
+        LaunchedEffect(Unit) {
+            Logger.d("main", "Composer started")
+            global.initialize()
+        }
         val icon = painterResource(Res.drawable.icon_vector)
         var showWindow by remember { mutableStateOf(true) }
         val trayState = rememberTrayState()
@@ -92,6 +98,10 @@ fun main() {
                 }
             }
         ) {
+            LaunchedEffect(Unit) {
+                Logger.d("main", "Window created")
+            }
+
             CompositionLocalProvider(LocalWindow provides window) {
                 val darkMode = global.darkMode ?: isSystemInDarkTheme()
                 JvmTheme(darkMode = darkMode) {

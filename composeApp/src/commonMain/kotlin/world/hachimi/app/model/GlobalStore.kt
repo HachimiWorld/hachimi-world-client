@@ -55,6 +55,7 @@ class GlobalStore(
         private set
     var kidsMode by mutableStateOf(false)
         private set
+
     // New locale setting: null = follow system, otherwise locale string like "en" or "zh" or "zh_CN"
     var locale by mutableStateOf<String?>(null)
         private set
@@ -81,19 +82,25 @@ class GlobalStore(
     )
 
     fun initialize() = scope.launch {
-        launch(Dispatchers.Default) {
-            coroutineScope {
-                launch { loadSettings() }
-                launch { loadLoginStatus() }
+        if (!initialized) {
+            launch(Dispatchers.Default) {
+                coroutineScope {
+                    launch { loadSettings() }
+                    launch { loadLoginStatus() }
+                    launch {
+                        try {
+                            player.initialize()
+                        } catch (e: Throwable) {
+                            Logger.e("global", "Failed to initialize player", e)
+                            alert("播放器载入失败")
+                        }
+                    }
+                }
+                initialized = true
             }
-            initialized = true
         }
-        launch {
-            checkMinApiVersion()
-        }
-        launch {
-            checkUpdate()
-        }
+        launch { checkMinApiVersion() }
+        launch { checkUpdate() }
     }
 
     fun updateDarkMode(darkMode: Boolean?) = scope.launch {
@@ -123,7 +130,8 @@ class GlobalStore(
 
     private suspend fun loadSettings() {
         this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
-        this.enableLoudnessNormalization = dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
+        this.enableLoudnessNormalization =
+            dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
         this.locale = dataStore.get(PreferencesKeys.SETTINGS_LOCALE)
     }
 
@@ -147,9 +155,10 @@ class GlobalStore(
                     when (err) {
                         is AuthError.RefreshTokenError -> {
                             logout()
-                            alert( Res.string.auth_auth_token_invalid)
+                            alert(Res.string.auth_auth_token_invalid)
                             nav.push(Route.Auth())
                         }
+
                         is AuthError.ErrorHttpResponse -> {}
                         is AuthError.UnknownError -> {}
                         is AuthError.UnauthorizedDuringRequest -> {}
@@ -173,10 +182,13 @@ class GlobalStore(
         userInfo = null
     }
 
-//    @Deprecated("Use alert with i18n instead")
+    //    @Deprecated("Use alert with i18n instead")
     fun alert(text: String?) {
         scope.launch {
-            snackbarHostState.showSnackbar(text?.take(64) ?: "Unknown Error", withDismissAction = true)
+            snackbarHostState.showSnackbar(
+                text?.take(64) ?: "Unknown Error",
+                withDismissAction = true
+            )
         }
     }
 
@@ -255,6 +267,7 @@ class GlobalStore(
         private set
     var newVersionInfo by mutableStateOf<VersionModule.LatestVersionResp?>(null)
         private set
+
     private suspend fun checkUpdate() {
         checkingUpdate = true
         try {

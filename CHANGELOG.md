@@ -1,5 +1,9 @@
 # Unreleased
 
+## Enhancements 改进
+
+1. Optimize the cold start time. 优化应用冷启动时间。
+
 ## Fixes 修复
 
 1. Fix the issue where LiTiaoTiao treats the next button as skip ad button. 修复李跳跳把下一首按钮视为跳过广告按钮的问题。
