@@ -1,0 +1,20 @@
+<resources>
+    <!--  Api Check Dialog  -->
+    <string name="player_client_api_version_title">Client version too old</string>
+    <string name="player_client_api_version_message">Your client is below the minimum version supported by the server. Please update to the latest client to continue using the app.</string>
+    <string name="player_client_api_version_client_label">Client API Ver:</string>
+    <string name="player_client_api_version_server_label">Server API Ver:</string>
+    <string name="player_client_api_version_server_min_label">Server Min API Ver:</string>
+
+    <string name="global_check_update_failed">Check for update failed</string>
+    <string name="global_error_check_min_api_failed">Failed to check min API version</string>
+
+    <!-- Update / Upgrade Dialog -->
+    <string name="update_found_title">Update available</string>
+    <string name="update_current_version">Current: %1$s</string>
+    <string name="update_new_version">New: %1$s</string>
+    <string name="update_changelog_title">Changelog</string>
+    <string name="update_confirm">Upgrade now</string>
+    <string name="update_ignore">Ignore</string>
+    <string name="update_icon_cd">Upgrade</string>
+</resources>

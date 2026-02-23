@@ -1,0 +1,12 @@
+<resources>
+    <string name="user_space_title">神人空间</string>
+    <string name="user_space_user_avatar_cd">用户头像</string>
+    <string name="user_space_uid_prefix">UID：%1$d</string>
+    <string name="user_space_intro_label">简介</string>
+    <string name="user_space_all_works">全部作品</string>
+    <string name="user_space_empty">什么也没有</string>
+    <string name="user_space_male_cd">男</string>
+    <string name="user_space_female_cd">女</string>
+    <string name="user_change_nickname">更改昵称</string>
+    <string name="user_change_bio">更改简介</string>
+</resources>

@@ -1,0 +1,13 @@
+<resources>
+    <!-- Pagination component -->
+    <string name="pagination_total_items">共 %1$d 条</string>
+    <string name="pagination_page_size">%1$d 条/页</string>
+    <string name="pagination_previous_cd">上一页</string>
+    <string name="pagination_next_cd">下一页</string>
+
+    <!-- CloseAskDialog strings -->
+    <string name="closeask_title">要最小化吗？</string>
+    <string name="closeask_text">最小化后可从系统托盘唤出窗口</string>
+    <string name="closeask_minimize">最小化</string>
+    <string name="closeask_quit">直接退出</string>
+</resources>
