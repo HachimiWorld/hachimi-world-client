@@ -59,6 +59,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_next_song
 import hachimiworld.composeapp.generated.resources.player_not_playing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -399,7 +400,7 @@ private fun NextButton(
         Icon(
             modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.SkipNext,
-            contentDescription = "Skip Next"
+            contentDescription = stringResource(Res.string.player_next_song)
         )
     }
 }

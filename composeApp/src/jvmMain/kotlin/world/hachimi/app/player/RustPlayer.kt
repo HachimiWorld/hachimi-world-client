@@ -13,7 +13,7 @@ import kotlin.io.path.writeBytes
 
 private const val TAG = "player"
 
-class RustPlayer : Player {
+class RustPlayer : AbstractPlatformPlayer() {
     private val player: uniffi.hachimi.Player
     private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var replayGainDb: Float = 0f
@@ -28,21 +28,11 @@ class RustPlayer : Player {
             override fun onEvent(event: PlayerEvent) {
                 Logger.d(TAG, "On event: $event")
                 when (event) {
-                    PlayerEvent.End -> {
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.End) }
-                    }
-                    PlayerEvent.Pause -> {
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Pause) }
-                    }
-                    PlayerEvent.Play -> {
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Play) }
-                    }
-                    is PlayerEvent.Seek -> {
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Seek(event.v1.toMillis())) }
-                    }
-                    PlayerEvent.Stop -> {
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Pause) }
-                    }
+                    PlayerEvent.End -> notifyEvent(PlayEvent.End)
+                    PlayerEvent.Pause -> notifyEvent(PlayEvent.Pause)
+                    PlayerEvent.Play -> notifyEvent(PlayEvent.Play)
+                    is PlayerEvent.Seek -> notifyEvent(PlayEvent.Seek(event.v1.toMillis()))
+                    PlayerEvent.Stop -> notifyEvent(PlayEvent.Pause)
                 }
             }
         })

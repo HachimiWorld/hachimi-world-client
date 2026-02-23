@@ -1,8 +1,13 @@
 package world.hachimi.app.player
 
 import world.hachimi.app.logging.Logger
+import kotlin.concurrent.atomics.AtomicReference
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.math.log10
 import kotlin.math.pow
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 /**
  * A player can work without UI
@@ -122,4 +127,31 @@ sealed class SongItem {
         override val format: String,
         override val replayGainDB: Float
     ): SongItem()
+}
+
+
+@OptIn(ExperimentalAtomicApi::class)
+abstract class AbstractPlatformPlayer: Player {
+    private val listeners = mutableSetOf<Player.Listener>()
+    private var lastEndEvent: AtomicReference<Instant> = AtomicReference(Clock.System.now())
+
+    override fun addListener(listener: Player.Listener) {
+        listeners.add(listener)
+    }
+
+    override fun removeListener(listener: Player.Listener) {
+        listeners.remove(listener)
+    }
+
+    protected fun notifyEvent(event: PlayEvent) {
+        if (event is PlayEvent.End) {
+            val now = Clock.System.now()
+            val last = lastEndEvent.exchange(now)
+            // Avoid duplicate end event when replaying
+            if (now - last < 5.seconds) {
+                return
+            }
+        }
+        listeners.forEach { it.onEvent(event) }
+    }
 }

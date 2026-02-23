@@ -1,5 +1,11 @@
 # Unreleased
 
+## Fixes 修复
+
+1. Fix the issue where LiTiaoTiao treats the next button as skip ad button. 修复李跳跳把下一首按钮视为跳过广告按钮的问题。
+
+# 1.1.1 (2026-02-17)
+
 ## Enhancements 改进
 
 1. Show fetching status at footer play bar. 在播放底栏显示加载状态。
