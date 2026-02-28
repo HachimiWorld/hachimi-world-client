@@ -11,12 +11,12 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 import kotlin.js.*
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalWasmJsInterop::class, ExperimentalUnsignedTypes::class)
-class WebPlayer : AbstractPlatformPlayer() {
+class WebPlayerEngine : AbstractPlatformPlayerEngine() {
     private var howl: Howl? = null
     private val mutex = Mutex()
     private var isReady = false

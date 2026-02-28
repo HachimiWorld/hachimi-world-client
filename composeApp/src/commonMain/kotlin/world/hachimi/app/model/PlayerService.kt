@@ -43,7 +43,7 @@ import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore.MusicQueueItem
 import world.hachimi.app.player.PlayEvent
-import world.hachimi.app.player.Player
+import world.hachimi.app.player.PlayerEngine
 import world.hachimi.app.player.SongItem
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
@@ -70,7 +70,7 @@ class PlayerService(
     private val global: GlobalStore,
     private val dataStore: MyDataStore,
     private val api: ApiClient,
-    private val player: Player,
+    private val engine: PlayerEngine,
     private val songCache: SongCache
 ) {
     val playerState = PlayerUIState()
@@ -86,7 +86,7 @@ class PlayerService(
     private val profileCache = mutableMapOf<Long, UserModule.PublicUserProfile?>()
 
     init {
-        player.addListener(object : Player.Listener {
+        engine.addListener(object : PlayerEngine.Listener {
             override fun onEvent(event: PlayEvent) {
                 when (event) {
                     PlayEvent.End -> {
@@ -115,12 +115,12 @@ class PlayerService(
     }
 
     suspend fun initialize() {
-        player.initialize()
+        engine.initialize()
         Logger.i(TAG, "Inner player initialized")
         restorePlayerState()
 
         // Apply initial replay gain toggle immediately for the current runtime.
-        player.setReplayGainEnabled(global.enableLoudnessNormalization)
+        engine.setReplayGainEnabled(global.enableLoudnessNormalization)
 
         startSyncingJob()
     }
@@ -128,13 +128,13 @@ class PlayerService(
     private fun startSyncingJob() {
         scope.launch(Dispatchers.Default) {
             while (isActive) {
-                if (player.isPlaying()) {
-                    val currentPosition = player.currentPosition()
+                if (engine.isPlaying()) {
+                    val currentPosition = engine.currentPosition()
                     playerState.updateCurrentMillis(currentPosition)
                 }
-                playerState.isPlaying = player.isPlaying()
-                if (player.supportRemotePlay && player.isPlaying()) {
-                    playerState.downloadProgress = player.bufferedProgress()
+                playerState.isPlaying = engine.isPlaying()
+                if (engine.supportRemotePlay && engine.isPlaying()) {
+                    playerState.downloadProgress = engine.bufferedProgress()
                 }
                 delay(100)
             }
@@ -148,7 +148,7 @@ class PlayerService(
      * This is only for play current song. Not interested in the music queue.
      */
     private suspend fun play(item: MusicQueueItem, instantPlay: Boolean, sign: Int) = coroutineScope {
-        player.stop()
+        engine.stop()
         playerMutex.withLock {
             playerJobSign = sign
         }
@@ -197,7 +197,7 @@ class PlayerService(
         )
 
         if (playerJobSign == sign) {
-            player.prepare(item, autoPlay = instantPlay)
+            engine.prepare(item, autoPlay = instantPlay)
         }
 
         // Touch in the global scope
@@ -453,7 +453,7 @@ class PlayerService(
 
     suspend fun replaceQueue(items: List<MusicQueueItem>) {
         queueMutex.withLock {
-            player.stop()
+            engine.stop()
             musicQueue = items
             shuffledQueue = items.shuffled()
             shuffleIndex = -1
@@ -469,7 +469,7 @@ class PlayerService(
                 if (musicQueue.size > 1) {
                     queueNext()
                 } else {
-                    player.stop()
+                    engine.stop()
                     playerState.clear()
                 }
             }
@@ -485,10 +485,10 @@ class PlayerService(
     fun playOrPause() = scope.launch {
         // TODO: Redownload, if the song download failed
         if (!playerState.fetchingMetadata && !playerState.buffering) {
-            if (player.isPlaying()) {
-                player.pause()
+            if (engine.isPlaying()) {
+                engine.pause()
             } else {
-                player.play()
+                engine.play()
             }
         }
     }
@@ -497,7 +497,7 @@ class PlayerService(
         if (!playerState.fetchingMetadata && !playerState.buffering) {
             playerState.songInfo?.let { songInfo ->
                 val millis = (progress * (songInfo.durationSeconds * 1000L)).toLong()
-                player.seek(millis, true)
+                engine.seek(millis, true)
 
                 // Update UI instantly
                 // FIXME(player): This might be overwrite by progress syncing job
@@ -508,7 +508,7 @@ class PlayerService(
 
     fun updateVolume(volume: Float) = scope.launch {
         playerState.volume = volume
-        player.setVolume(volume)
+        engine.setVolume(volume)
         dataStore.set(PreferencesKeys.PLAYER_VOLUME, volume)
     }
 
@@ -577,7 +577,7 @@ class PlayerService(
             val filename = metadata.audioUrl.substringAfterLast("/")
             val extension = filename.substringAfterLast(".")
 
-            if (player.supportRemotePlay) {
+            if (engine.supportRemotePlay) {
                 Logger.i(TAG, "Remote play")
 
                 val item = SongItem.Remote(
@@ -839,7 +839,7 @@ class PlayerService(
             shuffledQueue = emptyList()
             shuffleIndex = -1
 
-            player.stop()
+            engine.stop()
             playerState.clear()
             savePlayerState()
         }
@@ -854,7 +854,7 @@ class PlayerService(
     suspend fun restorePlayerState() {
         val volume = dataStore.get(PreferencesKeys.PLAYER_VOLUME) ?: 1f
         playerState.volume = volume
-        player.setVolume(volume)
+        engine.setVolume(volume)
 
         val data = dataStore.get(PreferencesKeys.PLAYER_MUSIC_QUEUE) ?: run {
             Logger.i(TAG, "Music queue was not found")
@@ -881,6 +881,6 @@ class PlayerService(
     }
 
     suspend fun setReplayGainEnabled(enabled: Boolean) {
-        player.setReplayGainEnabled(enabled)
+        engine.setReplayGainEnabled(enabled)
     }
 }

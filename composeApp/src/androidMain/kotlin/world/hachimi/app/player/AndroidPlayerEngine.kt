@@ -14,11 +14,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 
-class AndroidPlayer(
+class AndroidPlayerEngine(
     private val controllerFuture: ListenableFuture<MediaController>
-) : AbstractPlatformPlayer() {
+) : AbstractPlatformPlayerEngine() {
     private var controller: MediaController? = null
     private var ready = false
     private var initialized = MutableStateFlow<Boolean>(false)
@@ -62,7 +62,7 @@ class AndroidPlayer(
                     notifyEvent(PlayEvent.Error(error))
                 }
             })
-            this@AndroidPlayer.controller = controller
+            this@AndroidPlayerEngine.controller = controller
         }, MoreExecutors.directExecutor())
     }
 

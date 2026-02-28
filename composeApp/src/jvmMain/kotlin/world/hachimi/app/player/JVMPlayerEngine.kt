@@ -17,14 +17,14 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 
-class JVMPlayer() : Player {
+class JVMPlayerEngine() : PlayerEngine {
     private var clip: Clip? = null
     private var volumeControl: FloatControl? = null
     private var masterGainControl: FloatControl? = null
 
     private lateinit var stream: AudioInputStream
     private var ready = false
-    private val listeners: MutableSet<Player.Listener> = mutableSetOf()
+    private val listeners: MutableSet<PlayerEngine.Listener> = mutableSetOf()
     private val mutex = Mutex()
     private var volume: Float = 1f
     private var replayGainDB: Float = 0f
@@ -125,7 +125,7 @@ class JVMPlayer() : Player {
             Logger.i("player", "replayGain = $replayGainDB")
 
             ready = true
-            this@JVMPlayer.clip = clip
+            this@JVMPlayerEngine.clip = clip
 
             if (autoPlay) {
                 play()
@@ -252,11 +252,11 @@ class JVMPlayer() : Player {
         }
     }
 
-    override fun addListener(listener: Player.Listener) {
+    override fun addListener(listener: PlayerEngine.Listener) {
         listeners.add(listener)
     }
 
-    override fun removeListener(listener: Player.Listener) {
+    override fun removeListener(listener: PlayerEngine.Listener) {
         listeners.remove(listener)
     }
 

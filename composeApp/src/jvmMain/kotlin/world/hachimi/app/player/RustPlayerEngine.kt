@@ -5,7 +5,7 @@ import kotlinx.coroutines.withContext
 import uniffi.hachimi.MediaItem
 import uniffi.hachimi.PlayerEvent
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 import java.time.Duration
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.createTempFile
@@ -13,7 +13,7 @@ import kotlin.io.path.writeBytes
 
 private const val TAG = "player"
 
-class RustPlayer : AbstractPlatformPlayer() {
+class RustPlayerEngine : AbstractPlatformPlayerEngine() {
     private var player: uniffi.hachimi.Player? = null
     private var replayGainDb: Float = 0f
     private var userVolume = 1f

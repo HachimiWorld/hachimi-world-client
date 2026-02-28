@@ -12,7 +12,7 @@ import kotlin.time.Instant
 /**
  * A player can work without UI
  */
-interface Player {
+interface PlayerEngine {
     val supportRemotePlay: Boolean
 
     suspend fun isPlaying(): Boolean
@@ -131,15 +131,15 @@ sealed class SongItem {
 
 
 @OptIn(ExperimentalAtomicApi::class)
-abstract class AbstractPlatformPlayer: Player {
-    private val listeners = mutableSetOf<Player.Listener>()
+abstract class AbstractPlatformPlayerEngine: PlayerEngine {
+    private val listeners = mutableSetOf<PlayerEngine.Listener>()
     private var lastEndEvent: AtomicReference<Instant> = AtomicReference(Clock.System.now())
 
-    override fun addListener(listener: Player.Listener) {
+    override fun addListener(listener: PlayerEngine.Listener) {
         listeners.add(listener)
     }
 
-    override fun removeListener(listener: Player.Listener) {
+    override fun removeListener(listener: PlayerEngine.Listener) {
         listeners.remove(listener)
     }
 

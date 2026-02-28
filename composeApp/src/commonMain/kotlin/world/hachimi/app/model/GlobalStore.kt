@@ -29,7 +29,7 @@ import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.player.Player
+import world.hachimi.app.player.PlayerEngine
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
@@ -45,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 class GlobalStore(
     private val dataStore: MyDataStore,
     private val api: ApiClient,
-    private val innerPlayer: Player,
+    private val engine: PlayerEngine,
     songCache: SongCache
 ) {
     var initialized by mutableStateOf(false)
@@ -66,7 +66,7 @@ class GlobalStore(
         private set
     var playerExpanded by mutableStateOf(false)
         private set
-    val player = PlayerService(this, dataStore, api, innerPlayer, songCache)
+    val player = PlayerService(this, dataStore, api, engine, songCache)
     private val scope = CoroutineScope(Dispatchers.Default)
     val snackbarHostState = SnackbarHostState()
 

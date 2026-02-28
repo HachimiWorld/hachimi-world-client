@@ -5,8 +5,8 @@ import org.koin.dsl.module
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.player.Player
-import world.hachimi.app.player.WebPlayer
+import world.hachimi.app.player.PlayerEngine
+import world.hachimi.app.player.WebPlayerEngine
 import world.hachimi.app.player.WebPlayerHelper
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.MyDataStoreImpl
@@ -18,7 +18,7 @@ val appModule = module {
         ApiClient(BuildKonfig.API_BASE_URL)
     }
     single<MyDataStore> { MyDataStoreImpl() }
-    single<Player> { WebPlayer() }
+    single<PlayerEngine> { WebPlayerEngine() }
     single<SongCache> { SongCacheImpl() }
     singleOf(::GlobalStore)
     single {

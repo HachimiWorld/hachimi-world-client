@@ -49,10 +49,10 @@ import platform.MediaPlayer.MPMediaItemPropertyTitle
 import platform.MediaPlayer.MPNowPlayingInfoCenter
 import platform.UIKit.UIImage
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 
 @OptIn(ExperimentalForeignApi::class)
-class IosPlayer : AbstractPlatformPlayer() {
+class IosPlayerEngine : AbstractPlatformPlayerEngine() {
     private var session: AVAudioSession? = null
     private var player: AVPlayer? = null
     private var isPlayerReady = false
@@ -254,7 +254,7 @@ class IosPlayer : AbstractPlatformPlayer() {
 
     override suspend fun initialize() = withContext(Dispatchers.Main) {
         val session = AVAudioSession.sharedInstance()
-        this@IosPlayer.session = session
+        this@IosPlayerEngine.session = session
         session.setCategory(category = AVAudioSessionCategoryPlayback, error = null)
         session.setActive(true, null)
         player = AVPlayer()
