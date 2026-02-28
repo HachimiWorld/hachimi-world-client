@@ -118,10 +118,10 @@ private fun Content(
                 "审核时间",
                 data.reviewTime?.let { formatTime(it, distance = true, precise = false, thresholdDay = 3) } ?: "null")
 
-            if (data.status == STATUS_PENDING) Column(Modifier.padding(16.dp, 0.dp, 16.dp, 0.dp)) {
+            if (data.status == STATUS_PENDING && vm.isContributor) Column {
                 TextField(
-                    value = vm.commentInput,
-                    onValueChange = { vm.commentInput = it },
+                    value = vm.reviewCommentInput,
+                    onValueChange = { vm.reviewCommentInput = it },
                 )
                 Row {
                     Button(onClick = { vm.approve() }, enabled = !vm.operating) {

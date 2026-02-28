@@ -29,20 +29,37 @@ class ReviewDetailViewModel(
         private set
     var data by mutableStateOf<PublishModule.SongPublishReviewData?>(null)
         private set
-    var commentInput by mutableStateOf("")
+    var reviewCommentInput by mutableStateOf("")
     var operating by mutableStateOf(false)
+        private set
+    var isContributor by mutableStateOf(false)
         private set
 
     fun mounted(reviewId: Long) {
-        if (this.reviewId != reviewId) {
+        if (
+            initializeStatus == InitializeStatus.INIT ||
+            this.reviewId != reviewId
+        ) {
             initializeStatus = InitializeStatus.INIT
+            this.reviewId = reviewId
+            fetchIsContributor()
+            refresh()
         }
-        this.reviewId = reviewId
-        refresh()
     }
 
     fun dispose() {
 
+    }
+
+    private fun fetchIsContributor() = viewModelScope.launch{
+        try {
+            val resp = api.contributorModule.check()
+            isContributor = resp.ok().isContributor
+        } catch (e: Throwable) {
+            Logger.e("review_detail", "Failed to check maintainer status", e)
+            global.alert(e.message)
+            isContributor = false
+        }
     }
 
     fun refresh() = viewModelScope.launch {
@@ -76,11 +93,11 @@ class ReviewDetailViewModel(
         try {
             val resp = api.publishModule.reviewApprove(
                 PublishModule.ApproveReviewReq(
-                reviewId, commentInput.takeIf { it.isNotBlank() }
-            ))
+                    reviewId, reviewCommentInput.takeIf { it.isNotBlank() }
+                ))
             if (resp.ok) {
                 global.alert(Res.string.common_done)
-                commentInput = ""
+                reviewCommentInput = ""
                 refresh()
             } else {
                 global.alert(resp.err().msg)
@@ -98,11 +115,12 @@ class ReviewDetailViewModel(
         try {
             val resp = api.publishModule.reviewReject(
                 PublishModule.RejectReviewReq(
-                    reviewId, commentInput
-                ))
+                    reviewId, reviewCommentInput
+                )
+            )
             if (resp.ok) {
                 global.alert(Res.string.common_done)
-                commentInput = ""
+                reviewCommentInput = ""
                 refresh()
             } else {
                 global.alert(resp.err().msg)
