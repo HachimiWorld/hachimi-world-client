@@ -34,6 +34,7 @@ import world.hachimi.app.di.appModule
 import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.Settings
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
 import world.hachimi.app.ui.design.HachimiPalette
@@ -87,10 +88,10 @@ fun main() {
 
         fun onCloseRequest() {
             if (isTraySupported) {
-                when (global.closeBehavior) {
-                    GlobalStore.CloseBehavior.EXIT -> exitApplication()
-                    GlobalStore.CloseBehavior.MINIMIZE_TO_TRAY -> minimizeToTray()
-                    GlobalStore.CloseBehavior.ASK -> {
+                when (global.settings.closeBehavior) {
+                    Settings.CloseBehavior.EXIT -> exitApplication()
+                    Settings.CloseBehavior.MINIMIZE_TO_TRAY -> minimizeToTray()
+                    Settings.CloseBehavior.ASK -> {
                         rememberCloseChoice = false
                         showCloseAskDialog = true
                     }
@@ -122,7 +123,7 @@ fun main() {
             }
 
             CompositionLocalProvider(LocalWindow provides window) {
-                val darkMode = global.darkMode ?: isSystemInDarkTheme()
+                val darkMode = global.settings.darkMode ?: isSystemInDarkTheme()
                 JvmTheme(darkMode = darkMode) {
                     PlatformWindowFrame(
                         windowState,
@@ -130,7 +131,7 @@ fun main() {
                         ::onCloseRequest
                     ) {
                         // Apply locale environment before rendering App
-                        AppEnvironment(global.locale) {
+                        AppEnvironment(global.settings.locale) {
                             App(global)
                         }
                         if (showCloseAskDialog) CloseAskDialog(
@@ -139,14 +140,14 @@ fun main() {
                             },
                             onMinimizeClick = {
                                 if (rememberCloseChoice) {
-                                    global.updateCloseBehavior(GlobalStore.CloseBehavior.MINIMIZE_TO_TRAY)
+                                    global.settings.updateCloseBehavior(Settings.CloseBehavior.MINIMIZE_TO_TRAY)
                                 }
                                 minimizeToTray()
                                 showCloseAskDialog = false
                             },
                             onQuitClick = {
                                 if (rememberCloseChoice) {
-                                    global.updateCloseBehavior(GlobalStore.CloseBehavior.EXIT)
+                                    global.settings.updateCloseBehavior(Settings.CloseBehavior.EXIT)
                                 }
                                 exitApplication()
                             },

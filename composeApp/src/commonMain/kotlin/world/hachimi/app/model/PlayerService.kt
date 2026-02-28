@@ -120,7 +120,7 @@ class PlayerService(
         restorePlayerState()
 
         // Apply initial replay gain toggle immediately for the current runtime.
-        engine.setReplayGainEnabled(global.enableLoudnessNormalization)
+        engine.setReplayGainEnabled(global.settings.enableLoudnessNormalization)
 
         startSyncingJob()
     }
@@ -406,7 +406,7 @@ class PlayerService(
         instantPlay: Boolean,
         append: Boolean
     ) = scope.launch {
-        if (item.explicit == true && global.kidsMode) {
+        if (item.explicit == true && global.settings.kidsMode) {
             if (!global.askKidsPlay()) {
                 return@launch
             }
@@ -446,7 +446,7 @@ class PlayerService(
         }
     }
 
-    fun playAll(items: List<MusicQueueItem>, filterExplicit: Boolean = global.kidsMode) = scope.launch {
+    fun playAll(items: List<MusicQueueItem>, filterExplicit: Boolean = global.settings.kidsMode) = scope.launch {
         replaceQueue(if (filterExplicit) items.filter { it.explicit != true } else items)
         next()
     }

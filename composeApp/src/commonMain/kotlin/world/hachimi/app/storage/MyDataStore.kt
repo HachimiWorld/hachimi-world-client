@@ -20,11 +20,6 @@ object PreferencesKeys {
     val USER_AVATAR: PreferenceKey<String> = PreferenceKey("user_avatar", String::class)
     val AUTH_ACCESS_TOKEN: PreferenceKey<String> = PreferenceKey("auth_access_token", String::class)
     val AUTH_REFRESH_TOKEN: PreferenceKey<String> = PreferenceKey("auth_refresh_token", String::class)
-    val SETTINGS_DARK_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_dark_mode", Boolean::class)
-    val SETTINGS_LOUDNESS_NORMALIZATION: PreferenceKey<Boolean> = PreferenceKey("settings_loudness_normalization", Boolean::class)
-    val SETTINGS_KIDS_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_kids_mode", Boolean::class)
     val PLAYER_VOLUME: PreferenceKey<Float> = PreferenceKey("player_volume", Float::class)
     val PLAYER_MUSIC_QUEUE: PreferenceKey<String> = PreferenceKey("player_music_queue", String::class)
-    val SETTINGS_LOCALE: PreferenceKey<String> = PreferenceKey("settings_locale", String::class)
-    val SETTINGS_CLOSE_BEHAVIOR: PreferenceKey<String> = PreferenceKey("settings_close_behavior", String::class)
 }

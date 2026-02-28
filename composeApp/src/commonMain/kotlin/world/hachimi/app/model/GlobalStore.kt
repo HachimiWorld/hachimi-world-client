@@ -40,7 +40,9 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Global shared data and logic. Can work without UI displaying
+ * Global shared data and logic. Can work without UI displaying (But still requires compose snapshot runtime)
+ *
+ * // TODO: Decouple the logics here
  */
 class GlobalStore(
     private val dataStore: MyDataStore,
@@ -49,28 +51,7 @@ class GlobalStore(
     songCache: SongCache
 ) {
     var initialized by mutableStateOf(false)
-    var darkMode by mutableStateOf<Boolean?>(null)
-        private set
-    var enableLoudnessNormalization by mutableStateOf(true)
-        private set
-    var kidsMode by mutableStateOf(false)
-        private set
-
-    enum class CloseBehavior {
-        ASK, MINIMIZE_TO_TRAY, EXIT
-    }
-
-    var closeBehavior by mutableStateOf(CloseBehavior.ASK)
-        private set
-
-    fun updateCloseBehavior(value: CloseBehavior) = scope.launch {
-        this@GlobalStore.closeBehavior = value
-        dataStore.set(PreferencesKeys.SETTINGS_CLOSE_BEHAVIOR, value.name)
-    }
-
-    // New locale setting: null = follow system, otherwise locale string like "en" or "zh" or "zh_CN"
-    var locale by mutableStateOf<String?>(null)
-        private set
+    val settings by lazy { Settings(dataStore, player) }
     val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
         private set
@@ -97,7 +78,7 @@ class GlobalStore(
         if (!initialized) {
             launch(Dispatchers.Default) {
                 coroutineScope {
-                    launch { loadSettings() }
+                    launch { settings.loadSettings() }
                     launch { loadLoginStatus() }
                     launch {
                         try {
@@ -113,46 +94,6 @@ class GlobalStore(
         }
         launch { checkMinApiVersion() }
         launch { checkUpdate() }
-    }
-
-    fun updateDarkMode(darkMode: Boolean?) = scope.launch {
-        this@GlobalStore.darkMode = darkMode
-        if (darkMode == null) {
-            dataStore.delete(PreferencesKeys.SETTINGS_DARK_MODE)
-        } else {
-            dataStore.set(PreferencesKeys.SETTINGS_DARK_MODE, darkMode)
-        }
-    }
-
-    fun updateLoudnessNormalization(enabled: Boolean) = scope.launch {
-        this@GlobalStore.enableLoudnessNormalization = enabled
-        player.setReplayGainEnabled(enabled)
-        dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
-    }
-
-    // Persist and update locale. null => follow system (delete stored key)
-    fun updateLocale(locale: String?) = scope.launch {
-        this@GlobalStore.locale = locale
-        if (locale == null) {
-            dataStore.delete(PreferencesKeys.SETTINGS_LOCALE)
-        } else {
-            dataStore.set(PreferencesKeys.SETTINGS_LOCALE, locale)
-        }
-    }
-
-    private suspend fun loadSettings() {
-        this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
-        this.enableLoudnessNormalization =
-            dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
-        this.locale = dataStore.get(PreferencesKeys.SETTINGS_LOCALE)
-        this.kidsMode = dataStore.get(PreferencesKeys.SETTINGS_KIDS_MODE) ?: false
-
-        val rawCloseBehavior = dataStore.get(PreferencesKeys.SETTINGS_CLOSE_BEHAVIOR)
-        this.closeBehavior = if (rawCloseBehavior != null) {
-            runCatching { CloseBehavior.valueOf(rawCloseBehavior) }.getOrDefault(CloseBehavior.ASK)
-        } else {
-            CloseBehavior.ASK
-        }
     }
 
     private suspend fun loadLoginStatus() {
@@ -320,12 +261,6 @@ class GlobalStore(
         getPlatform().openUrl(newVersionInfo!!.url)
     }
 
-    fun updateKidsMode(it: Boolean) {
-        kidsMode = it
-        scope.launch {
-            dataStore.set(PreferencesKeys.SETTINGS_KIDS_MODE, it)
-        }
-    }
 
     var showKidsDialog by mutableStateOf(false)
         private set
