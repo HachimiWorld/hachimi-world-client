@@ -63,6 +63,7 @@ fun main() {
         var showWindow by remember { mutableStateOf(true) }
         val trayState = rememberTrayState()
         var showCloseAskDialog by remember { mutableStateOf(false) }
+        var rememberCloseChoice by remember { mutableStateOf(false) }
 
         if (isTraySupported) Tray(
             icon = icon, state = trayState,
@@ -76,9 +77,27 @@ fun main() {
 
         val windowState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
 
+        fun minimizeToTray() {
+            showWindow = false
+            GlobalScope.launch { // May be useless
+                delay(1000)
+                System.gc()
+            }
+        }
+
         fun onCloseRequest() {
-            if (isTraySupported) showCloseAskDialog = true
-            else exitApplication()
+            if (isTraySupported) {
+                when (global.closeBehavior) {
+                    GlobalStore.CloseBehavior.EXIT -> exitApplication()
+                    GlobalStore.CloseBehavior.MINIMIZE_TO_TRAY -> minimizeToTray()
+                    GlobalStore.CloseBehavior.ASK -> {
+                        rememberCloseChoice = false
+                        showCloseAskDialog = true
+                    }
+                }
+            } else {
+                exitApplication()
+            }
         }
 
         if (showWindow) SwingWindow(
@@ -119,16 +138,20 @@ fun main() {
                                 showCloseAskDialog = false
                             },
                             onMinimizeClick = {
-                                showWindow = false
-                                GlobalScope.launch { // May be useless
-                                    delay(1000)
-                                    System.gc()
+                                if (rememberCloseChoice) {
+                                    global.updateCloseBehavior(GlobalStore.CloseBehavior.MINIMIZE_TO_TRAY)
                                 }
+                                minimizeToTray()
                                 showCloseAskDialog = false
                             },
                             onQuitClick = {
+                                if (rememberCloseChoice) {
+                                    global.updateCloseBehavior(GlobalStore.CloseBehavior.EXIT)
+                                }
                                 exitApplication()
-                            }
+                            },
+                            rememberChoice = rememberCloseChoice,
+                            onRememberChoiceChange = { rememberCloseChoice = it }
                         )
                     }
                 }

@@ -3,6 +3,7 @@
 ## Enhancements 改进
 
 1. Optimize the cold start time. 优化应用冷启动时间。
+2. Support remembering the close behavior. 支持记住关闭行为。
 
 ## Fixes 修复
 

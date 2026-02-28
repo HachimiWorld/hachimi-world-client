@@ -56,6 +56,18 @@ class GlobalStore(
     var kidsMode by mutableStateOf(false)
         private set
 
+    enum class CloseBehavior {
+        ASK, MINIMIZE_TO_TRAY, EXIT
+    }
+
+    var closeBehavior by mutableStateOf(CloseBehavior.ASK)
+        private set
+
+    fun updateCloseBehavior(value: CloseBehavior) = scope.launch {
+        this@GlobalStore.closeBehavior = value
+        dataStore.set(PreferencesKeys.SETTINGS_CLOSE_BEHAVIOR, value.name)
+    }
+
     // New locale setting: null = follow system, otherwise locale string like "en" or "zh" or "zh_CN"
     var locale by mutableStateOf<String?>(null)
         private set
@@ -133,6 +145,14 @@ class GlobalStore(
         this.enableLoudnessNormalization =
             dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
         this.locale = dataStore.get(PreferencesKeys.SETTINGS_LOCALE)
+        this.kidsMode = dataStore.get(PreferencesKeys.SETTINGS_KIDS_MODE) ?: false
+
+        val rawCloseBehavior = dataStore.get(PreferencesKeys.SETTINGS_CLOSE_BEHAVIOR)
+        this.closeBehavior = if (rawCloseBehavior != null) {
+            runCatching { CloseBehavior.valueOf(rawCloseBehavior) }.getOrDefault(CloseBehavior.ASK)
+        } else {
+            CloseBehavior.ASK
+        }
     }
 
     private suspend fun loadLoginStatus() {

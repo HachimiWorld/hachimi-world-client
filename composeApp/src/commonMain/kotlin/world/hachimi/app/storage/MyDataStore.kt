@@ -26,4 +26,5 @@ object PreferencesKeys {
     val PLAYER_VOLUME: PreferenceKey<Float> = PreferenceKey("player_volume", Float::class)
     val PLAYER_MUSIC_QUEUE: PreferenceKey<String> = PreferenceKey("player_music_queue", String::class)
     val SETTINGS_LOCALE: PreferenceKey<String> = PreferenceKey("settings_locale", String::class)
+    val SETTINGS_CLOSE_BEHAVIOR: PreferenceKey<String> = PreferenceKey("settings_close_behavior", String::class)
 }

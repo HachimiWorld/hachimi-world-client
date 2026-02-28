@@ -8,6 +8,10 @@
     <string name="settings_dropdown_cd">Dropdown</string>
     <string name="settings_loudness">Loudness normalization</string>
     <string name="settings_kids_mode">Kids mode</string>
+    <string name="settings_close_behavior">Close behavior</string>
+    <string name="settings_close_behavior_ask">Ask every time</string>
+    <string name="settings_close_behavior_minimize_to_tray">Minimize to tray</string>
+    <string name="settings_close_behavior_exit">Quit</string>
     <string name="settings_client_type">Client type</string>
     <string name="settings_version_name">Version name</string>
     <string name="settings_version_code">Version code</string>

@@ -38,6 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.settings_client_type
+import hachimiworld.composeapp.generated.resources.settings_close_behavior
+import hachimiworld.composeapp.generated.resources.settings_close_behavior_ask
+import hachimiworld.composeapp.generated.resources.settings_close_behavior_exit
+import hachimiworld.composeapp.generated.resources.settings_close_behavior_minimize_to_tray
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_follow_system
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_label
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_off
@@ -126,6 +130,11 @@ fun SettingsScreen() {
                 globalStore.updateKidsMode(it)
             })
         }
+
+        if (getPlatform().name == "JVM") {
+            CloseBehaviorSetting(globalStore)
+        }
+
         PropertyItem(label = { Text(stringResource(Res.string.settings_client_type)) }) {
             Text(getPlatform().name)
         }
@@ -218,5 +227,38 @@ private fun LinkButton(
             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = stringResource(Res.string.settings_open_in_browser_cd)
         )
+    }
+}
+
+@Composable
+private fun CloseBehaviorSetting(globalStore: GlobalStore) {
+    PropertyItem(label = { Text(stringResource(Res.string.settings_close_behavior)) }) {
+        var expanded by remember { mutableStateOf(false) }
+        Box {
+            TextButton(onClick = { expanded = true }) {
+                Text(
+                    when (globalStore.closeBehavior) {
+                        GlobalStore.CloseBehavior.ASK -> stringResource(Res.string.settings_close_behavior_ask)
+                        GlobalStore.CloseBehavior.MINIMIZE_TO_TRAY -> stringResource(Res.string.settings_close_behavior_minimize_to_tray)
+                        GlobalStore.CloseBehavior.EXIT -> stringResource(Res.string.settings_close_behavior_exit)
+                    }
+                )
+                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(Res.string.settings_dropdown_cd))
+            }
+            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(onClick = {
+                    globalStore.updateCloseBehavior(GlobalStore.CloseBehavior.ASK)
+                    expanded = false
+                }, text = { Text(stringResource(Res.string.settings_close_behavior_ask)) })
+                DropdownMenuItem(onClick = {
+                    globalStore.updateCloseBehavior(GlobalStore.CloseBehavior.MINIMIZE_TO_TRAY)
+                    expanded = false
+                }, text = { Text(stringResource(Res.string.settings_close_behavior_minimize_to_tray)) })
+                DropdownMenuItem(onClick = {
+                    globalStore.updateCloseBehavior(GlobalStore.CloseBehavior.EXIT)
+                    expanded = false
+                }, text = { Text(stringResource(Res.string.settings_close_behavior_exit)) })
+            }
+        }
     }
 }
