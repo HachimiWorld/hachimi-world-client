@@ -82,7 +82,7 @@ fun main() {
 
         WithFont(global) {
             // Apply locale environment so the app follows the selected locale
-            AppEnvironment(global.locale) {
+            AppEnvironment(global.settings.locale) {
                 App(global)
             }
         }
