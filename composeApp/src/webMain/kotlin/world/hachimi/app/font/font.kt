@@ -69,7 +69,7 @@ fun WithFont(
         state.load()
     }
 
-    val darkMode = global.darkMode ?: isSystemInDarkTheme()
+    val darkMode = global.settings.darkMode ?: isSystemInDarkTheme()
     val typography = bodyTextStyle.copy(
         fontFamily = state.fullFontFamily ?: state.minFontFamily ?: FontFamily.Default
     )
