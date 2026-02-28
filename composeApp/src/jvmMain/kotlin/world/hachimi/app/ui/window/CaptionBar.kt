@@ -28,9 +28,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.platform.SystemFont
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import world.hachimi.app.ui.design.HachimiPalette
 import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.theme.onSurfaceDark
-import world.hachimi.app.ui.theme.onSurfaceLight
 
 @OptIn(ExperimentalTextApi::class)
 private val SegoeIconFont = FontFamily(
@@ -57,7 +56,7 @@ fun CaptionBar(
     onCloseClick: () -> Unit,
     onCloseBounds: (Rect) -> Unit,
 ) {
-    CompositionLocalProvider(LocalContentColor provides if (darkMode) onSurfaceDark else onSurfaceLight) {
+    CompositionLocalProvider(LocalContentColor provides if (darkMode) HachimiPalette.onSurfaceDark else HachimiPalette.onSurfaceLight) {
         Row(modifier.height(CaptionBarHeight), horizontalArrangement = Arrangement.End) {
             CaptionButton(
                 modifier = Modifier.onGloballyPositioned { onMinBounds(it.boundsInWindow()) },
