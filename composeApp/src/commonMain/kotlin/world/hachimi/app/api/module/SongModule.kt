@@ -1,14 +1,10 @@
 package world.hachimi.app.api.module
 
-import io.ktor.client.content.ProgressListener
-import io.ktor.client.plugins.onUpload
-import io.ktor.client.plugins.timeout
-import io.ktor.client.request.forms.InputProvider
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.setBody
-import io.ktor.http.HttpHeaders
-import io.ktor.http.headersOf
+import io.ktor.client.content.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.http.*
 import kotlinx.io.Source
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
@@ -152,7 +148,11 @@ class SongModule(
         val tempId: String
     )
 
-    suspend fun uploadCoverImage(filename: String, source: Source, listener: ProgressListener? = null): WebResult<UploadImageResp> {
+    suspend fun uploadCoverImage(
+        filename: String,
+        source: Source,
+        listener: ProgressListener? = null
+    ): WebResult<UploadImageResp> {
         return client.postWith("/song/upload_cover_image") {
             setBody(
                 MultiPartFormDataContent(
@@ -178,7 +178,11 @@ class SongModule(
         val artist: String?,
     )
 
-    suspend fun uploadAudioFile(filename: String, source: Source, listener: ProgressListener? = null): WebResult<UploadAudioFileResp> {
+    suspend fun uploadAudioFile(
+        filename: String,
+        source: Source,
+        listener: ProgressListener? = null
+    ): WebResult<UploadAudioFileResp> {
         return client.postWith("/song/upload_audio_file") {
             setBody(
                 MultiPartFormDataContent(
@@ -202,7 +206,7 @@ class SongModule(
 
 
     @Serializable
-    data class PublishReq (
+    data class PublishReq(
         val songTempId: String,
         val coverTempId: String,
         val title: String,
@@ -227,7 +231,7 @@ class SongModule(
         val comment: String?,
     ) {
         @Serializable
-        data class CreationInfo (
+        data class CreationInfo(
             // 0: original, 1: derivative work, 2: tertiary work
             val creationType: Int,
             val originInfo: CreationTypeInfo?,
@@ -235,7 +239,7 @@ class SongModule(
         )
 
         @Serializable
-        data class  ProductionItem(
+        data class ProductionItem(
             val role: String,
             val uid: Long?,
             val name: String?,
@@ -312,18 +316,17 @@ class SongModule(
         client.get("/song/search", req, false)
 
     @Serializable
-    data class TagCreateReq (
+    data class TagCreateReq(
         val name: String,
         val description: String?,
     )
 
     @Serializable
-    data class TagCreateResp (
+    data class TagCreateResp(
         val id: Long
     )
 
-    suspend fun tagCreate(req: TagCreateReq): WebResult<TagCreateResp>
-        = client.post("/song/tag/create", req)
+    suspend fun tagCreate(req: TagCreateReq): WebResult<TagCreateResp> = client.post("/song/tag/create", req)
 
     @Serializable
     data class TagSearchReq(
@@ -335,8 +338,7 @@ class SongModule(
         val result: List<TagItem>
     )
 
-    suspend fun tagSearch(req: TagSearchReq): WebResult<TagSearchResp>
-        = client.get("/song/tag/search", req)
+    suspend fun tagSearch(req: TagSearchReq): WebResult<TagSearchResp> = client.get("/song/tag/search", req)
 
     @Serializable
     data class TagRecommendItem(
@@ -351,11 +353,9 @@ class SongModule(
         val result: List<TagRecommendItem>
     )
 
-    suspend fun tagRecommend(): WebResult<TagRecommendResp>
-        = client.get("/song/tag/recommend")
+    suspend fun tagRecommend(): WebResult<TagRecommendResp> = client.get("/song/tag/recommend")
 
-    suspend fun tagRecommendAnonymous(): WebResult<TagRecommendResp>
-        = client.get("/song/tag/recommend_anonymous")
+    suspend fun tagRecommendAnonymous(): WebResult<TagRecommendResp> = client.get("/song/tag/recommend_anonymous")
 
     @Serializable
     data class PageByUserReq(
@@ -372,6 +372,68 @@ class SongModule(
         val size: Long,
     )
 
-    suspend fun pageByUser(req: PageByUserReq): WebResult<PageByUserResp>
-        = client.get("/song/page_by_user", req)
+    suspend fun pageByUser(req: PageByUserReq): WebResult<PageByUserResp> = client.get("/song/page_by_user", req)
+
+
+    @Serializable
+    data class LikeReq(
+        val songId: Long,
+        val playbackPositionSecs: Int?,
+    )
+
+    /**
+     * @since 260329
+     */
+    suspend fun like(req: LikeReq): WebResult<Unit> = client.post("/song/likes/like", req)
+
+    @Serializable
+    data class UnlikeReq(
+        val songId: Long
+    )
+
+    /**
+     * @since 260329
+     */
+    suspend fun unlike(req: UnlikeReq): WebResult<Unit> = client.post("/song/likes/unlike", req)
+
+    @Serializable
+    data class LikeStatusReq(
+        val songId: Long,
+    )
+
+    @Serializable
+    data class LikeStatusResp(
+        val liked: Boolean
+    )
+
+    /**
+     * @since 260329
+     */
+    suspend fun likeStatus(req: LikeStatusReq): WebResult<LikeStatusResp> =
+        client.get("/song/likes/status", req)
+
+    @Serializable
+    data class MyLikesReq(
+        val pageIndex: Long,
+        val pageSize: Long,
+    )
+
+    @Serializable
+    data class MyLikesResp(
+        val data: List<MyLikeItem>,
+        val pageSize: Long,
+        val pageIndex: Long,
+        val total: Long,
+    )
+
+    @Serializable
+    data class MyLikeItem(
+        val songData: PublicSongDetail,
+        val likedTime: Instant,
+    )
+
+    /**
+     * @since 260329
+     */
+    suspend fun pageMyLikes(req: MyLikesReq): WebResult<MyLikesResp> = client.get("/song/likes/page_my_likes", req)
 }
