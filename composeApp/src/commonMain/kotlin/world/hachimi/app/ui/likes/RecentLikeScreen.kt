@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
@@ -30,6 +31,7 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.*
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
@@ -41,16 +43,16 @@ import world.hachimi.app.model.RecentLikeViewModel
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.util.fillMaxWidthIn
-import world.hachimi.app.util.formatDaysDistance
-import world.hachimi.app.util.formatSongDuration
-import world.hachimi.app.util.formatTime
+import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 @Composable
 fun RecentLikeScreen(
@@ -222,7 +224,7 @@ private fun RecentLikeItem(
 					style = MaterialTheme.typography.bodySmall,
 				)
 				Text(
-					text = formatTime(item.likedTime, distance = true, precise = false),
+					text = formatTime(item.likedTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMDHM),
 					style = MaterialTheme.typography.labelSmall,
 				)
 			}
@@ -231,9 +233,50 @@ private fun RecentLikeItem(
 				Icon(
 					imageVector = Icons.Default.Favorite,
 					contentDescription = stringResource(Res.string.player_unlike),
-					tint = MaterialTheme.colorScheme.primary,
+					tint = HachimiTheme.colorScheme.primary,
 				)
 			}
 		}
 	}
 }
+
+@Preview
+@Composable
+private fun RecentLikeItemPreview() {
+	PreviewTheme(background = false) {
+		RecentLikeItem(
+			item = SongModule.MyLikeItem(
+				songData = SongModule.PublicSongDetail(
+					id = 1,
+					displayId = "1",
+					title = "Test Song Title",
+					subtitle = "Test Subtitle",
+					description = "This is a preview description.",
+					durationSeconds = 185,
+					tags = listOf(),
+					lyrics = "",
+					audioUrl = "",
+					coverUrl = "https://example.com/cover.jpg",
+					productionCrew = listOf(),
+					creationType = 0,
+					originInfos = listOf(),
+					uploaderUid = 42,
+					uploaderName = "Preview Artist",
+					playCount = 12345,
+					likeCount = 678,
+					externalLinks = listOf(),
+					createTime = Instant.parse("2024-01-01T00:00:00Z"),
+					releaseTime = Instant.parse("2024-01-02T00:00:00Z"),
+					explicit = false,
+					gain = null,
+				),
+				likedTime = Instant.parse("2024-01-03T12:00:00Z"),
+			),
+			onClick = {},
+			onUnlikeClick = {},
+			unlikeEnabled = true,
+			modifier = Modifier.fillMaxWidth(),
+		)
+	}
+}
+
