@@ -14,6 +14,8 @@
     <string name="player_add_to_playlist_create">新建歌单</string>
     <string name="player_add_to_playlist_confirm">确定</string>
     <string name="player_add_to_playlist_cancel">取消</string>
+    <string name="player_like">点赞</string>
+    <string name="player_unlike">取消点赞</string>
 
     <string name="player_create_playlist_title">新建歌单</string>
     <string name="player_create_playlist_name_placeholder">名称</string>

@@ -14,6 +14,8 @@
     <string name="player_add_to_playlist_create">Create playlist</string>
     <string name="player_add_to_playlist_confirm">Confirm</string>
     <string name="player_add_to_playlist_cancel">Cancel</string>
+    <string name="player_like">Like</string>
+    <string name="player_unlike">Unlike</string>
 
     <string name="player_create_playlist_title">Create playlist</string>
     <string name="player_create_playlist_name_placeholder">Name</string>

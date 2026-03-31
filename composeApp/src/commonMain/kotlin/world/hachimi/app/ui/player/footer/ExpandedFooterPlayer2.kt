@@ -8,38 +8,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidthIn
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.VolumeDown
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.OpenInFull
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,29 +42,22 @@ import hachimiworld.composeapp.generated.resources.player_next_song
 import hachimiworld.composeapp.generated.resources.player_not_playing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialSharedAxisYIn
 import soup.compose.material.motion.animation.materialSharedAxisYOut
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Card
-import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.HachimiIconToggleButton
-import world.hachimi.app.ui.design.components.HachimiSlider
-import world.hachimi.app.ui.design.components.SliderChangeApplyMode
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
-import world.hachimi.app.ui.player.footer.components.Author
-import world.hachimi.app.ui.player.footer.components.Container
-import world.hachimi.app.ui.player.footer.components.PlayPauseButton
-import world.hachimi.app.ui.player.footer.components.PlayPauseStatus
-import world.hachimi.app.ui.player.footer.components.Title
+import world.hachimi.app.ui.player.footer.components.*
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueueHeader
@@ -97,10 +69,11 @@ val ExpandedFooterHeight = 104.dp
 fun ExpandedFooterPlayer2(
     modifier: Modifier = Modifier,
     hazeState: HazeState,
+    vm: PlayerViewModel = koinViewModel(),
     global: GlobalStore = koinInject(),
 ) {
     Box {
-        val uiState = global.player.playerState
+        val uiState = vm.uiState
         var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
         var musicQueueExpanded by remember { mutableStateOf(false) }
 
@@ -213,7 +186,6 @@ private fun ExpandedPlayerContent(
             onRepeatChange = { global.player.updateRepeatMode(it) },
             onAddToPlaylistClick = onAddToPlaylistClick,
             onMusicQueueClick = onMusicQueueClick,
-            onOpenInFullClick = { global.expandPlayer() },
         )
     }
 }
@@ -444,7 +416,6 @@ private fun FunctionButtons(
     onRepeatChange: (Boolean) -> Unit,
     onAddToPlaylistClick: () -> Unit,
     onMusicQueueClick: () -> Unit,
-    onOpenInFullClick: () -> Unit,
 ) {
 
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
