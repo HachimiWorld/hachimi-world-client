@@ -1,15 +1,7 @@
 package world.hachimi.app.ui.search.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explicit
@@ -34,12 +26,9 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.LocalTextStyle
-import world.hachimi.app.ui.design.components.Surface
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.formatCompactCount
 import world.hachimi.app.util.formatSongDuration
 import kotlin.time.Duration.Companion.seconds
 
@@ -184,7 +173,7 @@ fun SearchSongItem(
                         Icon(Icons.Default.Headphones, contentDescription = "Play Count", modifier = Modifier.size(12.dp))
                         Text(
                             modifier = Modifier.padding(start = 4.dp),
-                            text = data.info.playCount.toString(),
+                            text = formatCompactCount(data.info.playCount),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }

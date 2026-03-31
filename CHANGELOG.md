@@ -1,5 +1,9 @@
 # Unreleased
 
+## Features 新功能
+
+1. Added like/dislike feature. 新增喜欢/不喜欢功能。
+
 ## Enhancements 改进
 
 1. Optimize the cold start time. 优化应用冷启动时间。
