@@ -73,7 +73,7 @@ fun RecentPlayScreen(
                             text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
                         )
                     }
-                    items(vm.history, key = { item -> item.id }) { item ->
+                    items(vm.history, key = { item -> item.songInfo.id }) { item ->
                         RecentPlayItem(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
                             coverUrl = item.songInfo.coverUrl,
