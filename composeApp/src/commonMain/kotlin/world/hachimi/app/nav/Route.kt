@@ -98,6 +98,8 @@ sealed class Route: NavKey {
         data class PublicUserSpace(val userId: Long): Root()
         @Serializable
         data object Settings: Root()
+        @Serializable
+        data object Changelog: Root()
     }
     @Serializable
     data class Auth(val initialLogin: Boolean = true) : Route()

@@ -16,6 +16,11 @@
     <string name="settings_client_type">客户端类型</string>
     <string name="settings_version_name">版本名</string>
     <string name="settings_version_code">版本号</string>
+    <string name="settings_check_update">检查更新</string>
+    <string name="settings_check_update_action">立即检查</string>
+    <string name="settings_check_update_checking">检查中…</string>
+    <string name="settings_changelog">更新日志</string>
+    <string name="settings_view_changelog">查看全部</string>
     <string name="settings_feedback">反馈与建议</string>
     <string name="settings_official_website">官方网站</string>
     <string name="settings_github_text">GitHub</string>

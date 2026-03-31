@@ -5,17 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.artwork_jmid_already_used
-import hachimiworld.composeapp.generated.resources.artwork_jmid_prefix_not_set
-import hachimiworld.composeapp.generated.resources.publish_change_success
-import hachimiworld.composeapp.generated.resources.publish_jmid_number_format
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import hachimiworld.composeapp.generated.resources.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import world.hachimi.app.api.ApiClient
@@ -25,6 +16,7 @@ import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.util.singleLined
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val TAG = "artwork_detail"
 
@@ -153,29 +145,34 @@ class ArtworkDetailViewModel(
                 checkJmidMutex.withLock {
                     checkJmidJob?.cancelAndJoin()
                     checkJmidJob = launch {
-                        delay(500)
                         try {
-                            val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
-                            if (jmidNumber == mappedInput) {
-                                if (resp.ok) {
-                                    if (resp.ok().result) {
-                                        jmidValid = true
-                                        jmidSupportText = null
+                            delay(500.milliseconds)
+                            try {
+                                val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
+                                if (jmidNumber == mappedInput) {
+                                    if (resp.ok) {
+                                        if (resp.ok().result) {
+                                            jmidValid = true
+                                            jmidSupportText = null
+                                        } else {
+                                            jmidValid = false
+                                            viewModelScope.launch {
+                                                jmidSupportText =
+                                                    org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
+                                            }
+                                        }
                                     } else {
                                         jmidValid = false
-                                        viewModelScope.launch {
-                                            jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
-                                        }
+                                        jmidSupportText = resp.err().msg
                                     }
-                                } else {
-                                    jmidValid = false
-                                    jmidSupportText = resp.err().msg
                                 }
+                            } catch (e: Throwable) {
+                                Logger.e("publish", "Failed to check jmid", e)
+                                jmidValid = false
+                                jmidSupportText = e.message
                             }
-                        } catch (e: Throwable) {
-                            Logger.e("publish", "Failed to check jmid", e)
-                            jmidValid = false
-                            jmidSupportText = e.message
+                        } catch (_: CancellationException) {
+                            Logger.i("publish", "Jmid check cancelled")
                         }
                     }
                 }

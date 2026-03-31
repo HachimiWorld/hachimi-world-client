@@ -1,9 +1,9 @@
 package world.hachimi.app.api.module
 
-import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.WebResult
+import kotlin.time.Instant
 
 class VersionModule(
     private val client: ApiClient
@@ -32,6 +32,25 @@ class VersionModule(
         val releaseTime : Instant
     )
 
+
     suspend fun latest(req: LatestVersionReq): WebResult<LatestVersionResp?> =
         client.get("/version/latest", req)
+
+    @Serializable
+    data class PageVersionReq(
+        val variant: String?,
+        val pageIndex: Long,
+        val pageSize: Long
+    )
+
+    @Serializable
+    data class PageVersionResp(
+        val data: List<LatestVersionResp>,
+        val pageIndex: Long,
+        val pageSize: Long,
+        val total: Long,
+    )
+
+    suspend fun page(req: PageVersionReq): WebResult<PageVersionResp> =
+        client.get("/version/page", req)
 }

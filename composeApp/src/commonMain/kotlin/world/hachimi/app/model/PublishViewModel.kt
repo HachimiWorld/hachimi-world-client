@@ -6,49 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.artwork_jmid_already_used
-import hachimiworld.composeapp.generated.resources.artwork_jmid_prefix_not_set
-import hachimiworld.composeapp.generated.resources.publish_audio_file_required
-import hachimiworld.composeapp.generated.resources.publish_audio_too_large
-import hachimiworld.composeapp.generated.resources.publish_cover_required
-import hachimiworld.composeapp.generated.resources.publish_derive_info_required
-import hachimiworld.composeapp.generated.resources.publish_description_too_long
-import hachimiworld.composeapp.generated.resources.publish_explicit_required
-import hachimiworld.composeapp.generated.resources.publish_fetch_jmid_failed
-import hachimiworld.composeapp.generated.resources.publish_fetch_user_failed
-import hachimiworld.composeapp.generated.resources.publish_https_format
-import hachimiworld.composeapp.generated.resources.publish_https_required
-import hachimiworld.composeapp.generated.resources.publish_image_too_large
-import hachimiworld.composeapp.generated.resources.publish_init_jmid_invalid_format
-import hachimiworld.composeapp.generated.resources.publish_init_jmid_prefix_used
-import hachimiworld.composeapp.generated.resources.publish_invalid_uid
-import hachimiworld.composeapp.generated.resources.publish_jmid_number_format
-import hachimiworld.composeapp.generated.resources.publish_jmid_required
-import hachimiworld.composeapp.generated.resources.publish_lyrics_invalid_lrc
-import hachimiworld.composeapp.generated.resources.publish_lyrics_required
-import hachimiworld.composeapp.generated.resources.publish_origin_info_required
-import hachimiworld.composeapp.generated.resources.publish_subtitle_too_long
-import hachimiworld.composeapp.generated.resources.publish_tag_already_exists
-import hachimiworld.composeapp.generated.resources.publish_tag_name_empty
-import hachimiworld.composeapp.generated.resources.publish_title_required
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.PlatformFile
+import hachimiworld.composeapp.generated.resources.*
+import io.github.vinceglb.filekit.*
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
-import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readBytes
-import io.github.vinceglb.filekit.size
-import io.ktor.http.URLParserException
-import io.ktor.http.URLProtocol
-import io.ktor.http.Url
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import io.ktor.http.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
@@ -62,6 +25,7 @@ import world.hachimi.app.util.LrcParser
 import world.hachimi.app.util.parseJmid
 import world.hachimi.app.util.singleLined
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 class PublishViewModel(
     private val global: GlobalStore,
@@ -880,29 +844,33 @@ class PublishViewModel(
                         checkJmidPrefixJob?.cancelAndJoin()
                     } catch (_: CancellationException) {}
                     checkJmidPrefixJob = launch {
-                        delay(500)
                         try {
-                            val resp = api.publishModule.jmidCheckPrefix(PublishModule.JmidCheckPReq(mappedInput))
-                            if (mappedInput == initJmidInput) {
-                                if (resp.ok) {
-                                    if (resp.ok().result) {
-                                        initJmidValid = true
-                                        initJmidSupportText = null
+                            delay(500.milliseconds)
+                            try {
+                                val resp = api.publishModule.jmidCheckPrefix(PublishModule.JmidCheckPReq(mappedInput))
+                                if (mappedInput == initJmidInput) {
+                                    if (resp.ok) {
+                                        if (resp.ok().result) {
+                                            initJmidValid = true
+                                            initJmidSupportText = null
+                                        } else {
+                                            initJmidValid = false
+                                            viewModelScope.launch {
+                                                initJmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_init_jmid_prefix_used)
+                                            }
+                                        }
                                     } else {
                                         initJmidValid = false
-                                        viewModelScope.launch {
-                                            initJmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_init_jmid_prefix_used)
-                                        }
+                                        initJmidSupportText = resp.err().msg
                                     }
-                                } else {
-                                    initJmidValid = false
-                                    initJmidSupportText = resp.err().msg
                                 }
+                            } catch (e: Throwable) {
+                                Logger.e("publish", "Failed to check jmid", e)
+                                initJmidValid = false
+                                initJmidSupportText = e.message
                             }
-                        } catch (e: Throwable) {
-                            Logger.e("publish", "Failed to check jmid", e)
-                            initJmidValid = false
-                            initJmidSupportText = e.message
+                        } catch (_: CancellationException) {
+                            Logger.i("publish", "Jmid prefix check canceled")
                         }
                     }
                 }
@@ -955,29 +923,34 @@ class PublishViewModel(
                     } catch (_: CancellationException) {}
 
                     checkJmidJob = launch {
-                        delay(500)
                         try {
-                            val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
-                            if (jmidNumber == mappedInput) {
-                                if (resp.ok) {
-                                    if (resp.ok().result) {
-                                        jmidValid = true
-                                        jmidSupportText = null
+                            delay(500.milliseconds)
+                            try {
+                                val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
+                                if (jmidNumber == mappedInput) {
+                                    if (resp.ok) {
+                                        if (resp.ok().result) {
+                                            jmidValid = true
+                                            jmidSupportText = null
+                                        } else {
+                                            jmidValid = false
+                                            viewModelScope.launch {
+                                                jmidSupportText =
+                                                    org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
+                                            }
+                                        }
                                     } else {
                                         jmidValid = false
-                                        viewModelScope.launch {
-                                            jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
-                                        }
+                                        jmidSupportText = resp.err().msg
                                     }
-                                } else {
-                                    jmidValid = false
-                                    jmidSupportText = resp.err().msg
                                 }
+                            } catch (e: Throwable) {
+                                Logger.e("publish", "Failed to check jmid", e)
+                                jmidValid = false
+                                jmidSupportText = e.message
                             }
-                        } catch (e: Throwable) {
-                            Logger.e("publish", "Failed to check jmid", e)
-                            jmidValid = false
-                            jmidSupportText = e.message
+                        } catch (_: CancellationException) {
+                            Logger.i("publish", "Jmid check canceled")
                         }
                     }
                 }

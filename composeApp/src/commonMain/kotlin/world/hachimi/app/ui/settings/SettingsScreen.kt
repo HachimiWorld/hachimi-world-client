@@ -7,10 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +49,7 @@ fun SettingsScreen(
             CloseBehaviorSetting(globalStore.settings)
         }
 
-        Info()
+        Info(globalStore)
     }
 }
 
@@ -173,7 +170,7 @@ private fun KidsModeSetting(globalStore: GlobalStore) {
 }
 
 @Composable
-private fun Info() {
+private fun Info(globalStore: GlobalStore) {
     PropertyItem(label = { Text(stringResource(Res.string.settings_client_type)) }) {
         Text(getPlatform().name)
     }
@@ -182,6 +179,25 @@ private fun Info() {
     }
     PropertyItem(label = { Text(stringResource(Res.string.settings_version_code)) }) {
         Text(BuildKonfig.VERSION_CODE.toString())
+    }
+    PropertyItem(label = { Text(stringResource(Res.string.settings_check_update)) }) {
+        TextButton(
+            onClick = { globalStore.manualCheckUpdate() },
+            enabled = !globalStore.checkingUpdate
+        ) {
+            if (globalStore.checkingUpdate) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(Res.string.settings_check_update_checking))
+            } else {
+                Text(stringResource(Res.string.settings_check_update_action))
+            }
+        }
+    }
+    PropertyItem(label = { Text(stringResource(Res.string.settings_changelog)) }) {
+        TextButton(onClick = { globalStore.nav.push(world.hachimi.app.nav.Route.Root.Changelog) }) {
+            Text(stringResource(Res.string.settings_view_changelog))
+        }
     }
     PropertyItem(label = { Text(stringResource(Res.string.settings_feedback)) }) {
         LinkButton(

@@ -50,6 +50,7 @@ import world.hachimi.app.ui.root.component.ExpandedScaffoldLayout
 import world.hachimi.app.ui.root.component.ExpandedTopAppBar
 import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.search.SearchScreen
+import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 import world.hachimi.app.util.WindowSize
@@ -85,6 +86,7 @@ fun RootScreen(routeContent: Route.Root) {
                     is Route.Root.ContributorCenter -> if (global.isLoggedIn) ContributorCenterScreen(routeContent) else NeedLoginScreen()
                     Route.Root.UserSpace -> UserSpaceScreen(null)
                     Route.Root.Settings -> SettingsScreen()
+                    Route.Root.Changelog -> ChangelogScreen()
                     is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
                     is Route.Root.PublicPlaylist -> if (global.isLoggedIn) PublicPlaylistScreen(routeContent.playlistId) else NeedLoginScreen()
                 }

@@ -8,7 +8,7 @@ fun UpgradeDialog(global: GlobalStore) {
     if (global.showUpdateDialog) UpgradeDialog(
         currentVersion = global.currentVersion,
         newVersion = global.newVersionInfo!!.versionName,
-        changelog = global.newVersionInfo!!.changelog,
+        changelogs = global.updateVersions.map { it.versionName to it.changelog },
         onDismiss = {
             global.dismissUpgrade()
         },

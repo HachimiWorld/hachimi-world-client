@@ -16,6 +16,11 @@
     <string name="settings_client_type">Client type</string>
     <string name="settings_version_name">Version name</string>
     <string name="settings_version_code">Version code</string>
+    <string name="settings_check_update">Check for updates</string>
+    <string name="settings_check_update_action">Check now</string>
+    <string name="settings_check_update_checking">Checking…</string>
+    <string name="settings_changelog">Changelog</string>
+    <string name="settings_view_changelog">View all</string>
     <string name="settings_feedback">Feedback</string>
     <string name="settings_official_website">Official site</string>
     <string name="settings_github_text">GitHub</string>

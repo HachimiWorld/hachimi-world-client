@@ -30,4 +30,5 @@ fun Module.applyViewModels() {
     viewModelOf(::CreatePostViewModel)
     viewModelOf(::EventsListViewModel)
     viewModelOf(::EventDetailViewModel)
+    viewModelOf(::ChangelogViewModel)
 }

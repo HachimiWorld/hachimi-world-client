@@ -8,6 +8,7 @@
 
     <string name="global_check_update_failed">Check for update failed</string>
     <string name="global_error_check_min_api_failed">Failed to check min API version</string>
+    <string name="global_already_latest_version">Already up to date</string>
 
     <!-- Update / Upgrade Dialog -->
     <string name="update_found_title">Update available</string>
@@ -17,4 +18,10 @@
     <string name="update_confirm">Upgrade now</string>
     <string name="update_ignore">Ignore</string>
     <string name="update_icon_cd">Upgrade</string>
+
+    <!-- Changelog History Dialog -->
+    <string name="changelog_history_title">Changelog History</string>
+    <string name="changelog_history_load_more">Load more</string>
+    <string name="changelog_history_close">Close</string>
+    <string name="changelog_history_empty">No changelog available</string>
 </resources>
