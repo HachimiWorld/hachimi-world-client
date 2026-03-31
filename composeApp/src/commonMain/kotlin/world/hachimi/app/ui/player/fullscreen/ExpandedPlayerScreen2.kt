@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -35,9 +34,7 @@ import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
@@ -394,6 +391,21 @@ private fun Controls(
     }
 }
 
+@Preview(widthDp = 1280)
+@Composable
+private fun ControlsPreview() {
+    Controls(
+        modifier = Modifier.padding(16.dp),
+        playing = true,
+        liked = true,
+        likeEnabled = true,
+        onLikeClick = {},
+        onPreviousClick = {},
+        onPlayOrPauseClick = {},
+        onNextClick = {},
+        onMoreClick = {}
+    )
+}
 @Composable
 private fun ControlButton(
     onClick: () -> Unit,

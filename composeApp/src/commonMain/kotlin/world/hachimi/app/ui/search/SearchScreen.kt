@@ -1,43 +1,20 @@
 package world.hachimi.app.ui.search
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.search_no_results
-import hachimiworld.composeapp.generated.resources.search_result_title
-import hachimiworld.composeapp.generated.resources.search_tab_playlists
-import hachimiworld.composeapp.generated.resources.search_tab_songs
-import hachimiworld.composeapp.generated.resources.search_tab_users
+import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -49,10 +26,7 @@ import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.design.components.AccentButton
-import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.search.components.SearchPlaylistItem
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
@@ -224,7 +198,7 @@ private fun Tab(
         if (searchType == SearchViewModel.SearchType.SONG) {
             var expanded by remember { mutableStateOf(false) }
 
-            Box(Modifier.weight(1f), Alignment.CenterEnd) {
+            Box(Modifier.weight(1f).wrapContentWidth(align = Alignment.End)) {
                 Button(onClick = { expanded = true }) {
                     Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
                     Spacer(Modifier.width(8.dp))
