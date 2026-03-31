@@ -152,22 +152,22 @@ fun formatDistance(
 
 val LocalDateTime.Formats.YMD get() = LocalDateTime.Format {
     yearTwoDigits(1960)
-    char('/')
+    char('-')
     monthNumber()
-    char('/')
+    char('-')
     day()
 }
 
 /**
- * 25/10/14-22:29:28
+ * 25-10-14 22:29:28
  */
 val LocalDateTime.Formats.YMDHMS get() = LocalDateTime.Format {
     yearTwoDigits(1960)
-    char('/')
-    monthNumber()
-    char('/')
-    day()
     char('-')
+    monthNumber()
+    char('-')
+    day()
+    char(' ')
     hour()
     char(':')
     minute()
