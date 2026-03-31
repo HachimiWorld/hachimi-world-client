@@ -37,9 +37,7 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_next_song
-import hachimiworld.composeapp.generated.resources.player_not_playing
+import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -85,6 +83,7 @@ fun ExpandedFooterPlayer2(
                     content = {
                         ExpandedPlayerContent(
                             global = global,
+                            vm = vm,
                             uiState = uiState,
                             onAddToPlaylistClick = {
                                 tobeAddedSong =
@@ -133,6 +132,7 @@ fun ExpandedFooterPlayer2(
 @Composable
 private fun ExpandedPlayerContent(
     global: GlobalStore,
+    vm: PlayerViewModel,
     uiState: PlayerUIState,
     onAddToPlaylistClick: () -> Unit,
     onMusicQueueClick: () -> Unit
@@ -180,6 +180,9 @@ private fun ExpandedPlayerContent(
         FunctionButtons(
             modifier = Modifier.layoutId("function-buttons")
                 .padding(top = 8.dp, end = 8.dp),
+            liked = vm.liked,
+            likeEnabled = vm.likeEnabled,
+            onLikeClick = vm::toggleLike,
             shuffleOn = global.player.shuffleMode,
             repeatOn = global.player.repeatMode,
             onShuffleChange = { global.player.updateShuffleMode(it) },
@@ -410,6 +413,9 @@ private fun VolumeControl(
 @Composable
 private fun FunctionButtons(
     modifier: Modifier,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    onLikeClick: () -> Unit,
     shuffleOn: Boolean,
     repeatOn: Boolean,
     onShuffleChange: (Boolean) -> Unit,
@@ -417,8 +423,18 @@ private fun FunctionButtons(
     onAddToPlaylistClick: () -> Unit,
     onMusicQueueClick: () -> Unit,
 ) {
+    val likeContentDescription = stringResource(
+        if (liked) Res.string.player_unlike else Res.string.player_like
+    )
 
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        HachimiIconButton(onClick = onLikeClick, enabled = likeEnabled) {
+            Icon(
+                imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = likeContentDescription,
+                tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current,
+            )
+        }
         HachimiIconToggleButton(shuffleOn, onShuffleChange) {
             Icon(Icons.Default.Shuffle, if (shuffleOn) "Shuffle On" else "Shuffle Off")
         }
