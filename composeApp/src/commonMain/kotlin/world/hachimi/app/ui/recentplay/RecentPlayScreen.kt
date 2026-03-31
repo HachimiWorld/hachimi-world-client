@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +30,7 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Surface
@@ -51,8 +51,8 @@ fun RecentPlayScreen(
     }
 
     val state = rememberLazyListState()
-    LaunchedEffect(state.canScrollForward) {
-        if (!vm.loading && !state.canScrollForward) {
+    LaunchedEffect(state.canScrollForward, vm.loading, vm.hasMore) {
+        if (!vm.loading && vm.hasMore && !state.canScrollForward) {
             vm.loadMore()
         }
     }
@@ -84,10 +84,12 @@ fun RecentPlayScreen(
                         )
                     }
                     item {
+                        LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
+                    }
+                    item {
                         Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
                     }
                 }
-                if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
     }

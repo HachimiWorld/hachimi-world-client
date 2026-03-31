@@ -1,20 +1,7 @@
 package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -22,7 +9,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,13 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.common_empty
-import hachimiworld.composeapp.generated.resources.common_no_more
-import hachimiworld.composeapp.generated.resources.common_play_cd
-import hachimiworld.composeapp.generated.resources.common_refresh_cd
-import hachimiworld.composeapp.generated.resources.home_recent_title
-import hachimiworld.composeapp.generated.resources.play_all
+import hachimiworld.composeapp.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
@@ -49,6 +29,7 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
@@ -169,23 +150,11 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         )
                     }
                 }
-                if (vm.loading) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) },
-                        contentType = "loading_indicator"
-                    ) {
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-                if (!vm.hasMore) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) },
-                        contentType = "loading_indicator"
-                    ) {
-                        Text(text = stringResource(Res.string.common_no_more), modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
-                    }
+                item(
+                    span = { GridItemSpan(maxLineSpan) },
+                    contentType = "load_more"
+                ) {
+                    LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))

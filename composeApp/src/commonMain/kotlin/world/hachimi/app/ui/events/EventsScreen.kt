@@ -2,29 +2,9 @@ package world.hachimi.app.ui.events
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +37,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Card
@@ -142,7 +123,9 @@ private fun EventsListCompact(
                     })
                 }
 
-                EventsFooter(vm = vm)
+                item {
+                    LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
+                }
             }
 
             item {
@@ -228,7 +211,7 @@ private fun EventsGridExpanded(
                 }
 
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    EventsFooterInline(vm)
+                    LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(
@@ -242,42 +225,6 @@ private fun EventsGridExpanded(
     }
 }
 
-@Suppress("FunctionName")
-private fun LazyListScope.EventsFooter(vm: EventsListViewModel) {
-    if (vm.loadingMore) {
-        item {
-            Box(
-                Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("加载中…")
-            }
-        }
-    } else if (vm.noMoreData) {
-        item {
-            Box(
-                Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("没有更多了")
-            }
-        }
-    }
-}
-
-@Composable
-private fun EventsFooterInline(vm: EventsListViewModel) {
-    Box(
-        Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        when {
-            vm.loadingMore -> Text("加载中…")
-            vm.noMoreData -> Text("没有更多了")
-            else -> Spacer(Modifier.size(0.dp))
-        }
-    }
-}
 
 
 enum class CardSize {

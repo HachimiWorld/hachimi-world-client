@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentLikeViewModel
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.HachimiTheme
@@ -123,22 +123,8 @@ private fun Content(vm: RecentLikeViewModel) {
 			}
 		}
 
-		if (vm.loading) {
-			item(contentType = "loading_indicator") {
-				Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-					CircularProgressIndicator()
-				}
-			}
-		}
-
-		if (!vm.hasMore) {
-			item(contentType = "no_more") {
-				Text(
-					text = stringResource(Res.string.common_no_more),
-					modifier = Modifier.fillMaxWidth(),
-					style = MaterialTheme.typography.bodySmall,
-				)
-			}
+		item(contentType = "load_more") {
+			LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
 		}
 
 		item {
