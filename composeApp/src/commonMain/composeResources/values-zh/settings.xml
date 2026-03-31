@@ -5,6 +5,7 @@
     <string name="settings_dark_mode_follow_system">跟随系统</string>
     <string name="settings_dark_mode_on">始终开启</string>
     <string name="settings_dark_mode_off">始终关闭</string>
+    <string name="settings_player_effects">播放器特效</string>
     <string name="settings_dropdown_cd">下拉菜单</string>
     <string name="settings_loudness">响度均衡</string>
     <string name="settings_kids_mode">宝宝模式</string>

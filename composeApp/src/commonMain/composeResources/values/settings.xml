@@ -5,6 +5,7 @@
     <string name="settings_dark_mode_follow_system">Follow system</string>
     <string name="settings_dark_mode_on">Always on</string>
     <string name="settings_dark_mode_off">Always off</string>
+    <string name="settings_player_effects">Player effects</string>
     <string name="settings_dropdown_cd">Dropdown</string>
     <string name="settings_loudness">Loudness normalization</string>
     <string name="settings_kids_mode">Kids mode</string>

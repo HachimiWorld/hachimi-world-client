@@ -8,6 +8,7 @@
 
 1. Optimize the cold start time. 优化应用冷启动时间。
 2. Support remembering the close behavior. 支持记住关闭行为。
+3. Added a setting to toggle player effects. 添加了一个设置项来开关播放器特效。
 
 ## Fixes 修复
 

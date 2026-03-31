@@ -38,6 +38,7 @@ import world.hachimi.app.ui.theme.LocalDarkMode
 fun BackgroundContainer(
     painter: Painter?,
     dominantColor: Color,
+    enableDiffusionBackground: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
     val darkTheme = dominantColor.luminance() < 0.5f
@@ -71,7 +72,7 @@ fun BackgroundContainer(
             modifier = Modifier.fillMaxSize(),
             targetState = painter,
         ) { painter ->
-            if (painter != null && isDiffusionBackgroundSupported()) {
+            if (painter != null && enableDiffusionBackground && isDiffusionBackgroundSupported()) {
                 DiffusionBackground(
                     modifier = Modifier.fillMaxSize(),
                     painter = painter

@@ -22,6 +22,7 @@ class Settings(
 ) {
     private object PreferencesKeys {
         val SETTINGS_DARK_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_dark_mode", Boolean::class)
+        val SETTINGS_ENABLE_DIFFUSION_BACKGROUND: PreferenceKey<Boolean> = PreferenceKey("settings_enable_diffusion_background", Boolean::class)
         val SETTINGS_LOUDNESS_NORMALIZATION: PreferenceKey<Boolean> = PreferenceKey("settings_loudness_normalization", Boolean::class)
         val SETTINGS_KIDS_MODE: PreferenceKey<Boolean> = PreferenceKey("settings_kids_mode", Boolean::class)
         val SETTINGS_LOCALE: PreferenceKey<String> = PreferenceKey("settings_locale", String::class)
@@ -32,6 +33,8 @@ class Settings(
     var locale by mutableStateOf<String?>(null)
         private set
     var darkMode by mutableStateOf<Boolean?>(null)
+        private set
+    var enableDiffusionBackground by mutableStateOf(true)
         private set
     var enableLoudnessNormalization by mutableStateOf(true)
         private set
@@ -47,6 +50,8 @@ class Settings(
 
     suspend fun loadSettings() {
         this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
+        this.enableDiffusionBackground =
+            dataStore.get(PreferencesKeys.SETTINGS_ENABLE_DIFFUSION_BACKGROUND) ?: true
         this.enableLoudnessNormalization =
             dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
         this.locale = dataStore.get(PreferencesKeys.SETTINGS_LOCALE)
@@ -72,6 +77,11 @@ class Settings(
         } else {
             dataStore.set(PreferencesKeys.SETTINGS_DARK_MODE, darkMode)
         }
+    }
+
+    fun updateDiffusionBackgroundEnabled(enabled: Boolean) = scope.launch {
+        this@Settings.enableDiffusionBackground = enabled
+        dataStore.set(PreferencesKeys.SETTINGS_ENABLE_DIFFUSION_BACKGROUND, enabled)
     }
 
     fun updateLoudnessNormalization(enabled: Boolean) = scope.launch {

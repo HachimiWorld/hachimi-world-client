@@ -1,64 +1,18 @@
 package world.hachimi.app.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.settings_client_type
-import hachimiworld.composeapp.generated.resources.settings_close_behavior
-import hachimiworld.composeapp.generated.resources.settings_close_behavior_ask
-import hachimiworld.composeapp.generated.resources.settings_close_behavior_exit
-import hachimiworld.composeapp.generated.resources.settings_close_behavior_minimize_to_tray
-import hachimiworld.composeapp.generated.resources.settings_dark_mode_follow_system
-import hachimiworld.composeapp.generated.resources.settings_dark_mode_label
-import hachimiworld.composeapp.generated.resources.settings_dark_mode_off
-import hachimiworld.composeapp.generated.resources.settings_dark_mode_on
-import hachimiworld.composeapp.generated.resources.settings_dropdown_cd
-import hachimiworld.composeapp.generated.resources.settings_feedback
-import hachimiworld.composeapp.generated.resources.settings_github_text
-import hachimiworld.composeapp.generated.resources.settings_kids_mode
-import hachimiworld.composeapp.generated.resources.settings_language_en
-import hachimiworld.composeapp.generated.resources.settings_language_follow_system
-import hachimiworld.composeapp.generated.resources.settings_language_label
-import hachimiworld.composeapp.generated.resources.settings_language_zh
-import hachimiworld.composeapp.generated.resources.settings_loudness
-import hachimiworld.composeapp.generated.resources.settings_official_site_text
-import hachimiworld.composeapp.generated.resources.settings_official_website
-import hachimiworld.composeapp.generated.resources.settings_open_in_browser_cd
-import hachimiworld.composeapp.generated.resources.settings_title
-import hachimiworld.composeapp.generated.resources.settings_version_code
-import hachimiworld.composeapp.generated.resources.settings_version_name
+import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.BuildKonfig
@@ -85,6 +39,7 @@ fun SettingsScreen(
 
         LanguageSetting(globalStore.settings)
         DarkModeSetting(globalStore)
+        DiffusionBackgroundSetting(globalStore)
         LoudnessNormalizationSetting(globalStore)
         KidsModeSetting(globalStore)
 
@@ -182,6 +137,15 @@ private fun DarkModeSetting(globalStore: GlobalStore) {
                 })
             }
         }
+    }
+}
+
+@Composable
+private fun DiffusionBackgroundSetting(globalStore: GlobalStore) {
+    PropertyItem(label = { Text(stringResource(Res.string.settings_player_effects)) }) {
+        Switch(globalStore.settings.enableDiffusionBackground, {
+            globalStore.settings.updateDiffusionBackgroundEnabled(it)
+        })
     }
 }
 

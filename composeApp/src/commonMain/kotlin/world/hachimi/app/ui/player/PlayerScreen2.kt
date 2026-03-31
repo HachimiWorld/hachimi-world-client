@@ -36,7 +36,8 @@ fun PlayerScreen2(
 
     BackgroundContainer(
         painter = painter,
-        dominantColor = dominantColor ?: HachimiTheme.colorScheme.background
+        dominantColor = dominantColor ?: HachimiTheme.colorScheme.background,
+        enableDiffusionBackground = global.settings.enableDiffusionBackground
     ) {
         val contentDarkMode = LocalDarkMode.current
 
