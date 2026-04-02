@@ -36,7 +36,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onFirstVisible
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -312,7 +312,9 @@ private fun SegmentHeader(
     onLoad: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp).onFirstVisible { onLoad() },
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp).onVisibilityChanged { visible ->
+            if (visible) onLoad()
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = text, style = MaterialTheme.typography.titleLarge)
@@ -358,7 +360,9 @@ private fun LoadableContent(
     }
     AnimatedContent(
         initializeStatus,
-        modifier = modifier.onFirstVisible { onLoad() },
+        modifier = modifier.onVisibilityChanged { visible ->
+            if (visible) onLoad()
+        },
         transitionSpec = {
             if (targetState == InitializeStatus.LOADED) {
                 (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
