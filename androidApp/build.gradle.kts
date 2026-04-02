@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.androidBuiltInKotlin)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.ksp)
@@ -65,8 +64,8 @@ android {
         }*/
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         resValues = true

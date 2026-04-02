@@ -1,17 +1,15 @@
 import com.android.SdkConstants
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.ksp)
@@ -19,11 +17,17 @@ plugins {
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    jvmToolchain(21)
+
+    android {
+        namespace = "world.hachimi.app.shared"
+        compileSdk = 36
+
+        minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
+        androidResources.enable = true // This is used to enable the composeMultiplatform resources in android
     }
 
     listOf(
@@ -187,6 +191,10 @@ dependencies {
 //    add("kspIosArm64", libs.room.compiler)
 }
 
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
+}
+
 val gitVersionCode = providers.exec {
     commandLine("git", "rev-list", "--count", "--first-parent", "HEAD")
 }.standardOutput.asText.map {
@@ -200,39 +208,6 @@ val gitVersionName = providers.exec {
 }
 
 val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }
-
-android {
-    namespace = "world.hachimi.app.shared"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-        }
-        create("beta") {
-            isMinifyEnabled = true
-        }
-        debug {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-}
-
-dependencies {
-    debugImplementation(libs.compose.ui.tooling)
-}
 
 compose.desktop {
     application {
