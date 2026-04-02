@@ -1,7 +1,22 @@
 package world.hachimi.app.ui.userspace
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -27,7 +42,18 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_logout
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.player_play_all
+import hachimiworld.composeapp.generated.resources.user_edit_profile
+import hachimiworld.composeapp.generated.resources.user_space_all_works
+import hachimiworld.composeapp.generated.resources.user_space_empty
+import hachimiworld.composeapp.generated.resources.user_space_female_cd
+import hachimiworld.composeapp.generated.resources.user_space_male_cd
+import hachimiworld.composeapp.generated.resources.user_space_title
+import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
+import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -39,30 +65,42 @@ import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.component.Pagination
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.CircularProgressIndicator
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.userspace.component.ConnectionChip
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.util.contentPaddingForMaxWidth
 
 @Composable
-fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
-    DisposableEffect(vm) {
+fun UserSpaceScreen(
+    uid: Long?,
+    vm: UserSpaceViewModel = koinViewModel(),
+    global: GlobalStore = koinInject()
+) {
+    DisposableEffect(vm, uid) {
         vm.mounted(uid)
         onDispose {
             vm.dispose()
         }
     }
-    val global = koinInject<GlobalStore>()
 
     BoxWithConstraints {
+        val constraintsMaxWidth = maxWidth
+
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
-            columns = calculateGridColumns(maxWidth),
+            modifier = Modifier.fillMaxSize(),
+            columns = calculateGridColumns(constraintsMaxWidth),
+            contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), constraintsMaxWidth),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-            contentPadding = PaddingValues(24.dp)
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Header(vm, global, Modifier.fillMaxWidth())
@@ -79,6 +117,19 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                if (vm.total > vm.pageSize) {
+                    Pagination(
+                        total = vm.total.toInt(),
+                        pageSize = vm.pageSize.toInt(),
+                        pageIndex = vm.pageIndex.toInt(),
+                        onPageChange = { pageIndex, pageSize ->
+                            vm.updateSongPage(pageIndex.toLong(), pageSize.toLong())
+                        },
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Spacer(

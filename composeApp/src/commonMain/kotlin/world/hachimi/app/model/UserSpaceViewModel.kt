@@ -8,16 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_not_logged_in
-import hachimiworld.composeapp.generated.resources.publish_image_too_large
-import hachimiworld.composeapp.generated.resources.user_connections_linked_success
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.openFilePicker
-import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readBytes
-import io.github.vinceglb.filekit.size
-import kotlinx.coroutines.*
-import kotlinx.io.Buffer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
@@ -40,48 +35,16 @@ class UserSpaceViewModel(
         private set
     var profile by mutableStateOf<UserModule.PublicUserProfile?>(null)
         private set
-    var showEditBio by mutableStateOf(false)
-        private set
-    var editBioValue by mutableStateOf<String>("")
+    val privateConnections = mutableStateListOf<UserModule.ConnectionItem>()
 
-    var showEditUsername by mutableStateOf(false)
+    var loadingPrivateConnections by mutableStateOf(false)
         private set
-    var editUsernameValue by mutableStateOf<String>("")
-
-    var operating by mutableStateOf(false)
-        private set
-
-    var avatarUploading by mutableStateOf(false)
-    var avatarUploadProgress by mutableStateOf(0f)
-
-    // Connections (own profile only)
-    val connections = mutableStateListOf<UserModule.ConnectionItem>()
-    var loadingConnections by mutableStateOf(false)
-        private set
-
-    // Bind dialog state
-    var showBindDialog by mutableStateOf(false)
-        private set
-    var bindBilibiliUid by mutableStateOf("")
-    var bindChallengeId by mutableStateOf<String?>(null)
-        private set
-    var bindChallenge by mutableStateOf<String?>(null)
-        private set
-    var bindGenerating by mutableStateOf(false)
-        private set
-    var bindVerifying by mutableStateOf(false)
-        private set
-
-    // Unlink confirm dialog state
-    var showUnlinkConfirm by mutableStateOf(false)
-        private set
-    var unlinkTargetType by mutableStateOf<String?>(null)
-        private set
-
     val songs = mutableStateListOf<SongModule.PublicSongDetail>()
-    var songPage by mutableStateOf(0)
+    var pageIndex by mutableStateOf(0L)
         private set
-    var songPageSize by mutableStateOf(20)
+    var pageSize by mutableStateOf(30L)
+        private set
+    var total by mutableStateOf(0L)
         private set
     private var uid: Long? = null
 
@@ -110,7 +73,7 @@ class UserSpaceViewModel(
         initializeStatus = InitializeStatus.INIT
         profile = null
         songs.clear()
-        connections.clear()
+        privateConnections.clear()
 
         // Initialize
         if (uid == null) {
@@ -128,7 +91,11 @@ class UserSpaceViewModel(
         viewModelScope.launch {
             val deferred = mutableListOf(
                 async { refreshProfile() },
-                async { loadSongs() }
+                async {
+                    pageIndex = 0
+                    pageSize = 30
+                    loadSongs()
+                }
             )
             if (myself) {
                 deferred.add(async { refreshConnections() })
@@ -142,119 +109,9 @@ class UserSpaceViewModel(
 
     }
 
-    fun editAvatar() {
-        viewModelScope.launch {
-            val image = FileKit.openFilePicker(
-                type = FileKitType.Image
-            )
-            if (image != null) {
-                // 1. Validate image
-                val size = image.size()
-                if (size > 4 * 1024 * 1024) {
-                    global.alert(Res.string.publish_image_too_large)
-                    return@launch
-                }
-                val buffer = Buffer().apply { write(image.readBytes()) }
-
-                // 2. Upload
-                try {
-                    avatarUploading = true
-
-                    val resp =
-                        api.userModule.setAvatar(filename = image.name, source = buffer, listener = { sent, total ->
-                            val progress = (sent.toDouble() / size).toFloat()
-                            avatarUploadProgress = progress.coerceIn(0f, 1f)
-                        })
-                    if (resp.ok) {
-                        refreshProfile()
-                    } else {
-                        val error = resp.err()
-                        global.alert(error.msg)
-                        return@launch
-                    }
-                } catch (e: Throwable) {
-                    Logger.e("creation", "Failed to upload image image", e)
-                    global.alert(e.message)
-                    return@launch
-                } finally {
-                    avatarUploading = false
-                }
-            }
-        }
-    }
-
-    fun editUsername() {
-        editUsernameValue = profile?.username ?: ""
-        showEditUsername = true
-    }
-
-    fun confirmEditUsername() {
-        viewModelScope.launch {
-            operating = true
-            try {
-                val resp = api.userModule.updateProfile(
-                    UserModule.UpdateProfileReq(
-                        username = editUsernameValue,
-                        bio = profile!!.bio,
-                        gender = profile!!.gender,
-                    )
-                )
-                if (resp.ok) {
-                    showEditUsername = false
-                    refreshProfile()
-                } else {
-                    val err = resp.err()
-                    global.alert(err.msg)
-                }
-            } catch (e: Throwable) {
-                Logger.e("userspace", "Failed to update profile", e)
-                global.alert(e.message)
-            } finally {
-                operating = false
-            }
-        }
-    }
-
-    fun editBio() {
-        editBioValue = profile?.bio ?: ""
-        showEditBio = true
-    }
-
-    fun cancelEdit() {
-        showEditBio = false
-        showEditUsername = false
-    }
-
-    fun confirmEditBio() {
-        viewModelScope.launch {
-            operating = true
-            try {
-                val resp = api.userModule.updateProfile(
-                    UserModule.UpdateProfileReq(
-                        username = profile!!.username,
-                        bio = editBioValue,
-                        gender = profile!!.gender,
-                    )
-                )
-                if (resp.ok) {
-                    showEditBio = false
-                    refreshProfile()
-                } else {
-                    val err = resp.err()
-                    global.alert(err.msg)
-                }
-            } catch (e: Throwable) {
-                Logger.e("userspace", "Failed to update profile", e)
-                global.alert(e.message)
-            } finally {
-                operating = false
-            }
-        }
-    }
-
-    fun updateSongPage(page: Int, pageSize: Int) = viewModelScope.launch {
-        songPage = page
-        songPageSize = pageSize
+    fun updateSongPage(pageIndex: Long, pageSize: Long) = viewModelScope.launch {
+        this@UserSpaceViewModel.pageIndex = pageIndex
+        this@UserSpaceViewModel.pageSize = pageSize
         loadSongs()
     }
 
@@ -274,7 +131,7 @@ class UserSpaceViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
-            Logger.e("userspace", "Failed to fetch profile", e)
+            Logger.e(TAG, "Failed to fetch profile", e)
             global.alert(e.message)
         } finally {
             loadingProfile = false
@@ -284,11 +141,16 @@ class UserSpaceViewModel(
     private suspend fun loadSongs() {
         loadingSongs = true
         try {
-            val resp = api.songModule.pageByUser(SongModule.PageByUserReq(uid!!, null, null))
+            val resp = api.songModule.pageByUser(SongModule.PageByUserReq(
+                userId = uid!!,
+                page = pageIndex,
+                size = pageSize
+            ))
             if (resp.ok) {
                 val data = resp.ok()
                 songs.clear()
                 songs.addAll(data.songs)
+                total = data.total
             } else {
                 val err = resp.err()
                 global.alert(err.msg)
@@ -318,129 +180,27 @@ class UserSpaceViewModel(
         }
     }
 
-    // ---- Connections ----
-
-    fun loadConnections() {
-        viewModelScope.launch { refreshConnections() }
-    }
-
     private suspend fun refreshConnections() {
-        loadingConnections = true
+        loadingPrivateConnections = true
         try {
             val resp = api.userModule.connectionList()
             if (resp.ok) {
                 val data = resp.ok()
-                connections.clear()
-                connections.addAll(data.items)
+                privateConnections.clear()
+                privateConnections.addAll(data.items)
             } else {
                 val err = resp.err()
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
-            Logger.e("userspace", "Failed to load connections", e)
+            Logger.e(TAG, "Failed to load connections", e)
             global.alert(e.message)
         } finally {
-            loadingConnections = false
+            loadingPrivateConnections = false
         }
     }
 
-    fun startBind() {
-        bindBilibiliUid = ""
-        bindChallengeId = null
-        bindChallenge = null
-        bindGenerating = false
-        bindVerifying = false
-        showBindDialog = true
-    }
-
-    fun dismissBind() {
-        showBindDialog = false
-    }
-
-    fun generateChallenge() {
-        viewModelScope.launch {
-            bindGenerating = true
-            try {
-                val resp = api.userModule.connectionGenerateChallenge(
-                    UserModule.ConnectionGenerateChallengeReq(
-                        type = UserModule.CONNECTION_TYPE_BILIBILI,
-                        providerAccountId = bindBilibiliUid.trim()
-                    )
-                )
-                if (resp.ok) {
-                    val data = resp.ok()
-                    bindChallengeId = data.challengeId
-                    bindChallenge = data.challenge
-                } else {
-                    val err = resp.err()
-                    global.alert(err.msg)
-                }
-            } catch (e: Throwable) {
-                Logger.e("userspace", "Failed to generate challenge", e)
-                global.alert(e.message)
-            } finally {
-                bindGenerating = false
-            }
-        }
-    }
-
-    fun verifyChallenge() {
-        val challengeId = bindChallengeId ?: return
-        viewModelScope.launch {
-            bindVerifying = true
-            try {
-                val resp = api.userModule.connectionVerifyChallenge(
-                    UserModule.ConnectionVerifyChallengeReq(challengeId = challengeId)
-                )
-                if (resp.ok) {
-                    showBindDialog = false
-                    refreshConnections()
-                    global.alert(Res.string.user_connections_linked_success)
-                } else {
-                    val err = resp.err()
-                    global.alert(err.msg)
-                }
-            } catch (e: Throwable) {
-                Logger.e("userspace", "Failed to verify challenge", e)
-                global.alert(e.message)
-            } finally {
-                bindVerifying = false
-            }
-        }
-    }
-
-    fun requestUnlink(type: String) {
-        unlinkTargetType = type
-        showUnlinkConfirm = true
-    }
-
-    fun dismissUnlink() {
-        showUnlinkConfirm = false
-        unlinkTargetType = null
-    }
-
-    fun confirmUnlink() {
-        val type = unlinkTargetType ?: return
-        viewModelScope.launch {
-            operating = true
-            try {
-                val resp = api.userModule.connectionUnlink(
-                    UserModule.ConnectionUnlinkReq(type = type)
-                )
-                if (resp.ok) {
-                    showUnlinkConfirm = false
-                    unlinkTargetType = null
-                    refreshConnections()
-                } else {
-                    val err = resp.err()
-                    global.alert(err.msg)
-                }
-            } catch (e: Throwable) {
-                Logger.e("userspace", "Failed to unlink account", e)
-                global.alert(e.message)
-            } finally {
-                operating = false
-            }
-        }
+    companion object {
+        private val TAG = "userspace"
     }
 }

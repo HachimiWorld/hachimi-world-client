@@ -1,24 +1,62 @@
 package world.hachimi.app.ui.component
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.pagination_next_cd
+import hachimiworld.composeapp.generated.resources.pagination_page_size
+import hachimiworld.composeapp.generated.resources.pagination_previous_cd
+import hachimiworld.composeapp.generated.resources.pagination_total_items
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.HachimiIconToggleButton
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.WindowSize
+
+@Composable
+fun Pagination(
+    modifier: Modifier = Modifier,
+    total: Int,
+    pageIndex: Int,
+    pageSize: Int = 10,
+    pageSizeCandidates: List<Int> = remember { listOf(10, 20, 30) },
+    onPageChange: (pageIndex: Int, pageSize: Int) -> Unit
+) {
+    Pagination(
+        modifier = modifier,
+        total = total,
+        currentPage = pageIndex,
+        pageSize = pageSize,
+        pageSizes = pageSizeCandidates,
+        pageSizeChange = { onPageChange(pageIndex, it) },
+        pageChange = { onPageChange(it, pageSize) }
+    )
+}
 
 @Composable
 fun Pagination(
@@ -62,7 +100,10 @@ fun Pagination(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(stringResource(Res.string.pagination_total_items, total), style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        stringResource(Res.string.pagination_total_items, total),
+                        style = MaterialTheme.typography.labelMedium
+                    )
 
                     PageSizeButton(
                         pageSize = pageSize,
@@ -85,7 +126,10 @@ fun Pagination(
                 )
                 NextButton(currentPage, pageCount, pageChange)
 
-                Text(stringResource(Res.string.pagination_total_items, total), style = MaterialTheme.typography.labelMedium)
+                Text(
+                    stringResource(Res.string.pagination_total_items, total),
+                    style = MaterialTheme.typography.labelMedium
+                )
 
                 PageSizeButton(
                     pageSize = pageSize,
@@ -103,12 +147,18 @@ private fun PreviousButton(
     currentPage: Int,
     onPageChange: (page: Int) -> Unit
 ) {
-    IconButton(onClick = {
-        if (currentPage > 0) {
-            onPageChange(currentPage - 1)
-        }
-    }) {
-        Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(Res.string.pagination_previous_cd))
+    HachimiIconButton(
+        onClick = {
+            if (currentPage > 0) {
+                onPageChange(currentPage - 1)
+            }
+        },
+        touchMode = true
+    ) {
+        Icon(
+            Icons.Default.ChevronLeft,
+            contentDescription = stringResource(Res.string.pagination_previous_cd)
+        )
     }
 }
 
@@ -118,12 +168,18 @@ private fun NextButton(
     pageCount: Int,
     onPageChange: (page: Int) -> Unit
 ) {
-    IconButton(onClick = {
-        if (currentPage < pageCount - 1) {
-            onPageChange(currentPage + 1)
-        }
-    }) {
-        Icon(Icons.Default.ChevronRight, contentDescription = stringResource(Res.string.pagination_next_cd))
+    HachimiIconButton(
+        onClick = {
+            if (currentPage < pageCount - 1) {
+                onPageChange(currentPage + 1)
+            }
+        },
+        touchMode = true
+    ) {
+        Icon(
+            Icons.Default.ChevronRight,
+            contentDescription = stringResource(Res.string.pagination_next_cd)
+        )
     }
 }
 
@@ -142,11 +198,12 @@ private fun PaginationComponent(
     LazyRow(modifier, state) {
         items(pageCount) { i ->
             val checked = currentPage == i
-            IconToggleButton(
+            HachimiIconToggleButton(
                 checked = checked,
                 onCheckedChange = {
                     if (it) onPageChange(i)
-                }
+                },
+                touchMode = true
             ) {
                 Text((i + 1).toString())
             }
