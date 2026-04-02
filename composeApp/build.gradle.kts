@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.ksp)
     alias(libs.plugins.buildkonfig)
 }
@@ -276,7 +275,7 @@ compose.desktop {
 
 buildkonfig {
     packageName = "world.hachimi.app"
-    exposeObjectWithName = "BuildKonfig"
+//    exposeObjectWithName = "BuildKonfig"
 
     val props = Properties().apply { load(rootProject.file(SdkConstants.FN_LOCAL_PROPERTIES).reader()) }
 

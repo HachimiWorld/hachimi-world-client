@@ -10,6 +10,7 @@
         {
           "blend-mode" : "normal",
           "glass" : false,
+          "hidden" : false,
           "image-name" : "hachimi_3d_front.png",
           "name" : "hachimi_3d_front",
           "position" : {
