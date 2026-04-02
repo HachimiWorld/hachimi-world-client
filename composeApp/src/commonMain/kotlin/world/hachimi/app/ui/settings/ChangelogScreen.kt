@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -22,6 +21,7 @@ import world.hachimi.app.api.module.VersionModule
 import world.hachimi.app.model.ChangelogViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.HorizontalDivider
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
