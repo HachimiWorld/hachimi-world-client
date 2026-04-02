@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.need_login_message
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -115,6 +116,8 @@ class PlayerViewModel(
                             global.alert(resp.err().msg)
                             liked = false
                         }
+                    } catch (_: CancellationException) {
+                        Logger.i(TAG, "Cancelled fetching like status for song $songId")
                     } catch (e: Throwable) {
                         if (currentSongId == songId) {
                             Logger.e(TAG, "Failed to fetch like status for song $songId", e)

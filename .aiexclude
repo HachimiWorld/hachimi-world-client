@@ -1,0 +1,7 @@
+local.properties
+build
+.idea
+.kotlin
+.local
+.run
+/composeApp/build

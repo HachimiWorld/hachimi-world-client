@@ -8,6 +8,7 @@ import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -54,7 +55,7 @@ class PlaybackService : MediaSessionService(), MediaSession.Callback {
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(mapOf("Referer" to "https://hachimi.world/"))
             .setUserAgent(userAgentString)
-        val dataSourceFactory = androidx.media3.datasource.DefaultDataSource.Factory(
+        val dataSourceFactory = DefaultDataSource.Factory(
             this,
             httpDataSourceFactory
         )

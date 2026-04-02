@@ -1,7 +1,7 @@
 [versions]
-kotlin = "2.2.21"
-ksp = "2.2.20-2.0.3"
-agp = "8.12.3"
+kotlin = "2.3.20"
+ksp = "2.3.6"
+agp = "9.1.0"
 android-minSdk = "24"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.7.1"
@@ -130,6 +130,7 @@ kmpalette-extensions-file = { module = "com.kmpalette:extensions-file", version.
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidBuiltInKotlin = { id = "com.android.built-in-kotlin", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

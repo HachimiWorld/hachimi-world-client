@@ -8,7 +8,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
@@ -202,46 +202,26 @@ val gitVersionName = providers.exec {
 val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }
 
 android {
-    namespace = "world.hachimi.app"
+    namespace = "world.hachimi.app.shared"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "world.hachimi.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = 35
-        versionCode = gitVersionCode.get()
-        versionName = gitVersionName.get()
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    signingConfigs {
-        if (System.getenv("IS_CI") == "true") {
-            register("release") {
-                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
-                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
-            }
-        }
-    }
     buildTypes {
         release {
             isMinifyEnabled = true
-            if (System.getenv("IS_CI") == "true") {
-                signingConfig = signingConfigs.getByName("release")
-            }
-            resValue("string", "app_name", "@string/app_name_base")
         }
         create("beta") {
             isMinifyEnabled = true
-            applicationIdSuffix = ".dev"
         }
         debug {
-            applicationIdSuffix = ".dev"
-//            resValue("string", "app_name", "@string/app_name_dev")
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -321,6 +301,7 @@ compose.desktop {
 
 buildkonfig {
     packageName = "world.hachimi.app"
+    exposeObjectWithName = "BuildKonfig"
 
     val props = Properties().apply { load(rootProject.file(SdkConstants.FN_LOCAL_PROPERTIES).reader()) }
 
