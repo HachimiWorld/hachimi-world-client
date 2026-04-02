@@ -1,7 +1,18 @@
 package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -18,7 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_empty
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.common_refresh_cd
+import hachimiworld.composeapp.generated.resources.home_recent_title
+import hachimiworld.composeapp.generated.resources.play_all
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
@@ -41,6 +57,7 @@ import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
+import world.hachimi.app.util.contentPaddingForMaxWidth
 import world.hachimi.app.util.formatDaysDistance
 import kotlin.time.Clock
 
@@ -66,11 +83,11 @@ fun RecentPublishScreen(
 @Composable
 private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val maxWidth = maxWidth
+        val constraintMaxWidth = maxWidth
         AdaptivePullToRefreshBox(
             isRefreshing = vm.initializeStatus != InitializeStatus.INIT && vm.refreshing,
             onRefresh = { vm.fakeRefresh() },
-            screenWidth = maxWidth
+            screenWidth = constraintMaxWidth
         ) {
             val state = rememberLazyGridState()
             LaunchedEffect(state.canScrollForward) {
@@ -84,8 +101,8 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
             } else LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
-                columns = calculateGridColumns(maxWidth),
-                contentPadding = PaddingValues(24.dp),
+                columns = calculateGridColumns(constraintMaxWidth),
+                contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), constraintMaxWidth),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
@@ -94,7 +111,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         Text(
                             text = stringResource(Res.string.home_recent_title), style = MaterialTheme.typography.titleLarge
                         )
-                        if (maxWidth >= WindowSize.COMPACT) {
+                        if (constraintMaxWidth >= WindowSize.COMPACT) {
                             HachimiIconButton(
                                 modifier = Modifier.padding(start = 8.dp),
                                 enabled = !vm.loading,

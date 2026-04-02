@@ -1,6 +1,9 @@
 package world.hachimi.app.util
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
@@ -10,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -19,8 +23,8 @@ import world.hachimi.app.ui.LocalWindowSize
 fun Modifier.fillMaxWithLimit(maxWidth: Dp = 1040.dp): Modifier =
     this.fillMaxSize().wrapContentWidth().widthIn(max = maxWidth)
 
-fun Modifier.fillMaxWidthIn(maxWidth: Dp = 1040.dp, contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier =
-    this.fillMaxWidth().wrapContentWidth(align = contentAlignment).widthIn(max = maxWidth)
+fun Modifier.fillMaxWidthIn(maxWidth: Dp = 1280.dp, contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier =
+    this.fillMaxWidth().wrapContentWidth(align = contentAlignment).widthIn(max = maxWidth).fillMaxWidth()
 
 object WindowSize {
     val COMPACT = 600.dp
@@ -123,13 +127,37 @@ val AdaptiveListSpacing: Dp
 /**
  * Decide the number of columns based on the screen width. Especially for grid layout.
  */
+@Stable
 fun calculateGridColumns(maxWidth: Dp): GridCells = when {
     // 2 ~ 6 columns
     maxWidth < 420.dp -> GridCells.Adaptive(minSize = 120.dp)
-    maxWidth < WindowSize.COMPACT -> GridCells.Adaptive(minSize = 160.dp)
-    maxWidth < WindowSize.MEDIUM -> GridCells.Fixed(3)
-    maxWidth < WindowSize.EXPANDED -> GridCells.Fixed(4)
-    maxWidth < WindowSize.LARGE -> GridCells.Fixed(5)
-    maxWidth < WindowSize.EXTRA_LARGE -> GridCells.Fixed(6)
-    else -> GridCells.Fixed(6)
+    else -> GridCells.Adaptive(minSize = 160.dp)
+    /*maxWidth < WindowSize.COMPACT -> GridCells.Adaptive(minSize = 160.dp)
+    maxWidth < WindowSize.MEDIUM -> GridCells.Fixed(4)
+    maxWidth < 1020.dp -> GridCells.Fixed(5)
+    maxWidth < WindowSize.EXPANDED -> GridCells.Fixed(6)
+    else -> GridCells.Fixed(6)*/
+}
+
+/**
+ * 使用 `contentPadding` 来限制内容的最大宽度。当屏幕宽度超过 `maxWidth` 时，内容会居中显示，并且两侧会有等宽的空白。
+ * 当屏幕宽度小于等于 `maxWidth` 时，内容会占满整个宽度。
+ */
+@Composable
+fun contentPaddingForMaxWidth(
+    padding: PaddingValues,
+    currentWidth: Dp,
+    maxWidth: Dp = 1280.dp
+): PaddingValues {
+    val layoutDirection = LocalLayoutDirection.current
+    return if (currentWidth > maxWidth) {
+        PaddingValues(
+            start = padding.calculateStartPadding(layoutDirection) + (currentWidth - maxWidth) / 2,
+            end = padding.calculateEndPadding(layoutDirection) + (currentWidth - maxWidth) / 2,
+            top = padding.calculateTopPadding(),
+            bottom = padding.calculateBottomPadding()
+        )
+    } else {
+        padding
+    }
 }
