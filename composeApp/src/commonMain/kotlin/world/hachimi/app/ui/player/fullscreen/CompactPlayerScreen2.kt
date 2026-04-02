@@ -104,6 +104,7 @@ fun CompactPlayerScreen2(
                 )
             } else {
                 Column {
+                    val externalLink = uiState.readySongInfo?.externalLinks?.firstOrNull()
                     Header(
                         modifier = Modifier.padding(top = 16.dp, start = 32.dp, end = 32.dp),
                         cover = uiState.displayedCover, title = uiState.displayedTitle,
@@ -112,7 +113,8 @@ fun CompactPlayerScreen2(
                         likeEnabled = vm.likeEnabled,
                         onLikeClick = vm::toggleLike,
                         hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                        pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                        pvLink = externalLink?.url,
+                        pvPlatform = externalLink?.platform,
                         avatar = uiState.userProfile?.avatarUrl,
                         onUserClick = {
                             uiState.readySongInfo?.uploaderUid?.let {
@@ -249,18 +251,20 @@ private fun PlayerTab(
                     subtitle = uiState.readySongInfo?.subtitle,
                 )
 
+                val link = uiState.readySongInfo?.externalLinks?.firstOrNull()
                 AuthorAndPV(
                     modifier = Modifier.padding(top = 8.dp),
                     authorName = uiState.displayedAuthor,
                     hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                    pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                    pvLink = link?.url,
+                    pvPlatform = link?.platform,
                     pvAlignToEnd = false,
                     avatar = uiState.userProfile?.avatarUrl,
                     onUserClick = {
                         uiState.readySongInfo?.uploaderUid?.let {
                             onNavToUser(it)
                         }
-                    }
+                    },
                 )
             }
             HachimiIconButton(onClick = onLikeClick, enabled = likeEnabled) {
@@ -417,6 +421,7 @@ private fun Header(
     onLikeClick: () -> Unit,
     hasMultipleArtists: Boolean,
     pvLink: String?,
+    pvPlatform: String?,
     onUserClick: () -> Unit,
     onAddToPlaylistClick: () -> Unit,
     onShareClick: () -> Unit
@@ -457,7 +462,8 @@ private fun Header(
                 pvLink = pvLink,
                 pvAlignToEnd = false,
                 avatar = avatar,
-                onUserClick = onUserClick
+                onUserClick = onUserClick,
+                pvPlatform = pvPlatform
             )
         }
         HachimiIconButton(onClick = onLikeClick, touchMode = true, enabled = likeEnabled) {

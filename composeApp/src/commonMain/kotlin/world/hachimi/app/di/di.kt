@@ -11,6 +11,7 @@ fun Module.applyViewModels() {
     viewModelOf(::MyPRViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::UserSpaceViewModel)
+    viewModelOf(::EditProfileViewModel)
     viewModelOf(::PlaylistViewModel)
     viewModelOf(::PlaylistDetailViewModel)
     viewModelOf(::PlayerViewModel)

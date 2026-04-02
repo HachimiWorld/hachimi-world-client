@@ -97,6 +97,8 @@ sealed class Route: NavKey {
         @Serializable
         data class PublicUserSpace(val userId: Long): Root()
         @Serializable
+        data object EditProfile: Root()
+        @Serializable
         data object Settings: Root()
         @Serializable
         data object Changelog: Root()

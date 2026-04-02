@@ -1,30 +1,14 @@
 package world.hachimi.app.ui.userspace
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.PlayArrow
@@ -37,44 +21,27 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_logout
-import hachimiworld.composeapp.generated.resources.common_cancel
-import hachimiworld.composeapp.generated.resources.common_change
-import hachimiworld.composeapp.generated.resources.common_play_cd
-import hachimiworld.composeapp.generated.resources.player_play_all
-import hachimiworld.composeapp.generated.resources.user_change_bio
-import hachimiworld.composeapp.generated.resources.user_change_nickname
-import hachimiworld.composeapp.generated.resources.user_space_all_works
-import hachimiworld.composeapp.generated.resources.user_space_empty
-import hachimiworld.composeapp.generated.resources.user_space_female_cd
-import hachimiworld.composeapp.generated.resources.user_space_male_cd
-import hachimiworld.composeapp.generated.resources.user_space_title
-import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
-import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
+import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.api.CoilHeaders
+import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
-import world.hachimi.app.ui.design.components.AlertDialog
-import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.CircularProgressIndicator
-import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.Surface
-import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.design.components.TextButton
-import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.ui.userspace.component.ConnectionChip
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
 import world.hachimi.app.util.fillMaxWidthIn
@@ -121,9 +88,6 @@ fun UserSpaceScreen(uid: Long?, vm: UserSpaceViewModel = koinViewModel()) {
             }
         }
     }
-
-    ChangeBioDialog(vm)
-    ChangeUsernameDialog(vm)
 }
 
 @Composable
@@ -131,14 +95,22 @@ private fun Header(
     vm: UserSpaceViewModel, global: GlobalStore, modifier: Modifier = Modifier
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
                 text = stringResource(Res.string.user_space_title),
                 style = MaterialTheme.typography.titleLarge
             )
-            if (vm.myself) TextButton(onClick = { global.logout() }) {
-                Text(stringResource(Res.string.auth_logout))
+            if (vm.myself) {
+                HachimiIconButton(onClick = { global.nav.push(Route.Root.EditProfile) }) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = stringResource(Res.string.user_edit_profile)
+                    )
+                }
+                TextButton(onClick = { global.logout() }) {
+                    Text(stringResource(Res.string.auth_logout))
+                }
             }
         }
 
@@ -146,96 +118,42 @@ private fun Header(
             targetState = vm.loadingProfile,
             transitionSpec = { materialFadeThrough() }
         ) {
-            if (it) Box(modifier.height(300.dp), contentAlignment = Alignment.Center) {
+            if (it) Box(modifier.height(200.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             } else vm.profile?.let { profile ->
                 Row(modifier) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Surface(
-                            modifier = Modifier.size(128.dp),
-                            shape = CircleShape
-                        ) {
-                            Box(
-                                modifier = Modifier.clickable(
-                                    enabled = vm.myself,
-                                    onClick = { vm.editAvatar() }
-                                ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                                        .httpHeaders(CoilHeaders)
-                                        .data(profile.avatarUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
-                                    modifier = Modifier.fillMaxSize(),
-                                    filterQuality = FilterQuality.High,
-                                    contentScale = ContentScale.Crop
-                                )
+                    Avatar(avatarUrl = profile.avatarUrl)
 
-                                if (vm.avatarUploading) {
-                                    if (vm.avatarUploadProgress > 0f && vm.avatarUploadProgress < 1f)
-                                        CircularProgressIndicator(progress = { vm.avatarUploadProgress })
-                                    else CircularProgressIndicator()
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            SelectionContainer {
-                                Text(
-                                    modifier = Modifier.clickable(enabled = vm.myself) { vm.editUsername() },
-                                    text = profile.username,
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                            }
-                            profile.gender?.let {
-                                Box(Modifier.padding(start = 4.dp).size(16.dp)) {
-                                    when (profile.gender) {
-                                        0 -> Icon(
-                                            Icons.Default.Male,
-                                            contentDescription = stringResource(Res.string.user_space_male_cd)
-                                        )
-
-                                        1 -> Icon(
-                                            Icons.Default.Female,
-                                            contentDescription = stringResource(Res.string.user_space_female_cd)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Spacer(Modifier.width(24.dp))
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.padding(start = 24.dp)) {
                         SelectionContainer {
                             Text(
-                                text = stringResource(
-                                    Res.string.user_space_uid_prefix,
-                                    profile.uid
-                                ), style = MaterialTheme.typography.labelMedium
+                                text = profile.username,
+                                style = MaterialTheme.typography.titleLarge
                             )
                         }
-                        Surface(
-                            modifier = modifier.height(100.dp),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Box(
-                                Modifier.clickable(
-                                    enabled = vm.myself,
-                                    onClick = { vm.editBio() }
-                                ).padding(12.dp)
-                            ) {
-                                SelectionContainer {
-                                    Text(
-                                        text = profile.bio ?: "",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
+
+                        SelectionContainer {
+                            Text(
+                                modifier = Modifier.padding(top = 4.dp),
+                                text = profile.bio ?: "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        Row(modifier = Modifier.padding(top = 4.dp)) {
+                            profile.gender?.let { GenderIcon(it, Modifier.padding(end = 4.dp)) }
+
+                            SelectionContainer {
+                                Text(
+                                    text = stringResource(Res.string.user_space_uid_prefix, profile.uid),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
                             }
                         }
+
+                        // Read-only connected accounts
+                        Connections(vm = vm, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
             }
@@ -271,63 +189,70 @@ private fun Header(
     }
 }
 
-
 @Composable
-private fun ChangeUsernameDialog(vm: UserSpaceViewModel) {
-    if (vm.showEditUsername) AlertDialog(
-        onDismissRequest = { vm.cancelEdit() },
-        title = {
-            Text(stringResource(Res.string.user_change_nickname))
-        },
-        text = {
-            TextField(
-                modifier = Modifier.requiredWidth(280.dp),
-                value = vm.editUsernameValue,
-                onValueChange = { vm.editUsernameValue = it }
+private fun GenderIcon(
+    gender: Int,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier.size(16.dp)) {
+        when (gender) {
+            0 -> Icon(
+                Icons.Default.Male,
+                contentDescription = stringResource(Res.string.user_space_male_cd)
             )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { vm.confirmEditUsername() },
-                enabled = !vm.operating && vm.editUsernameValue.isNotBlank()
-            ) {
-                Text(stringResource(Res.string.common_change))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { vm.cancelEdit() }) {
-                Text(stringResource(Res.string.common_cancel))
-            }
+
+            1 -> Icon(
+                Icons.Default.Female,
+                contentDescription = stringResource(Res.string.user_space_female_cd)
+            )
         }
-    )
+    }
 }
 
 @Composable
-private fun ChangeBioDialog(vm: UserSpaceViewModel) {
-    if (vm.showEditBio) AlertDialog(
-        onDismissRequest = { vm.cancelEdit() },
-        title = {
-            Text(stringResource(Res.string.user_change_bio))
-        },
-        text = {
-            TextField(
-                modifier = Modifier.requiredWidth(280.dp),
-                value = vm.editBioValue, onValueChange = { vm.editBioValue = it },
-                minLines = 3
+private fun Avatar(avatarUrl: String?) {
+    Surface(
+        modifier = Modifier.size(120.dp),
+        shape = CircleShape
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalPlatformContext.current)
+                .httpHeaders(CoilHeaders)
+                .data(avatarUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
+            modifier = Modifier.fillMaxSize(),
+            filterQuality = FilterQuality.High,
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+
+@Composable
+private fun Connections(
+    vm: UserSpaceViewModel,
+    modifier: Modifier = Modifier
+) {
+    val profile = vm.profile ?: return
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        profile.connectedAccounts.fastForEach {
+            ConnectionChip(
+                name = it.name,
+                type = it.type,
+                onOpen = { openUserSpaceConnectionUrl(it.type, it.id) }
             )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { vm.confirmEditBio() },
-                enabled = !vm.operating && vm.editBioValue.isNotBlank()
-            ) {
-                Text(stringResource(Res.string.common_change))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { vm.cancelEdit() }) {
-                Text(stringResource(Res.string.common_cancel))
-            }
         }
-    )
+    }
+}
+
+private fun openUserSpaceConnectionUrl(type: String, id: String) {
+    when (type) {
+        "bilibili" -> getPlatform().openUrl("https://space.bilibili.com/$id")
+        else -> {}
+    }
 }

@@ -52,6 +52,7 @@ import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.SettingsScreen
+import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.fillMaxWidthIn
@@ -89,6 +90,7 @@ fun RootScreen(routeContent: Route.Root) {
                     Route.Root.Changelog -> ChangelogScreen()
                     is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
                     is Route.Root.PublicPlaylist -> if (global.isLoggedIn) PublicPlaylistScreen(routeContent.playlistId) else NeedLoginScreen()
+                    Route.Root.EditProfile -> if (global.isLoggedIn) EditProfileScreen() else NeedLoginScreen()
                 }
             }
         }

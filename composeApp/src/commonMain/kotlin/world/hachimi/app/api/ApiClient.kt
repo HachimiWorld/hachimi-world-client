@@ -41,7 +41,7 @@ class ApiClient(
     private val baseUrl: String,
 ) {
     companion object {
-        const val VERSION: Int = 260328
+        const val VERSION: Int = 260402
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -405,7 +405,6 @@ inline fun <reified T> WebResp<T, *>.ok(): T {
 
 inline fun <reified E> WebResp<*, E>.err(): E {
     if (ok) error("Trying to decode error data with ok response!")
-    @Suppress("DEPRECATION")
     return WebResp.json.decodeFromJsonElement<E>(this.data)
 }
 

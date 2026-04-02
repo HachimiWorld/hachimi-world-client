@@ -3,6 +3,7 @@
 ## Features 新功能
 
 1. Added like/dislike feature. 新增喜欢/不喜欢功能。
+2. Support connecting to bilibili account. 支持关联哔哩哔哩账号。
 
 ## Enhancements 改进
 
@@ -10,6 +11,7 @@
 2. Support remembering the close behavior. 支持记住关闭行为。
 3. Added a setting to toggle player effects. 添加了一个设置项来开关播放器特效。
 4. Support checking for updates manually. 支持手动检查更新。
+5. Move profile editing actions to a separate page. 将个人资料编辑功能移到单独的页面。
 
 ## Fixes 修复
 

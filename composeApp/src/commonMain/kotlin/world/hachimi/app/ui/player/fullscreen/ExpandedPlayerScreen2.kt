@@ -292,17 +292,19 @@ private fun Footer(
         Spacer(Modifier.height(8.dp))
 
         AnimatedVisibility(visible = !hideInfo) {
+            val pv = uiState.readySongInfo?.externalLinks?.firstOrNull()
             AuthorAndPV(
                 authorName = uiState.displayedAuthor,
                 hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
-                pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                pvLink = pv?.url,
+                pvPlatform = pv?.platform,
                 pvAlignToEnd = true,
                 avatar = uiState.userProfile?.avatarUrl,
                 onUserClick = {
                     uiState.readySongInfo?.uploaderUid?.let {
                         onNavToUser(it)
                     }
-                }
+                },
             )
         }
 

@@ -384,7 +384,8 @@ private fun previewPostDetail(coverUrl: String?): PostModule.PostDetail =
             avatarUrl = null,
             bio = "This is a preview user.",
             gender = null,
-            isBanned = false
+            isBanned = false,
+            connectedAccounts = listOf()
         ),
         title = "活动标题：这里会有 2-3 行的标题以便测试截断",
         content = "这里是活动内容摘要。我们会展示几行简介文本，超过最大行数应当自动截断。\n\n第二段文字用于测试多段落内容在预览中的表现。",
