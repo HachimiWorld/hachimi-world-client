@@ -331,7 +331,7 @@ private fun calculateCardSizeInGrid(
         180.dp
     }
 
-    return DpSize(width = 180.dp, height = width + footerHeight)
+    return DpSize(width, height = width + footerHeight)
 }
 
 @Composable
