@@ -24,7 +24,7 @@ import world.hachimi.app.ui.theme.PreviewTheme
 
 val buttonLabelTextStyle = TextStyle(
     fontWeight = FontWeight.Medium,
-    fontSize = 16.sp,
+    fontSize = 14.sp,
     lineHeight = 24.sp
 )
 
