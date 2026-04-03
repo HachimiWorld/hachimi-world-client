@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.DpOffset
@@ -21,6 +22,20 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import world.hachimi.app.ui.design.HachimiTheme
+
+@Composable
+fun Card(
+    shape: Shape = RoundedCornerShape(16.dp),
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    Surface(
+        modifier = modifier,
+        shape = shape,
+    ) {
+        Box(propagateMinConstraints = true, content = content)
+    }
+}
 
 val CardShadow = Shadow(
     color = Color.Black.copy(0.06f),
@@ -33,7 +48,7 @@ val CardShadow = Shadow(
 fun ElevatedCard(
     hazeState: HazeState,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
+    shape: Shape = RoundedCornerShape(24.dp),
     onClick: (() -> Unit)? = null,
     contentColor: Color = HachimiTheme.colorScheme.onSurface,
     content: @Composable BoxScope.() -> Unit
@@ -61,7 +76,7 @@ fun ElevatedCard(
 @Composable
 fun ElevatedCard(
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
+    shape: Shape = RoundedCornerShape(24.dp),
     onClick: (() -> Unit)? = null,
     color: Color = HachimiTheme.colorScheme.surface,
     contentColor: Color = HachimiTheme.colorScheme.onSurface,
