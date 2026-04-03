@@ -38,7 +38,7 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.PlaylistViewModel
 import world.hachimi.app.ui.design.components.AlertDialog
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LinearProgressIndicator
 import world.hachimi.app.ui.design.components.LocalContentColor
@@ -74,7 +74,7 @@ fun AddToPlaylistDialog(
             }
             LazyColumn(Modifier.padding(top = 8.dp).height(400.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
-                    Card(
+                    ElevatedCard(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { vm.createPlaylist() },
                         shape = RoundedCornerShape(16.dp)
@@ -129,7 +129,7 @@ private fun Item(
     selected: Boolean,
     existed: Boolean
 ) {
-    Card(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp)
     ) {

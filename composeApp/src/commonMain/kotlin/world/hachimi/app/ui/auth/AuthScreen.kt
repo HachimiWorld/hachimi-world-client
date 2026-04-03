@@ -77,7 +77,7 @@ import world.hachimi.app.ui.auth.components.CaptchaDialog
 import world.hachimi.app.ui.auth.components.FormContent
 import world.hachimi.app.ui.auth.components.PasswordToggleButton
 import world.hachimi.app.ui.design.components.AccentButton
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -108,7 +108,7 @@ fun AuthScreen(
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
         }
-        Card(
+        ElevatedCard(
             Modifier
                 .padding(horizontal = 24.dp, vertical = 24.dp)
                 .widthIn(max = 512.dp)

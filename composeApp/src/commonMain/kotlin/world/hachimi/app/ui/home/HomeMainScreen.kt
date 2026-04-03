@@ -63,7 +63,7 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -95,7 +95,7 @@ fun HomeMainScreen(
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
             if (vm.showClaims) item {
-                Card(Modifier.fillMaxWidthIn().padding(horizontal = 24.dp)) {
+                ElevatedCard(Modifier.fillMaxWidthIn().padding(horizontal = 24.dp)) {
                     Column(
                         modifier = Modifier.padding(12.dp)
                     ) {

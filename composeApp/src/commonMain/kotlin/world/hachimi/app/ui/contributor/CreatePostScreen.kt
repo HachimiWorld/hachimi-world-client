@@ -35,7 +35,7 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
@@ -73,7 +73,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
         ) {
             Text("发布文章", style = MaterialTheme.typography.titleLarge)
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -133,7 +133,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)

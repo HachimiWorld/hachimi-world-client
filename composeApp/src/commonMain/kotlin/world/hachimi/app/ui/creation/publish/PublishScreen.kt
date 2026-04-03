@@ -2,7 +2,19 @@ package world.hachimi.app.ui.creation.publish
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -14,7 +26,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -41,8 +59,22 @@ import world.hachimi.app.model.PublishViewModel.Type
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
-import world.hachimi.app.ui.creation.publish.components.*
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.creation.publish.components.FormItem
+import world.hachimi.app.ui.creation.publish.components.InitJmidDialog
+import world.hachimi.app.ui.creation.publish.components.JmidTextField
+import world.hachimi.app.ui.creation.publish.components.PrefixInactiveDialog
+import world.hachimi.app.ui.creation.publish.components.TagEdit
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.DropdownMenu
+import world.hachimi.app.ui.design.components.DropdownMenuItem
+import world.hachimi.app.ui.design.components.ElevatedCard
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
@@ -88,7 +120,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -167,7 +199,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -238,7 +270,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -288,7 +320,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -402,7 +434,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -443,7 +475,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -487,7 +519,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)

@@ -30,7 +30,7 @@ val CardShadow = Shadow(
 )
 
 @Composable
-fun Card(
+fun ElevatedCard(
     hazeState: HazeState,
     modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(24.dp),
@@ -59,7 +59,7 @@ fun Card(
 }
 
 @Composable
-fun Card(
+fun ElevatedCard(
     modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(24.dp),
     onClick: (() -> Unit)? = null,

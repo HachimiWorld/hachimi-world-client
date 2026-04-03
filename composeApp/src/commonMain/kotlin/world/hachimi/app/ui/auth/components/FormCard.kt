@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.LocalTextStyle
 import world.hachimi.app.ui.design.components.Text
@@ -30,7 +30,7 @@ fun FormCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    Card(modifier.defaultMinSize(minWidth = 280.dp)) {
+    ElevatedCard(modifier.defaultMinSize(minWidth = 280.dp)) {
         Box(Modifier.padding(horizontal = 32.dp, vertical = 24.dp)) {
             content()
         }

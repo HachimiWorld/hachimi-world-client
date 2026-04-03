@@ -2,7 +2,16 @@ package world.hachimi.app.ui.root
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -34,7 +43,7 @@ import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.events.EventsRouteScreen
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
@@ -135,7 +144,7 @@ private fun CompactScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Card(
+            ElevatedCard(
                 modifier = Modifier.width(300.dp),
                 color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background),
                 shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
@@ -206,7 +215,7 @@ private fun ExpandedScreen(
             )
         },
         navigation = {
-            Card(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
+            ElevatedCard(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
                 Box(Modifier.padding(8.dp)) {
                     navigationContent()
                 }
