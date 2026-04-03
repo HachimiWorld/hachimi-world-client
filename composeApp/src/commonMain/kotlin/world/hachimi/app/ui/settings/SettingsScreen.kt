@@ -1,14 +1,15 @@
 package world.hachimi.app.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -70,7 +72,9 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
 import world.hachimi.app.ui.design.components.Text
@@ -87,32 +91,59 @@ fun SettingsScreen(
             .navigationBarsPadding()
             .padding(LocalContentInsets.current.asPaddingValues())
             .fillMaxWidthIn(),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.titleLarge)
 
-        LanguageSetting(globalStore.settings)
-        DarkModeSetting(globalStore)
-        DiffusionBackgroundSetting(globalStore)
-        LoudnessNormalizationSetting(globalStore)
-        KidsModeSetting(globalStore)
-
-        if (getPlatform().name == "JVM") {
-            CloseBehaviorSetting(globalStore.settings)
+        Section(title = { Text("显示") }) {
+            LanguageSetting(globalStore.settings)
+            DarkModeSetting(globalStore)
+            DiffusionBackgroundSetting(globalStore)
         }
 
-        Info(globalStore)
+        Section(title = { Text("播放") }) {
+            LoudnessNormalizationSetting(globalStore)
+            KidsModeSetting(globalStore)
+        }
+
+        if (getPlatform().name == "JVM") {
+            Section(title = { Text("系统") }) {
+                CloseBehaviorSetting(globalStore.settings)
+            }
+        }
+
+        Section(title = { Text("关于") }) {
+            Info(globalStore)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun Section(title: @Composable () -> Unit, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleMedium) {
+            title()
+        }
+        Card {
+            Column {
+                content()
+            }
+        }
     }
 }
 
 @Composable
 private fun LanguageSetting(settings: Settings) {
-    PropertyItem(label = {
-        Icon(Icons.Default.Language, stringResource(Res.string.settings_language_label))
-        Spacer(Modifier.width(8.dp))
-        Text(stringResource(Res.string.settings_language_label)) }
+    var expandedLang by remember { mutableStateOf(false) }
+    PropertyItem(
+        label = {
+            Icon(Icons.Default.Language, stringResource(Res.string.settings_language_label))
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(Res.string.settings_language_label))
+        },
+        onClick = { expandedLang = true }
     ) {
-        var expandedLang by remember { mutableStateOf(false) }
         Box {
             TextButton(onClick = { expandedLang = true }) {
                 Text(
@@ -149,13 +180,15 @@ private fun LanguageSetting(settings: Settings) {
 
 @Composable
 private fun DarkModeSetting(globalStore: GlobalStore) {
-    PropertyItem(label = {
-        Text(
-            stringResource(Res.string.settings_dark_mode_label),
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }) {
-        var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    PropertyItem(
+        label = {
+            Text(stringResource(Res.string.settings_dark_mode_label))
+        },
+        onClick = {
+            expanded = true
+        }
+    ) {
         Box {
             TextButton(onClick = { expanded = true }) {
                 Text(
@@ -196,43 +229,70 @@ private fun DarkModeSetting(globalStore: GlobalStore) {
 
 @Composable
 private fun DiffusionBackgroundSetting(globalStore: GlobalStore) {
-    PropertyItem(label = { Text(stringResource(Res.string.settings_player_effects)) }) {
-        Switch(globalStore.settings.enableDiffusionBackground, {
-            globalStore.settings.updateDiffusionBackgroundEnabled(it)
-        })
+    fun onClick() {
+        globalStore.settings.updateDiffusionBackgroundEnabled(!globalStore.settings.enableDiffusionBackground)
+    }
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_player_effects)) },
+        onClick = { onClick() }
+    ) {
+        Switch(globalStore.settings.enableDiffusionBackground, { onClick() })
     }
 }
 
 @Composable
 private fun LoudnessNormalizationSetting(globalStore: GlobalStore) {
-    PropertyItem(label = { Text(stringResource(Res.string.settings_loudness)) }) {
+    fun onClick() {
+        globalStore.settings.updateLoudnessNormalization(!globalStore.settings.enableLoudnessNormalization)
+    }
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_loudness)) },
+        onClick = { onClick() }
+    ) {
         Switch(globalStore.settings.enableLoudnessNormalization, {
-            globalStore.settings.updateLoudnessNormalization(it)
+            onClick()
         })
     }
 }
 
 @Composable
 private fun KidsModeSetting(globalStore: GlobalStore) {
-    PropertyItem(label = { Text(stringResource(Res.string.settings_kids_mode)) }) {
+    fun onClick() {
+        globalStore.settings.updateKidsMode(!globalStore.settings.kidsMode)
+    }
+
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_kids_mode)) },
+        onClick = { onClick() }) {
         Switch(globalStore.settings.kidsMode, {
-            globalStore.settings.updateKidsMode(it)
+            onClick()
         })
     }
 }
 
 @Composable
 private fun Info(globalStore: GlobalStore) {
-    PropertyItem(label = { Text(stringResource(Res.string.settings_client_type)) }) {
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_client_type)) },
+        onClick = null
+    ) {
         Text(getPlatform().name)
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_version_name)) }) {
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_version_name)) },
+        onClick = null
+    ) {
         Text(BuildKonfig.VERSION_NAME)
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_version_code)) }) {
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_version_code)) },
+        onClick = null
+    ) {
         Text(BuildKonfig.VERSION_CODE.toString())
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_check_update)) }) {
+    PropertyItem(label = { Text(stringResource(Res.string.settings_check_update)) }, onClick = {
+        globalStore.manualCheckUpdate()
+    }) {
         TextButton(
             onClick = { globalStore.manualCheckUpdate() },
             enabled = !globalStore.checkingUpdate
@@ -246,18 +306,27 @@ private fun Info(globalStore: GlobalStore) {
             }
         }
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_changelog)) }) {
-        TextButton(onClick = { globalStore.nav.push(world.hachimi.app.nav.Route.Root.Changelog) }) {
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_changelog)) },
+        onClick = { globalStore.nav.push(Route.Root.Changelog) }
+    ) {
+        TextButton(onClick = { globalStore.nav.push(Route.Root.Changelog) }) {
             Text(stringResource(Res.string.settings_view_changelog))
         }
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_feedback)) }) {
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_feedback)) },
+        onClick = { getPlatform().openUrl("https://github.com/HachimiWorld/hachimi-world-client/discussions") }
+    ) {
         LinkButton(
             stringResource(Res.string.settings_github_text),
             "https://github.com/HachimiWorld/hachimi-world-client/discussions"
         )
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_official_website)) }) {
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_official_website)) },
+        onClick = { getPlatform().openUrl("https://hachimi.world") }
+    ) {
         LinkButton(stringResource(Res.string.settings_official_site_text), "https://hachimi.world")
     }
 }
@@ -265,15 +334,20 @@ private fun Info(globalStore: GlobalStore) {
 @Composable
 private fun PropertyItem(
     label: @Composable () -> Unit,
+    onClick: (() -> Unit)?,
     content: @Composable () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().height(44.dp),
+        modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).then(
+            if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+        ).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        label()
+        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.labelLarge) {
+            label()
+        }
         Spacer(Modifier.weight(1f))
-        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
+        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
             content()
         }
     }
@@ -299,8 +373,12 @@ private fun LinkButton(
 
 @Composable
 private fun CloseBehaviorSetting(settings: Settings) {
-    PropertyItem(label = { Text(stringResource(Res.string.settings_close_behavior)) }) {
-        var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_close_behavior)) },
+        onClick = { expanded = true }
+    ) {
         Box {
             TextButton(onClick = { expanded = true }) {
                 Text(
@@ -310,17 +388,22 @@ private fun CloseBehaviorSetting(settings: Settings) {
                         Settings.CloseBehavior.EXIT -> stringResource(Res.string.settings_close_behavior_exit)
                     }
                 )
-                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(Res.string.settings_dropdown_cd))
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
+                )
             }
             DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
                 DropdownMenuItem(onClick = {
                     settings.updateCloseBehavior(Settings.CloseBehavior.ASK)
                     expanded = false
                 }, text = { Text(stringResource(Res.string.settings_close_behavior_ask)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateCloseBehavior(Settings.CloseBehavior.MINIMIZE_TO_TRAY)
-                    expanded = false
-                }, text = { Text(stringResource(Res.string.settings_close_behavior_minimize_to_tray)) })
+                DropdownMenuItem(
+                    onClick = {
+                        settings.updateCloseBehavior(Settings.CloseBehavior.MINIMIZE_TO_TRAY)
+                        expanded = false
+                    },
+                    text = { Text(stringResource(Res.string.settings_close_behavior_minimize_to_tray)) })
                 DropdownMenuItem(onClick = {
                     settings.updateCloseBehavior(Settings.CloseBehavior.EXIT)
                     expanded = false
