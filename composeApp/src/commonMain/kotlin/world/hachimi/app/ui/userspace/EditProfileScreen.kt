@@ -29,7 +29,10 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +50,8 @@ import hachimiworld.composeapp.generated.resources.common_ok
 import hachimiworld.composeapp.generated.resources.user_change_avatar
 import hachimiworld.composeapp.generated.resources.user_change_bio
 import hachimiworld.composeapp.generated.resources.user_change_nickname
+import hachimiworld.composeapp.generated.resources.user_connections_bilibili_name_label
+import hachimiworld.composeapp.generated.resources.user_connections_bilibili_uid_invalid
 import hachimiworld.composeapp.generated.resources.user_connections_bilibili_uid_label
 import hachimiworld.composeapp.generated.resources.user_connections_bind_title
 import hachimiworld.composeapp.generated.resources.user_connections_challenge_hint
@@ -382,13 +387,33 @@ private fun EditBindBilibiliDialog(vm: EditProfileViewModel) {
                         text = stringResource(Res.string.user_connections_bilibili_uid_label),
                         style = MaterialTheme.typography.labelLarge
                     )
+                    var valid by remember { mutableStateOf(true) }
+
                     TextField(
                         modifier = Modifier.requiredWidth(280.dp),
                         value = vm.bindBilibiliUid,
-                        onValueChange = { vm.bindBilibiliUid = it },
+                        onValueChange = {
+                            vm.bindBilibiliUid = it
+                            valid = (it.matches(Regex("UID:\\d+")) ||
+                                    it.matches(Regex("\\d+")))
+                        },
                         singleLine = true,
+                        supportingText = {
+                            if (!valid) {
+                                Text(
+                                    text = stringResource(Res.string.user_connections_bilibili_uid_invalid),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            } else {
+                                Text(text = "")
+                            }
+                        }
                     )
                 } else {
+                    Text(
+                        text = stringResource(Res.string.user_connections_bilibili_name_label, vm.bindBilibiliName),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                     Text(
                         text = stringResource(Res.string.user_connections_challenge_hint),
                         style = MaterialTheme.typography.bodySmall

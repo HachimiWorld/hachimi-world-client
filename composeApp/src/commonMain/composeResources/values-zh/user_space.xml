@@ -27,6 +27,8 @@
     <string name="user_connections_unlink_confirm">确定解除关联此账号？</string>
     <string name="user_connections_bind_title">关联哔哩哔哩账号</string>
     <string name="user_connections_bilibili_uid_label">你的 B 站 UID</string>
+    <string name="user_connections_bilibili_uid_invalid">UID 应当为纯数字</string>
+    <string name="user_connections_bilibili_name_label">昵称：%1$s</string>
     <string name="user_connections_challenge_hint">将下方验证码复制并粘贴到B站个人资料简介末尾，然后点击验证</string>
     <string name="user_connections_copy">复制验证码</string>
     <string name="user_connections_copied">已复制！</string>

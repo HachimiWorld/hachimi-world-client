@@ -6,14 +6,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_not_logged_in
+import hachimiworld.composeapp.generated.resources.publish_image_too_large
+import hachimiworld.composeapp.generated.resources.user_connections_linked_success
+import hachimiworld.composeapp.generated.resources.user_profile_saved
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
@@ -54,6 +62,8 @@ class EditProfileViewModel(
     var bindChallengeId by mutableStateOf<String?>(null)
         private set
     var bindChallenge by mutableStateOf<String?>(null)
+        private set
+    var bindBilibiliName by mutableStateOf<String>("")
         private set
     var bindGenerating by mutableStateOf(false)
         private set
@@ -210,13 +220,14 @@ class EditProfileViewModel(
                 val resp = api.userModule.connectionGenerateChallenge(
                     UserModule.ConnectionGenerateChallengeReq(
                         type = UserModule.CONNECTION_TYPE_BILIBILI,
-                        providerAccountId = bindBilibiliUid.trim()
+                        providerAccountId = bindBilibiliUid.trim().removePrefix("UID:")
                     )
                 )
                 if (resp.ok) {
                     val data = resp.ok()
                     bindChallengeId = data.challengeId
                     bindChallenge = data.challenge
+                    bindBilibiliName = data.providerAccountName
                 } else {
                     global.alert(resp.err().msg)
                 }

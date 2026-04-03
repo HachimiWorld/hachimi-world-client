@@ -27,6 +27,8 @@
     <string name="user_connections_unlink_confirm">Unlink this account?</string>
     <string name="user_connections_bind_title">Link Bilibili Account</string>
     <string name="user_connections_bilibili_uid_label">Your Bilibili UID (number)</string>
+    <string name="user_connections_bilibili_uid_invalid">UID must be numeric</string>
+    <string name="user_connections_bilibili_name_label">Nickname: %1$s</string>
     <string name="user_connections_challenge_hint">Copy the verification code and append it to the end of your Bilibili profile bio, then click Verify</string>
     <string name="user_connections_copy">Copy Code</string>
     <string name="user_connections_copied">Copied!</string>
