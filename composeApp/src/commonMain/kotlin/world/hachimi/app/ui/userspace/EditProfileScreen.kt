@@ -6,7 +6,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +41,29 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_cancel
+import hachimiworld.composeapp.generated.resources.common_ok
+import hachimiworld.composeapp.generated.resources.user_change_avatar
+import hachimiworld.composeapp.generated.resources.user_change_bio
+import hachimiworld.composeapp.generated.resources.user_change_nickname
+import hachimiworld.composeapp.generated.resources.user_connections_bilibili_uid_label
+import hachimiworld.composeapp.generated.resources.user_connections_bind_title
+import hachimiworld.composeapp.generated.resources.user_connections_challenge_hint
+import hachimiworld.composeapp.generated.resources.user_connections_generate
+import hachimiworld.composeapp.generated.resources.user_connections_link
+import hachimiworld.composeapp.generated.resources.user_connections_platform_bilibili
+import hachimiworld.composeapp.generated.resources.user_connections_title
+import hachimiworld.composeapp.generated.resources.user_connections_unlink
+import hachimiworld.composeapp.generated.resources.user_connections_unlink_confirm
+import hachimiworld.composeapp.generated.resources.user_connections_verify
+import hachimiworld.composeapp.generated.resources.user_edit_profile
+import hachimiworld.composeapp.generated.resources.user_gender
+import hachimiworld.composeapp.generated.resources.user_gender_female
+import hachimiworld.composeapp.generated.resources.user_gender_male
+import hachimiworld.composeapp.generated.resources.user_gender_unspecified
+import hachimiworld.composeapp.generated.resources.user_profile_save
+import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -37,14 +72,23 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.model.EditProfileViewModel
 import world.hachimi.app.ui.LocalContentInsets
-import world.hachimi.app.ui.design.components.*
+import world.hachimi.app.ui.design.components.AccentButton
+import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.CircularProgressIndicator
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.ui.design.components.ToggleButton
 import world.hachimi.app.ui.util.PlatformIcons
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun EditProfileScreen(vm: EditProfileViewModel = koinViewModel()) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AdaptiveScreenMargin)
             .navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()).fillMaxWidthIn(),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {

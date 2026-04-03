@@ -2,7 +2,17 @@ package world.hachimi.app.ui.recentplay
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,8 +46,9 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.YMDHM
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.util.contentPaddingForMaxWidth
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
 
@@ -61,21 +72,21 @@ fun RecentPlayScreen(
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
+            InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = state,
-                    modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
-                    contentPadding = PaddingValues(vertical = 24.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth)
                 ) {
                     item {
                         Text(
-                            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+                            modifier = Modifier.padding(bottom = 12.dp),
                             text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
                         )
                     }
                     items(vm.history, key = { item -> item.songInfo.id }) { item ->
                         RecentPlayItem(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                             coverUrl = item.songInfo.coverUrl,
                             title = item.songInfo.title,
                             artist = item.songInfo.uploaderName,

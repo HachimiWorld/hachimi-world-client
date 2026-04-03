@@ -3,7 +3,19 @@ package world.hachimi.app.ui.likes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,7 +41,12 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_empty
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.nav_recent_like
+import hachimiworld.composeapp.generated.resources.play_all
+import hachimiworld.composeapp.generated.resources.player_unlike
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
@@ -49,7 +66,12 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.*
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.YMDHM
+import world.hachimi.app.util.contentPaddingForMaxWidth
+import world.hachimi.app.util.formatDaysDistance
+import world.hachimi.app.util.formatSongDuration
+import world.hachimi.app.util.formatTime
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -89,46 +111,48 @@ private fun Content(vm: RecentLikeViewModel) {
 		return
 	}
 
-	LazyColumn(
-		state = state,
-		modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
-		contentPadding = PaddingValues(24.dp),
-		verticalArrangement = Arrangement.spacedBy(12.dp),
-	) {
-		item {
-			Header(vm)
-		}
-
-		vm.songs.forEach { group ->
-			item(key = group.date.toString(), contentType = "separator") {
-				Text(
-					text = remember(group.date) {
-						val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-						val daysOffset = today.toEpochDays() - group.date.toEpochDays()
-						formatDaysDistance(daysOffset.toInt()) ?: group.date.toString()
-					},
-					style = MaterialTheme.typography.titleMedium,
-				)
+	BoxWithConstraints {
+		LazyColumn(
+			state = state,
+			modifier = Modifier.fillMaxSize(),
+			contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
+			verticalArrangement = Arrangement.spacedBy(12.dp),
+		) {
+			item {
+				Header(vm)
 			}
-			items(
-				items = group.songs,
-				key = { item -> "${item.songData.id}-${item.likedTime}" },
-			) { item ->
-				RecentLikeItem(
-					item = item,
-					onClick = { vm.play(item) },
-					onUnlikeClick = { vm.unlike(item) },
-					unlikeEnabled = !vm.isUnliking(item.songData.id),
-				)
+
+			vm.songs.forEach { group ->
+				item(key = group.date.toString(), contentType = "separator") {
+					Text(
+						text = remember(group.date) {
+							val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+							val daysOffset = today.toEpochDays() - group.date.toEpochDays()
+							formatDaysDistance(daysOffset.toInt()) ?: group.date.toString()
+						},
+						style = MaterialTheme.typography.titleMedium,
+					)
+				}
+				items(
+					items = group.songs,
+					key = { item -> "${item.songData.id}-${item.likedTime}" },
+				) { item ->
+					RecentLikeItem(
+						item = item,
+						onClick = { vm.play(item) },
+						onUnlikeClick = { vm.unlike(item) },
+						unlikeEnabled = !vm.isUnliking(item.songData.id),
+					)
+				}
 			}
-		}
 
-		item(contentType = "load_more") {
-			LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
-		}
+			item(contentType = "load_more") {
+				LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
+			}
 
-		item {
-			Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+			item {
+				Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+			}
 		}
 	}
 }

@@ -66,6 +66,7 @@ import world.hachimi.app.ui.design.components.TagBadge
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.EditDialog
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.contentPaddingForMaxWidth
 import kotlin.time.Duration.Companion.seconds
 
@@ -89,7 +90,7 @@ fun PlaylistDetailScreen(
             vm.playlistInfo?.let { info ->
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), maxWidth),
+                    contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {

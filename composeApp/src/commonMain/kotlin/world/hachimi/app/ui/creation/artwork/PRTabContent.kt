@@ -1,7 +1,15 @@
 package world.hachimi.app.ui.creation.artwork
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -12,7 +20,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
@@ -25,6 +32,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.util.AdaptiveScreenMargin
 
 @Composable
 fun PRTabContent(
@@ -47,7 +55,7 @@ fun PRTabContent(
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
             InitializeStatus.LOADED -> Column {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier.fillMaxWidth().padding(AdaptiveScreenMargin),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(

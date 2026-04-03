@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -20,11 +19,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.LocalWindowSize
 
-fun Modifier.fillMaxWithLimit(maxWidth: Dp = 1040.dp): Modifier =
-    this.fillMaxSize().wrapContentWidth().widthIn(max = maxWidth)
-
-fun Modifier.fillMaxWidthIn(maxWidth: Dp = 1280.dp, contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally): Modifier =
-    this.fillMaxWidth().wrapContentWidth(align = contentAlignment).widthIn(max = maxWidth).fillMaxWidth()
+fun Modifier.fillMaxWidthIn(
+    maxWidth: Dp = 1280.dp,
+    contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally
+): Modifier =
+    this.fillMaxWidth().wrapContentWidth(align = contentAlignment)
+        .widthIn(max = maxWidth).fillMaxWidth()
 
 object WindowSize {
     val COMPACT = 600.dp
@@ -91,7 +91,12 @@ class StartWithLastArrangement(
                     val lastItemSize = intArrayOf(it)
                     val lastItemPosition = IntArray(1)
                     with(lastItemArrangement) {
-                        arrange(totalSize - current, lastItemSize, layoutDirection, lastItemPosition)
+                        arrange(
+                            totalSize - current,
+                            lastItemSize,
+                            layoutDirection,
+                            lastItemPosition
+                        )
                     }
                     outPositions[index] = current + lastItemPosition[0]
                 } else {
@@ -109,7 +114,12 @@ class StartWithLastArrangement(
                     val lastItemSize = intArrayOf(it)
                     val lastItemPosition = IntArray(1)
                     with(lastItemArrangement) {
-                        arrange(totalSize - current, lastItemSize, layoutDirection, lastItemPosition)
+                        arrange(
+                            totalSize - current,
+                            lastItemSize,
+                            layoutDirection,
+                            lastItemPosition
+                        )
                     }
                     outPositions[index] = current + lastItemPosition[0]
                 } else {
@@ -123,6 +133,8 @@ class StartWithLastArrangement(
 
 val AdaptiveListSpacing: Dp
     @Composable @Stable get() = if (LocalWindowSize.current.width < WindowSize.COMPACT) 16.dp else 24.dp
+val AdaptiveScreenMargin: Dp
+    @Composable @Stable get() = if (LocalWindowSize.current.width < WindowSize.COMPACT) 16.dp else 24.dp
 
 /**
  * Decide the number of columns based on the screen width. Especially for grid layout.
@@ -132,16 +144,12 @@ fun calculateGridColumns(maxWidth: Dp): GridCells = when {
     // 2 ~ 6 columns
     maxWidth < 420.dp -> GridCells.Adaptive(minSize = 120.dp)
     else -> GridCells.Adaptive(minSize = 160.dp)
-    /*maxWidth < WindowSize.COMPACT -> GridCells.Adaptive(minSize = 160.dp)
-    maxWidth < WindowSize.MEDIUM -> GridCells.Fixed(4)
-    maxWidth < 1020.dp -> GridCells.Fixed(5)
-    maxWidth < WindowSize.EXPANDED -> GridCells.Fixed(6)
-    else -> GridCells.Fixed(6)*/
 }
 
 /**
- * 使用 `contentPadding` 来限制内容的最大宽度。当屏幕宽度超过 `maxWidth` 时，内容会居中显示，并且两侧会有等宽的空白。
- * 当屏幕宽度小于等于 `maxWidth` 时，内容会占满整个宽度。
+ * Use `contentPadding` to limit the max width.
+ * This is usually used in LazyColumn, because we need the scrolling detect area to be the full width.
+ * If we use `Modifier.widthIn(max = maxWidth)`, the scrolling detect area will be limited to the max width, which is not what we want.
  */
 @Composable
 fun contentPaddingForMaxWidth(

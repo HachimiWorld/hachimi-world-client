@@ -46,6 +46,7 @@ import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.calculateGridColumns
 import world.hachimi.app.util.contentPaddingForMaxWidth
 
@@ -75,7 +76,7 @@ private fun Content(vm: RecommendViewModel, global: GlobalStore) {
         } else LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
-            contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), maxWidth),
+            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {

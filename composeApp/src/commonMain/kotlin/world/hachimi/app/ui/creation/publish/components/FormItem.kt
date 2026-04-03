@@ -23,7 +23,7 @@ fun FormItem(
 ) {
     Column(modifier) {
         CompositionLocalProvider(
-            value = LocalTextStyle provides MaterialTheme.typography.bodyLarge,
+            value = LocalTextStyle provides MaterialTheme.typography.labelLarge,
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -34,7 +34,7 @@ fun FormItem(
         }
         subtitle?.let {
             CompositionLocalProvider(
-                value = LocalTextStyle provides MaterialTheme.typography.bodyMedium,
+                value = LocalTextStyle provides MaterialTheme.typography.bodySmall,
             ) {
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {

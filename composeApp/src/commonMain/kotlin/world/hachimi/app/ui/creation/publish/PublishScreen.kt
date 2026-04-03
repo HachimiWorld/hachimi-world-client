@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -75,6 +73,8 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
@@ -106,8 +106,8 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
             .padding(LocalContentInsets.current.asPaddingValues())
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 900.dp)
-                .padding(24.dp),
+            modifier = Modifier.fillMaxWidthIn()
+                .padding(AdaptiveScreenMargin),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(

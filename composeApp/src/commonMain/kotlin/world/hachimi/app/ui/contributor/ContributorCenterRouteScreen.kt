@@ -1,14 +1,13 @@
 package world.hachimi.app.ui.contributor
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -25,6 +24,8 @@ import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun ContributorCenterScreen(child: Route.Root.ContributorCenter) {
@@ -50,7 +51,10 @@ fun ContributorEntryScreen(
         onDispose { vm.dispose() }
     }
 
-    AnimatedContent(vm.initStat) { status ->
+    AnimatedContent(
+        vm.initStat,
+        modifier = Modifier.fillMaxSize()
+    ) { status ->
         when (status) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> {
@@ -61,43 +65,50 @@ fun ContributorEntryScreen(
                     ReloadPage(onReloadClick = { vm.retry() })
                 }
             }
-            InitializeStatus.LOADED -> {
-                if (!global.isLoggedIn) {
-                    NeedLoginScreen()
-                    return@AnimatedContent
-                }
 
-                if (!vm.isContributor) {
-                    Box(Modifier.fillMaxSize(), Alignment.Center) {
-                        Text("你还不是贡献者，为社区作出贡献，解锁更多功能吧")
-                    }
-                    return@AnimatedContent
-                }
+            InitializeStatus.LOADED -> Content(global, vm)
+        }
+    }
+}
 
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(24.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "贡献者中心", modifier = Modifier.padding(bottom = 16.dp))
+@Composable
+private fun Content(
+    global: GlobalStore,
+    vm: ContributorEntryViewModel
+) {
+    if (!global.isLoggedIn) {
+        NeedLoginScreen()
+        return
+    }
 
-                    Button(
-                        onClick = { global.nav.push(Route.Root.ContributorCenter.ReviewList) },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-                    ) {
-                        Text("审核列表")
-                    }
+    if (!vm.isContributor) {
+        Box(Modifier.fillMaxSize(), Alignment.Center) {
+            Text("你还不是贡献者，为社区作出贡献，解锁更多功能吧")
+        }
+        return
+    }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+    Column(
+        modifier = Modifier.fillMaxSize().fillMaxWidthIn().padding(AdaptiveScreenMargin)
+    ) {
+        Text(
+            text = "贡献者中心",
+            modifier = Modifier.padding(bottom = 16.dp),
+            style = MaterialTheme.typography.titleLarge
+        )
 
-                    Button(
-                        onClick = { global.nav.push(Route.Root.ContributorCenter.CreatePost) },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-                    ) {
-                        Text("创建帖子")
-                    }
-                }
-            }
+        Button(
+            onClick = { global.nav.push(Route.Root.ContributorCenter.ReviewList) },
+        ) {
+            Text("审核列表")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = { global.nav.push(Route.Root.ContributorCenter.CreatePost) },
+        ) {
+            Text("创建帖子")
         }
     }
 }

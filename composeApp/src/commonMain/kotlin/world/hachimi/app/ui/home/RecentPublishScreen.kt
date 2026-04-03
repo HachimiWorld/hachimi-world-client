@@ -55,6 +55,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
 import world.hachimi.app.util.contentPaddingForMaxWidth
@@ -102,7 +103,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 modifier = Modifier.fillMaxSize(),
                 state = state,
                 columns = calculateGridColumns(constraintMaxWidth),
-                contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), constraintMaxWidth),
+                contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintMaxWidth),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {

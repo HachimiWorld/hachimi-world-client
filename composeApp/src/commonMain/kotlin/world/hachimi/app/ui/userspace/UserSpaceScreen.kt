@@ -76,6 +76,7 @@ import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.userspace.component.ConnectionChip
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.calculateGridColumns
 import world.hachimi.app.util.contentPaddingForMaxWidth
 
@@ -98,7 +99,7 @@ fun UserSpaceScreen(
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(constraintsMaxWidth),
-            contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), constraintsMaxWidth),
+            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintsMaxWidth),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         ) {

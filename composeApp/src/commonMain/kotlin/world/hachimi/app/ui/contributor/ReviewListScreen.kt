@@ -1,7 +1,14 @@
 package world.hachimi.app.ui.contributor
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +28,9 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun ReviewListScreen(
@@ -68,16 +78,16 @@ private fun Content(vm: ReviewViewModel) {
         Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = AdaptiveListSpacing).fillMaxWidthIn(),
             text = "审核作品 (${vm.total})",
             style = MaterialTheme.typography.titleLarge
         )
 
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            LazyColumn {
+        Box(Modifier.weight(1f)) {
+            LazyColumn() {
                 items(vm.items, key = { item -> item.reviewId }) { item ->
                     ReviewItem(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidthIn(),
                         coverUrl = item.coverUrl,
                         title = item.title,
                         subtitle = item.subtitle,
@@ -95,7 +105,7 @@ private fun Content(vm: ReviewViewModel) {
 
         // Pagination
         Pagination(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = AdaptiveScreenMargin).fillMaxWidthIn(),
             total = vm.total.toInt(),
             currentPage = vm.currentPage,
             pageSize = vm.pageSize,

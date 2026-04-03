@@ -40,6 +40,7 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.singleLined
 
@@ -67,8 +68,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
             .padding(LocalContentInsets.current.asPaddingValues())
     ) {
         Column(
-            modifier = Modifier.fillMaxWidthIn()
-                .padding(24.dp),
+            modifier = Modifier.fillMaxWidthIn().padding(AdaptiveScreenMargin),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text("发布文章", style = MaterialTheme.typography.titleLarge)
