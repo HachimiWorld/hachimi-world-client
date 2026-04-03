@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -41,7 +40,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
 import hachimiworld.composeapp.generated.resources.common_more
@@ -64,8 +62,6 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.ElevatedCard
-import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
@@ -96,7 +92,7 @@ fun HomeMainScreen(
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            if (vm.showClaims) item {
+            /*if (vm.showClaims) item {
                 ElevatedCard(Modifier.fillMaxWidthIn().padding(horizontal = AdaptiveScreenMargin)) {
                     Column(
                         modifier = Modifier.padding(12.dp)
@@ -113,7 +109,7 @@ fun HomeMainScreen(
                         }
                     }
                 }
-            }
+            }*/
             item(contentType = "recent_section") {
                 Segment(
                     modifier = Modifier.fillMaxWidthIn(),
