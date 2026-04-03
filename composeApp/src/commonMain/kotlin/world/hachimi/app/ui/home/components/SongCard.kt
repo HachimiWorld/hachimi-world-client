@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explicit
@@ -107,6 +109,38 @@ fun SongCard(
                         TagBadge(hazeState, tag)
                     }
                 }
+                Row(
+                    modifier = Modifier.padding(0.dp).align(Alignment.BottomEnd),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TagBadge(hazeState, modifier = Modifier.padding(all = 8.dp)) {
+                        Row(modifier = Modifier.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Headphones,
+                                contentDescription = "Play Count",
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                formatCompactCount(playCount),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+
+                            Spacer(Modifier.width(8.dp))
+
+                            Icon(
+                                Icons.Default.Favorite,
+                                "Play Count",
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                formatCompactCount(likeCount),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
+                }
             }
 
             Column(Modifier.padding(top = 8.dp)) {
@@ -131,34 +165,6 @@ fun SongCard(
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
-                Row(
-                    modifier = Modifier,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Headphones,
-                        contentDescription = "Play Count",
-                        modifier = Modifier.padding(end = 4.dp).size(12.dp),
-                        tint = LocalContentColor.current.copy(0.72f)
-                    )
-                    Text(
-                        formatCompactCount(playCount),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = LocalContentColor.current.copy(0.72f)
-                    )
-
-                    Icon(
-                        Icons.Default.Favorite,
-                        "Play Count",
-                        modifier = Modifier.padding(start = 8.dp, end = 4.dp).size(12.dp),
-                        tint = LocalContentColor.current.copy(0.72f)
-                    )
-                    Text(
-                        formatCompactCount(likeCount),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = LocalContentColor.current.copy(0.72f)
-                    )
-                }
             }
         }
     }
