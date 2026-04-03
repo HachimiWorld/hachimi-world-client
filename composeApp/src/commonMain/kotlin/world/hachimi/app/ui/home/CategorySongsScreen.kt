@@ -39,6 +39,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.calculateGridColumns
+import world.hachimi.app.util.contentPaddingForMaxWidth
 
 @Composable
 fun CategorySongsScreen(
@@ -67,7 +68,7 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
         } else LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
-            contentPadding = PaddingValues(24.dp),
+            contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), maxWidth),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {

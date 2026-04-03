@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -65,6 +66,7 @@ import world.hachimi.app.ui.design.components.TagBadge
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.EditDialog
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.util.contentPaddingForMaxWidth
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -83,11 +85,11 @@ fun PlaylistDetailScreen(
     when (vm.initStatus) {
         InitializeStatus.INIT -> LoadingPage()
         InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-        InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
+        InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
             vm.playlistInfo?.let { info ->
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
+                    contentPadding = contentPaddingForMaxWidth(PaddingValues(24.dp), maxWidth),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
