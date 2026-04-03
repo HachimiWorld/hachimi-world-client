@@ -74,6 +74,7 @@ import world.hachimi.app.model.EditProfileViewModel
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Surface
@@ -109,95 +110,105 @@ fun EditProfileScreen(vm: EditProfileViewModel = koinViewModel()) {
                     CircularProgressIndicator()
                 }
             } else {
-                vm.profile?.let { profile ->
-                    Column(
-                        Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.user_change_avatar),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                        EditableAvatar(
-                            modifier = Modifier.padding(top = 8.dp),
-                            avatarUrl = profile.avatarUrl,
-                            isUploading = vm.avatarUploading,
-                            uploadProgress = vm.avatarUploadProgress,
-                            onEditClick = { vm.editAvatar() }
-                        )
-
-                        // Edit fields
-                        Column(
-                            Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // Nickname
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = stringResource(Res.string.user_change_nickname),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                TextField(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    value = vm.editUsernameValue,
-                                    onValueChange = { vm.editUsernameValue = it },
-                                    singleLine = true
-                                )
-                            }
-
-                            // Bio
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = stringResource(Res.string.user_change_bio),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                TextField(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    value = vm.editBioValue,
-                                    onValueChange = { vm.editBioValue = it },
-                                    minLines = 3
-                                )
-                            }
-
-                            // Gender
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = stringResource(Res.string.user_gender),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                GenderSelector(
-                                    value = vm.editGenderValue,
-                                    onSelect = { vm.editGenderValue = it }
-                                )
-                            }
-
-                            // Save button
-                            AccentButton(
-                                onClick = { vm.saveProfile() },
-                                enabled = !vm.operating && vm.editUsernameValue.isNotBlank()
-                            ) {
-                                if (vm.operating) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                Text(stringResource(Res.string.user_profile_save))
-                            }
-                        }
-
-                        ConnectionsManagementSection(
-                            vm = vm,
-                            modifier = Modifier.padding(top = 16.dp)
-                        )
-                    }
-                }
+                Content(vm)
             }
         }
     }
 
     EditBindBilibiliDialog(vm)
     EditUnlinkConfirmDialog(vm)
+}
+
+@Composable
+private fun Content(vm: EditProfileViewModel) {
+    val profile = vm.profile ?: return
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Card {
+            Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(
+                    text = stringResource(Res.string.user_change_avatar),
+                    style = MaterialTheme.typography.labelLarge
+                )
+                EditableAvatar(
+                    modifier = Modifier.padding(top = 8.dp),
+                    avatarUrl = profile.avatarUrl,
+                    isUploading = vm.avatarUploading,
+                    uploadProgress = vm.avatarUploadProgress,
+                    onEditClick = { vm.editAvatar() }
+                )
+
+                // Edit fields
+                Column(
+                    Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Nickname
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = stringResource(Res.string.user_change_nickname),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = vm.editUsernameValue,
+                            onValueChange = { vm.editUsernameValue = it },
+                            singleLine = true
+                        )
+                    }
+
+                    // Bio
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = stringResource(Res.string.user_change_bio),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = vm.editBioValue,
+                            onValueChange = { vm.editBioValue = it },
+                            minLines = 3
+                        )
+                    }
+
+                    // Gender
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = stringResource(Res.string.user_gender),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        GenderSelector(
+                            value = vm.editGenderValue,
+                            onSelect = { vm.editGenderValue = it }
+                        )
+                    }
+
+                    // Save button
+                    AccentButton(
+                        onClick = { vm.saveProfile() },
+                        enabled = !vm.operating && vm.editUsernameValue.isNotBlank()
+                    ) {
+                        if (vm.operating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        Text(stringResource(Res.string.user_profile_save))
+                    }
+                }
+            }
+        }
+
+        Card {
+            ConnectionsManagementSection(
+                modifier = Modifier.padding(16.dp),
+                vm = vm,
+            )
+        }
+    }
 }
 
 @Composable
