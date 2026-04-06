@@ -12,6 +12,7 @@
     <string name="common_search_placeholder">搜索...</string>
     <string name="common_empty">空空如也</string>
     <string name="common_more">更多</string>
+    <string name="common_delete">删除</string>
     <string name="common_play_cd">播放</string>
     <string name="common_done">完成</string>
     <string name="common_ok">确定</string>

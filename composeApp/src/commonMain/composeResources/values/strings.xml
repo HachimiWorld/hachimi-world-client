@@ -12,6 +12,7 @@
     <string name="common_search_placeholder">Search...</string>
     <string name="common_empty">No items</string>
     <string name="common_more">More</string>
+    <string name="common_delete">Delete</string>
     <string name="common_play_cd">Play</string>
     <string name="common_done">Done</string>
     <string name="common_ok">OK</string>
