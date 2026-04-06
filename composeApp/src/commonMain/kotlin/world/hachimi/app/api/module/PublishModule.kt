@@ -1,13 +1,137 @@
 package world.hachimi.app.api.module
 
+import io.ktor.client.content.ProgressListener
+import io.ktor.client.plugins.onUpload
+import io.ktor.client.plugins.timeout
+import io.ktor.client.request.forms.InputProvider
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.setBody
+import io.ktor.http.HttpHeaders
+import io.ktor.http.headersOf
+import kotlinx.io.Source
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.WebResult
+import world.hachimi.app.api.module.SongModule.CreationTypeInfo
+import world.hachimi.app.api.module.SongModule.ExternalLink
 import kotlin.time.Instant
 
 class PublishModule(
     private val client: ApiClient
 ) {
+    @Serializable
+    data class UploadImageResp(
+        val tempId: String
+    )
+
+    suspend fun uploadCoverImage(
+        filename: String,
+        source: Source,
+        listener: ProgressListener? = null
+    ): WebResult<UploadImageResp> {
+        return client.postWith("/publish/upload_cover_image") {
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append(
+                            "image",
+                            InputProvider { source },
+                            headersOf(HttpHeaders.ContentDisposition, "filename=\"${filename}\"")
+                        )
+                    }
+                )
+            )
+            onUpload(listener)
+        }
+    }
+
+    @Serializable
+    data class UploadAudioFileResp(
+        val tempId: String,
+        val durationSecs: Long,
+        val title: String?,
+        val bitrate: String?,
+        val artist: String?,
+    )
+
+    suspend fun uploadAudioFile(
+        filename: String,
+        source: Source,
+        listener: ProgressListener? = null
+    ): WebResult<UploadAudioFileResp> {
+        return client.postWith("/publish/upload_audio_file") {
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append(
+                            "audio",
+                            InputProvider { source },
+                            headersOf(HttpHeaders.ContentDisposition, "filename=\"${filename}\"")
+                        )
+                    }
+                )
+            )
+            timeout {
+                socketTimeoutMillis = 60_000
+                connectTimeoutMillis = 60_000
+                requestTimeoutMillis = 60_000
+            }
+            onUpload(listener)
+        }
+    }
+
+
+    @Serializable
+    data class PublishReq(
+        val songTempId: String,
+        val coverTempId: String,
+        val title: String,
+        val subtitle: String,
+        val description: String,
+        val lyrics: String,
+        val tagIds: List<Long>,
+        val creationInfo: CreationInfo,
+        val productionCrew: List<ProductionItem>,
+        val externalLinks: List<ExternalLink>,
+        /**
+         * @since 251105
+         */
+        val explicit: Boolean?,
+        /**
+         * @since 251114, should be required in new client.
+         */
+        val jmid: String?,
+        /**
+         * @since 251114
+         */
+        val comment: String?,
+    ) {
+        @Serializable
+        data class CreationInfo(
+            // 0: original, 1: derivative work, 2: tertiary work
+            val creationType: Int,
+            val originInfo: CreationTypeInfo?,
+            val derivativeInfo: CreationTypeInfo?,
+        )
+
+        @Serializable
+        data class ProductionItem(
+            val role: String,
+            val uid: Long?,
+            val name: String?,
+        )
+    }
+
+    @Serializable
+    data class PublishResp(
+        val songDisplayId: String
+    )
+
+    suspend fun publish(req: PublishReq): WebResult<PublishResp> =
+        client.post("/publish/publish", req)
+
+
     @Serializable
     data class ModifyReq(
         val songId: Long,
@@ -18,9 +142,9 @@ class PublishModule(
         val description: String,
         val lyrics: String,
         val tagIds: List<Long>,
-        val creationInfo: SongModule.PublishReq.CreationInfo,
-        val productionCrew: List<SongModule.PublishReq.ProductionItem>,
-        val externalLinks: List<SongModule.ExternalLink>,
+        val creationInfo: PublishReq.CreationInfo,
+        val productionCrew: List<PublishReq.ProductionItem>,
+        val externalLinks: List<ExternalLink>,
         val explicit: Boolean,
         val comment: String?,
     )

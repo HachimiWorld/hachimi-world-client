@@ -6,12 +6,49 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hachimiworld.composeapp.generated.resources.*
-import io.github.vinceglb.filekit.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_jmid_already_used
+import hachimiworld.composeapp.generated.resources.artwork_jmid_prefix_not_set
+import hachimiworld.composeapp.generated.resources.publish_audio_file_required
+import hachimiworld.composeapp.generated.resources.publish_audio_too_large
+import hachimiworld.composeapp.generated.resources.publish_cover_required
+import hachimiworld.composeapp.generated.resources.publish_derive_info_required
+import hachimiworld.composeapp.generated.resources.publish_description_too_long
+import hachimiworld.composeapp.generated.resources.publish_explicit_required
+import hachimiworld.composeapp.generated.resources.publish_fetch_jmid_failed
+import hachimiworld.composeapp.generated.resources.publish_fetch_user_failed
+import hachimiworld.composeapp.generated.resources.publish_https_format
+import hachimiworld.composeapp.generated.resources.publish_https_required
+import hachimiworld.composeapp.generated.resources.publish_image_too_large
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_invalid_format
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_prefix_used
+import hachimiworld.composeapp.generated.resources.publish_invalid_uid
+import hachimiworld.composeapp.generated.resources.publish_jmid_number_format
+import hachimiworld.composeapp.generated.resources.publish_jmid_required
+import hachimiworld.composeapp.generated.resources.publish_lyrics_invalid_lrc
+import hachimiworld.composeapp.generated.resources.publish_lyrics_required
+import hachimiworld.composeapp.generated.resources.publish_origin_info_required
+import hachimiworld.composeapp.generated.resources.publish_subtitle_too_long
+import hachimiworld.composeapp.generated.resources.publish_tag_already_exists
+import hachimiworld.composeapp.generated.resources.publish_tag_name_empty
+import hachimiworld.composeapp.generated.resources.publish_title_required
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
-import io.ktor.http.*
-import kotlinx.coroutines.*
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readBytes
+import io.github.vinceglb.filekit.size
+import io.ktor.http.URLParserException
+import io.ktor.http.URLProtocol
+import io.ktor.http.Url
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
@@ -340,7 +377,7 @@ class PublishViewModel(
                     audioUploading = true
                     audioUploadProgress = 0f
 
-                    val resp = api.songModule.uploadAudioFile(
+                    val resp = api.publishModule.uploadAudioFile(
                         filename = audio.name,
                         source = buffer,
                         listener = { sent, total ->
@@ -396,7 +433,7 @@ class PublishViewModel(
                     coverImageUploading = true
                     coverImageUploadProgress = 0f
 
-                    val resp = api.songModule.uploadCoverImage(
+                    val resp = api.publishModule.uploadCoverImage(
                         filename = image.name,
                         source = buffer,
                         listener = { sent, total ->
@@ -569,7 +606,7 @@ class PublishViewModel(
         try {
             isOperating = true
 
-            val creationInfo = SongModule.PublishReq.CreationInfo(
+            val creationInfo = PublishModule.PublishReq.CreationInfo(
                 creationType = creationType,
                 originInfo = if (creationType > 0) SongModule.CreationTypeInfo(
                     songDisplayId = originId.takeIf { it.isNotBlank() },
@@ -588,7 +625,7 @@ class PublishViewModel(
             )
 
             val crew = staffs.map {
-                SongModule.PublishReq.ProductionItem(
+                PublishModule.PublishReq.ProductionItem(
                     role = it.role,
                     uid = it.uid,
                     name = it.name
@@ -599,8 +636,8 @@ class PublishViewModel(
             val tagIds = tags.map { it.id }
 
             if (type == Type.CREATE) {
-                val resp = api.songModule.publish(
-                    SongModule.PublishReq(
+                val resp = api.publishModule.publish(
+                    PublishModule.PublishReq(
                         songTempId = audioTempId!!,
                         coverTempId = coverTempId!!,
                         title = title,
