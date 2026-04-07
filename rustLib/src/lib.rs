@@ -1,6 +1,6 @@
 use crate::PlayerError::{IOError, RodioError, URLError};
 use rodio::source::SeekError;
-use rodio::{Decoder, OutputStreamBuilder, Sink, Source};
+use rodio::{Decoder, DeviceSinkBuilder, Source};
 use std::fmt::Debug;
 use std::fs::File;
 use std::sync::mpsc::Sender;
@@ -14,7 +14,7 @@ use stream_download::source::SourceStream;
 use stream_download::storage::temp::TempStorageProvider;
 use stream_download::{Settings, StreamDownload, StreamPhase, StreamState};
 use stream_download::http::reqwest::Client;
-use stream_download::http::reqwest::header::{HeaderMap, HeaderValue};
+use stream_download::http::reqwest::header::{HeaderMap};
 use url::Url;
 
 uniffi::setup_scaffolding!("hachimi");
@@ -112,31 +112,31 @@ impl Player {
             let event_tx = event_tx.clone();
             let stop_by_user = Arc::clone(&stop_by_user);
             move || {
-                let stream_handler =
-                    OutputStreamBuilder::open_default_stream().expect("Failed to open default stream");
+                let sink =
+                    DeviceSinkBuilder::open_default_sink().expect("Failed to open default stream");
 
-                let sink = Arc::new(Sink::connect_new(&stream_handler.mixer()));
+                let player = Arc::new(rodio::Player::connect_new(&sink.mixer()));
 
                 for msg in ctrl_rx {
                     match msg {
                         PlayerControl::Play => {
-                            sink.play();
+                            player.play();
                             event_tx.send(PlayerEvent::Play).unwrap();
                         }
                         PlayerControl::Pause => {
-                            sink.pause();
+                            player.pause();
                             event_tx.send(PlayerEvent::Pause).unwrap();
                         }
                         PlayerControl::Stop(tx) => {
-                            sink.stop();
+                            player.stop();
                             tx.send(()).unwrap();
                             event_tx.send(PlayerEvent::Stop).unwrap();
                         },
                         PlayerControl::Append(source) => {
-                            sink.append(source);
-                            sink.pause();
+                            player.append(source);
+                            player.pause();
                             thread::spawn({
-                                let sink = Arc::clone(&sink);
+                                let sink = Arc::clone(&player);
                                 let event_tx = event_tx.clone();
                                 let stop_by_user = Arc::clone(&stop_by_user);
                                 move || {
@@ -149,7 +149,7 @@ impl Player {
                             });
                         },
                         PlayerControl::Seek(pos, callback) => {
-                            let r = sink.try_seek(pos).map_err(|x| match x {
+                            let r = player.try_seek(pos).map_err(|x| match x {
                                 SeekError::NotSupported { underlying_source } => RodioError {
                                     msg: format!("Not supported: {}", underlying_source),
                                 },
@@ -167,27 +167,27 @@ impl Player {
                             event_tx.send(PlayerEvent::Seek(pos)).unwrap();
                         },
                         PlayerControl::SetVolume(volume) => {
-                            sink.set_volume(volume);
+                            player.set_volume(volume);
                         }
                         PlayerControl::GetVolume(tx) => {
-                            tx.send(sink.volume()).unwrap();
+                            tx.send(player.volume()).unwrap();
                         }
                         PlayerControl::GetPos(tx) => {
-                            let pos = if sink.empty() {
+                            let pos = if player.empty() {
                                 Duration::ZERO
                             } else {
-                                sink.get_pos()
+                                player.get_pos()
                             };
                             tx.send(pos).unwrap();
                         }
                         PlayerControl::IsPaused(tx) => {
-                            tx.send(sink.is_paused()).unwrap();
+                            tx.send(player.is_paused()).unwrap();
                         }
                         PlayerControl::IsEmpty(tx) => {
-                            tx.send(sink.empty()).unwrap();
+                            tx.send(player.empty()).unwrap();
                         },
                         PlayerControl::Drain(tx) => {
-                            sink.sleep_until_end();
+                            player.sleep_until_end();
                             tx.send(()).unwrap();
                         }
                     }
