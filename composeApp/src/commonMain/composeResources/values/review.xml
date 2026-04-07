@@ -48,4 +48,17 @@
     <string name="review_discussion_unknown_author">Unknown</string>
     <string name="review_discussion_edited">Edited</string>
     <string name="review_discussion_content_empty">Discussion content cannot be empty</string>
+    <string name="review_modify_draft">Modify draft</string>
+    <string name="review_view_history">View history</string>
+    <string name="review_history_title">Modification history</string>
+    <string name="review_history_empty">No modification history yet</string>
+    <string name="review_history_unknown_author">Unknown</string>
+    <string name="review_history_action_type">Action type</string>
+    <string name="review_history_action_type_value">Action #%1$d</string>
+    <string name="review_history_note">Note</string>
+    <string name="review_history_snapshot">Snapshot</string>
+    <string name="review_history_snapshot_title">Snapshot title</string>
+    <string name="review_history_snapshot_subtitle">Snapshot subtitle</string>
+    <string name="review_history_snapshot_description">Snapshot description</string>
+    <string name="review_history_snapshot_comment">Snapshot note</string>
 </resources>

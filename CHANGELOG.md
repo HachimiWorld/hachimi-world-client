@@ -5,6 +5,7 @@
 1. Added like/dislike feature. 新增喜欢/不喜欢功能。
 2. Support connecting to bilibili account. 支持关联哔哩哔哩账号。
 3. Support discussions in publishing page. 发布作品页面支持讨论区。
+4. Support modifying publishing request after submission. 支持提交后修改发布请求。
 
 ## Enhancements 改进
 

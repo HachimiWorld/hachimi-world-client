@@ -62,6 +62,10 @@ sealed class Route: NavKey {
             @Serializable
             data class ReviewDetail(val reviewId: Long): CreationCenter()
             @Serializable
+            data class ReviewModify(val reviewId: Long): CreationCenter()
+            @Serializable
+            data class ReviewHistory(val reviewId: Long): CreationCenter()
+            @Serializable
             data class ArtworkDetail(val songId: Long): CreationCenter()
             @Serializable
             data class Modify(val songId: Long): CreationCenter()
@@ -79,6 +83,10 @@ sealed class Route: NavKey {
             data object ReviewList: ContributorCenter()
             @Serializable
             data class ReviewDetail(val reviewId: Long): ContributorCenter()
+            @Serializable
+            data class ReviewModify(val reviewId: Long): ContributorCenter()
+            @Serializable
+            data class ReviewHistory(val reviewId: Long): ContributorCenter()
             @Serializable
             data object PostCenter: ContributorCenter()
             @Serializable

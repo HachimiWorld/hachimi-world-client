@@ -69,7 +69,7 @@ class PublishViewModel(
     private val api: ApiClient
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     enum class Type {
-        CREATE, EDIT
+        CREATE, EDIT, REVIEW_EDIT
     }
 
     data class CrewItem(
@@ -88,6 +88,8 @@ class PublishViewModel(
     var type by mutableStateOf(Type.CREATE)
         private set
     var songId by mutableStateOf<Long?>(null)
+        private set
+    var reviewId by mutableStateOf<Long?>(null)
         private set
 
     var title by mutableStateOf("")
@@ -214,10 +216,11 @@ class PublishViewModel(
         explicit = null
     }
 
-    fun mounted(songId: Long?) {
-        if (this.songId != songId) {
+    fun mounted(songId: Long?, reviewId: Long? = null) {
+        if (this.songId != songId || this.reviewId != reviewId) {
             // Initialize or change
             this.songId = songId
+            this.reviewId = reviewId
             init()
         } else {
             // Refresh, actually init
@@ -238,7 +241,12 @@ class PublishViewModel(
     private fun init() {
         initializeStatus = InitializeStatus.INIT
         clearInput()
-        if (songId != null) {
+        showPrefixInactiveDialog = false
+
+        if (reviewId != null) {
+            type = Type.REVIEW_EDIT
+            loadReviewOriginData()
+        } else if (songId != null) {
             // Edit
             type = Type.EDIT
             loadOriginData()
@@ -320,6 +328,71 @@ class PublishViewModel(
         }
     }
 
+    private fun loadReviewOriginData() {
+        loading = true
+        viewModelScope.launch {
+            val data = try {
+                val resp = api.publishModule.reviewDetail(PublishModule.DetailReq(reviewId!!))
+                if (resp.ok) {
+                    resp.ok()
+                } else {
+                    global.alert(resp.err().msg)
+                    if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                    return@launch
+                }
+            } catch (e: Throwable) {
+                Logger.e("publish", "Failed to get review draft data", e)
+                global.alert(e.message)
+                if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                return@launch
+            } finally {
+                loading = false
+            }
+
+            coverImageUrl = data.coverUrl
+            audioUrl = data.audioUrl
+
+            title = data.title
+            subtitle = data.subtitle
+            description = data.description
+
+            lyricsType = if (data.lyrics.isEmpty()) {
+                LyricsType.NONE
+            } else {
+                try {
+                    LrcParser.parse(data.lyrics)
+                    LyricsType.LRC
+                } catch (_: Throwable) {
+                    LyricsType.TEXT
+                }
+            }
+            lyrics = data.lyrics
+
+            tags = data.tags
+            creationType = data.creationType
+
+            val origin1 = data.originInfos.find { it.originType == 0 }
+            originId = origin1?.songDisplayId ?: ""
+            originTitle = origin1?.title ?: ""
+            originArtist = origin1?.artist ?: ""
+            originLink = origin1?.url ?: ""
+
+            val origin2 = data.originInfos.find { it.originType == 1 }
+            deriveId = origin2?.songDisplayId ?: ""
+            deriveTitle = origin2?.title ?: ""
+            deriveArtist = origin2?.artist ?: ""
+            deriveLink = origin2?.url ?: ""
+
+            staffs = data.productionCrew.map {
+                CrewItem(it.role, it.uid, it.personName)
+            }
+            externalLinks = data.externalLink
+            explicit = data.explicit
+
+            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
+        }
+    }
+
     private fun loadNextJmid() {
         // Get the next jmid or popup a dialog
         viewModelScope.launch {
@@ -380,7 +453,7 @@ class PublishViewModel(
                     val resp = api.publishModule.uploadAudioFile(
                         filename = audio.name,
                         source = buffer,
-                        listener = { sent, total ->
+                        listener = { sent, _ ->
                             audioUploadProgress = (sent.toDouble() / size).toFloat().coerceIn(0f, 1f)
                         }
                     )
@@ -436,7 +509,7 @@ class PublishViewModel(
                     val resp = api.publishModule.uploadCoverImage(
                         filename = image.name,
                         source = buffer,
-                        listener = { sent, total ->
+                        listener = { sent, _ ->
                             coverImageUploadProgress = (sent.toDouble() / size).toFloat().coerceIn(0f, 1f)
                         }
                     )
@@ -571,7 +644,7 @@ class PublishViewModel(
     }
 
     fun selectTag(item: SongModule.TagItem) {
-        if (tags.any { it -> it.name == item.name }) {
+        if (tags.any { it.name == item.name }) {
             global.alert(Res.string.publish_tag_already_exists)
             return
         }
@@ -596,10 +669,9 @@ class PublishViewModel(
     }
 
     fun publish() = viewModelScope.launch {
-        val checkPass = if (type == Type.CREATE) {
-            checkInputForCreate()
-        } else {
-            checkInputForEdit()
+        val checkPass = when (type) {
+            Type.CREATE -> checkInputForCreate()
+            Type.EDIT, Type.REVIEW_EDIT -> checkInputForEdit()
         }
         if (!checkPass) return@launch
 
@@ -662,7 +734,7 @@ class PublishViewModel(
                     val data = resp.err()
                     global.alert(data.msg)
                 }
-            } else {
+            } else if (type == Type.EDIT) {
                 val resp = api.publishModule.modify(
                     PublishModule.ModifyReq(
                         songId = songId!!,
@@ -678,6 +750,30 @@ class PublishViewModel(
                         externalLinks = externalLinks,
                         explicit = explicit!!,
                         comment = null
+                    )
+                )
+                if (resp.ok) {
+                    showSuccessDialog = true
+                    clearInput()
+                } else {
+                    global.alert(resp.err().msg)
+                }
+            } else {
+                val resp = api.publishModule.reviewModify(
+                    PublishModule.ReviewModifyReq(
+                        reviewId = reviewId!!,
+                        songTempId = audioTempId,
+                        coverTempId = coverTempId,
+                        title = title,
+                        subtitle = subtitle,
+                        description = description,
+                        lyrics = lyrics,
+                        tagIds = tagIds,
+                        creationInfo = creationInfo,
+                        productionCrew = crew,
+                        externalLinks = externalLinks,
+                        explicit = explicit!!,
+                        comment = null,
                     )
                 )
                 if (resp.ok) {

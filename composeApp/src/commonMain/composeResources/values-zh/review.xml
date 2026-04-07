@@ -48,4 +48,17 @@
     <string name="review_discussion_unknown_author">未知</string>
     <string name="review_discussion_edited">已编辑</string>
     <string name="review_discussion_content_empty">讨论内容不能为空</string>
+    <string name="review_modify_draft">修改稿件</string>
+    <string name="review_view_history">查看历史</string>
+    <string name="review_history_title">修改历史</string>
+    <string name="review_history_empty">暂无修改历史</string>
+    <string name="review_history_unknown_author">未知</string>
+    <string name="review_history_action_type">操作类型</string>
+    <string name="review_history_action_type_value">操作 #%1$d</string>
+    <string name="review_history_note">备注</string>
+    <string name="review_history_snapshot">快照</string>
+    <string name="review_history_snapshot_title">快照标题</string>
+    <string name="review_history_snapshot_subtitle">快照副标题</string>
+    <string name="review_history_snapshot_description">快照简介</string>
+    <string name="review_history_snapshot_comment">快照备注</string>
 </resources>

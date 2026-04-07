@@ -13,6 +13,8 @@ import kotlinx.io.Source
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.WebResult
+import world.hachimi.app.api.module.SongModule.CreationTypeInfo
+import world.hachimi.app.api.module.SongModule.ExternalLink
 import kotlin.time.Instant
 
 class PublishModule(
@@ -91,7 +93,7 @@ class PublishModule(
         val tagIds: List<Long>,
         val creationInfo: CreationInfo,
         val productionCrew: List<ProductionItem>,
-        val externalLinks: List<SongModule.ExternalLink>,
+        val externalLinks: List<ExternalLink>,
         /**
          * @since 251105
          */
@@ -109,8 +111,8 @@ class PublishModule(
         data class CreationInfo(
             // 0: original, 1: derivative work, 2: tertiary work
             val creationType: Int,
-            val originInfo: SongModule.CreationTypeInfo?,
-            val derivativeInfo: SongModule.CreationTypeInfo?,
+            val originInfo: CreationTypeInfo?,
+            val derivativeInfo: CreationTypeInfo?,
         )
 
         @Serializable
@@ -142,7 +144,7 @@ class PublishModule(
         val tagIds: List<Long>,
         val creationInfo: PublishReq.CreationInfo,
         val productionCrew: List<PublishReq.ProductionItem>,
-        val externalLinks: List<SongModule.ExternalLink>,
+        val externalLinks: List<ExternalLink>,
         val explicit: Boolean,
         val comment: String?,
     )
@@ -223,8 +225,8 @@ class PublishModule(
         val tags: List<SongModule.TagItem>,
         val productionCrew: List<SongModule.SongProductionCrew>,
         val creationType: Int,
-        val originInfos: List<SongModule.CreationTypeInfo>,
-        val externalLink: List<SongModule.ExternalLink>,
+        val originInfos: List<CreationTypeInfo>,
+        val externalLink: List<ExternalLink>,
         val explicit: Boolean?
     ) {
         companion object {
@@ -255,6 +257,27 @@ class PublishModule(
 
     suspend fun reviewApprove(req: ApproveReviewReq): WebResult<Unit> =
         client.post("/publish/review/approve", req)
+
+    @Serializable
+    data class ReviewModifyReq(
+        val reviewId: Long,
+        val songTempId: String?,
+        val coverTempId: String?,
+        val title: String,
+        val subtitle: String,
+        val description: String,
+        val lyrics: String,
+        val tagIds: List<Long>,
+        val creationInfo: PublishReq.CreationInfo,
+        val productionCrew: List<PublishReq.ProductionItem>,
+        val externalLinks: List<ExternalLink>,
+        val explicit: Boolean,
+        val comment: String?,
+    )
+
+    /** @since 260406 */
+    suspend fun reviewModify(req: ReviewModifyReq): WebResult<Unit> =
+        client.post("/publish/review/modify", req)
 
     @Serializable
     data class ReviewCommentCreateReq(
@@ -303,6 +326,36 @@ class PublishModule(
     /** @since 260406 */
     suspend fun reviewCommentDelete(req: ReviewCommentDeleteReq): WebResult<Unit> =
         client.post("/publish/review/comment/delete", req)
+
+    @Serializable
+    data class ReviewHistoryListReq(
+        val reviewId: Long,
+        val pageIndex: Long,
+        val pageSize: Long,
+    )
+
+    @Serializable
+    data class ReviewHistoryListResp(
+        val data: List<ReviewHistoryItem>,
+        val pageIndex: Long,
+        val pageSize: Long,
+        val total: Long,
+    )
+
+    @Serializable
+    data class ReviewHistoryItem(
+        val id: Long,
+        val reviewId: Long,
+        val actionType: Int,
+        val note: String?,
+        val author: UserModule.PublicUserProfile?,
+        val createTime: Instant,
+        val snapshot: SongPublishReviewData?,
+    )
+
+    /** @since 260406 */
+    suspend fun reviewHistoryList(req: ReviewHistoryListReq): WebResult<ReviewHistoryListResp> =
+        client.get("/publish/review/history/list", req)
 
     @Serializable
     data class ChangeJmidReq(

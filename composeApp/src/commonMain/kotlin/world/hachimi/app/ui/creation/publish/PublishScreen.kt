@@ -82,11 +82,12 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun PublishScreen(
     songId: Long?,
+    reviewId: Long? = null,
     vm: PublishViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
-    DisposableEffect(vm, songId) {
-        vm.mounted(songId)
+    DisposableEffect(vm, songId, reviewId) {
+        vm.mounted(songId, reviewId)
         onDispose { vm.dispose() }
     }
     AnimatedContent(vm.initializeStatus) {
@@ -96,10 +97,18 @@ fun PublishScreen(
             InitializeStatus.LOADED -> Content(vm, global)
         }
     }
+
+    if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
+        onExit = {
+            vm.showPrefixInactiveDialog = false
+            global.nav.back()
+        }
+    )
 }
 
 @Composable
 private fun Content(vm: PublishViewModel, global: GlobalStore) {
+    val editing = vm.type != Type.CREATE
     Box(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .navigationBarsPadding()
@@ -133,14 +142,14 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            if (vm.type == Type.EDIT) Button(onClick = {
+                            if (editing) Button(onClick = {
                                 getPlatform().openUrl(vm.audioUrl!!)
                             }) {
                                 Text("下载音频")
                             }
 
                             Button(onClick = { vm.setAudioFile() }, enabled = !vm.audioUploading) {
-                                if (vm.type == Type.EDIT) Text("更改音频")
+                                if (editing) Text("更改音频")
                                 else Text("选择文件")
                             }
 
@@ -174,7 +183,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                     .clickable(enabled = !vm.coverImageUploading) { vm.setCoverImage() },
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (vm.type == Type.EDIT) AsyncImage(
+                                if (editing) AsyncImage(
                                     model = vm.coverImage ?: ImageRequest.Builder(LocalPlatformContext.current)
                                         .httpHeaders(CoilHeaders)
                                         .data(vm.coverImageUrl)
@@ -543,7 +552,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 }
             }
             Button(onClick = { vm.publish() }, enabled = !vm.isOperating) {
-                Text("提交作品")
+                Text(if (vm.type == Type.CREATE) "提交作品" else "提交修改")
             }
         }
     }
@@ -581,12 +590,6 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
         valid = vm.initJmidValid,
         supportText = vm.initJmidSupportText,
         onConfirm = vm::confirmInitJmid
-    )
-    if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
-        onExit = {
-            vm.showPrefixInactiveDialog = false
-            global.nav.back()
-        }
     )
 }
 

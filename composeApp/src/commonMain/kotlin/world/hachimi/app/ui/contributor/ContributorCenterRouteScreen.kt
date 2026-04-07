@@ -22,6 +22,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.creation.publish.PublishScreen
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.util.AdaptiveScreenMargin
@@ -33,7 +34,9 @@ fun ContributorCenterScreen(child: Route.Root.ContributorCenter) {
         when (child) {
             Route.Root.ContributorCenter.Entry -> ContributorEntryScreen()
             Route.Root.ContributorCenter.ReviewList -> ReviewListScreen()
-            is Route.Root.ContributorCenter.ReviewDetail -> ReviewDetailScreen(child.reviewId)
+            is Route.Root.ContributorCenter.ReviewDetail -> ReviewDetailScreen(child.reviewId, source = ReviewScreenSource.CONTRIBUTOR)
+            is Route.Root.ContributorCenter.ReviewModify -> PublishScreen(songId = null, reviewId = child.reviewId)
+            is Route.Root.ContributorCenter.ReviewHistory -> ReviewHistoryScreen(child.reviewId)
             Route.Root.ContributorCenter.CreatePost -> CreatePostScreen()
             is Route.Root.ContributorCenter.EditPost -> TODO()
             Route.Root.ContributorCenter.PostCenter -> TODO()

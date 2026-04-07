@@ -71,6 +71,7 @@ import hachimiworld.composeapp.generated.resources.review_explicit_yes
 import hachimiworld.composeapp.generated.resources.review_external_links
 import hachimiworld.composeapp.generated.resources.review_id_label
 import hachimiworld.composeapp.generated.resources.review_lyrics
+import hachimiworld.composeapp.generated.resources.review_modify_draft
 import hachimiworld.composeapp.generated.resources.review_origin_artist
 import hachimiworld.composeapp.generated.resources.review_origin_link
 import hachimiworld.composeapp.generated.resources.review_origin_title
@@ -89,6 +90,7 @@ import hachimiworld.composeapp.generated.resources.review_tags
 import hachimiworld.composeapp.generated.resources.review_time
 import hachimiworld.composeapp.generated.resources.review_title_label
 import hachimiworld.composeapp.generated.resources.review_unknown
+import hachimiworld.composeapp.generated.resources.review_view_history
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -127,6 +129,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun ReviewDetailScreen(
     reviewId: Long,
+    source: ReviewScreenSource,
     vm: ReviewDetailViewModel = koinViewModel()
 ) {
     DisposableEffect(vm, reviewId) {
@@ -138,7 +141,7 @@ fun ReviewDetailScreen(
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.refresh() })
-            InitializeStatus.LOADED -> Content(vm)
+            InitializeStatus.LOADED -> Content(vm, source = source)
         }
     }
 }
@@ -146,6 +149,7 @@ fun ReviewDetailScreen(
 @Composable
 private fun Content(
     vm: ReviewDetailViewModel,
+    source: ReviewScreenSource,
     global: GlobalStore = koinInject()
 ) {
     Column(
@@ -157,34 +161,22 @@ private fun Content(
         Arrangement.spacedBy(16.dp)
     ) {
         vm.data?.let { data ->
-            Text(text = stringResource(Res.string.review_detail_title), style = MaterialTheme.typography.titleLarge)
-            PropertyItem(label = {
-                Text(stringResource(Res.string.contributor_submitter))
-            }) {
-                Text(
-                    modifier = Modifier.clickable {
-                        global.nav.push(Route.Root.PublicUserSpace(data.uploaderUid))
-                    },
-                    text = data.uploaderName + " " + data.uploaderUid
-                )
-            }
-            PropertyItem(stringResource(Res.string.review_submit_time), formatTime(data.submitTime, distance = true, precise = false, thresholdDay = 3))
-            PropertyItem(
-                stringResource(Res.string.review_status), when (data.status) {
-                    PublishModule.SongPublishReviewBrief.STATUS_PENDING -> stringResource(Res.string.review_status_pending)
-                    PublishModule.SongPublishReviewBrief.STATUS_APPROVED -> stringResource(Res.string.review_status_approved)
-                    PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> stringResource(Res.string.review_status_rejected)
-                    else -> error("unreachable")
+            // Review Metadata
+            ReviewMetadataSection(global, data, source)
+
+            // Modify Button
+            if (
+                source == ReviewScreenSource.CREATION &&
+                data.status != PublishModule.SongPublishReviewBrief.STATUS_APPROVED
+            ) {
+                Button(onClick = {
+                    global.nav.push(Route.Root.CreationCenter.ReviewModify(data.reviewId))
+                }) {
+                    Text(stringResource(Res.string.review_modify_draft))
                 }
-            )
+            }
 
-            PropertyItem(stringResource(Res.string.review_decision_comment), data.reviewComment ?: stringResource(Res.string.review_empty_value))
-            PropertyItem(
-                stringResource(Res.string.review_time),
-                data.reviewTime?.let { formatTime(it, distance = true, precise = false, thresholdDay = 3) }
-                    ?: stringResource(Res.string.review_empty_value)
-            )
-
+            // Review Action
             if (data.status == STATUS_PENDING && vm.isContributor) Column {
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -203,101 +195,195 @@ private fun Content(
                 }
             }
 
-            Text(stringResource(Res.string.artwork_details_title), style = MaterialTheme.typography.titleLarge)
-
-            PropertyItem(stringResource(Res.string.review_id_label), data.displayId)
-            PropertyItem({ Text(stringResource(Res.string.review_audio)) }) {
-                Button(onClick = { vm.download() }) {
-                    Text(stringResource(Res.string.review_download_audio), style = MaterialTheme.typography.labelLarge)
-                }
-            }
-            PropertyItem({ Text(stringResource(Res.string.review_cover)) }) {
-                Surface(Modifier.size(120.dp)) {
-                    AsyncImage(ImageRequest.Builder(LocalPlatformContext.current)
-                        .httpHeaders(CoilHeaders)
-                        .data(data.coverUrl)
-                        .crossfade(true)
-                        .build(), null, Modifier.size(120.dp))
-                }
-            }
-            PropertyItem(stringResource(Res.string.review_title_label), data.title)
-            PropertyItem(stringResource(Res.string.review_subtitle_label), data.subtitle)
-            PropertyItem(stringResource(Res.string.review_description_label), data.description)
-            PropertyItem(stringResource(Res.string.review_duration), formatSongDuration(data.durationSeconds.seconds))
-            PropertyItem(
-                stringResource(Res.string.review_creation_type), when (data.creationType) {
-                    PublishModule.SongPublishReviewData.CREATION_TYPE_ORIGINAL -> stringResource(Res.string.review_creation_type_original)
-                    PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION -> stringResource(Res.string.review_creation_type_derivation)
-                    PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION_OF_DERIVATION -> stringResource(Res.string.review_creation_type_derivation_of_derivation)
-                    else -> stringResource(Res.string.review_unknown)
-                }
-            )
-            PropertyItem(
-                stringResource(Res.string.review_explicit), when (data.explicit) {
-                    true -> stringResource(Res.string.review_explicit_yes)
-                    false -> stringResource(Res.string.review_explicit_no)
-                    null -> stringResource(Res.string.review_explicit_unmarked)
-                }
-            )
-            data.originInfos.fastForEach {
-                PropertyItem(
-                    stringResource(Res.string.review_origin_type), when (it.originType) {
-                        PublishModule.SongPublishReviewData.CREATION_TYPE_ORIGINAL -> stringResource(Res.string.review_origin_type_original)
-                        PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION -> stringResource(Res.string.review_origin_type_derivation)
-                        else -> stringResource(Res.string.review_unknown)
-                    }
-                )
-                PropertyItem(stringResource(Res.string.review_origin_title), it.title ?: stringResource(Res.string.review_empty_value))
-                PropertyItem(stringResource(Res.string.review_origin_artist), it.artist ?: stringResource(Res.string.review_empty_value))
-                PropertyItem({ Text(stringResource(Res.string.review_origin_link)) }) {
-                    Text(
-                        modifier = Modifier.clickable {
-                            it.url?.let {
-                                getPlatform().openUrl(it)
-                            }
-                        },
-                        text = it.url ?: stringResource(Res.string.review_empty_value),
-                        textDecoration = if (it.url != null) TextDecoration.Underline else null
-                    )
-                }
-            }
-
-            PropertyItem({ Text(stringResource(Res.string.review_tags)) }) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    data.tags.fastForEach {
-                        Text(it.name)
-                    }
-                }
-            }
-
-            PropertyItem({ Text(stringResource(Res.string.review_production_crew)) }) {
-                data.productionCrew.fastForEach {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(it.role, style = MaterialTheme.typography.labelMedium)
-                        Text(it.uid.toString())
-                        Text(it.personName.toString())
-                    }
-                }
-            }
-
-            PropertyItem(stringResource(Res.string.review_lyrics), data.lyrics)
-
-            PropertyItem({ Text(stringResource(Res.string.review_external_links)) }) {
-                data.externalLink.fastForEach {
-                    Text(it.platform, style = MaterialTheme.typography.labelMedium)
-
-                    SelectionContainer {
-                        Text(it.url, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            }
+            // Artwork Details
+            ArtworkDetailSection(data, vm)
 
             ReviewDiscussionSection(vm = vm, global = global)
         }
     }
+}
+
+@Composable
+private fun ArtworkDetailSection(
+    data: PublishModule.SongPublishReviewData,
+    vm: ReviewDetailViewModel
+) {
+    Text(
+        stringResource(Res.string.artwork_details_title),
+        style = MaterialTheme.typography.titleLarge
+    )
+
+    PropertyItem(stringResource(Res.string.review_id_label), data.displayId)
+    PropertyItem({ Text(stringResource(Res.string.review_audio)) }) {
+        Button(onClick = { vm.download() }) {
+            Text(
+                stringResource(Res.string.review_download_audio),
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+    PropertyItem({ Text(stringResource(Res.string.review_cover)) }) {
+        Surface(Modifier.size(120.dp)) {
+            AsyncImage(
+                ImageRequest.Builder(LocalPlatformContext.current)
+                    .httpHeaders(CoilHeaders)
+                    .data(data.coverUrl)
+                    .crossfade(true)
+                    .build(), null, Modifier.size(120.dp)
+            )
+        }
+    }
+    PropertyItem(stringResource(Res.string.review_title_label), data.title)
+    PropertyItem(stringResource(Res.string.review_subtitle_label), data.subtitle)
+    PropertyItem(stringResource(Res.string.review_description_label), data.description)
+    PropertyItem(
+        stringResource(Res.string.review_duration),
+        formatSongDuration(data.durationSeconds.seconds)
+    )
+    PropertyItem(
+        stringResource(Res.string.review_creation_type), when (data.creationType) {
+            PublishModule.SongPublishReviewData.CREATION_TYPE_ORIGINAL -> stringResource(Res.string.review_creation_type_original)
+            PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION -> stringResource(Res.string.review_creation_type_derivation)
+            PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION_OF_DERIVATION -> stringResource(
+                Res.string.review_creation_type_derivation_of_derivation
+            )
+
+            else -> stringResource(Res.string.review_unknown)
+        }
+    )
+    PropertyItem(
+        stringResource(Res.string.review_explicit), when (data.explicit) {
+            true -> stringResource(Res.string.review_explicit_yes)
+            false -> stringResource(Res.string.review_explicit_no)
+            null -> stringResource(Res.string.review_explicit_unmarked)
+        }
+    )
+    data.originInfos.fastForEach {
+        PropertyItem(
+            stringResource(Res.string.review_origin_type), when (it.originType) {
+                PublishModule.SongPublishReviewData.CREATION_TYPE_ORIGINAL -> stringResource(Res.string.review_origin_type_original)
+                PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION -> stringResource(Res.string.review_origin_type_derivation)
+                else -> stringResource(Res.string.review_unknown)
+            }
+        )
+        PropertyItem(
+            stringResource(Res.string.review_origin_title),
+            it.title ?: stringResource(Res.string.review_empty_value)
+        )
+        PropertyItem(
+            stringResource(Res.string.review_origin_artist),
+            it.artist ?: stringResource(Res.string.review_empty_value)
+        )
+        PropertyItem({ Text(stringResource(Res.string.review_origin_link)) }) {
+            Text(
+                modifier = Modifier.clickable {
+                    it.url?.let {
+                        getPlatform().openUrl(it)
+                    }
+                },
+                text = it.url ?: stringResource(Res.string.review_empty_value),
+                textDecoration = if (it.url != null) TextDecoration.Underline else null
+            )
+        }
+    }
+
+    PropertyItem({ Text(stringResource(Res.string.review_tags)) }) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            data.tags.fastForEach {
+                Text(it.name)
+            }
+        }
+    }
+
+    PropertyItem({ Text(stringResource(Res.string.review_production_crew)) }) {
+        data.productionCrew.fastForEach {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(it.role, style = MaterialTheme.typography.labelMedium)
+                Text(it.uid.toString())
+                Text(it.personName.toString())
+            }
+        }
+    }
+
+    PropertyItem(stringResource(Res.string.review_lyrics), data.lyrics)
+
+    PropertyItem({ Text(stringResource(Res.string.review_external_links)) }) {
+        data.externalLink.fastForEach {
+            Text(it.platform, style = MaterialTheme.typography.labelMedium)
+
+            SelectionContainer {
+                Text(it.url, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReviewMetadataSection(
+    global: GlobalStore,
+    data: PublishModule.SongPublishReviewData,
+    source: ReviewScreenSource
+) {
+    Text(
+        text = stringResource(Res.string.review_detail_title),
+        style = MaterialTheme.typography.titleLarge
+    )
+    PropertyItem(label = {
+        Text(stringResource(Res.string.contributor_submitter))
+    }) {
+        Text(
+            modifier = Modifier.clickable {
+                global.nav.push(Route.Root.PublicUserSpace(data.uploaderUid))
+            },
+            text = data.uploaderName + " " + data.uploaderUid
+        )
+    }
+    PropertyItem({ Text(stringResource(Res.string.review_submit_time)) }) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(formatTime(data.submitTime, distance = true, precise = false, thresholdDay = 3))
+            TextButton(onClick = {
+                when (source) {
+                    ReviewScreenSource.CREATION -> global.nav.push(
+                        Route.Root.CreationCenter.ReviewHistory(
+                            data.reviewId
+                        )
+                    )
+
+                    ReviewScreenSource.CONTRIBUTOR -> global.nav.push(
+                        Route.Root.ContributorCenter.ReviewHistory(
+                            data.reviewId
+                        )
+                    )
+                }
+            }) {
+                Text(stringResource(Res.string.review_view_history))
+            }
+        }
+    }
+    PropertyItem(
+        stringResource(Res.string.review_status), when (data.status) {
+            STATUS_PENDING -> stringResource(Res.string.review_status_pending)
+            PublishModule.SongPublishReviewBrief.STATUS_APPROVED -> stringResource(Res.string.review_status_approved)
+            PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> stringResource(Res.string.review_status_rejected)
+            else -> error("unreachable")
+        }
+    )
+
+    PropertyItem(
+        stringResource(Res.string.review_decision_comment),
+        data.reviewComment ?: stringResource(Res.string.review_empty_value)
+    )
+    PropertyItem(
+        stringResource(Res.string.review_time),
+        data.reviewTime?.let { formatTime(it, distance = true, precise = false, thresholdDay = 3) }
+            ?: stringResource(Res.string.review_empty_value)
+    )
 }
 
 @Composable
