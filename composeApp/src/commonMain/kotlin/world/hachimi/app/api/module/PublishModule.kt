@@ -275,7 +275,7 @@ class PublishModule(
         val comment: String?,
     )
 
-    /** @since 260406 */
+    /** @since 260407 */
     suspend fun reviewModify(req: ReviewModifyReq): WebResult<Unit> =
         client.post("/publish/review/modify", req)
 
@@ -285,7 +285,7 @@ class PublishModule(
         val content: String,
     )
 
-    /** @since 260406 */
+    /** @since 260407 */
     suspend fun reviewCommentCreate(req: ReviewCommentCreateReq): WebResult<Unit> =
         client.post("/publish/review/comment/create", req)
 
@@ -314,7 +314,7 @@ class PublishModule(
         val updateTime: Instant,
     )
 
-    /** @since 260406 */
+    /** @since 260407 */
     suspend fun reviewCommentList(req: ReviewCommentListReq): WebResult<ReviewCommentListResp> =
         client.get("/publish/review/comment/list", req)
 
@@ -323,7 +323,7 @@ class PublishModule(
         val commentId: Long,
     )
 
-    /** @since 260406 */
+    /** @since 260407 */
     suspend fun reviewCommentDelete(req: ReviewCommentDeleteReq): WebResult<Unit> =
         client.post("/publish/review/comment/delete", req)
 
@@ -353,7 +353,7 @@ class PublishModule(
         val snapshot: SongPublishReviewData?,
     )
 
-    /** @since 260406 */
+    /** @since 260407 */
     suspend fun reviewHistoryList(req: ReviewHistoryListReq): WebResult<ReviewHistoryListResp> =
         client.get("/publish/review/history/list", req)
 
