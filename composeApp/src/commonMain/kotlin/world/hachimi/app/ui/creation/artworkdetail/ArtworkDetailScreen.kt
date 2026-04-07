@@ -12,15 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SecondaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -45,6 +42,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.creation.publish.components.JmidTextField
+import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
@@ -52,6 +50,8 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.LocalTextStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 
 private enum class Tab(
     val title: String
@@ -69,26 +69,24 @@ fun ArtworkDetailScreen(
         onDispose { vm.dispose() }
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxWidthIn().padding(AdaptiveScreenMargin).navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues())) {
         Text("作品详情", style = MaterialTheme.typography.titleLarge)
 
         val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
         val scope = rememberCoroutineScope()
 
-        SecondaryTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            modifier = Modifier.padding(top = 16.dp).widthIn(max = 300.dp).fillMaxWidth()
-        ) {
+        Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Tab.entries.forEachIndexed { index, tab ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    text = { Text(text = tab.title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                )
+            val selected = pagerState.currentPage == index
+                if (selected) AccentButton(onClick = {}) {
+                    Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                } else Button(onClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                }) {
+                    Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
 
