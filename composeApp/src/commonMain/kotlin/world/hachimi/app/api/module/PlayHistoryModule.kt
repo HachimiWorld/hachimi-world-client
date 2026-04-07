@@ -1,9 +1,9 @@
 package world.hachimi.app.api.module
 
-import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.WebResult
+import kotlin.time.Instant
 
 class PlayHistoryModule(
     private val client: ApiClient
@@ -21,6 +21,7 @@ class PlayHistoryModule(
 
     @Serializable
     data class PlayHistoryItem(
+        @Deprecated("Meaningless, deprecated since 260331")
         val id: Long,
         val songInfo: SongModule.PublicSongDetail,
         val playTime: Instant

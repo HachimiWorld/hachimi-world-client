@@ -1,0 +1,54 @@
+name: Deploy to Pages
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ main ]
+concurrency:
+  group: pages-deployment
+  cancel-in-progress: true
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create local properties
+        run: |
+          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
+          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
+          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build with Gradle
+        run: ./gradlew composeApp:composeCompatibilityBrowserDistribution -Pbuildkonfig.flavor=release
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: composeApp/build/compose/logs/
+      - name: Get versions
+        shell: bash
+        run: |
+          VERSIONS=$(./gradlew printVersions --quiet)
+          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
+          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+      - name: Copy favicon.ico
+        run: cp icons/icon.ico composeApp/build/dist/composeWebCompatibility/productionExecutable/favicon.ico
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy composeApp/build/dist/composeWebCompatibility/productionExecutable --project-name=hachimi-world-client
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

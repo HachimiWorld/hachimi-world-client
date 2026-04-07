@@ -34,8 +34,30 @@ fun TagBadge(
         Text(
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
             text = tag,
-            style = TextStyle(fontSize = 12.sp),
+            style = TextStyle(fontSize = 11.sp),
             color = HachimiTheme.colorScheme.onSurface,
         )
+    }
+}
+
+@Composable
+fun TagBadge(
+    hazeState: HazeState,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        modifier = modifier.clip(CircleShape).hazeEffect(
+            hazeState, style = HazeStyle(
+                backgroundColor = HachimiTheme.colorScheme.surface,
+                blurRadius = 12.dp,
+                tint = HazeTint(color = HachimiTheme.colorScheme.surface)
+            )
+        ),
+        color = Color.Transparent,
+        contentColor = HachimiTheme.colorScheme.onSurface,
+        shape = CircleShape,
+    ) {
+        content()
     }
 }

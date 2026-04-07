@@ -29,18 +29,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onFirstVisible
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
 import hachimiworld.composeapp.generated.resources.common_more
@@ -63,14 +62,13 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Card
-import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.util.horizontalFadingEdges
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.fillMaxWidthIn
 
@@ -92,10 +90,10 @@ fun HomeMainScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-            contentPadding = PaddingValues(vertical = 24.dp)
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            if (vm.showClaims) item {
-                Card(Modifier.fillMaxWidthIn().padding(horizontal = 24.dp)) {
+            /*if (vm.showClaims) item {
+                ElevatedCard(Modifier.fillMaxWidthIn().padding(horizontal = AdaptiveScreenMargin)) {
                     Column(
                         modifier = Modifier.padding(12.dp)
                     ) {
@@ -111,7 +109,7 @@ fun HomeMainScreen(
                         }
                     }
                 }
-            }
+            }*/
             item(contentType = "recent_section") {
                 Segment(
                     modifier = Modifier.fillMaxWidthIn(),
@@ -162,7 +160,10 @@ fun HomeMainScreen(
             }
 
             item {
-                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+                Spacer(
+                    Modifier.navigationBarsPadding()
+                        .padding(LocalContentInsets.current.asPaddingValues())
+                )
             }
         }
     }
@@ -182,33 +183,39 @@ private fun Segment(
     global: GlobalStore = koinInject()
 ) {
     Column(modifier) {
-        SegmentHeader(text = label, onMoreClick = onMoreClick, onLoad = onLoad)
+        SegmentHeader(
+            text = label,
+            onMoreClick = onMoreClick,
+            onLoad = onLoad,
+            modifier = Modifier.padding(horizontal = AdaptiveScreenMargin)
+        )
         Spacer(Modifier.height(AdaptiveListSpacing))
-        BoxWithConstraints {
-            val cardSize: DpSize
 
-            if (maxWidth < WindowSize.COMPACT) {
-                val widthTwoColumn = (maxWidth - 48.dp - AdaptiveListSpacing * 2) / 2
-                val width = minOf(widthTwoColumn, 180.dp)
-                cardSize = DpSize(width, width + 48.dp)
-            } else {
-                cardSize = DpSize(180.dp, 228.dp)
-            }
+        BoxWithConstraints {
+            val cardSize = calculateCardSizeInGrid(maxWidth)
+
             LoadableContent(
-                modifier = Modifier.fillMaxWidth().height(cardSize.height * 2 + AdaptiveListSpacing),
+                modifier = Modifier.fillMaxWidth()
+                    .height(cardSize.height * 2 + AdaptiveListSpacing),
                 initializeStatus = status,
                 loading = loading,
                 onRefresh = onRefresh,
                 onRetryClick = onRetryClick,
                 onLoad = {}
             ) {
-                if (items.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                if (items.isEmpty()) Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(stringResource(Res.string.common_empty))
                 } else LazyHorizontalGrid(
                     modifier = Modifier.fillMaxSize()
-                        .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
+                        .horizontalFadingEdges(
+                            startEdgeWidth = AdaptiveScreenMargin,
+                            endEdgeWidth = AdaptiveScreenMargin
+                        ),
                     rows = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin),
                     horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                     verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 ) {
@@ -239,27 +246,24 @@ private fun CategorySegment(
     vm: HomeViewModel = koinViewModel()
 ) {
     Column(modifier) {
-        SegmentHeader(category, onLoad = {
-            vm.mountCategory(category)
-        }, onMoreClick = {
-            global.nav.push(Route.Root.Home.Category(category))
-        })
-        Spacer(Modifier.height(AdaptiveListSpacing))
-        BoxWithConstraints {
-            val cardSize: DpSize
+        SegmentHeader(
+            modifier = Modifier.padding(horizontal = AdaptiveScreenMargin),
+            text = category,
+            onMoreClick = { global.nav.push(Route.Root.Home.Category(category)) },
+            onLoad = { vm.mountCategory(category) },
+        )
 
-            if (maxWidth < WindowSize.COMPACT) {
-                val widthTwoColumn = (maxWidth - 48.dp - AdaptiveListSpacing * 2) / 2
-                val width = minOf(widthTwoColumn, 180.dp)
-                cardSize = DpSize(width, width + 48.dp)
-            } else {
-                cardSize = DpSize(180.dp, 228.dp)
-            }
+        Spacer(Modifier.height(AdaptiveListSpacing))
+
+        BoxWithConstraints {
+            val cardSize: DpSize = calculateCardSizeInGrid(gridWidth = maxWidth)
+
             val state = vm.categoryState[category]
             val status = state?.status?.value ?: InitializeStatus.INIT
             val loading = state?.loading?.value ?: false
             LoadableContent(
-                modifier = Modifier.fillMaxWidth().height(cardSize.height * 2 + AdaptiveListSpacing),
+                modifier = Modifier.fillMaxWidth()
+                    .height(cardSize.height * 2 + AdaptiveListSpacing),
                 initializeStatus = status,
                 loading = loading,
                 onRefresh = { },
@@ -273,9 +277,12 @@ private fun CategorySegment(
                     }
                 } else LazyHorizontalGrid(
                     modifier = Modifier.fillMaxSize()
-                        .horizontalFadingEdges(startEdgeWidth = 24.dp, endEdgeWidth = 24.dp),
+                        .horizontalFadingEdges(
+                            startEdgeWidth = AdaptiveScreenMargin,
+                            endEdgeWidth = AdaptiveScreenMargin
+                        ),
                     rows = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin),
                     horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                     verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 ) {
@@ -306,13 +313,34 @@ private fun CategorySegment(
 }
 
 @Composable
+private fun calculateCardSizeInGrid(
+    gridWidth: Dp,
+    gridHorizontalContentPadding: Dp = AdaptiveScreenMargin
+): DpSize {
+    val footerHeight = 48.dp
+
+    val width = if (gridWidth < WindowSize.COMPACT) {
+        val horizontalPadding = gridHorizontalContentPadding * 2
+        val widthTwoColumn = (gridWidth - horizontalPadding - AdaptiveListSpacing * 2) / 2
+        minOf(widthTwoColumn, 180.dp)
+    } else {
+        180.dp
+    }
+
+    return DpSize(width, height = width + footerHeight)
+}
+
+@Composable
 private fun SegmentHeader(
     text: String,
     onMoreClick: () -> Unit,
-    onLoad: () -> Unit = {}
+    onLoad: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp).onFirstVisible { onLoad() },
+        modifier = modifier.onVisibilityChanged { visible ->
+            if (visible) onLoad()
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = text, style = MaterialTheme.typography.titleLarge)
@@ -358,7 +386,9 @@ private fun LoadableContent(
     }
     AnimatedContent(
         initializeStatus,
-        modifier = modifier.onFirstVisible { onLoad() },
+        modifier = modifier.onVisibilityChanged { visible ->
+            if (visible) onLoad()
+        },
         transitionSpec = {
             if (targetState == InitializeStatus.LOADED) {
                 (fadeIn(animationSpec = tween(220, delayMillis = 90)) +

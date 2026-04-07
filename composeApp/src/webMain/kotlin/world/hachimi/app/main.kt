@@ -8,14 +8,12 @@ import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.font.WithFont
 import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.player.WasmPlayerHelper
+import world.hachimi.app.player.WebPlayerHelper
 import world.hachimi.app.ui.App
 import world.hachimi.app.util.parseJmid
 import kotlin.js.ExperimentalWasmJsInterop
@@ -32,18 +30,7 @@ fun main() {
     }
 
     val global = koin.koin.get<GlobalStore>()
-    val wasmPlayerHelper = koin.koin.get<WasmPlayerHelper>()
-
-    GlobalScope.launch {
-        global.initialize().join()
-
-        wasmPlayerHelper.initialize()
-
-        playIntent?.let { jmid ->
-            global.player.insertToQueueWithFetch(jmid, true, false)
-            global.expandPlayer()
-        }
-    }
+    val webPlayerHelper = koin.koin.get<WebPlayerHelper>()
 
     window.addEventListener("popstate") {
         it.preventDefault()
@@ -61,6 +48,14 @@ fun main() {
     ComposeViewport {
         LaunchedEffect(Unit) {
             document.querySelector("#loading")?.remove()
+            global.initialize().join()
+
+            webPlayerHelper.initialize()
+
+            playIntent?.let { jmid ->
+                global.player.insertToQueueWithFetch(jmid, true, false)
+                global.expandPlayer()
+            }
         }
         LaunchedEffect(Unit) {
             snapshotFlow { nav.backStack.toList() }
@@ -87,7 +82,7 @@ fun main() {
 
         WithFont(global) {
             // Apply locale environment so the app follows the selected locale
-            AppEnvironment(global.locale) {
+            AppEnvironment(global.settings.locale) {
                 App(global)
             }
         }

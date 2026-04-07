@@ -9,9 +9,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.vectorResource
 import world.hachimi.app.ui.component.AmbientChip
 import world.hachimi.app.ui.component.Chip
 import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.util.PlatformIcons
 
 @Composable
 fun PVChip(
@@ -19,8 +21,13 @@ fun PVChip(
     onClick: () -> Unit
 ) {
     Chip(onClick = onClick) {
-        // TODO: Use platform icon
-        Icon(Icons.Default.MusicVideo, platform)
+        Icon(
+            imageVector = when (platform) {
+                "bilibili" -> vectorResource(PlatformIcons.bilibili)
+                else -> Icons.Default.MusicVideo
+            },
+            contentDescription = platform
+        )
         Spacer(Modifier.width(4.dp))
         Icon(Icons.Filled.ArrowOutward, "Open in new tab", tint = LocalContentColor.current.copy(0.6f))
     }
@@ -32,7 +39,13 @@ fun AmbientPVChip(
     onClick: () -> Unit
 ) {
     AmbientChip(onClick = onClick) {
-        Icon(Icons.Default.MusicVideo, platform)
+        Icon(
+            imageVector = when (platform) {
+                "bilibili" -> vectorResource(PlatformIcons.bilibili)
+                else -> Icons.Default.MusicVideo
+            },
+            contentDescription = platform
+        )
         Spacer(Modifier.width(4.dp))
         Icon(Icons.Filled.ArrowOutward, "Open in new tab", tint = LocalContentColor.current.copy(0.6f))
     }

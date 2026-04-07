@@ -1,0 +1,39 @@
+<resources>
+    <string name="user_space_title">User space</string>
+    <string name="user_space_user_avatar_cd">User avatar</string>
+    <string name="user_space_uid_prefix">UID: %1$d</string>
+    <string name="user_space_intro_label">Introduction</string>
+    <string name="user_space_all_works">All works</string>
+    <string name="user_space_empty">No items</string>
+    <string name="user_space_male_cd">Male</string>
+    <string name="user_space_female_cd">Female</string>
+    <string name="user_change_avatar">Avatar</string>
+    <string name="user_change_nickname">Nickname</string>
+    <string name="user_change_bio">Bio</string>
+    <string name="user_edit_profile">Edit Profile</string>
+    <string name="user_profile_save">Save</string>
+    <string name="user_profile_saved">Saved</string>
+    <string name="user_gender">Gender</string>
+    <string name="user_gender_unspecified">Not specified</string>
+    <string name="user_gender_male">Male</string>
+    <string name="user_gender_female">Female</string>
+
+    <!-- Connections / linked accounts -->
+    <string name="user_connections_title">Linked Accounts</string>
+    <string name="user_connections_link">Link</string>
+    <string name="user_connections_link_bilibili">Link Bilibili</string>
+    <string name="user_connections_platform_bilibili">Bilibili</string>
+    <string name="user_connections_unlink">Unlink</string>
+    <string name="user_connections_unlink_confirm">Unlink this account?</string>
+    <string name="user_connections_bind_title">Link Bilibili Account</string>
+    <string name="user_connections_bilibili_uid_label">Your Bilibili UID (number)</string>
+    <string name="user_connections_bilibili_uid_invalid">UID must be numeric</string>
+    <string name="user_connections_bilibili_name_label">Nickname: %1$s</string>
+    <string name="user_connections_challenge_hint">Copy the verification code and append it to the end of your Bilibili profile bio, then click Verify</string>
+    <string name="user_connections_copy">Copy Code</string>
+    <string name="user_connections_copied">Copied!</string>
+    <string name="user_connections_verify">Verify</string>
+    <string name="user_connections_generate">Generate Code</string>
+    <string name="user_connections_linked_success">Account linked successfully!</string>
+    <string name="user_connections_open_bilibili">Open Bilibili profile</string>
+</resources>

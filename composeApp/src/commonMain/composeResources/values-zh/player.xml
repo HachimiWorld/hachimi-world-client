@@ -1,0 +1,47 @@
+<resources>
+    <string name="player_play_all">播放全部</string>
+    <string name="player_not_playing">暂未播放</string>
+    <string name="player_play_failed">播放失败：%1$s</string>
+
+    <!-- Kids mode dialog -->
+    <string name="player_kids_mode_title">你已启用宝宝模式</string>
+    <string name="player_kids_mode_message">本作品被作者标记为含有儿童不宜内容，由于你已启用宝宝模式，请确认是否继续播放。</string>
+    <string name="player_kids_mode_play">播放</string>
+    <string name="player_kids_mode_cancel">取消</string>
+
+    <!-- Player / Playlist strings -->
+    <string name="player_add_to_playlist_title">收藏到歌单</string>
+    <string name="player_add_to_playlist_create">新建歌单</string>
+    <string name="player_add_to_playlist_confirm">确定</string>
+    <string name="player_add_to_playlist_cancel">取消</string>
+    <string name="player_like">点赞</string>
+    <string name="player_unlike">取消点赞</string>
+
+    <string name="player_create_playlist_title">新建歌单</string>
+    <string name="player_create_playlist_name_placeholder">名称</string>
+    <string name="player_create_playlist_description_placeholder">描述</string>
+    <string name="player_create_playlist_private_label">私有歌单</string>
+    <string name="player_create_playlist_create">创建</string>
+    <string name="player_create_playlist_cancel">取消</string>
+
+    <string name="player_share">分享</string>
+    <string name="share_share_music_title">分享音乐</string>
+    <string name="share">分享</string>
+    <string name="player_share_copied_clipboard">已复制到剪切板</string>
+
+    <string name="player_queue_title">播放队列</string>
+    <string name="player_queue_clear">清除</string>
+    <string name="player_cover_cd">封面</string>
+    <string name="player_remove_from_playlist_cd">从歌单移除</string>
+    <string name="player_next_song">播放下一首</string>
+
+    <!-- InfoTab / Player fullscreen labels (zh originals) -->
+    <string name="info_author">作者</string>
+    <string name="info_tags">标签</string>
+    <string name="info_release_date">发行日期</string>
+    <string name="info_pv">PV</string>
+    <string name="info_origin">原作</string>
+    <string name="info_listen_cd">收听此音乐</string>
+    <string name="info_open_in_new_tab_cd">在新窗口打开</string>
+    <string name="info_play_count">播放量</string>
+</resources>

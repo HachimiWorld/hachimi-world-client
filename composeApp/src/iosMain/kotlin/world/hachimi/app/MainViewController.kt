@@ -10,8 +10,8 @@ import world.hachimi.app.ui.theme.AppTheme
 
 fun MainViewController() = ComposeUIViewController {
     val global = koinInject<GlobalStore>()
-    AppTheme(global.darkMode ?: isSystemInDarkTheme()) {
-        AppEnvironment(global.locale) {
+    AppTheme(global.settings.darkMode ?: isSystemInDarkTheme()) {
+        AppEnvironment(global.settings.locale) {
             App(global)
         }
     }

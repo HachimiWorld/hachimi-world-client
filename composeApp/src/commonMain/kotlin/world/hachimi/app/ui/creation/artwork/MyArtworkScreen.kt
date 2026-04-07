@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.fillMaxWidthIn
 
 
@@ -34,7 +35,7 @@ fun MyArtworkScreen() {
     Column(Modifier.fillMaxSize().fillMaxWidthIn()) {
         val scope = rememberCoroutineScope()
 
-        Row(Modifier.padding(top = 24.dp, start = 24.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(top = AdaptiveScreenMargin, start = AdaptiveScreenMargin, end = AdaptiveScreenMargin), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Tab.entries.fastForEachIndexed { index, tab ->
                 val selected = pagerState.currentPage == index
                 if (selected) AccentButton(onClick = {}) {

@@ -62,13 +62,14 @@ import world.hachimi.app.util.LrcParser
 import world.hachimi.app.util.parseJmid
 import world.hachimi.app.util.singleLined
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 class PublishViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     enum class Type {
-        CREATE, EDIT
+        CREATE, EDIT, REVIEW_EDIT
     }
 
     data class CrewItem(
@@ -88,6 +89,8 @@ class PublishViewModel(
         private set
     var songId by mutableStateOf<Long?>(null)
         private set
+    var reviewId by mutableStateOf<Long?>(null)
+        private set
 
     var title by mutableStateOf("")
     var subtitle by mutableStateOf("")
@@ -102,6 +105,7 @@ class PublishViewModel(
     var tags by mutableStateOf<List<SongModule.TagItem>>(emptyList())
         private set
     var description by mutableStateOf("")
+    var comment by mutableStateOf("")
     var lyricsType by mutableStateOf<LyricsType>(LyricsType.LRC)
     var lyrics by mutableStateOf("")
 
@@ -185,6 +189,7 @@ class PublishViewModel(
 
         tags = emptyList()
         description = ""
+        comment = ""
         lyricsType = LyricsType.LRC
         lyrics = ""
 
@@ -213,10 +218,11 @@ class PublishViewModel(
         explicit = null
     }
 
-    fun mounted(songId: Long?) {
-        if (this.songId != songId) {
+    fun mounted(songId: Long?, reviewId: Long? = null) {
+        if (this.songId != songId || this.reviewId != reviewId) {
             // Initialize or change
             this.songId = songId
+            this.reviewId = reviewId
             init()
         } else {
             // Refresh, actually init
@@ -237,7 +243,12 @@ class PublishViewModel(
     private fun init() {
         initializeStatus = InitializeStatus.INIT
         clearInput()
-        if (songId != null) {
+        showPrefixInactiveDialog = false
+
+        if (reviewId != null) {
+            type = Type.REVIEW_EDIT
+            loadReviewOriginData()
+        } else if (songId != null) {
             // Edit
             type = Type.EDIT
             loadOriginData()
@@ -319,6 +330,71 @@ class PublishViewModel(
         }
     }
 
+    private fun loadReviewOriginData() {
+        loading = true
+        viewModelScope.launch {
+            val data = try {
+                val resp = api.publishModule.reviewDetail(PublishModule.DetailReq(reviewId!!))
+                if (resp.ok) {
+                    resp.ok()
+                } else {
+                    global.alert(resp.err().msg)
+                    if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                    return@launch
+                }
+            } catch (e: Throwable) {
+                Logger.e("publish", "Failed to get review draft data", e)
+                global.alert(e.message)
+                if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
+                return@launch
+            } finally {
+                loading = false
+            }
+
+            coverImageUrl = data.coverUrl
+            audioUrl = data.audioUrl
+
+            title = data.title
+            subtitle = data.subtitle
+            description = data.description
+
+            lyricsType = if (data.lyrics.isEmpty()) {
+                LyricsType.NONE
+            } else {
+                try {
+                    LrcParser.parse(data.lyrics)
+                    LyricsType.LRC
+                } catch (_: Throwable) {
+                    LyricsType.TEXT
+                }
+            }
+            lyrics = data.lyrics
+
+            tags = data.tags
+            creationType = data.creationType
+
+            val origin1 = data.originInfos.find { it.originType == 0 }
+            originId = origin1?.songDisplayId ?: ""
+            originTitle = origin1?.title ?: ""
+            originArtist = origin1?.artist ?: ""
+            originLink = origin1?.url ?: ""
+
+            val origin2 = data.originInfos.find { it.originType == 1 }
+            deriveId = origin2?.songDisplayId ?: ""
+            deriveTitle = origin2?.title ?: ""
+            deriveArtist = origin2?.artist ?: ""
+            deriveLink = origin2?.url ?: ""
+
+            staffs = data.productionCrew.map {
+                CrewItem(it.role, it.uid, it.personName)
+            }
+            externalLinks = data.externalLink
+            explicit = data.explicit
+
+            if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
+        }
+    }
+
     private fun loadNextJmid() {
         // Get the next jmid or popup a dialog
         viewModelScope.launch {
@@ -376,10 +452,10 @@ class PublishViewModel(
                     audioUploading = true
                     audioUploadProgress = 0f
 
-                    val resp = api.songModule.uploadAudioFile(
+                    val resp = api.publishModule.uploadAudioFile(
                         filename = audio.name,
                         source = buffer,
-                        listener = { sent, total ->
+                        listener = { sent, _ ->
                             audioUploadProgress = (sent.toDouble() / size).toFloat().coerceIn(0f, 1f)
                         }
                     )
@@ -432,10 +508,10 @@ class PublishViewModel(
                     coverImageUploading = true
                     coverImageUploadProgress = 0f
 
-                    val resp = api.songModule.uploadCoverImage(
+                    val resp = api.publishModule.uploadCoverImage(
                         filename = image.name,
                         source = buffer,
-                        listener = { sent, total ->
+                        listener = { sent, _ ->
                             coverImageUploadProgress = (sent.toDouble() / size).toFloat().coerceIn(0f, 1f)
                         }
                     )
@@ -570,7 +646,7 @@ class PublishViewModel(
     }
 
     fun selectTag(item: SongModule.TagItem) {
-        if (tags.any { it -> it.name == item.name }) {
+        if (tags.any { it.name == item.name }) {
             global.alert(Res.string.publish_tag_already_exists)
             return
         }
@@ -595,17 +671,16 @@ class PublishViewModel(
     }
 
     fun publish() = viewModelScope.launch {
-        val checkPass = if (type == Type.CREATE) {
-            checkInputForCreate()
-        } else {
-            checkInputForEdit()
+        val checkPass = when (type) {
+            Type.CREATE -> checkInputForCreate()
+            Type.EDIT, Type.REVIEW_EDIT -> checkInputForEdit()
         }
         if (!checkPass) return@launch
 
         try {
             isOperating = true
 
-            val creationInfo = SongModule.PublishReq.CreationInfo(
+            val creationInfo = PublishModule.PublishReq.CreationInfo(
                 creationType = creationType,
                 originInfo = if (creationType > 0) SongModule.CreationTypeInfo(
                     songDisplayId = originId.takeIf { it.isNotBlank() },
@@ -624,7 +699,7 @@ class PublishViewModel(
             )
 
             val crew = staffs.map {
-                SongModule.PublishReq.ProductionItem(
+                PublishModule.PublishReq.ProductionItem(
                     role = it.role,
                     uid = it.uid,
                     name = it.name
@@ -635,8 +710,8 @@ class PublishViewModel(
             val tagIds = tags.map { it.id }
 
             if (type == Type.CREATE) {
-                val resp = api.songModule.publish(
-                    SongModule.PublishReq(
+                val resp = api.publishModule.publish(
+                    PublishModule.PublishReq(
                         songTempId = audioTempId!!,
                         coverTempId = coverTempId!!,
                         title = title,
@@ -661,7 +736,7 @@ class PublishViewModel(
                     val data = resp.err()
                     global.alert(data.msg)
                 }
-            } else {
+            } else if (type == Type.EDIT) {
                 val resp = api.publishModule.modify(
                     PublishModule.ModifyReq(
                         songId = songId!!,
@@ -676,7 +751,31 @@ class PublishViewModel(
                         productionCrew = crew,
                         externalLinks = externalLinks,
                         explicit = explicit!!,
-                        comment = null
+                        comment = comment.takeIf { it.isNotBlank() }
+                    )
+                )
+                if (resp.ok) {
+                    showSuccessDialog = true
+                    clearInput()
+                } else {
+                    global.alert(resp.err().msg)
+                }
+            } else {
+                val resp = api.publishModule.reviewModify(
+                    PublishModule.ReviewModifyReq(
+                        reviewId = reviewId!!,
+                        songTempId = audioTempId,
+                        coverTempId = coverTempId,
+                        title = title,
+                        subtitle = subtitle,
+                        description = description,
+                        lyrics = lyrics,
+                        tagIds = tagIds,
+                        creationInfo = creationInfo,
+                        productionCrew = crew,
+                        externalLinks = externalLinks,
+                        explicit = explicit!!,
+                        comment = comment.takeIf { it.isNotBlank() },
                     )
                 )
                 if (resp.ok) {
@@ -880,29 +979,33 @@ class PublishViewModel(
                         checkJmidPrefixJob?.cancelAndJoin()
                     } catch (_: CancellationException) {}
                     checkJmidPrefixJob = launch {
-                        delay(500)
                         try {
-                            val resp = api.publishModule.jmidCheckPrefix(PublishModule.JmidCheckPReq(mappedInput))
-                            if (mappedInput == initJmidInput) {
-                                if (resp.ok) {
-                                    if (resp.ok().result) {
-                                        initJmidValid = true
-                                        initJmidSupportText = null
+                            delay(500.milliseconds)
+                            try {
+                                val resp = api.publishModule.jmidCheckPrefix(PublishModule.JmidCheckPReq(mappedInput))
+                                if (mappedInput == initJmidInput) {
+                                    if (resp.ok) {
+                                        if (resp.ok().result) {
+                                            initJmidValid = true
+                                            initJmidSupportText = null
+                                        } else {
+                                            initJmidValid = false
+                                            viewModelScope.launch {
+                                                initJmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_init_jmid_prefix_used)
+                                            }
+                                        }
                                     } else {
                                         initJmidValid = false
-                                        viewModelScope.launch {
-                                            initJmidSupportText = org.jetbrains.compose.resources.getString(Res.string.publish_init_jmid_prefix_used)
-                                        }
+                                        initJmidSupportText = resp.err().msg
                                     }
-                                } else {
-                                    initJmidValid = false
-                                    initJmidSupportText = resp.err().msg
                                 }
+                            } catch (e: Throwable) {
+                                Logger.e("publish", "Failed to check jmid", e)
+                                initJmidValid = false
+                                initJmidSupportText = e.message
                             }
-                        } catch (e: Throwable) {
-                            Logger.e("publish", "Failed to check jmid", e)
-                            initJmidValid = false
-                            initJmidSupportText = e.message
+                        } catch (_: CancellationException) {
+                            Logger.i("publish", "Jmid prefix check canceled")
                         }
                     }
                 }
@@ -955,29 +1058,34 @@ class PublishViewModel(
                     } catch (_: CancellationException) {}
 
                     checkJmidJob = launch {
-                        delay(500)
                         try {
-                            val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
-                            if (jmidNumber == mappedInput) {
-                                if (resp.ok) {
-                                    if (resp.ok().result) {
-                                        jmidValid = true
-                                        jmidSupportText = null
+                            delay(500.milliseconds)
+                            try {
+                                val resp = api.publishModule.jmidCheck(PublishModule.JmidCheckReq(jmidFull))
+                                if (jmidNumber == mappedInput) {
+                                    if (resp.ok) {
+                                        if (resp.ok().result) {
+                                            jmidValid = true
+                                            jmidSupportText = null
+                                        } else {
+                                            jmidValid = false
+                                            viewModelScope.launch {
+                                                jmidSupportText =
+                                                    org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
+                                            }
+                                        }
                                     } else {
                                         jmidValid = false
-                                        viewModelScope.launch {
-                                            jmidSupportText = org.jetbrains.compose.resources.getString(Res.string.artwork_jmid_already_used)
-                                        }
+                                        jmidSupportText = resp.err().msg
                                     }
-                                } else {
-                                    jmidValid = false
-                                    jmidSupportText = resp.err().msg
                                 }
+                            } catch (e: Throwable) {
+                                Logger.e("publish", "Failed to check jmid", e)
+                                jmidValid = false
+                                jmidSupportText = e.message
                             }
-                        } catch (e: Throwable) {
-                            Logger.e("publish", "Failed to check jmid", e)
-                            jmidValid = false
-                            jmidSupportText = e.message
+                        } catch (_: CancellationException) {
+                            Logger.i("publish", "Jmid check canceled")
                         }
                     }
                 }

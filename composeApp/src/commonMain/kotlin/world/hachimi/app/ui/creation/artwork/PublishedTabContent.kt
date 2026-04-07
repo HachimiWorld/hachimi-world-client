@@ -48,6 +48,7 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.TopWithFooter
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
@@ -78,7 +79,7 @@ fun PublishedTabContent(
                 ) {
                     item {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(24.dp),
+                            modifier = Modifier.fillMaxWidth().padding(AdaptiveScreenMargin),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -107,7 +108,7 @@ fun PublishedTabContent(
                     }
                     item {
                         Pagination(
-                            modifier = Modifier.fillMaxWidth().padding(24.dp)
+                            modifier = Modifier.fillMaxWidth().padding(AdaptiveScreenMargin)
                                 .navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()),
                             total = vm.total.toInt(),
                             currentPage = vm.currentPage,

@@ -38,8 +38,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            AppTheme(global.darkMode ?: isSystemInDarkTheme()) {
-                AppEnvironment(global.locale) {
+            AppTheme(global.settings.darkMode ?: isSystemInDarkTheme()) {
+                AppEnvironment(global.settings.locale) {
                     App(global)
                 }
             }

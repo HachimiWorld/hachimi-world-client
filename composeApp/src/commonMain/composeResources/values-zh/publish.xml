@@ -1,0 +1,30 @@
+<resources>
+    <!-- Publish -->
+    <string name="publish_image_too_large">图片过大</string>
+    <string name="publish_audio_too_large">音频文件过大，最大支持20MB</string>
+    <string name="publish_fetch_jmid_failed">获取可用基米ID失败</string>
+    <string name="publish_jmid_number_format">数字段必须为 3 位，如 001</string>
+    <string name="publish_change_success">更改成功</string>
+    <string name="publish_cover_required">请上传封面</string>
+    <string name="publish_jmid_required">请设置基米ID</string>
+    <string name="publish_title_required">请填写标题</string>
+    <string name="publish_subtitle_too_long">副标题过长</string>
+    <string name="publish_description_too_long">简介过长</string>
+    <string name="publish_tag_name_empty">标签名称不可为空</string>
+    <string name="publish_tag_already_exists">标签已存在</string>
+    <string name="publish_invalid_uid">请输入正确的 UID</string>
+    <string name="publish_fetch_user_failed">获取用户信息失败</string>
+    <string name="publish_audio_file_required">请选择音频文件</string>
+    <string name="publish_lyrics_required">请填写歌词</string>
+    <string name="publish_lyrics_invalid_lrc">请填写正确的 LRC 格式歌词</string>
+    <string name="publish_origin_info_required">请填写原作信息</string>
+    <string name="publish_derive_info_required">请填写二作信息</string>
+    <string name="publish_https_required">请填写 HTTPS 的原作链接，请勿使用 HTTP</string>
+    <string name="publish_https_format">请填写正确的 HTTPS 格式的原作链接 https://xxxx</string>
+    <string name="publish_explicit_required">请选择是否包含露骨内容</string>
+    <string name="publish_init_jmid_prefix_used">该前缀已被使用，如被抢占请联系维护者</string>
+    <string name="publish_init_jmid_invalid_format">请填写 3 到 4 位字母</string>
+
+    <string name="artwork_jmid_prefix_not_set">未设置基米ID前缀</string>
+    <string name="artwork_jmid_already_used">该基米ID已被使用</string>
+</resources>

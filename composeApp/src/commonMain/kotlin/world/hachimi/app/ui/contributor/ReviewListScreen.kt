@@ -1,54 +1,36 @@
 package world.hachimi.app.ui.contributor
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.network.httpHeaders
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import kotlinx.datetime.LocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
-import world.hachimi.app.api.CoilHeaders
-import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewViewModel
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.util.YMD
-import world.hachimi.app.util.formatTime
-import kotlin.time.Instant
+import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun ReviewListScreen(
@@ -96,19 +78,20 @@ private fun Content(vm: ReviewViewModel) {
         Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = AdaptiveListSpacing).fillMaxWidthIn(),
             text = "审核作品 (${vm.total})",
             style = MaterialTheme.typography.titleLarge
         )
 
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            LazyColumn {
+        Box(Modifier.weight(1f)) {
+            LazyColumn() {
                 items(vm.items, key = { item -> item.reviewId }) { item ->
                     ReviewItem(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidthIn(),
                         coverUrl = item.coverUrl,
                         title = item.title,
                         subtitle = item.subtitle,
+                        artist = item.artist,
                         submitTime = item.submitTime,
                         status = item.status,
                         onClick = { vm.detail(item) },
@@ -122,7 +105,7 @@ private fun Content(vm: ReviewViewModel) {
 
         // Pagination
         Pagination(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = AdaptiveScreenMargin).fillMaxWidthIn(),
             total = vm.total.toInt(),
             currentPage = vm.currentPage,
             pageSize = vm.pageSize,
@@ -133,84 +116,3 @@ private fun Content(vm: ReviewViewModel) {
     }
 }
 
-@Composable
-private fun ReviewItem(
-    id: Long,
-    coverUrl: String,
-    title: String,
-    subtitle: String,
-    submitTime: Instant,
-    status: Int,
-    type: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier.clickable(onClick = onClick).padding(horizontal = 24.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Surface(Modifier.size(42.dp), RoundedCornerShape(8.dp), LocalContentColor.current.copy(0.12f)) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = ImageRequest.Builder(LocalPlatformContext.current)
-                    .httpHeaders(CoilHeaders)
-                    .data(coverUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Cover Image",
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-                Spacer(Modifier.width(8.dp))
-                Text(text = "#$id", style = MaterialTheme.typography.labelSmall)
-            }
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
-        }
-
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "类型", style = MaterialTheme.typography.bodySmall)
-            Text(
-                text = when (type) {
-                    PublishModule.SongPublishReviewBrief.TYPE_CREATION -> "发布"
-                    PublishModule.SongPublishReviewBrief.TYPE_MODIFICATION -> "编辑"
-                    else -> "未知"
-                }, style = MaterialTheme.typography.bodySmall
-            )
-
-        }
-
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "提交时间", style = MaterialTheme.typography.bodySmall)
-            Text(
-                text = formatTime(
-                    submitTime,
-                    distance = true,
-                    precise = false,
-                    fullFormat = LocalDateTime.Formats.YMD
-                ), style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "状态", style = MaterialTheme.typography.bodySmall)
-            Text(
-                text = when (status) {
-                    PublishModule.SongPublishReviewBrief.STATUS_PENDING -> "待审核"
-                    PublishModule.SongPublishReviewBrief.STATUS_APPROVED -> "通过"
-                    PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> "退回"
-                    else -> "未知"
-                }, style = MaterialTheme.typography.bodySmall,
-                color = when (status) {
-                    PublishModule.SongPublishReviewBrief.STATUS_PENDING -> Color.Yellow.copy(alpha = 0.7f)
-                    PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> MaterialTheme.colorScheme.error
-                    else -> LocalContentColor.current
-                }
-            )
-        }
-    }
-}

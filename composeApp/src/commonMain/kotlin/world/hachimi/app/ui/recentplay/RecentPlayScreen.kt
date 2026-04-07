@@ -2,7 +2,7 @@ package world.hachimi.app.ui.recentplay
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,18 +33,22 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.recent_play_title
+import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.YMDHM
+import world.hachimi.app.util.contentPaddingForMaxWidth
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
 
@@ -59,8 +62,8 @@ fun RecentPlayScreen(
     }
 
     val state = rememberLazyListState()
-    LaunchedEffect(state.canScrollForward) {
-        if (!vm.loading && !state.canScrollForward) {
+    LaunchedEffect(state.canScrollForward, vm.loading, vm.hasMore) {
+        if (!vm.loading && vm.hasMore && !state.canScrollForward) {
             vm.loadMore()
         }
     }
@@ -69,21 +72,21 @@ fun RecentPlayScreen(
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
+            InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = state,
-                    modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
-                    contentPadding = PaddingValues(vertical = 24.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth)
                 ) {
                     item {
                         Text(
-                            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+                            modifier = Modifier.padding(bottom = 12.dp),
                             text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
                         )
                     }
-                    items(vm.history, key = { item -> item.id }) { item ->
+                    items(vm.history, key = { item -> item.songInfo.id }) { item ->
                         RecentPlayItem(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 24.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                             coverUrl = item.songInfo.coverUrl,
                             title = item.songInfo.title,
                             artist = item.songInfo.uploaderName,
@@ -92,10 +95,12 @@ fun RecentPlayScreen(
                         )
                     }
                     item {
+                        LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
+                    }
+                    item {
                         Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
                     }
                 }
-                if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
     }
@@ -139,7 +144,7 @@ private fun RecentPlayItem(
             }
             Text(
                 modifier = Modifier.padding(horizontal = 12.dp),
-                text = formatTime(playTime, distance = true, precise = false),
+                text = formatTime(playTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMDHM),
                 style = MaterialTheme.typography.labelSmall
             )
         }

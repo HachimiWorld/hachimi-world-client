@@ -43,10 +43,11 @@ import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.contributor.ContributorCenterScreen
 import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.events.EventsRouteScreen
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.likes.RecentLikeScreen
 import world.hachimi.app.ui.player.footer.CompactFooterHeight
 import world.hachimi.app.ui.player.footer.CompactFooterPlayer2
 import world.hachimi.app.ui.player.footer.ExpandedFooterPlayer2
@@ -58,7 +59,9 @@ import world.hachimi.app.ui.root.component.ExpandedScaffoldLayout
 import world.hachimi.app.ui.root.component.ExpandedTopAppBar
 import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.search.SearchScreen
+import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.SettingsScreen
+import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.fillMaxWidthIn
@@ -84,7 +87,7 @@ fun RootScreen(routeContent: Route.Root) {
                     is Route.Root.Events -> EventsRouteScreen(routeContent)
                     is Route.Root.Home -> HomeScreen(routeContent)
                     is Route.Root.Search -> SearchScreen(routeContent.query, routeContent.type)
-                    Route.Root.RecentLike -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
+                    Route.Root.RecentLike -> if (global.isLoggedIn) RecentLikeScreen() else NeedLoginScreen()
                     Route.Root.RecentPlay -> if (global.isLoggedIn) RecentPlayScreen() else NeedLoginScreen()
                     is Route.Root.MyPlaylist -> if (global.isLoggedIn) PlaylistRouteScreen(routeContent) else NeedLoginScreen()
                     Route.Root.MySubscribe -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
@@ -93,8 +96,10 @@ fun RootScreen(routeContent: Route.Root) {
                     is Route.Root.ContributorCenter -> if (global.isLoggedIn) ContributorCenterScreen(routeContent) else NeedLoginScreen()
                     Route.Root.UserSpace -> UserSpaceScreen(null)
                     Route.Root.Settings -> SettingsScreen()
+                    Route.Root.Changelog -> ChangelogScreen()
                     is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
                     is Route.Root.PublicPlaylist -> if (global.isLoggedIn) PublicPlaylistScreen(routeContent.playlistId) else NeedLoginScreen()
+                    Route.Root.EditProfile -> if (global.isLoggedIn) EditProfileScreen() else NeedLoginScreen()
                 }
             }
         }
@@ -139,7 +144,7 @@ private fun CompactScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Card(
+            ElevatedCard(
                 modifier = Modifier.width(300.dp),
                 color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background),
                 shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
@@ -210,7 +215,7 @@ private fun ExpandedScreen(
             )
         },
         navigation = {
-            Card(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
+            ElevatedCard(Modifier.padding(start = 24.dp, top = 24.dp, bottom = 24.dp).width(180.dp)) {
                 Box(Modifier.padding(8.dp)) {
                     navigationContent()
                 }

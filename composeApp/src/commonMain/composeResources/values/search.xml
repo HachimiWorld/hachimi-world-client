@@ -1,0 +1,11 @@
+<resources>
+    <string name="search_no_results">Nothing found</string>
+    <string name="search_tab_songs">Songs</string>
+    <string name="search_tab_users">Users</string>
+    <string name="search_tab_playlists">Playlists</string>
+    <string name="search_placeholder">Search...</string>
+    <string name="search_result_title">Search Results</string>
+    <string name="search_sort_relevance">Most relevant</string>
+    <string name="search_sort_newest">Newest</string>
+    <string name="search_sort_oldest">Oldest</string>
+</resources>

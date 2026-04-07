@@ -1,0 +1,39 @@
+<resources>
+    <string name="user_space_title">神人空间</string>
+    <string name="user_space_user_avatar_cd">用户头像</string>
+    <string name="user_space_uid_prefix">UID: %1$d</string>
+    <string name="user_space_intro_label">简介</string>
+    <string name="user_space_all_works">全部作品</string>
+    <string name="user_space_empty">什么也没有</string>
+    <string name="user_space_male_cd">男</string>
+    <string name="user_space_female_cd">女</string>
+    <string name="user_change_avatar">头像</string>
+    <string name="user_change_nickname">昵称</string>
+    <string name="user_change_bio">简介</string>
+    <string name="user_edit_profile">编辑资料</string>
+    <string name="user_profile_save">保存</string>
+    <string name="user_profile_saved">已保存</string>
+    <string name="user_gender">性别</string>
+    <string name="user_gender_unspecified">未指定</string>
+    <string name="user_gender_male">男</string>
+    <string name="user_gender_female">女</string>
+
+    <!-- 关联账号 -->
+    <string name="user_connections_title">关联账号</string>
+    <string name="user_connections_link">关联</string>
+    <string name="user_connections_link_bilibili">关联哔哩哔哩</string>
+    <string name="user_connections_platform_bilibili">哔哩哔哩</string>
+    <string name="user_connections_unlink">解除关联</string>
+    <string name="user_connections_unlink_confirm">确定解除关联此账号？</string>
+    <string name="user_connections_bind_title">关联哔哩哔哩账号</string>
+    <string name="user_connections_bilibili_uid_label">你的 B 站 UID</string>
+    <string name="user_connections_bilibili_uid_invalid">UID 应当为纯数字</string>
+    <string name="user_connections_bilibili_name_label">昵称：%1$s</string>
+    <string name="user_connections_challenge_hint">将下方验证码复制并粘贴到B站个人资料简介末尾，然后点击验证</string>
+    <string name="user_connections_copy">复制验证码</string>
+    <string name="user_connections_copied">已复制！</string>
+    <string name="user_connections_verify">验证</string>
+    <string name="user_connections_generate">生成验证码</string>
+    <string name="user_connections_linked_success">关联成功！</string>
+    <string name="user_connections_open_bilibili">打开B站主页</string>
+</resources>

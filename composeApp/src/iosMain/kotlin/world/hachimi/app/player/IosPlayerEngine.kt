@@ -49,14 +49,13 @@ import platform.MediaPlayer.MPMediaItemPropertyTitle
 import platform.MediaPlayer.MPNowPlayingInfoCenter
 import platform.UIKit.UIImage
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 
 @OptIn(ExperimentalForeignApi::class)
-class IosPlayer : Player {
+class IosPlayerEngine : AbstractPlatformPlayerEngine() {
     private var session: AVAudioSession? = null
     private var player: AVPlayer? = null
     private var isPlayerReady = false
-    private val listeners = mutableSetOf<Player.Listener>()
     private var timeObserverToken: Any? = null
     val nowPlayingCenter = MPNowPlayingInfoCenter.defaultCenter()
     private var replayGainDb: Float = 0f
@@ -255,7 +254,7 @@ class IosPlayer : Player {
 
     override suspend fun initialize() = withContext(Dispatchers.Main) {
         val session = AVAudioSession.sharedInstance()
-        this@IosPlayer.session = session
+        this@IosPlayerEngine.session = session
         session.setCategory(category = AVAudioSessionCategoryPlayback, error = null)
         session.setActive(true, null)
         player = AVPlayer()
@@ -267,7 +266,7 @@ class IosPlayer : Player {
         ) { _ ->
             currentSongId = null
             Logger.i("player", "End event")
-            listeners.forEach { it.onEvent(PlayEvent.End) }
+            notifyEvent(PlayEvent.End)
         }
 
         NSNotificationCenter.defaultCenter.addObserverForName(
@@ -278,12 +277,12 @@ class IosPlayer : Player {
             when (player?.timeControlStatus) {
                 AVPlayerTimeControlStatusPlaying -> {
                     Logger.i("player", "Play event")
-                    listeners.forEach { it.onEvent(PlayEvent.Play) }
+                    notifyEvent(PlayEvent.Play)
                 }
 
                 AVPlayerTimeControlStatusPaused -> {
                     Logger.i("player", "Pause event")
-                    listeners.forEach { it.onEvent(PlayEvent.Pause) }
+                    notifyEvent(PlayEvent.Pause)
                 }
 
                 else -> {}
@@ -291,14 +290,6 @@ class IosPlayer : Player {
         }
 
         isPlayerReady = true
-    }
-
-    override fun addListener(listener: Player.Listener) {
-        listeners.add(listener)
-    }
-
-    override fun removeListener(listener: Player.Listener) {
-        listeners.remove(listener)
     }
 
     /*private val timeControlObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {

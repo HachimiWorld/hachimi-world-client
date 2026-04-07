@@ -5,31 +5,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_auth_token_invalid
-import hachimiworld.composeapp.generated.resources.global_check_update_failed
-import hachimiworld.composeapp.generated.resources.global_error_check_min_api_failed
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import hachimiworld.composeapp.generated.resources.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.BuildKonfig
-import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.AuthError
-import world.hachimi.app.api.AuthenticationListener
-import world.hachimi.app.api.err
+import world.hachimi.app.api.*
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.VersionModule
-import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.player.Player
+import world.hachimi.app.player.PlayerEngine
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
@@ -37,27 +27,22 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Global shared data and logic. Can work without UI displaying
+ * Global shared data and logic. Can work without UI displaying (But still requires compose snapshot runtime)
+ *
+ * // TODO: Decouple the logics here
  */
 class GlobalStore(
     private val dataStore: MyDataStore,
     private val api: ApiClient,
-    private val innerPlayer: Player,
+    private val engine: PlayerEngine,
     songCache: SongCache
 ) {
     var initialized by mutableStateOf(false)
-    var darkMode by mutableStateOf<Boolean?>(null)
-        private set
-    var enableLoudnessNormalization by mutableStateOf(true)
-        private set
-    var kidsMode by mutableStateOf(false)
-        private set
-    // New locale setting: null = follow system, otherwise locale string like "en" or "zh" or "zh_CN"
-    var locale by mutableStateOf<String?>(null)
-        private set
+    val settings by lazy { Settings(dataStore, player) }
     val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
         private set
@@ -65,7 +50,7 @@ class GlobalStore(
         private set
     var playerExpanded by mutableStateOf(false)
         private set
-    val player = PlayerService(this, dataStore, api, innerPlayer, songCache)
+    val player = PlayerService(this, dataStore, api, engine, songCache)
     private val scope = CoroutineScope(Dispatchers.Default)
     val snackbarHostState = SnackbarHostState()
 
@@ -81,50 +66,38 @@ class GlobalStore(
     )
 
     fun initialize() = scope.launch {
-        launch(Dispatchers.Default) {
-            coroutineScope {
-                launch { loadSettings() }
-                launch { loadLoginStatus() }
+        if (!initialized) {
+            launch(Dispatchers.Default) {
+                coroutineScope {
+                    launch { settings.loadSettings() }
+                    launch { loadLoginStatus() }
+                    launch {
+                        try {
+                            player.initialize()
+                        } catch (e: Throwable) {
+                            Logger.e("global", "Failed to initialize player", e)
+                            alert("播放器载入失败")
+                        }
+                    }
+                }
+                initialized = true
             }
-            initialized = true
         }
-        launch {
-            checkMinApiVersion()
-        }
-        launch {
-            checkUpdate()
-        }
+        launch { checkMinApiVersion() }
+        launch { checkUpdate(UpdateCheckMode.AUTO) }
+        startPeriodicUpdateCheck()
     }
 
-    fun updateDarkMode(darkMode: Boolean?) = scope.launch {
-        this@GlobalStore.darkMode = darkMode
-        if (darkMode == null) {
-            dataStore.delete(PreferencesKeys.SETTINGS_DARK_MODE)
-        } else {
-            dataStore.set(PreferencesKeys.SETTINGS_DARK_MODE, darkMode)
+    private var periodicCheckJob: Job? = null
+
+    private fun startPeriodicUpdateCheck() {
+        periodicCheckJob?.cancel()
+        periodicCheckJob = scope.launch {
+            while (true) {
+                delay(24.hours)
+                checkUpdate(UpdateCheckMode.SILENT)
+            }
         }
-    }
-
-    fun updateLoudnessNormalization(enabled: Boolean) = scope.launch {
-        this@GlobalStore.enableLoudnessNormalization = enabled
-        player.setReplayGainEnabled(enabled)
-        dataStore.set(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION, enabled)
-    }
-
-    // Persist and update locale. null => follow system (delete stored key)
-    fun updateLocale(locale: String?) = scope.launch {
-        this@GlobalStore.locale = locale
-        if (locale == null) {
-            dataStore.delete(PreferencesKeys.SETTINGS_LOCALE)
-        } else {
-            dataStore.set(PreferencesKeys.SETTINGS_LOCALE, locale)
-        }
-    }
-
-    private suspend fun loadSettings() {
-        this.darkMode = dataStore.get(PreferencesKeys.SETTINGS_DARK_MODE)
-        this.enableLoudnessNormalization = dataStore.get(PreferencesKeys.SETTINGS_LOUDNESS_NORMALIZATION) ?: true
-        this.locale = dataStore.get(PreferencesKeys.SETTINGS_LOCALE)
     }
 
     private suspend fun loadLoginStatus() {
@@ -147,9 +120,10 @@ class GlobalStore(
                     when (err) {
                         is AuthError.RefreshTokenError -> {
                             logout()
-                            alert( Res.string.auth_auth_token_invalid)
+                            alert(Res.string.auth_auth_token_invalid)
                             nav.push(Route.Auth())
                         }
+
                         is AuthError.ErrorHttpResponse -> {}
                         is AuthError.UnknownError -> {}
                         is AuthError.UnauthorizedDuringRequest -> {}
@@ -173,10 +147,13 @@ class GlobalStore(
         userInfo = null
     }
 
-//    @Deprecated("Use alert with i18n instead")
+    //    @Deprecated("Use alert with i18n instead")
     fun alert(text: String?) {
         scope.launch {
-            snackbarHostState.showSnackbar(text?.take(64) ?: "Unknown Error", withDismissAction = true)
+            snackbarHostState.showSnackbar(
+                text?.take(64) ?: "Unknown Error",
+                withDismissAction = true
+            )
         }
     }
 
@@ -255,31 +232,59 @@ class GlobalStore(
         private set
     var newVersionInfo by mutableStateOf<VersionModule.LatestVersionResp?>(null)
         private set
-    private suspend fun checkUpdate() {
+    var updateVersions by mutableStateOf<List<VersionModule.LatestVersionResp>>(emptyList())
+        private set
+
+    // Track dismissed version to avoid re-showing on periodic check
+    private var lastDismissedVersionNumber: Int = -1
+
+    private enum class UpdateCheckMode { AUTO, MANUAL, SILENT }
+
+    private suspend fun checkUpdate(mode: UpdateCheckMode = UpdateCheckMode.AUTO) {
         checkingUpdate = true
         try {
             val variant = getPlatform().variant
-            val resp = api.versionModule.latest(VersionModule.LatestVersionReq(variant))
+            val resp = api.versionModule.page(
+                VersionModule.PageVersionReq(
+                    variant = variant,
+                    pageIndex = 0,
+                    pageSize = 50
+                )
+            )
             if (resp.ok) {
                 val data = resp.ok()
-                if (data != null && data.versionNumber > BuildKonfig.VERSION_CODE) {
-                    newVersionInfo = data
-                    showUpdateDialog = true
+                val newerVersions = data.data
+                    .filter { it.versionNumber > BuildKonfig.VERSION_CODE }
+                    .sortedByDescending { it.versionNumber }
+                if (newerVersions.isNotEmpty()) {
+                    val latestVersion = newerVersions.first()
+                    updateVersions = newerVersions
+                    newVersionInfo = latestVersion
+                    // Show dialog unless user dismissed the same latest version (except manual check)
+                    if (mode == UpdateCheckMode.MANUAL || latestVersion.versionNumber != lastDismissedVersionNumber) {
+                        showUpdateDialog = true
+                    }
+                } else if (mode == UpdateCheckMode.MANUAL) {
+                    alert(Res.string.global_already_latest_version)
                 }
             } else {
-                alert(resp.err().msg)
+                if (mode != UpdateCheckMode.SILENT) alert(resp.err().msg)
             }
         } catch (e: Throwable) {
             Logger.e("global", "Failed to check update", e)
-            alert(Res.string.global_check_update_failed)
+            if (mode != UpdateCheckMode.SILENT) alert(Res.string.global_check_update_failed)
         } finally {
             checkingUpdate = false
         }
     }
 
+    fun manualCheckUpdate() = scope.launch {
+        checkUpdate(UpdateCheckMode.MANUAL)
+    }
+
     fun dismissUpgrade() {
-        // TODO: ignore this version anymore
         showUpdateDialog = false
+        lastDismissedVersionNumber = newVersionInfo?.versionNumber ?: -1
     }
 
     fun confirmUpgrade() {
@@ -287,12 +292,6 @@ class GlobalStore(
         getPlatform().openUrl(newVersionInfo!!.url)
     }
 
-    fun updateKidsMode(it: Boolean) {
-        kidsMode = it
-        scope.launch {
-            dataStore.set(PreferencesKeys.SETTINGS_KIDS_MODE, it)
-        }
-    }
 
     var showKidsDialog by mutableStateOf(false)
         private set

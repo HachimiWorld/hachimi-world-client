@@ -6,13 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,11 +35,13 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.singleLined
 
 @Composable
@@ -67,13 +68,12 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
             .padding(LocalContentInsets.current.asPaddingValues())
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 900.dp)
-                .padding(24.dp),
+            modifier = Modifier.fillMaxWidthIn().padding(AdaptiveScreenMargin),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text("发布文章", style = MaterialTheme.typography.titleLarge)
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -83,7 +83,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                         subtitle = { Text("支持 jpg, png, webp 格式，大小不超过 10MB") }
                     ) {
                         Surface(
-                            Modifier.size(200.dp),
+                            Modifier.height(200.dp).aspectRatio(16f / 9f),
                             shape = RoundedCornerShape(16.dp),
                             color = LocalContentColor.current.copy(0.12f)
                         ) {
@@ -133,7 +133,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                 }
             }
 
-            Card {
+            ElevatedCard {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)

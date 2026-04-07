@@ -1,0 +1,55 @@
+<resources>
+    <string name="auth_logout">退出登录</string>
+    <string name="auth_login">登录</string>
+    <string name="auth_register">注册</string>
+    <string name="auth_auth_token_invalid">登录令牌失效，请重新登录</string>
+    <string name="auth_forget_send_code_failed">发送验证码失败，请稍后再试</string>
+    <string name="auth_forget_reset_failed">重置密码失败，请稍后再试</string>
+    <string name="auth_forget_captcha_failed">人机验证失败，请稍后重试</string>
+    <string name="auth_captcha_title">请完成验证</string>
+    <string name="auth_captcha_message">请在打开的浏览器页面中完成人机验证。</string>
+    <string name="auth_captcha_help_label">未弹出页面？</string>
+    <string name="auth_captcha_help_message">Safari 浏览器请前往“设置”>“App”>“Safari 浏览器” 中关闭 “阻止弹出式窗口”，或使用 Chrome 浏览器访问；\n电脑端请检查是否被安全软件拦截</string>
+    <string name="auth_captcha_confirm">我已完成，继续</string>
+
+    <!-- New auth UI strings for AuthScreen (zh) -->
+    <string name="auth_welcome_home">欢迎回家</string>
+    <string name="auth_become_god">成为神人</string>
+    <string name="auth_email_placeholder">邮箱</string>
+    <string name="auth_password_placeholder">密码</string>
+    <string name="auth_forget_password">忘记密码？</string>
+    <string name="auth_confirm_password_placeholder">确认密码</string>
+    <string name="auth_next_step">下一步</string>
+    <string name="auth_invalid_email">邮箱地址不正确</string>
+    <string name="auth_password_too_short">密码长度至少为 6 位</string>
+    <string name="auth_passwords_not_match">两次输入不一致</string>
+    <string name="auth_almost_there">离神人很近了</string>
+    <string name="auth_verification_sent_subtitle">已将验证码发送至邮箱，如未收到请检查垃圾箱</string>
+    <string name="auth_code_placeholder">验证码</string>
+    <string name="auth_resend">重新发送</string>
+    <string name="auth_resend_with_seconds">重新发送 (%1$d 秒)</string>
+    <string name="auth_previous">上一步</string>
+    <string name="auth_one_more_step">只差一步</string>
+    <string name="auth_complete_profile_subtitle">完善你的资料</string>
+    <string name="auth_nickname_placeholder">昵称</string>
+    <string name="auth_intro_placeholder">介绍一下</string>
+    <string name="auth_gender_male">男</string>
+    <string name="auth_gender_female">女</string>
+    <string name="auth_gender_none">神没有性别</string>
+    <string name="auth_finish">完成</string>
+    <string name="auth_skip">跳过</string>
+    <string name="auth_not_logged_in">未登录</string>
+
+    <string name="auth_forget_title">重置密码</string>
+    <string name="auth_forget_subtitle">忘记密码是成为神人的第一步</string>
+
+    <string name="auth_new_password_placeholder">新密码</string>
+
+    <string name="auth_verify_code_placeholder">验证码</string>
+    <string name="auth_send">发送</string>
+    <string name="auth_resend_seconds">重新发送 (%1$d 秒)</string>
+
+    <string name="auth_back">返回</string>
+    <string name="auth_reset_success_title">成功</string>
+    <string name="auth_reset_success_text">已成功将您的密码重置</string>
+</resources>

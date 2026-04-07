@@ -1,18 +1,7 @@
 package world.hachimi.app.ui.events
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -52,11 +41,7 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.YMD
-import world.hachimi.app.util.fillMaxWidthIn
-import world.hachimi.app.util.formatTime
-import world.hachimi.app.util.isValidHttpsUrl
+import world.hachimi.app.util.*
 import kotlin.time.Clock
 
 @Composable
@@ -212,7 +197,7 @@ private val previewPost
     @Stable
     get() = PostModule.PostDetail(
         id = 0,
-        author = UserModule.PublicUserProfile(0, "Author", null, null, null, false),
+        author = UserModule.PublicUserProfile(0, "Author", null, null, null, false, listOf()),
         title = "This is a test title",
         content = previewMarkdown,
         contentType = "markdown",

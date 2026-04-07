@@ -1,0 +1,55 @@
+<resources>
+    <string name="auth_logout">Logout</string>
+    <string name="auth_login">Login</string>
+    <string name="auth_register">Register</string>
+    <string name="auth_auth_token_invalid">Login token expired, please sign in again</string>
+    <string name="auth_forget_send_code_failed">Failed to send verification code, please try again later</string>
+    <string name="auth_forget_reset_failed">Failed to reset password, please try again later</string>
+    <string name="auth_forget_captcha_failed">Captcha verification failed, please try again later</string>
+    <string name="auth_captcha_title">Please complete verification</string>
+    <string name="auth_captcha_message">Please complete the captcha in the opened browser page.</string>
+    <string name="auth_captcha_help_label">No popup?</string>
+    <string name="auth_captcha_help_message">For Safari: open Settings > App > Safari and disable "Block Pop-ups", or use Chrome; on desktop check if blocked by security software.</string>
+    <string name="auth_captcha_confirm">I've completed it, continue</string>
+
+    <!-- New auth UI strings for AuthScreen -->
+    <string name="auth_welcome_home">Welcome back</string>
+    <string name="auth_become_god">Become a Hachimi</string>
+    <string name="auth_email_placeholder">Email</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_forget_password">Forgot password?</string>
+    <string name="auth_confirm_password_placeholder">Confirm password</string>
+    <string name="auth_next_step">Next</string>
+    <string name="auth_invalid_email">Invalid email address</string>
+    <string name="auth_password_too_short">Password must be at least 6 characters</string>
+    <string name="auth_passwords_not_match">Passwords do not match</string>
+    <string name="auth_almost_there">Almost there</string>
+    <string name="auth_verification_sent_subtitle">Verification code has been sent to your email. If you don't receive it, check your spam folder.</string>
+    <string name="auth_code_placeholder">Verification code</string>
+    <string name="auth_resend">Resend</string>
+    <string name="auth_resend_with_seconds">Resend (%1$d s)</string>
+    <string name="auth_previous">Previous</string>
+    <string name="auth_one_more_step">One more step</string>
+    <string name="auth_complete_profile_subtitle">Complete your profile</string>
+    <string name="auth_nickname_placeholder">Nickname</string>
+    <string name="auth_intro_placeholder">Tell us about yourself</string>
+    <string name="auth_gender_male">Male</string>
+    <string name="auth_gender_female">Female</string>
+    <string name="auth_gender_none">No gender</string>
+    <string name="auth_finish">Finish</string>
+    <string name="auth_skip">Skip</string>
+    <string name="auth_not_logged_in">Not logged in</string>
+
+    <string name="auth_forget_title">Reset password</string>
+    <string name="auth_forget_subtitle">Forgetting password is the first step to becoming a god</string>
+
+    <string name="auth_new_password_placeholder">New password</string>
+
+    <string name="auth_verify_code_placeholder">Verification code</string>
+    <string name="auth_send">Send</string>
+    <string name="auth_resend_seconds">Resend (%1$d s)</string>
+
+    <string name="auth_back">Back</string>
+    <string name="auth_reset_success_title">Success</string>
+    <string name="auth_reset_success_text">Your password has been reset successfully</string>
+</resources>

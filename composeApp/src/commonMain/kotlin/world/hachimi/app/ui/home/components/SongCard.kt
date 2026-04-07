@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,9 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explicit
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
@@ -40,11 +44,12 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.TagBadge
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.formatCompactCount
 
 @Composable
 fun SongCard(
@@ -79,10 +84,7 @@ fun SongCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.defaultMinSize(minWidth = 160.dp),
-        shape = RoundedCornerShape(16.dp),
-    ) {
+    Card(modifier = modifier.defaultMinSize(minWidth = 160.dp)) {
         Column(Modifier.clickable(onClick = onClick).padding(8.dp)) {
             Box(Modifier.aspectRatio(1f).background(LocalContentColor.current.copy(0.12f), RoundedCornerShape(8.dp))) {
                 val hazeState = rememberHazeState()
@@ -103,8 +105,40 @@ fun SongCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    tags.forEach { tag ->
+                    tags.fastForEach { tag ->
                         TagBadge(hazeState, tag)
+                    }
+                }
+                Row(
+                    modifier = Modifier.padding(0.dp).align(Alignment.BottomEnd),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TagBadge(hazeState, modifier = Modifier.padding(all = 8.dp)) {
+                        Row(modifier = Modifier.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Headphones,
+                                contentDescription = "Play Count",
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                formatCompactCount(playCount),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+
+                            Spacer(Modifier.width(8.dp))
+
+                            Icon(
+                                Icons.Default.Favorite,
+                                "Play Count",
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                formatCompactCount(likeCount),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
                 }
             }
@@ -112,10 +146,9 @@ fun SongCard(
             Column(Modifier.padding(top = 8.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f, fill = false),
                         text = title,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -123,30 +156,15 @@ fun SongCard(
                     if (explicit == true) Icon(
                         imageVector = Icons.Default.Explicit,
                         contentDescription = "Explicit",
-                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp)
                     )
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = author,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
-                    Icon(
-                        Icons.Default.Headphones,
-                        "Play Count",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(end = 4.dp).size(12.dp)
-                    )
-                    Text(
-                        playCount.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    modifier = Modifier,
+                    text = author,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1
+                )
             }
         }
     }

@@ -1,0 +1,13 @@
+<resources>
+    <!-- Navigation labels -->
+    <string name="nav_home_events">Events</string>
+    <string name="nav_home_title">Home</string>
+    <string name="nav_recent_like">Recent likes</string>
+    <string name="nav_recent_play">Recently played</string>
+    <string name="nav_my_playlist">My playlists</string>
+    <string name="nav_my_subscribe">My follows</string>
+    <string name="nav_creation_center">Creation Center</string>
+    <string name="nav_committee_center">Committee Center</string>
+    <string name="nav_contributor_center">Contributor Center</string>
+    <string name="nav_settings">Settings</string>
+</resources>

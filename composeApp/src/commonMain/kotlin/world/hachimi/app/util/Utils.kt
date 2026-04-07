@@ -1,9 +1,7 @@
 package world.hachimi.app.util
 
 import androidx.compose.runtime.Stable
-import io.ktor.http.URLParserException
-import io.ktor.http.URLProtocol
-import io.ktor.http.Url
+import io.ktor.http.*
 
 
 @Stable
@@ -20,6 +18,31 @@ fun formatBytes(bytes: Long): String {
         }
         .joinToString("")
         .plus(" MB")
+}
+
+@Stable
+fun formatCompactCount(value: Long): String {
+    val abs = kotlin.math.abs(value)
+    val sign = if (value < 0) "-" else ""
+
+    fun formatScaled(divisor: Long, suffix: String): String {
+        val scaledTimes10 = abs * 10 / divisor
+        val whole = scaledTimes10 / 10
+        val decimal = scaledTimes10 % 10
+        return if (whole >= 10) {
+            "${sign}${whole}$suffix"
+        } else {
+            if (decimal == 0L) "${sign}${whole}$suffix"
+            else "${sign}${whole}.${decimal}$suffix"
+        }
+    }
+
+    return when {
+        abs < 1_000 -> value.toString()
+        abs < 1_000_000 -> formatScaled(1_000, "k")
+        abs < 1_000_000_000 -> formatScaled(1_000_000, "m")
+        else -> formatScaled(1_000_000_000, "b")
+    }
 }
 
 @Stable

@@ -4,7 +4,9 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.design.HachimiTheme
@@ -18,9 +20,12 @@ import world.hachimi.app.util.PlatformBackHandler
 import world.hachimi.app.util.WindowSize
 
 @Composable
-fun PlayerScreen2() {
-    val global: GlobalStore = koinInject()
-    val (painter, dominantColor) = rememberAsyncPainterAndColor(global.player.playerState.displayedCover)
+fun PlayerScreen2(
+    global: GlobalStore = koinInject(),
+    vm: PlayerViewModel = koinViewModel()
+) {
+    val uiState = vm.uiState
+    val (painter, dominantColor) = rememberAsyncPainterAndColor(uiState.displayedCover)
     val systemUIController = rememberSystemUIController()
     val parentDarkMode = LocalDarkMode.current
     val animatedVisibility = LocalAnimatedVisibilityScope.current
@@ -31,7 +36,8 @@ fun PlayerScreen2() {
 
     BackgroundContainer(
         painter = painter,
-        dominantColor = dominantColor ?: HachimiTheme.colorScheme.background
+        dominantColor = dominantColor ?: HachimiTheme.colorScheme.background,
+        enableDiffusionBackground = global.settings.enableDiffusionBackground
     ) {
         val contentDarkMode = LocalDarkMode.current
 
@@ -57,7 +63,7 @@ fun PlayerScreen2() {
                 systemUIController.setSystemBarsTheme(parentDarkMode)
             }
         }*/
-        if (LocalWindowSize.current.width < WindowSize.MEDIUM) CompactPlayerScreen2()
-        else ExpandedPlayerScreen2()
+        if (LocalWindowSize.current.width < WindowSize.MEDIUM) CompactPlayerScreen2(vm)
+        else ExpandedPlayerScreen2(vm)
     }
 }

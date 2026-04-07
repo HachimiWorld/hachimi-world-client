@@ -75,6 +75,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.playlist.components.SongItem
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.formatTime
@@ -107,7 +108,7 @@ fun PublicPlaylistScreen(
                 val userInfo = vm.creatorProfile
                 if (playlistInfo != null && userInfo != null) LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(24.dp),
+                    contentPadding = PaddingValues(AdaptiveScreenMargin),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {

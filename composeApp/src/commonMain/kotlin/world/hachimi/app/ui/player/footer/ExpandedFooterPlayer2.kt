@@ -27,6 +27,8 @@ import androidx.compose.material.icons.automirrored.filled.VolumeDown
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Shuffle
@@ -59,21 +61,26 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_like
+import hachimiworld.composeapp.generated.resources.player_next_song
 import hachimiworld.composeapp.generated.resources.player_not_playing
+import hachimiworld.composeapp.generated.resources.player_unlike
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialSharedAxisYIn
 import soup.compose.material.motion.animation.materialSharedAxisYOut
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.HachimiIconToggleButton
 import world.hachimi.app.ui.design.components.HachimiSlider
@@ -96,10 +103,11 @@ val ExpandedFooterHeight = 104.dp
 fun ExpandedFooterPlayer2(
     modifier: Modifier = Modifier,
     hazeState: HazeState,
+    vm: PlayerViewModel = koinViewModel(),
     global: GlobalStore = koinInject(),
 ) {
     Box {
-        val uiState = global.player.playerState
+        val uiState = vm.uiState
         var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
         var musicQueueExpanded by remember { mutableStateOf(false) }
 
@@ -111,6 +119,7 @@ fun ExpandedFooterPlayer2(
                     content = {
                         ExpandedPlayerContent(
                             global = global,
+                            vm = vm,
                             uiState = uiState,
                             onAddToPlaylistClick = {
                                 tobeAddedSong =
@@ -135,7 +144,7 @@ fun ExpandedFooterPlayer2(
             expanded = musicQueueExpanded,
             onDismissRequest = { musicQueueExpanded = false }
         ) {
-            Card(
+            ElevatedCard(
                 modifier = Modifier.size(400.dp, 400.dp),
                 hazeState = hazeState
             ) {
@@ -159,6 +168,7 @@ fun ExpandedFooterPlayer2(
 @Composable
 private fun ExpandedPlayerContent(
     global: GlobalStore,
+    vm: PlayerViewModel,
     uiState: PlayerUIState,
     onAddToPlaylistClick: () -> Unit,
     onMusicQueueClick: () -> Unit
@@ -206,13 +216,15 @@ private fun ExpandedPlayerContent(
         FunctionButtons(
             modifier = Modifier.layoutId("function-buttons")
                 .padding(top = 8.dp, end = 8.dp),
+            liked = vm.liked,
+            likeEnabled = vm.likeEnabled,
+            onLikeClick = vm::toggleLike,
             shuffleOn = global.player.shuffleMode,
             repeatOn = global.player.repeatMode,
             onShuffleChange = { global.player.updateShuffleMode(it) },
             onRepeatChange = { global.player.updateRepeatMode(it) },
             onAddToPlaylistClick = onAddToPlaylistClick,
             onMusicQueueClick = onMusicQueueClick,
-            onOpenInFullClick = { global.expandPlayer() },
         )
     }
 }
@@ -399,7 +411,7 @@ private fun NextButton(
         Icon(
             modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.SkipNext,
-            contentDescription = "Skip Next"
+            contentDescription = stringResource(Res.string.player_next_song)
         )
     }
 }
@@ -437,16 +449,28 @@ private fun VolumeControl(
 @Composable
 private fun FunctionButtons(
     modifier: Modifier,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    onLikeClick: () -> Unit,
     shuffleOn: Boolean,
     repeatOn: Boolean,
     onShuffleChange: (Boolean) -> Unit,
     onRepeatChange: (Boolean) -> Unit,
     onAddToPlaylistClick: () -> Unit,
     onMusicQueueClick: () -> Unit,
-    onOpenInFullClick: () -> Unit,
 ) {
+    val likeContentDescription = stringResource(
+        if (liked) Res.string.player_unlike else Res.string.player_like
+    )
 
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        HachimiIconButton(onClick = onLikeClick, enabled = likeEnabled) {
+            Icon(
+                imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = likeContentDescription,
+                tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current,
+            )
+        }
         HachimiIconToggleButton(shuffleOn, onShuffleChange) {
             Icon(Icons.Default.Shuffle, if (shuffleOn) "Shuffle On" else "Shuffle Off")
         }

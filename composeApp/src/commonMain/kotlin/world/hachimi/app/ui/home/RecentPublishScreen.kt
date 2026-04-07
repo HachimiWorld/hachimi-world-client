@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -22,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
-import hachimiworld.composeapp.generated.resources.common_no_more
 import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.common_refresh_cd
 import hachimiworld.composeapp.generated.resources.home_recent_title
@@ -49,6 +45,7 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
@@ -58,8 +55,10 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.calculateGridColumns
+import world.hachimi.app.util.contentPaddingForMaxWidth
 import world.hachimi.app.util.formatDaysDistance
 import kotlin.time.Clock
 
@@ -85,11 +84,11 @@ fun RecentPublishScreen(
 @Composable
 private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val maxWidth = maxWidth
+        val constraintMaxWidth = maxWidth
         AdaptivePullToRefreshBox(
             isRefreshing = vm.initializeStatus != InitializeStatus.INIT && vm.refreshing,
             onRefresh = { vm.fakeRefresh() },
-            screenWidth = maxWidth
+            screenWidth = constraintMaxWidth
         ) {
             val state = rememberLazyGridState()
             LaunchedEffect(state.canScrollForward) {
@@ -103,8 +102,8 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
             } else LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
-                columns = calculateGridColumns(maxWidth),
-                contentPadding = PaddingValues(24.dp),
+                columns = calculateGridColumns(constraintMaxWidth),
+                contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintMaxWidth),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
@@ -113,7 +112,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         Text(
                             text = stringResource(Res.string.home_recent_title), style = MaterialTheme.typography.titleLarge
                         )
-                        if (maxWidth >= WindowSize.COMPACT) {
+                        if (constraintMaxWidth >= WindowSize.COMPACT) {
                             HachimiIconButton(
                                 modifier = Modifier.padding(start = 8.dp),
                                 enabled = !vm.loading,
@@ -169,23 +168,11 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         )
                     }
                 }
-                if (vm.loading) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) },
-                        contentType = "loading_indicator"
-                    ) {
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-                if (!vm.hasMore) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) },
-                        contentType = "loading_indicator"
-                    ) {
-                        Text(text = stringResource(Res.string.common_no_more), modifier = Modifier.fillMaxWidth().height(48.dp).wrapContentSize())
-                    }
+                item(
+                    span = { GridItemSpan(maxLineSpan) },
+                    contentType = "load_more"
+                ) {
+                    LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))

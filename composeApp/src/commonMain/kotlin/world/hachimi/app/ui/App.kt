@@ -22,9 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import coil3.ImageLoader
-import coil3.compose.setSingletonImageLoaderFactory
-import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisZ
 import world.hachimi.app.model.GlobalStore
@@ -39,6 +36,7 @@ import world.hachimi.app.ui.component.UpgradeDialog
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
+import world.hachimi.app.ui.util.setupCoil
 
 
 val LocalAnimatedVisibilityScope =
@@ -130,19 +128,6 @@ private fun GlobalDialogs(global: GlobalStore) {
         onDismissRequest = { global.confirmKidsPlay(false) },
         onConfirm = { global.confirmKidsPlay(true) }
     )
-}
-
-@Suppress("ComposableNaming")
-@Composable
-fun setupCoil() {
-    // Let coil support PlatformFile
-    setSingletonImageLoaderFactory { context ->
-        ImageLoader.Builder(context)
-            .components {
-                addPlatformFileSupport()
-            }
-            .build()
-    }
 }
 
 @Composable

@@ -27,6 +27,7 @@ fun AuthorAndPV(
     authorName: String,
     avatar: String?,
     hasMultipleArtists: Boolean,
+    pvPlatform: String?,
     pvLink: String?,
     onUserClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -57,7 +58,7 @@ fun AuthorAndPV(
         pvLink?.takeIf { isValidHttpsUrl(it) }?.let {
             if (pvAlignToEnd) Spacer(Modifier.weight(1f))
             AmbientPVChip(
-                platform = it,
+                platform = pvPlatform ?: "unknown",
                 onClick = { getPlatform().openUrl(it) }
             )
         }

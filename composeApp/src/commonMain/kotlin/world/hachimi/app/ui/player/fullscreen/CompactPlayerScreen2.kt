@@ -4,39 +4,15 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,8 +32,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_share
+import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
@@ -65,36 +40,25 @@ import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Surface
-import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.design.components.ToggleButton
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
-import world.hachimi.app.ui.player.fullscreen.components.AuthorAndPV
-import world.hachimi.app.ui.player.fullscreen.components.Cover
-import world.hachimi.app.ui.player.fullscreen.components.InfoTabContent
-import world.hachimi.app.ui.player.fullscreen.components.JmidLabel
-import world.hachimi.app.ui.player.fullscreen.components.Lyrics2
-import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
-import world.hachimi.app.ui.player.fullscreen.components.Page
-import world.hachimi.app.ui.player.fullscreen.components.PagerButtons2
-import world.hachimi.app.ui.player.fullscreen.components.Titles
-import world.hachimi.app.ui.player.fullscreen.components.rememberTabTransitionSpec
+import world.hachimi.app.ui.player.fullscreen.components.*
 import world.hachimi.app.ui.util.fadingEdges
 import kotlin.random.Random
 
 @Composable
 fun CompactPlayerScreen2(
+    vm: PlayerViewModel,
     global: GlobalStore = koinInject()
 ) {
-    val uiState = global.player.playerState
+    val uiState = vm.uiState
     var showTab by rememberSaveable { mutableStateOf(false) }
     var currentPage by rememberSaveable { mutableStateOf<Page?>(null) }
     val scrollState = rememberLazyListState()
@@ -126,6 +90,9 @@ fun CompactPlayerScreen2(
             if (!showTab) {
                 PlayerTab(
                     uiState = uiState,
+                    liked = vm.liked,
+                    likeEnabled = vm.likeEnabled,
+                    onLikeClick = vm::toggleLike,
                     onNavToUser = {
                         global.nav.push(Route.Root.PublicUserSpace(it))
                         global.shrinkPlayer()
@@ -133,16 +100,21 @@ fun CompactPlayerScreen2(
                     onAddToPlaylistClick = {
                         tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                     },
-                    onShareClick = { showShareDialog = true }
+                    onShareClick = { showShareDialog = true },
                 )
             } else {
                 Column {
+                    val externalLink = uiState.readySongInfo?.externalLinks?.firstOrNull()
                     Header(
                         modifier = Modifier.padding(top = 16.dp, start = 32.dp, end = 32.dp),
                         cover = uiState.displayedCover, title = uiState.displayedTitle,
                         author = uiState.displayedAuthor,
+                        liked = vm.liked,
+                        likeEnabled = vm.likeEnabled,
+                        onLikeClick = vm::toggleLike,
                         hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                        pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                        pvLink = externalLink?.url,
+                        pvPlatform = externalLink?.platform,
                         avatar = uiState.userProfile?.avatarUrl,
                         onUserClick = {
                             uiState.readySongInfo?.uploaderUid?.let {
@@ -155,7 +127,7 @@ fun CompactPlayerScreen2(
                         },
                         onShareClick = {
                             showShareDialog = true
-                        }
+                        },
                     )
                     AnimatedContent(
                         targetState = currentPage,
@@ -175,7 +147,7 @@ fun CompactPlayerScreen2(
                             )
 
                             Page.Queue -> QueueTab(global)
-                            Page.Lyrics -> LyricsTab(global, uiState, scrollState)
+                            Page.Lyrics -> LyricsTab(uiState, scrollState)
                             else -> {}
                         }
                     }
@@ -239,6 +211,9 @@ fun CompactPlayerScreen2(
 @Composable
 private fun PlayerTab(
     uiState: PlayerUIState,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    onLikeClick: () -> Unit,
     onNavToUser: (Long) -> Unit,
     onAddToPlaylistClick: () -> Unit,
     onShareClick: () -> Unit
@@ -276,22 +251,30 @@ private fun PlayerTab(
                     subtitle = uiState.readySongInfo?.subtitle,
                 )
 
+                val link = uiState.readySongInfo?.externalLinks?.firstOrNull()
                 AuthorAndPV(
                     modifier = Modifier.padding(top = 8.dp),
                     authorName = uiState.displayedAuthor,
                     hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                    pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                    pvLink = link?.url,
+                    pvPlatform = link?.platform,
                     pvAlignToEnd = false,
                     avatar = uiState.userProfile?.avatarUrl,
                     onUserClick = {
                         uiState.readySongInfo?.uploaderUid?.let {
                             onNavToUser(it)
                         }
-                    }
+                    },
                 )
             }
-            HachimiIconButton(onClick = onAddToPlaylistClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add to playlist")
+            HachimiIconButton(onClick = onLikeClick, enabled = likeEnabled) {
+                Icon(
+                    imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = stringResource(
+                        if (liked) Res.string.player_unlike else Res.string.player_like
+                    ),
+                    tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current,
+                )
             }
             Box {
                 var expanded by remember { mutableStateOf(false) }
@@ -300,7 +283,12 @@ private fun PlayerTab(
                 ) {
                     Icon(Icons.Default.MoreVert, contentDescription = "More")
                 }
-                MoreDropdownMenu(expanded, onDismissRequest = { expanded = false }, onShareClick = onShareClick)
+                MoreDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    onAddToPlaylistClick = onAddToPlaylistClick,
+                    onShareClick = onShareClick,
+                )
             }
         }
     }
@@ -310,9 +298,18 @@ private fun PlayerTab(
 private fun MoreDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
+    onAddToPlaylistClick: () -> Unit,
     onShareClick: () -> Unit
 ) {
     DropdownMenu(expanded, onDismissRequest = onDismissRequest) {
+        DropdownMenuItem(
+            onClick = {
+                onAddToPlaylistClick()
+                onDismissRequest()
+            },
+            text = { Text(stringResource(Res.string.player_add_to_playlist_title)) },
+            leadingIcon = { Icon(Icons.Default.Add, "Add to playlist") },
+        )
         DropdownMenuItem(
             onClick = {
                 onShareClick()
@@ -339,7 +336,6 @@ private fun InfoTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit, onSearc
 
 @Composable
 private fun LyricsTab(
-    global: GlobalStore,
     uiState: PlayerUIState,
     scrollState: LazyListState
 ) {
@@ -420,8 +416,12 @@ private fun Header(
     title: String,
     author: String,
     avatar: String?,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    onLikeClick: () -> Unit,
     hasMultipleArtists: Boolean,
     pvLink: String?,
+    pvPlatform: String?,
     onUserClick: () -> Unit,
     onAddToPlaylistClick: () -> Unit,
     onShareClick: () -> Unit
@@ -462,18 +462,30 @@ private fun Header(
                 pvLink = pvLink,
                 pvAlignToEnd = false,
                 avatar = avatar,
-                onUserClick = onUserClick
+                onUserClick = onUserClick,
+                pvPlatform = pvPlatform
             )
         }
-        HachimiIconButton(onClick = onAddToPlaylistClick, touchMode = true) {
-            Icon(Icons.Default.Add, contentDescription = "Add to playllist")
+        HachimiIconButton(onClick = onLikeClick, touchMode = true, enabled = likeEnabled) {
+            Icon(
+                imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = stringResource(
+                    if (liked) Res.string.player_unlike else Res.string.player_like
+                ),
+                tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current,
+            )
         }
         Box {
             var expanded by remember { mutableStateOf(false) }
             HachimiIconButton(onClick = { expanded = true }, touchMode = true) {
                 Icon(Icons.Default.MoreVert, contentDescription = "More")
             }
-            MoreDropdownMenu(expanded, onDismissRequest = { expanded = false }, onShareClick = onShareClick)
+            MoreDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                onAddToPlaylistClick = onAddToPlaylistClick,
+                onShareClick = onShareClick,
+            )
         }
     }
 }

@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,8 +21,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -49,6 +45,10 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.publish_modify_comment
+import hachimiworld.composeapp.generated.resources.publish_modify_comment_supporting
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.CoilHeaders
@@ -69,12 +69,16 @@ import world.hachimi.app.ui.creation.publish.components.TagEdit
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.DropdownMenu
+import world.hachimi.app.ui.design.components.DropdownMenuItem
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
@@ -82,11 +86,12 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun PublishScreen(
     songId: Long?,
+    reviewId: Long? = null,
     vm: PublishViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
-    DisposableEffect(vm, songId) {
-        vm.mounted(songId)
+    DisposableEffect(vm, songId, reviewId) {
+        vm.mounted(songId, reviewId)
         onDispose { vm.dispose() }
     }
     AnimatedContent(vm.initializeStatus) {
@@ -96,18 +101,26 @@ fun PublishScreen(
             InitializeStatus.LOADED -> Content(vm, global)
         }
     }
+
+    if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
+        onExit = {
+            vm.showPrefixInactiveDialog = false
+            global.nav.back()
+        }
+    )
 }
 
 @Composable
 private fun Content(vm: PublishViewModel, global: GlobalStore) {
+    val editing = vm.type != Type.CREATE
     Box(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .navigationBarsPadding()
             .padding(LocalContentInsets.current.asPaddingValues())
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().wrapContentWidth().widthIn(max = 900.dp)
-                .padding(24.dp),
+            modifier = Modifier.fillMaxWidthIn()
+                .padding(AdaptiveScreenMargin),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
@@ -133,14 +146,14 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            if (vm.type == Type.EDIT) Button(onClick = {
+                            if (editing) Button(onClick = {
                                 getPlatform().openUrl(vm.audioUrl!!)
                             }) {
                                 Text("下载音频")
                             }
 
                             Button(onClick = { vm.setAudioFile() }, enabled = !vm.audioUploading) {
-                                if (vm.type == Type.EDIT) Text("更改音频")
+                                if (editing) Text("更改音频")
                                 else Text("选择文件")
                             }
 
@@ -174,7 +187,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                     .clickable(enabled = !vm.coverImageUploading) { vm.setCoverImage() },
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (vm.type == Type.EDIT) AsyncImage(
+                                if (editing) AsyncImage(
                                     model = vm.coverImage ?: ImageRequest.Builder(LocalPlatformContext.current)
                                         .httpHeaders(CoilHeaders)
                                         .data(vm.coverImageUrl)
@@ -305,7 +318,8 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                         if (vm.lyricsType == LyricsType.NONE) {
                             Text(
                                 "强烈建议至少使用文本歌词",
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
 
@@ -316,7 +330,6 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                             )
                         }
                     }
-
                 }
             }
 
@@ -345,13 +358,6 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 onClick = { vm.creationType = 2 })
                             Text("三创", style = MaterialTheme.typography.labelLarge)
                         }
-                    }
-
-                    if (vm.creationType == 0) {
-                        Text(
-                            "原创指的是作词、作曲、编曲等全部原创，改编作品请勿选择原创。选择错误会被退回，请再次确认！",
-                            color = MaterialTheme.colorScheme.error
-                        )
                     }
 
                     if (vm.creationType > 0) {
@@ -542,8 +548,28 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     }
                 }
             }
+
+            if (editing) Card {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    FormItem(
+                        header = { Text(stringResource(Res.string.publish_modify_comment)) },
+                        subtitle = { Text(stringResource(Res.string.publish_modify_comment_supporting)) }
+                    ) {
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = vm.comment,
+                            onValueChange = { vm.comment = it },
+                            minLines = 3
+                        )
+                    }
+                }
+            }
+
             Button(onClick = { vm.publish() }, enabled = !vm.isOperating) {
-                Text("提交作品")
+                Text(if (vm.type == Type.CREATE) "提交作品" else "提交修改")
             }
         }
     }
@@ -581,12 +607,6 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
         valid = vm.initJmidValid,
         supportText = vm.initJmidSupportText,
         onConfirm = vm::confirmInitJmid
-    )
-    if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
-        onExit = {
-            vm.showPrefixInactiveDialog = false
-            global.nav.back()
-        }
     )
 }
 

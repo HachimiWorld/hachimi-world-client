@@ -1,0 +1,15 @@
+<resources>
+    <string name="playlist_empty">什么也没有</string>
+    <string name="playlist_my_playlists_title">我的歌单</string>
+    <string name="playlist_description_placeholder">暂无介绍</string>
+    <string name="playlist_private_badge">私有</string>
+    <string name="playlist_songs_list">歌曲列表</string>
+    <string name="playlist_song_count">%1$d 首</string>
+    <string name="playlist_remove_item">移出歌单</string>
+    <string name="playlist_cover_cd">歌单封面</string>
+    <string name="playlist_edit_title">编辑歌单</string>
+    <string name="playlist_favorite">收藏</string>
+    <string name="playlist_unfavorite">已收藏</string>
+    <string name="playlist_update_time">更新时间：%1$s</string>
+    <string name="playlist_login_required">歌单功能登录后可用</string>
+</resources>

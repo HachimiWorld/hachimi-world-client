@@ -1,0 +1,14 @@
+<resources>
+    <!-- Pagination component -->
+    <string name="pagination_total_items">Total %1$d items</string>
+    <string name="pagination_page_size">%1$d items/page</string>
+    <string name="pagination_previous_cd">Previous</string>
+    <string name="pagination_next_cd">Next</string>
+
+    <!-- CloseAskDialog strings -->
+    <string name="closeask_title">Minimize the window?</string>
+    <string name="closeask_text">After minimizing you can restore the window from the system tray</string>
+    <string name="closeask_minimize">Minimize</string>
+    <string name="closeask_quit">Quit</string>
+    <string name="closeask_remember">Remember my choice</string>
+</resources>

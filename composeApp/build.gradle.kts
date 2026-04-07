@@ -1,29 +1,32 @@
 import com.android.SdkConstants
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.ksp)
     alias(libs.plugins.buildkonfig)
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    jvmToolchain(21)
+
+    android {
+        namespace = "world.hachimi.app.shared"
+        compileSdk = 36
+
+        minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
+        androidResources.enable = true // This is used to enable the composeMultiplatform resources in android
     }
 
     listOf(
@@ -187,6 +190,10 @@ dependencies {
 //    add("kspIosArm64", libs.room.compiler)
 }
 
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
+}
+
 val gitVersionCode = providers.exec {
     commandLine("git", "rev-list", "--count", "--first-parent", "HEAD")
 }.standardOutput.asText.map {
@@ -200,59 +207,6 @@ val gitVersionName = providers.exec {
 }
 
 val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }
-
-android {
-    namespace = "world.hachimi.app"
-    compileSdk = 36
-
-    defaultConfig {
-        applicationId = "world.hachimi.app"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = 35
-        versionCode = gitVersionCode.get()
-        versionName = gitVersionName.get()
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    signingConfigs {
-        if (System.getenv("IS_CI") == "true") {
-            register("release") {
-                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
-                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
-            }
-        }
-    }
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            if (System.getenv("IS_CI") == "true") {
-                signingConfig = signingConfigs.getByName("release")
-            }
-            resValue("string", "app_name", "@string/app_name_base")
-        }
-        create("beta") {
-            isMinifyEnabled = true
-            applicationIdSuffix = ".dev"
-        }
-        debug {
-            applicationIdSuffix = ".dev"
-//            resValue("string", "app_name", "@string/app_name_dev")
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-}
-
-dependencies {
-    debugImplementation(libs.compose.ui.tooling)
-}
 
 compose.desktop {
     application {
@@ -321,6 +275,7 @@ compose.desktop {
 
 buildkonfig {
     packageName = "world.hachimi.app"
+//    exposeObjectWithName = "BuildKonfig"
 
     val props = Properties().apply { load(rootProject.file(SdkConstants.FN_LOCAL_PROPERTIES).reader()) }
 

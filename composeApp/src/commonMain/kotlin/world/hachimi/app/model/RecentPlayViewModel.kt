@@ -9,13 +9,12 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.time.Instant
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlayHistoryModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 class RecentPlayViewModel(
     private val global: GlobalStore,
@@ -24,6 +23,8 @@ class RecentPlayViewModel(
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var loading by mutableStateOf(false)
+        private set
+    var hasMore by mutableStateOf(true)
         private set
     private val _history = mutableStateListOf<PlayHistoryModule.PlayHistoryItem>()
     val history: List<PlayHistoryModule.PlayHistoryItem> = _history
@@ -49,10 +50,12 @@ class RecentPlayViewModel(
 
     fun refresh() {
         cursor = null
+        hasMore = true
         loadMore(true)
     }
 
     fun loadMore(clear: Boolean = false) = viewModelScope.launch {
+        if (!clear && !hasMore) return@launch
         loading = true
 
         try {
@@ -62,13 +65,14 @@ class RecentPlayViewModel(
             ))
             if (resp.ok) {
                 val data = resp.ok()
+                if (clear) {
+                    _history.clear()
+                }
                 if (data.list.isNotEmpty()) {
-                    if (clear) {
-                        _history.clear()
-                    }
                     _history.addAll(data.list)
                     cursor = data.list.last().playTime
                 }
+                hasMore = data.list.size >= 20
                 if (initializeStatus == InitializeStatus.INIT) {
                     initializeStatus = InitializeStatus.LOADED
                 }

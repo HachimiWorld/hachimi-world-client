@@ -32,10 +32,12 @@ fun HachimiIconButton(
             .clickable(onClick = onClick, enabled = enabled),
         contentAlignment = Alignment.Center
     ) {
-        Box(Modifier.size(20.dp)) {
+        Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
             CompositionLocalProvider(
                 LocalContentColor provides
-                        if (enabled) LocalContentColor.current else LocalContentColor.current.copy(0.6f)
+                        if (enabled) LocalContentColor.current else LocalContentColor.current.copy(
+                            0.6f
+                        )
             ) {
                 content()
             }
@@ -47,16 +49,21 @@ fun HachimiIconButton(
 fun HachimiIconToggleButton(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    touchMode: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Box(
-        modifier = Modifier.size(28.dp)
+        modifier = Modifier
+            .defaultMinSize(
+                minWidth = if (touchMode) 40.dp else 28.dp,
+                minHeight = if (touchMode) 40.dp else 28.dp
+            )
             .clip(CircleShape)
             .toggleable(checked, onValueChange = onCheckedChange),
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(LocalContentColor provides if (checked) HachimiTheme.colorScheme.primary else LocalContentColor.current) {
-            Box(Modifier.size(20.dp)) {
+            Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
                 content()
             }
         }

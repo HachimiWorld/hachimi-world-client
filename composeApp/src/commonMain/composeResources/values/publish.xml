@@ -1,0 +1,30 @@
+<resources>
+    <!-- Publish -->
+    <string name="publish_image_too_large">Image too large</string>
+    <string name="publish_audio_too_large">Audio file is too large (max 20MB)</string>
+    <string name="publish_fetch_jmid_failed">Failed to get available Jmid</string>
+    <string name="publish_jmid_number_format">Number must be 3 digits, e.g. 001</string>
+    <string name="publish_change_success">Changed successfully</string>
+    <string name="publish_cover_required">Please upload cover</string>
+    <string name="publish_jmid_required">Please set Jmid</string>
+    <string name="publish_title_required">Please enter a title</string>
+    <string name="publish_subtitle_too_long">Subtitle is too long</string>
+    <string name="publish_description_too_long">Description is too long</string>
+    <string name="publish_tag_name_empty">Tag name cannot be empty</string>
+    <string name="publish_tag_already_exists">Tag already exists</string>
+    <string name="publish_invalid_uid">Please enter a valid UID</string>
+    <string name="publish_fetch_user_failed">Failed to fetch user info</string>
+    <string name="publish_audio_file_required">Please select an audio file</string>
+    <string name="publish_lyrics_required">Please enter lyrics</string>
+    <string name="publish_lyrics_invalid_lrc">Please provide valid LRC format lyrics</string>
+    <string name="publish_origin_info_required">Please enter origin work info</string>
+    <string name="publish_derive_info_required">Please enter derivative work info</string>
+    <string name="publish_https_required">Please provide an HTTPS origin link, do not use HTTP</string>
+    <string name="publish_https_format">Please provide a valid HTTPS link like https://xxxx</string>
+    <string name="publish_explicit_required">Please select whether explicit content is included</string>
+    <string name="publish_init_jmid_prefix_used">This prefix is already used; contact maintainers if it's taken</string>
+    <string name="publish_init_jmid_invalid_format">Please enter 3 to 4 letters</string>
+
+    <string name="artwork_jmid_prefix_not_set">Jmid prefix not set</string>
+    <string name="artwork_jmid_already_used">This Jmid is already used</string>
+</resources>

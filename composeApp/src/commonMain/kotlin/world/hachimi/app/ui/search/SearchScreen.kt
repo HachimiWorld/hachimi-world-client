@@ -3,6 +3,7 @@ package world.hachimi.app.ui.search
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,14 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -51,12 +51,15 @@ import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Button
+import world.hachimi.app.ui.design.components.DropdownMenu
+import world.hachimi.app.ui.design.components.DropdownMenuItem
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.search.components.SearchPlaylistItem
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.contentPaddingForMaxWidth
 
 @Composable
 fun SearchScreen(
@@ -82,97 +85,98 @@ fun SearchScreen(
 
 @Composable
 private fun Content(vm: SearchViewModel, global: GlobalStore) {
-
-    LazyVerticalGrid(
-        modifier = Modifier.fillMaxSize(),
-        columns = if (vm.searchType == SearchViewModel.SearchType.USER) GridCells.Adaptive(152.dp)
-        else GridCells.Adaptive(minSize = 320.dp),
-        contentPadding = PaddingValues(24.dp),
-        horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
-        verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
-    ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Header(vm.searchProcessingTimeMs)
-        }
-
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Tab(
-                searchType = vm.searchType,
-                onTypeChange = { vm.updateSearchType(it) },
-                sortMethod = vm.songSortMethod,
-                onSortMethodChange = { vm.updateSortMethod(it) }
-            )
-        }
-
-        val showEmpty = when (vm.searchType) {
-            SearchViewModel.SearchType.SONG -> vm.songData.isEmpty()
-            SearchViewModel.SearchType.USER -> vm.userData.isEmpty()
-            SearchViewModel.SearchType.PLAYLIST -> vm.playlistData.isEmpty()
-            else -> false
-        }
-
-        if (showEmpty) item(span = { GridItemSpan(maxLineSpan) }) {
-            Box(
-                Modifier.fillMaxWidth().padding(vertical = 128.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(stringResource(Res.string.search_no_results))
+    BoxWithConstraints {
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize(),
+            columns = if (vm.searchType == SearchViewModel.SearchType.USER) GridCells.Adaptive(152.dp)
+            else GridCells.Adaptive(minSize = 320.dp),
+            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveListSpacing), maxWidth),
+            horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
+        ) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Header(vm.searchProcessingTimeMs)
             }
-        }
 
-        if (vm.searchType == SearchViewModel.SearchType.SONG) items(
-            items = vm.songData,
-            key = { item -> item.info.id },
-            contentType = { _ -> "song" }
-        ) { item ->
-            SearchSongItem(
-                modifier = Modifier.fillMaxWidth(),
-                data = item,
-                onClick = {
-                    global.player.insertToQueue(
-                        GlobalStore.MusicQueueItem.fromSearchSongItem(item.info),
-                        true,
-                        false
-                    )
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Tab(
+                    searchType = vm.searchType,
+                    onTypeChange = { vm.updateSearchType(it) },
+                    sortMethod = vm.songSortMethod,
+                    onSortMethodChange = { vm.updateSortMethod(it) }
+                )
+            }
+
+            val showEmpty = when (vm.searchType) {
+                SearchViewModel.SearchType.SONG -> vm.songData.isEmpty()
+                SearchViewModel.SearchType.USER -> vm.userData.isEmpty()
+                SearchViewModel.SearchType.PLAYLIST -> vm.playlistData.isEmpty()
+                else -> false
+            }
+
+            if (showEmpty) item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(
+                    Modifier.fillMaxWidth().padding(vertical = 128.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(stringResource(Res.string.search_no_results))
                 }
-            )
-        }
+            }
 
-        if (vm.searchType == SearchViewModel.SearchType.USER) items(
-            items = vm.userData,
-            key = { item -> item.uid },
-            contentType = { _ -> "user" }
-        ) { item ->
-            SearchUserItem(
-                modifier = Modifier.fillMaxWidth(),
-                name = item.username,
-                avatarUrl = item.avatarUrl,
-                onClick = { global.nav.push(Route.Root.PublicUserSpace(item.uid)) },
-            )
-        }
+            if (vm.searchType == SearchViewModel.SearchType.SONG) items(
+                items = vm.songData,
+                key = { item -> item.info.id },
+                contentType = { _ -> "song" }
+            ) { item ->
+                SearchSongItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    data = item,
+                    onClick = {
+                        global.player.insertToQueue(
+                            GlobalStore.MusicQueueItem.fromSearchSongItem(item.info),
+                            true,
+                            false
+                        )
+                    }
+                )
+            }
 
-        if (vm.searchType == SearchViewModel.SearchType.PLAYLIST) items(
-            items = vm.playlistData,
-            key = { it.id },
-            contentType = { _ -> "playlist" }
-        ) { item ->
-            SearchPlaylistItem(
-                modifier = Modifier.fillMaxWidth(),
-                title = item.name,
-                username = item.userName,
-                coverUrl = item.coverUrl,
-                avatarUrl = item.userAvatarUrl,
-                songCount = item.songsCount,
-                onClick = { global.nav.push(Route.Root.PublicPlaylist(item.id)) },
-                description = item.description
-            )
-        }
+            if (vm.searchType == SearchViewModel.SearchType.USER) items(
+                items = vm.userData,
+                key = { item -> item.uid },
+                contentType = { _ -> "user" }
+            ) { item ->
+                SearchUserItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    name = item.username,
+                    avatarUrl = item.avatarUrl,
+                    onClick = { global.nav.push(Route.Root.PublicUserSpace(item.uid)) },
+                )
+            }
 
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Spacer(
-                Modifier.navigationBarsPadding()
-                    .padding(LocalContentInsets.current.asPaddingValues())
-            )
+            if (vm.searchType == SearchViewModel.SearchType.PLAYLIST) items(
+                items = vm.playlistData,
+                key = { it.id },
+                contentType = { _ -> "playlist" }
+            ) { item ->
+                SearchPlaylistItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = item.name,
+                    username = item.userName,
+                    coverUrl = item.coverUrl,
+                    avatarUrl = item.userAvatarUrl,
+                    songCount = item.songsCount,
+                    onClick = { global.nav.push(Route.Root.PublicPlaylist(item.id)) },
+                    description = item.description
+                )
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Spacer(
+                    Modifier.navigationBarsPadding()
+                        .padding(LocalContentInsets.current.asPaddingValues())
+                )
+            }
         }
     }
 }
@@ -224,7 +228,7 @@ private fun Tab(
         if (searchType == SearchViewModel.SearchType.SONG) {
             var expanded by remember { mutableStateOf(false) }
 
-            Box(Modifier.weight(1f), Alignment.CenterEnd) {
+            Box(Modifier.weight(1f).wrapContentWidth(align = Alignment.End)) {
                 Button(onClick = { expanded = true }) {
                     Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
                     Spacer(Modifier.width(8.dp))

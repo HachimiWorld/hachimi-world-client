@@ -46,12 +46,6 @@ fun JvmTheme(
         typography = bodyTextStyle.copy(fontFamily = fontState.currentFontFamily),
         content = content
     )
-
-    /*Button(onClick = {
-        fontState.switchToDefault()
-    }) {
-        Text("Toggle Default: ${fontState.default}")
-    }*/
 }
 
 object FontState {

@@ -3,6 +3,7 @@ package world.hachimi.app.player
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaController
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -13,14 +14,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 
-class AndroidPlayer(
+class AndroidPlayerEngine(
     private val controllerFuture: ListenableFuture<MediaController>
-) : Player {
+) : AbstractPlatformPlayerEngine() {
     private var controller: MediaController? = null
     private var ready = false
-    private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var initialized = MutableStateFlow<Boolean>(false)
     private var replayGainDb: Float = 0f
     private var userVolume = 1f
@@ -42,13 +42,13 @@ class AndroidPlayer(
             controller.addListener(object : androidx.media3.common.Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     if (isPlaying) {
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Play) }
+                        notifyEvent(PlayEvent.Play)
                     } else {
                         // TODO[opt](player): We assume the player won't go wrong. We should handle it.
                         if (controller.playbackState == androidx.media3.common.Player.STATE_ENDED) {
-                            listeners.forEach { listener -> listener.onEvent(PlayEvent.End) }
+                            notifyEvent(PlayEvent.End)
                         } else {
-                            listeners.forEach { listener -> listener.onEvent(PlayEvent.Pause) }
+                            notifyEvent(PlayEvent.Pause)
                         }
 
                         if (controller.playerError != null) {
@@ -56,8 +56,13 @@ class AndroidPlayer(
                         }
                     }
                 }
+
+                override fun onPlayerError(error: PlaybackException) {
+                    Logger.e("player", "Playback error: ${error.message}", error)
+                    notifyEvent(PlayEvent.Error(error))
+                }
             })
-            this@AndroidPlayer.controller = controller
+            this@AndroidPlayerEngine.controller = controller
         }, MoreExecutors.directExecutor())
     }
 
@@ -192,14 +197,6 @@ class AndroidPlayer(
 
     override suspend fun release(): Unit = withContext(Dispatchers.Main) {
         controller?.release()
-    }
-
-    override fun addListener(listener: Player.Listener) {
-        listeners.add(listener)
-    }
-
-    override fun removeListener(listener: Player.Listener) {
-        listeners.remove(listener)
     }
 
     override suspend fun initialize() {

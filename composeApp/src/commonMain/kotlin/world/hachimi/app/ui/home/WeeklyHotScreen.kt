@@ -46,7 +46,9 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.calculateGridColumns
+import world.hachimi.app.util.contentPaddingForMaxWidth
 
 @Composable
 fun WeeklyHotScreen(
@@ -74,7 +76,7 @@ private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
         } else LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
-            contentPadding = PaddingValues(24.dp),
+            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         ) {

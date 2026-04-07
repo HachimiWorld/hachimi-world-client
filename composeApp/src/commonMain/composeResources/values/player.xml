@@ -1,0 +1,47 @@
+<resources>
+    <string name="player_play_all">Play all</string>
+    <string name="player_not_playing">Not playing yet</string>
+    <string name="player_play_failed">Playback failed: %1$s</string>
+
+    <!-- Kids mode dialog -->
+    <string name="player_kids_mode_title">Kids mode enabled</string>
+    <string name="player_kids_mode_message">This work is marked by the author as containing content unsuitable for children; since kids mode is enabled, please confirm whether to continue playback.</string>
+    <string name="player_kids_mode_play">Play</string>
+    <string name="player_kids_mode_cancel">Cancel</string>
+
+    <!-- Player / Playlist strings -->
+    <string name="player_add_to_playlist_title">Add to playlist</string>
+    <string name="player_add_to_playlist_create">Create playlist</string>
+    <string name="player_add_to_playlist_confirm">Confirm</string>
+    <string name="player_add_to_playlist_cancel">Cancel</string>
+    <string name="player_like">Like</string>
+    <string name="player_unlike">Unlike</string>
+
+    <string name="player_create_playlist_title">Create playlist</string>
+    <string name="player_create_playlist_name_placeholder">Name</string>
+    <string name="player_create_playlist_description_placeholder">Description</string>
+    <string name="player_create_playlist_private_label">Private playlist</string>
+    <string name="player_create_playlist_create">Create</string>
+    <string name="player_create_playlist_cancel">Cancel</string>
+
+    <string name="player_share">Share</string>
+    <string name="share_share_music_title">Share music</string>
+    <string name="share">Share</string>
+    <string name="player_share_copied_clipboard">Copied to clipboard</string>
+
+    <string name="player_queue_title">Playback queue</string>
+    <string name="player_queue_clear">Clear</string>
+    <string name="player_cover_cd">Cover</string>
+    <string name="player_remove_from_playlist_cd">Remove from playlist</string>
+    <string name="player_next_song">Play Next Song</string>
+
+    <!-- InfoTab / Player fullscreen labels -->
+    <string name="info_author">Author</string>
+    <string name="info_tags">Tags</string>
+    <string name="info_release_date">Release date</string>
+    <string name="info_pv">PV</string>
+    <string name="info_origin">Origin</string>
+    <string name="info_listen_cd">Listen to this music</string>
+    <string name="info_open_in_new_tab_cd">Open in new window</string>
+    <string name="info_play_count">Play Count</string>
+</resources>

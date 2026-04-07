@@ -1,5 +1,26 @@
 # Unreleased
 
+## Features 新功能
+
+1. Added like/dislike feature. 新增喜欢/不喜欢功能。
+2. Support connecting to bilibili account. 支持关联哔哩哔哩账号。
+3. Support discussions in publishing page. 发布作品页面支持讨论区。
+4. Support modifying publishing request after submission. 支持提交后修改发布请求。
+
+## Enhancements 改进
+
+1. Optimize the cold start time. 优化应用冷启动时间。
+2. Support remembering the close behavior. 支持记住关闭行为。
+3. Added a setting to toggle player effects. 添加了一个设置项来开关播放器特效。
+4. Support checking for updates manually. 支持手动检查更新。
+5. Move profile editing actions to a separate page. 将个人资料编辑功能移到单独的页面。
+
+## Fixes 修复
+
+1. Fix the issue where LiTiaoTiao treats the next button as skip ad button. 修复李跳跳把下一首按钮视为跳过广告按钮的问题。
+
+# 1.1.1 (2026-02-17)
+
 ## Enhancements 改进
 
 1. Show fetching status at footer play bar. 在播放底栏显示加载状态。

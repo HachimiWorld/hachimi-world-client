@@ -1,23 +1,16 @@
 package world.hachimi.app.di
 
-import android.content.ComponentName
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import io.github.vinceglb.filekit.AndroidFile
 import okio.Path.Companion.toOkioPath
-import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.player.AndroidPlayer
-import world.hachimi.app.player.Player
-import world.hachimi.app.service.PlaybackService
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.MyDataStoreImpl
 import world.hachimi.app.storage.SongCache
@@ -27,12 +20,6 @@ val appModule = module {
     single { ApiClient(BuildKonfig.API_BASE_URL) }
     single { getPreferencesDataStore() }
     single<MyDataStore> { MyDataStoreImpl(get()) }
-    single<Player> {
-        val context = androidContext()
-        val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-        AndroidPlayer(controllerFuture)
-    }
     single<SongCache> { SongCacheImpl() }
 
     singleOf(::GlobalStore)

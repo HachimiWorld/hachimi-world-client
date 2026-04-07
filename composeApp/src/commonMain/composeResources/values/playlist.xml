@@ -1,0 +1,15 @@
+<resources>
+    <string name="playlist_empty">No items</string>
+    <string name="playlist_my_playlists_title">My playlists</string>
+    <string name="playlist_description_placeholder">No description</string>
+    <string name="playlist_private_badge">Private</string>
+    <string name="playlist_songs_list">Songs</string>
+    <string name="playlist_song_count">%1$d tracks</string>
+    <string name="playlist_remove_item">Remove from playlist</string>
+    <string name="playlist_cover_cd">Playlist cover</string>
+    <string name="playlist_edit_title">Edit playlist</string>
+    <string name="playlist_favorite">Favorite</string>
+    <string name="playlist_unfavorite">Unfavorite</string>
+    <string name="playlist_update_time">Update Time: %1$s</string>
+    <string name="playlist_login_required">Playlist features require login</string>
+</resources>

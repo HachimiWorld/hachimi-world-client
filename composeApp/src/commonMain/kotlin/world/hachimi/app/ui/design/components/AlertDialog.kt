@@ -37,7 +37,7 @@ fun AlertDialog(
     properties: DialogProperties = DialogProperties()
 ) {
     Dialog(onDismissRequest = onDismissRequest, properties = properties) {
-        Card(
+        ElevatedCard(
             modifier = modifier.defaultMinSize(minWidth = 280.dp).widthIn(min = 280.dp, max = 560.dp),
             color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background)
         ) {

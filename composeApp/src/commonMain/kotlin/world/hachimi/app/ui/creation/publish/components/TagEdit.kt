@@ -39,7 +39,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import world.hachimi.app.model.PublishViewModel
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LinearProgressIndicator
 import world.hachimi.app.ui.design.components.LocalTextStyle
@@ -98,7 +98,7 @@ fun TagEdit(
                 if (vm.tags.isNotEmpty()) 128.dp.roundToPx() else 64.dp.roundToPx()
             })
         ) {
-            Card(
+            ElevatedCard(
                 Modifier.width(240.dp),
                 color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background)
             ) {

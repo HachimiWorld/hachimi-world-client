@@ -1,4 +1,3 @@
-@file:OptIn(ExperimentalWasmJsInterop::class, ExperimentalUnsignedTypes::class)
 
 package world.hachimi.app.player
 
@@ -12,16 +11,16 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.player.Player.Companion.mixVolume
+import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 import kotlin.js.*
 import kotlin.time.measureTime
 
-class WasmPlayer : Player {
+@OptIn(ExperimentalWasmJsInterop::class, ExperimentalUnsignedTypes::class)
+class WebPlayerEngine : AbstractPlatformPlayerEngine() {
     private var howl: Howl? = null
     private val mutex = Mutex()
     private var isReady = false
     private var isReadyMutex = Mutex()
-    private val listeners: MutableSet<Player.Listener> = mutableSetOf()
     private var rgDb = 0f
     private var userVolume = 1f
     private var replayGainEnabled: Boolean = true
@@ -98,6 +97,8 @@ class WasmPlayer : Player {
 
                 val url: String
                 val coverUrl: String?
+
+                @Suppress("MISSING_DEPENDENCY_SUPERCLASS") // FIXME: Suppress the compilation error
                 when (item) {
                     is SongItem.Local -> {
                         val uint8array = item.audioBytes.toUByteArray().toUint8Array()
@@ -122,15 +123,15 @@ class WasmPlayer : Player {
                     html5 = true.toJsBoolean(), // Set this to true to enable the Media Session API
                     onplay = {
                         Logger.d("player", "onplay")
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Play) }
+                        notifyEvent(PlayEvent.Play)
                     },
                     onpause = {
                         Logger.d("player", "onpause")
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.Pause) }
+                        notifyEvent(PlayEvent.Pause)
                     },
                     onend = {
                         Logger.d("player", "onend")
-                        listeners.forEach { listener -> listener.onEvent(PlayEvent.End) }
+                        notifyEvent(PlayEvent.End)
                     }
                 )
                 val howl = buildHowl(options)
@@ -141,6 +142,7 @@ class WasmPlayer : Player {
                     this.isReady = true
                 }
 
+                @Suppress("MISSING_DEPENDENCY_SUPERCLASS") // FIXME: Suppress the compilation error
                 try {
                     val metadata = MediaMetadata(
                         MediaMetadataInit(
@@ -174,14 +176,6 @@ class WasmPlayer : Player {
     override suspend fun release() {
         howl?.unload()
         howl = null
-    }
-
-    override fun addListener(listener: Player.Listener) {
-        listeners.add(listener)
-    }
-
-    override fun removeListener(listener: Player.Listener) {
-        listeners.remove(listener)
     }
 
     override suspend fun initialize() {

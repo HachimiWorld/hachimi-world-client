@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.playlist_empty
 import hachimiworld.composeapp.generated.resources.playlist_my_playlists_title
@@ -39,8 +38,9 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.playlist.components.FavoritePlaylistItem
 import world.hachimi.app.ui.playlist.components.PlaylistItem
 import world.hachimi.app.util.AdaptiveListSpacing
+import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.calculateGridColumns
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.util.contentPaddingForMaxWidth
 
 @Composable
 fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
@@ -65,9 +65,9 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                 Text(stringResource(Res.string.playlist_empty))
             } else BoxWithConstraints {
                 LazyVerticalGrid(
-                    modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
+                    modifier = Modifier.fillMaxSize(),
                     columns = calculateGridColumns(maxWidth),
-                    contentPadding = PaddingValues(24.dp),
+                    contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
                     verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                     horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
                 ) {

@@ -3,6 +3,7 @@ package world.hachimi.app
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +32,9 @@ import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.appModule
 import world.hachimi.app.i18n.AppEnvironment
+import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.Settings
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
 import world.hachimi.app.ui.design.HachimiPalette
@@ -45,18 +48,23 @@ internal val LocalWindow = staticCompositionLocalOf<ComposeWindow> { error("Not 
 fun main() {
     System.setProperty("java.net.useSystemProxies", "true")
 
+    Logger.d("main", "Starting application")
     val koin = startKoin {
         modules(appModule)
     }
 
     val global = koin.koin.get<GlobalStore>()
-    global.initialize()
 
     application {
+        LaunchedEffect(Unit) {
+            Logger.d("main", "Composer started")
+            global.initialize()
+        }
         val icon = painterResource(Res.drawable.icon_vector)
         var showWindow by remember { mutableStateOf(true) }
         val trayState = rememberTrayState()
         var showCloseAskDialog by remember { mutableStateOf(false) }
+        var rememberCloseChoice by remember { mutableStateOf(false) }
 
         if (isTraySupported) Tray(
             icon = icon, state = trayState,
@@ -70,9 +78,27 @@ fun main() {
 
         val windowState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
 
+        fun minimizeToTray() {
+            showWindow = false
+            GlobalScope.launch { // May be useless
+                delay(1000)
+                System.gc()
+            }
+        }
+
         fun onCloseRequest() {
-            if (isTraySupported) showCloseAskDialog = true
-            else exitApplication()
+            if (isTraySupported) {
+                when (global.settings.closeBehavior) {
+                    Settings.CloseBehavior.EXIT -> exitApplication()
+                    Settings.CloseBehavior.MINIMIZE_TO_TRAY -> minimizeToTray()
+                    Settings.CloseBehavior.ASK -> {
+                        rememberCloseChoice = false
+                        showCloseAskDialog = true
+                    }
+                }
+            } else {
+                exitApplication()
+            }
         }
 
         if (showWindow) SwingWindow(
@@ -92,8 +118,12 @@ fun main() {
                 }
             }
         ) {
+            LaunchedEffect(Unit) {
+                Logger.d("main", "Window created")
+            }
+
             CompositionLocalProvider(LocalWindow provides window) {
-                val darkMode = global.darkMode ?: isSystemInDarkTheme()
+                val darkMode = global.settings.darkMode ?: isSystemInDarkTheme()
                 JvmTheme(darkMode = darkMode) {
                     PlatformWindowFrame(
                         windowState,
@@ -101,7 +131,7 @@ fun main() {
                         ::onCloseRequest
                     ) {
                         // Apply locale environment before rendering App
-                        AppEnvironment(global.locale) {
+                        AppEnvironment(global.settings.locale) {
                             App(global)
                         }
                         if (showCloseAskDialog) CloseAskDialog(
@@ -109,16 +139,20 @@ fun main() {
                                 showCloseAskDialog = false
                             },
                             onMinimizeClick = {
-                                showWindow = false
-                                GlobalScope.launch { // May be useless
-                                    delay(1000)
-                                    System.gc()
+                                if (rememberCloseChoice) {
+                                    global.settings.updateCloseBehavior(Settings.CloseBehavior.MINIMIZE_TO_TRAY)
                                 }
+                                minimizeToTray()
                                 showCloseAskDialog = false
                             },
                             onQuitClick = {
+                                if (rememberCloseChoice) {
+                                    global.settings.updateCloseBehavior(Settings.CloseBehavior.EXIT)
+                                }
                                 exitApplication()
-                            }
+                            },
+                            rememberChoice = rememberCloseChoice,
+                            onRememberChoiceChange = { rememberCloseChoice = it }
                         )
                     }
                 }

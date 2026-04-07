@@ -16,10 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -57,9 +55,10 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
-import world.hachimi.app.ui.design.components.Card
+import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
@@ -142,7 +141,9 @@ private fun EventsListCompact(
                     })
                 }
 
-                EventsFooter(vm = vm)
+                item {
+                    LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
+                }
             }
 
             item {
@@ -228,7 +229,7 @@ private fun EventsGridExpanded(
                 }
 
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    EventsFooterInline(vm)
+                    LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(
@@ -242,42 +243,6 @@ private fun EventsGridExpanded(
     }
 }
 
-@Suppress("FunctionName")
-private fun LazyListScope.EventsFooter(vm: EventsListViewModel) {
-    if (vm.loadingMore) {
-        item {
-            Box(
-                Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("加载中…")
-            }
-        }
-    } else if (vm.noMoreData) {
-        item {
-            Box(
-                Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("没有更多了")
-            }
-        }
-    }
-}
-
-@Composable
-private fun EventsFooterInline(vm: EventsListViewModel) {
-    Box(
-        Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        when {
-            vm.loadingMore -> Text("加载中…")
-            vm.noMoreData -> Text("没有更多了")
-            else -> Spacer(Modifier.size(0.dp))
-        }
-    }
-}
 
 
 enum class CardSize {
@@ -292,7 +257,7 @@ private fun EventCardFeatured(
 ) {
     val context = LocalPlatformContext.current
 
-    Card(modifier = modifier) {
+    ElevatedCard(modifier = modifier) {
         Row(
             modifier = Modifier.clickable(onClick = onClick).fillMaxWidth().padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -365,7 +330,7 @@ private fun EventCardVertical(
 ) {
     val context = LocalPlatformContext.current
 
-    Card(modifier = modifier) {
+    ElevatedCard(modifier = modifier) {
         Column(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
             Surface(
                 Modifier
@@ -437,7 +402,8 @@ private fun previewPostDetail(coverUrl: String?): PostModule.PostDetail =
             avatarUrl = null,
             bio = "This is a preview user.",
             gender = null,
-            isBanned = false
+            isBanned = false,
+            connectedAccounts = listOf()
         ),
         title = "活动标题：这里会有 2-3 行的标题以便测试截断",
         content = "这里是活动内容摘要。我们会展示几行简介文本，超过最大行数应当自动截断。\n\n第二段文字用于测试多段落内容在预览中的表现。",

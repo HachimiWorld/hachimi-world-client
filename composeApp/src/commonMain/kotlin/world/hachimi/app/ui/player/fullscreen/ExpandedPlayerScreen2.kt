@@ -7,41 +7,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CloseFullscreen
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,49 +23,34 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_share
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.*
+import hachimiworld.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.PlayerUIState
+import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.LocalContentColor
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
-import world.hachimi.app.ui.player.fullscreen.components.AuthorAndPV
-import world.hachimi.app.ui.player.fullscreen.components.Cover
-import world.hachimi.app.ui.player.fullscreen.components.InfoTabContent
-import world.hachimi.app.ui.player.fullscreen.components.JmidLabel
-import world.hachimi.app.ui.player.fullscreen.components.Lyrics2
-import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
-import world.hachimi.app.ui.player.fullscreen.components.Page
-import world.hachimi.app.ui.player.fullscreen.components.PagerButtons
-import world.hachimi.app.ui.player.fullscreen.components.Titles
-import world.hachimi.app.ui.player.fullscreen.components.rememberTabTransitionSpec
+import world.hachimi.app.ui.player.fullscreen.components.*
 import world.hachimi.app.ui.util.fadingEdges
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @Composable
 fun ExpandedPlayerScreen2(
+    vm: PlayerViewModel,
     global: GlobalStore = koinInject()
 ) {
-    val uiState = global.player.playerState
-
     Box(Modifier.fillMaxSize()) {
-        Content(global, uiState)
+        Content(global, vm)
         ShrinkButton(
             modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopStart),
             onClick = global::shrinkPlayer
@@ -103,8 +61,9 @@ fun ExpandedPlayerScreen2(
 @Composable
 private fun Content(
     global: GlobalStore,
-    uiState: PlayerUIState
+    vm: PlayerViewModel,
 ) {
+    val uiState = vm.uiState
     var currentPage by remember { mutableStateOf(Page.Lyrics) }
     val scrollState = rememberLazyListState() // Keep the scroll state between pages
     var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
@@ -134,6 +93,9 @@ private fun Content(
                 Footer(
                     global = global,
                     uiState = uiState,
+                    liked = vm.liked,
+                    likeEnabled = vm.likeEnabled,
+                    onLikeClick = vm::toggleLike,
                     hideInfo = currentPage == Page.Info,
                     hovered = leftPaneHovered,
                     onNavToUser = { uid ->
@@ -304,6 +266,9 @@ private fun LeftPane(
 private fun Footer(
     global: GlobalStore,
     uiState: PlayerUIState,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    onLikeClick: () -> Unit,
     hideInfo: Boolean,
     hovered: Boolean,
     onNavToUser: (Long) -> Unit,
@@ -327,17 +292,19 @@ private fun Footer(
         Spacer(Modifier.height(8.dp))
 
         AnimatedVisibility(visible = !hideInfo) {
+            val pv = uiState.readySongInfo?.externalLinks?.firstOrNull()
             AuthorAndPV(
                 authorName = uiState.displayedAuthor,
                 hasMultipleArtists = uiState.songInfo?.productionCrew.orEmpty().size > 1,
-                pvLink = uiState.readySongInfo?.externalLinks?.firstOrNull()?.url,
+                pvLink = pv?.url,
+                pvPlatform = pv?.platform,
                 pvAlignToEnd = true,
                 avatar = uiState.userProfile?.avatarUrl,
                 onUserClick = {
                     uiState.readySongInfo?.uploaderUid?.let {
                         onNavToUser(it)
                     }
-                }
+                },
             )
         }
 
@@ -345,6 +312,14 @@ private fun Footer(
             DropdownMenu(
                 expanded = showDropdownMenu, onDismissRequest = { showDropdownMenu = false },
             ) {
+                DropdownMenuItem(
+                    onClick = {
+                        onAddToPlaylistClick()
+                        showDropdownMenu = false
+                    },
+                    text = { Text(stringResource(Res.string.player_add_to_playlist_title)) },
+                    leadingIcon = { Icon(Icons.Default.Add, "Add to playlist") },
+                )
                 DropdownMenuItem(
                     onClick = {
                         onShareClick()
@@ -361,10 +336,12 @@ private fun Footer(
                 if (showControl) Controls(
                     modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
                     playing = uiState.isPlaying,
+                    liked = liked,
+                    likeEnabled = likeEnabled,
+                    onLikeClick = onLikeClick,
                     onPreviousClick = { global.player.previous() },
                     onPlayOrPauseClick = { global.player.playOrPause() },
                     onNextClick = { global.player.next() },
-                    onAddToPlaylistClick = onAddToPlaylistClick,
                     onMoreClick = { showDropdownMenu = true }
                 )
                 else BriefInfo(
@@ -382,15 +359,23 @@ private fun Footer(
 private fun Controls(
     modifier: Modifier,
     playing: Boolean,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    onLikeClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onPlayOrPauseClick: () -> Unit,
     onNextClick: () -> Unit,
-    onAddToPlaylistClick: () -> Unit,
     onMoreClick: () -> Unit
 ) {
     Row(modifier, horizontalArrangement = Arrangement.SpaceBetween) {
-        ControlButton(onClick = onAddToPlaylistClick) {
-            Icon(Icons.Default.Add, "Add to playlist", tint = LocalContentColor.current.copy(0.6f))
+        ControlButton(onClick = onLikeClick, enabled = likeEnabled) {
+            Icon(
+                imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = stringResource(
+                    if (liked) Res.string.player_unlike else Res.string.player_like
+                ),
+                tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current.copy(0.6f),
+            )
         }
         ControlButton(onClick = onPreviousClick) {
             Icon(Icons.Default.SkipPrevious, "Skip Previous")
@@ -408,15 +393,31 @@ private fun Controls(
     }
 }
 
+@Preview(widthDp = 1280)
+@Composable
+private fun ControlsPreview() {
+    Controls(
+        modifier = Modifier.padding(16.dp),
+        playing = true,
+        liked = true,
+        likeEnabled = true,
+        onLikeClick = {},
+        onPreviousClick = {},
+        onPlayOrPauseClick = {},
+        onNextClick = {},
+        onMoreClick = {}
+    )
+}
 @Composable
 private fun ControlButton(
     onClick: () -> Unit,
+    enabled: Boolean = true,
     content: @Composable () -> Unit
 ) {
     Box(
         modifier = Modifier.size(28.dp)
             .clip(CircleShape)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick, enabled = enabled),
         contentAlignment = Alignment.Center
     ) {
         Box(Modifier.size(24.dp)) {
