@@ -105,6 +105,7 @@ class PublishViewModel(
     var tags by mutableStateOf<List<SongModule.TagItem>>(emptyList())
         private set
     var description by mutableStateOf("")
+    var comment by mutableStateOf("")
     var lyricsType by mutableStateOf<LyricsType>(LyricsType.LRC)
     var lyrics by mutableStateOf("")
 
@@ -188,6 +189,7 @@ class PublishViewModel(
 
         tags = emptyList()
         description = ""
+        comment = ""
         lyricsType = LyricsType.LRC
         lyrics = ""
 
@@ -749,7 +751,7 @@ class PublishViewModel(
                         productionCrew = crew,
                         externalLinks = externalLinks,
                         explicit = explicit!!,
-                        comment = null
+                        comment = comment.takeIf { it.isNotBlank() }
                     )
                 )
                 if (resp.ok) {
@@ -773,7 +775,7 @@ class PublishViewModel(
                         productionCrew = crew,
                         externalLinks = externalLinks,
                         explicit = explicit!!,
-                        comment = null,
+                        comment = comment.takeIf { it.isNotBlank() },
                     )
                 )
                 if (resp.ok) {

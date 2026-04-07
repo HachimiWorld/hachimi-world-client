@@ -39,5 +39,8 @@
     <string name="reload_page_message">It seems Hachimi has gone to heaven</string>
     <string name="reload_retry">Retry</string>
 
+    <string name="publish_modify_comment">Modification note</string>
+    <string name="publish_modify_comment_supporting">Add a short note explaining this change (optional).</string>
+
     <string name="song_cover_cd">Song cover</string>
 </resources>

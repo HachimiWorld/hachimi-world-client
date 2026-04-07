@@ -39,5 +39,8 @@
     <string name="reload_page_message">基米好像去往了天堂</string>
     <string name="reload_retry">重试</string>
 
+    <string name="publish_modify_comment">修改备注</string>
+    <string name="publish_modify_comment_supporting">填写这次修改的说明，方便审核者了解变更原因（可留空）。</string>
+
     <string name="song_cover_cd">歌曲封面</string>
 </resources>
