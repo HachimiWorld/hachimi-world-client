@@ -467,7 +467,7 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > composeApp/android.jks
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > androidApp/android.jks
       - name: Build Release APK
         run: ./gradlew assembleRelease -P buildkonfig.flavor=release
         env:
@@ -492,7 +492,7 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
       - name: Rename output
         shell: bash
-        working-directory: composeApp/build/outputs/apk/release/
+        working-directory: androidApp/build/outputs/apk/release/
         run: |
           FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.apk
           mv *.apk $FILE_NAME
@@ -501,7 +501,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android
-          path: composeApp/build/outputs/apk/release/
+          path: androidApp/build/outputs/apk/release/
           compression-level: 0
       - name: Upload to S3
         uses: shallwefootball/s3-upload-action@master
@@ -510,7 +510,7 @@ jobs:
           aws_key_id: ${{ secrets.S3_KEY_ID }}
           aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: composeApp/build/outputs/apk/release/
+          source_dir: androidApp/build/outputs/apk/release/
           destination_dir: distribution/android/
       - name: Send publish request
         shell: bash
