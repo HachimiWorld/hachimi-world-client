@@ -1,6 +1,5 @@
 package world.hachimi.app.ui
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -18,16 +17,23 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisZ
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.nav.HandleNavigationRequests
+import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Navigator
+import world.hachimi.app.nav.RootHostNavKey
+import world.hachimi.app.nav.Route
 import world.hachimi.app.nav.Route.Auth
 import world.hachimi.app.nav.Route.ForgetPassword
-import world.hachimi.app.nav.Route.Root
 import world.hachimi.app.ui.auth.AuthScreen
 import world.hachimi.app.ui.auth.ForgetPasswordScreen
 import world.hachimi.app.ui.component.ClientApiVersionIncompatibleDialog
@@ -56,7 +62,10 @@ val LocalContentInsets = compositionLocalOf { WindowInsets() }
 val LocalWindowSize = compositionLocalOf { DpSize.Zero }
 
 @Composable
-fun App(global: GlobalStore = koinInject()) {
+fun App(
+    global: GlobalStore = koinInject(),
+    navigator: Navigator = remember { Navigator(Route.Root.Default) }
+) {
     setupCoil()
     ProvideLocalWindowSize {
         Surface(
@@ -66,8 +75,12 @@ fun App(global: GlobalStore = koinInject()) {
         ) {
             Box(Modifier.fillMaxSize()) {
                 SharedTransitionLayout {
-                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                        Content(global.nav.backStack)
+                    CompositionLocalProvider(
+                        LocalNavigator provides navigator,
+                        LocalSharedTransitionScope provides this
+                    ) {
+                        HandleNavigationRequests(global.appNavigationRequests)
+                        AppNavHost(global)
                         AnimatedVisibility(
                             global.playerExpanded,
                             enter = slideInVertically(initialOffsetY = { it }),
@@ -91,33 +104,35 @@ fun App(global: GlobalStore = koinInject()) {
 
 
 @Composable
-private fun Content(
-    backstack: List<Any>
-) {
-    val rootDestination = backstack.last()
-    AnimatedContent(
-        targetState = rootDestination,
-        transitionSpec = {
-            // TODO(nav): We should decide the `forward` based on the backstack or destination depth
-            if (initialState is Root) materialSharedAxisZ(true)
-            else if (initialState is Auth && targetState is ForgetPassword) materialSharedAxisZ(true)
-            else materialSharedAxisZ(false)
-        },
-        contentKey = {
-            when (it) {
-                is Root -> "root"
-                is Auth -> "auth"
-                is ForgetPassword -> "forget_password"
-                else -> it
+private fun AppNavHost(global: GlobalStore) {
+    val navigator = LocalNavigator.current
+
+    NavDisplay(
+        backStack = navigator.topLevelBackStack,
+        onBack = navigator::back,
+        sharedTransitionScope = LocalSharedTransitionScope.current,
+        modifier = Modifier.fillMaxSize(),
+        transitionSpec = { materialSharedAxisZ(true) },
+        popTransitionSpec = { materialSharedAxisZ(false) },
+        predictivePopTransitionSpec = { materialSharedAxisZ(false) },
+        entryProvider = { key ->
+            when (key) {
+                RootHostNavKey -> NavEntry(key) {
+                    RootScreen()
+                }
+
+                is Auth -> NavEntry(key) {
+                    AuthScreen(key.initialLogin)
+                }
+
+                is ForgetPassword -> NavEntry(key) {
+                    ForgetPasswordScreen()
+                }
+
+                else -> error("Unknown app route: $key")
             }
         }
-    ) { rootDestination ->
-        when (rootDestination) {
-            is Root -> RootScreen(rootDestination)
-            is Auth -> AuthScreen(rootDestination.initialLogin)
-            is ForgetPassword -> ForgetPasswordScreen()
-        }
-    }
+    )
 }
 
 @Composable

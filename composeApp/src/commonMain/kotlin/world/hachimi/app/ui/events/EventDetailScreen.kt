@@ -1,7 +1,18 @@
 package world.hachimi.app.ui.events
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -32,6 +43,7 @@ import world.hachimi.app.getPlatform
 import world.hachimi.app.model.EventDetailViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
@@ -41,7 +53,11 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.*
+import world.hachimi.app.util.WindowSize
+import world.hachimi.app.util.YMD
+import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.util.formatTime
+import world.hachimi.app.util.isValidHttpsUrl
 import kotlin.time.Clock
 
 @Composable
@@ -50,6 +66,8 @@ fun EventDetailScreen(
     global: GlobalStore = koinInject(),
     vm: EventDetailViewModel = koinViewModel(),
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(eventId, vm) {
         vm.mounted(eventId)
         onDispose { vm.dispose() }
@@ -60,7 +78,7 @@ fun EventDetailScreen(
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
             InitializeStatus.LOADED -> EventDetailContent(data = vm.data) {
-                global.nav.push(Route.Root.PublicUserSpace(it))
+                navigator.push(Route.Root.PublicUserSpace(it))
             }
         }
     }

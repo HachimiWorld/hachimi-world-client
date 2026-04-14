@@ -6,7 +6,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import world.hachimi.app.api.ApiClient
@@ -14,12 +22,19 @@ import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
+import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.nav.Route
 
 class ReviewViewModel(
     private val api: ApiClient,
     private val global: GlobalStore
 ): ViewModel(CoroutineScope(Dispatchers.Default)) {
+    private val _navigationRequests = MutableSharedFlow<NavigationRequest>(
+        extraBufferCapacity = 4,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val navigationRequests = _navigationRequests.asSharedFlow()
+
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var loading by mutableStateOf(false)
@@ -103,7 +118,9 @@ class ReviewViewModel(
     }
 
     fun detail(item: PublishModule.SongPublishReviewBrief) {
-        global.nav.push(Route.Root.ContributorCenter.ReviewDetail(item.reviewId))
+        _navigationRequests.tryEmit(
+            NavigationRequest.Push(Route.Root.ContributorCenter.ReviewDetail(item.reviewId))
+        )
     }
 
     fun updatePageSize(pageSize: Int) {

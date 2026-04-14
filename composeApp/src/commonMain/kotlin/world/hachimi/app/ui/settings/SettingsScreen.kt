@@ -72,6 +72,7 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.Card
@@ -272,6 +273,8 @@ private fun KidsModeSetting(globalStore: GlobalStore) {
 
 @Composable
 private fun Info(globalStore: GlobalStore) {
+    val navigator = LocalNavigator.current
+
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_client_type)) },
         onClick = null
@@ -308,9 +311,9 @@ private fun Info(globalStore: GlobalStore) {
     }
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_changelog)) },
-        onClick = { globalStore.nav.push(Route.Root.Changelog) }
+        onClick = { navigator.push(Route.Root.Changelog) }
     ) {
-        TextButton(onClick = { globalStore.nav.push(Route.Root.Changelog) }) {
+        TextButton(onClick = { navigator.push(Route.Root.Changelog) }) {
             Text(stringResource(Res.string.settings_view_changelog))
         }
     }

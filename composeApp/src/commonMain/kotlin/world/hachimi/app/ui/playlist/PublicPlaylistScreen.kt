@@ -62,6 +62,7 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublicPlaylistViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
@@ -89,6 +90,8 @@ fun PublicPlaylistScreen(
     vm: PublicPlaylistViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, playlistId) {
         vm.mounted(playlistId)
         onDispose {
@@ -121,7 +124,7 @@ fun PublicPlaylistScreen(
                             coverUrl = playlistInfo.coverUrl,
                             updateTime = playlistInfo.updateTime,
                             count = vm.songs.size,
-                            onNavToUserClick = { global.nav.push(Route.Root.PublicUserSpace(userInfo.uid)) },
+                            onNavToUserClick = { navigator.push(Route.Root.PublicUserSpace(userInfo.uid)) },
                             onPlayAllClick = { vm.playAll() },
                             isFavorite = vm.isFavorite,
                             operating = vm.operating,

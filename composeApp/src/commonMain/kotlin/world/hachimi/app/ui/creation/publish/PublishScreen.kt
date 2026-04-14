@@ -58,6 +58,8 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishViewModel
 import world.hachimi.app.model.PublishViewModel.LyricsType
 import world.hachimi.app.model.PublishViewModel.Type
+import world.hachimi.app.nav.HandleNavigationRequests
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
@@ -90,10 +92,13 @@ fun PublishScreen(
     vm: PublishViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, songId, reviewId) {
         vm.mounted(songId, reviewId)
         onDispose { vm.dispose() }
     }
+    HandleNavigationRequests(vm.navigationRequests, navigator)
     AnimatedContent(vm.initializeStatus) {
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
@@ -105,7 +110,7 @@ fun PublishScreen(
     if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
         onExit = {
             vm.showPrefixInactiveDialog = false
-            global.nav.back()
+            navigator.back()
         }
     )
 }

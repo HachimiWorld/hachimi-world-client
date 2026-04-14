@@ -29,6 +29,7 @@ import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewHistoryViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
@@ -47,6 +48,8 @@ fun ReviewHistoryScreen(
     vm: ReviewHistoryViewModel = koinViewModel(),
     global: GlobalStore = koinInject(),
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, reviewId) {
         vm.mounted(reviewId)
         onDispose { vm.dispose() }
@@ -56,7 +59,7 @@ fun ReviewHistoryScreen(
         when (status) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Content(vm = vm, global = global)
+            InitializeStatus.LOADED -> Content(vm = vm, global = global, navigator = navigator)
         }
     }
 }
@@ -65,6 +68,7 @@ fun ReviewHistoryScreen(
 private fun Content(
     vm: ReviewHistoryViewModel,
     global: GlobalStore,
+    navigator: world.hachimi.app.nav.Navigator,
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -93,7 +97,7 @@ private fun Content(
                         ReviewHistoryItemCard(
                             modifier = Modifier.padding(horizontal = AdaptiveScreenMargin).fillMaxWidthIn(),
                             item = item,
-                            onNavToUserClick = { uid -> global.nav.push(Route.Root.PublicUserSpace(uid)) }
+                            onNavToUserClick = { uid -> navigator.push(Route.Root.PublicUserSpace(uid)) }
                         )
                     }
                 }

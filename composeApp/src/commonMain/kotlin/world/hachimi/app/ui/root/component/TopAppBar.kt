@@ -46,6 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.design.components.AccentButton
@@ -62,6 +63,8 @@ fun CompactTopAppBar(
     onExpandNavClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val navigator = LocalNavigator.current
+
     Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
@@ -78,19 +81,19 @@ fun CompactTopAppBar(
                 searchText = searchText,
                 onSearchTextChange = { searchText = it },
                 onSearch = {
-                    global.nav.push(Route.Root.Search(searchText))
+                    navigator.push(Route.Root.Search(searchText))
                 }
             )
             if (global.isLoggedIn) {
                 val userInfo = global.userInfo!!
                 AvatarOnly(
                     avatarUrl = userInfo.avatarUrl,
-                    onClick = { global.nav.push(Route.Root.UserSpace) }
+                    onClick = { navigator.push(Route.Root.UserSpace) }
                 )
             } else {
                 AvatarOnly(
                     avatarUrl = null,
-                    onClick = { global.nav.push(Route.Auth()) }
+                    onClick = { navigator.push(Route.Auth()) }
                 )
             }
         }
@@ -102,6 +105,8 @@ fun ExpandedTopAppBar(
     global: GlobalStore,
     modifier: Modifier = Modifier
 ) {
+    val navigator = LocalNavigator.current
+
     Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
         Row(
             modifier = Modifier
@@ -112,8 +117,8 @@ fun ExpandedTopAppBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (getPlatform().name == "JVM") IconButton(onClick = {
-                global.nav.back()
-            }, enabled = global.nav.backStack.size > 1) {
+                navigator.back()
+            }, enabled = navigator.canGoBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
             Logo()
@@ -123,7 +128,7 @@ fun ExpandedTopAppBar(
                 SearchBox(
                     searchText, { searchText = it }, modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth(),
                     onSearch = {
-                        global.nav.push(Route.Root.Search(searchText))
+                        navigator.push(Route.Root.Search(searchText))
                     }
                 )
             }
@@ -133,16 +138,16 @@ fun ExpandedTopAppBar(
                 NameAvatar(
                     name = userInfo.name,
                     avatarUrl = userInfo.avatarUrl,
-                    onClick = { global.nav.push(Route.Root.UserSpace) }
+                    onClick = { navigator.push(Route.Root.UserSpace) }
                 )
             } else {
                 AccentButton(onClick = {
-                    global.nav.push(Route.Auth())
+                    navigator.push(Route.Auth())
                 }) {
                     Text(stringResource(Res.string.auth_login))
                 }
                 SubtleButton(onClick = {
-                    global.nav.push(Route.Auth(false))
+                    navigator.push(Route.Auth(false))
                 }) {
                     Text(stringResource(Res.string.auth_register))
                 }

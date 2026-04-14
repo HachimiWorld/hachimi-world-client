@@ -46,6 +46,7 @@ import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.model.fromSearchSongItem
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
@@ -68,6 +69,7 @@ fun SearchScreen(
     vm: SearchViewModel = koinViewModel(),
 ) {
     val global = koinInject<GlobalStore>()
+    val navigator = LocalNavigator.current
     DisposableEffect(vm, query, searchType) {
         vm.mounted(query, searchType)
         onDispose {
@@ -79,12 +81,12 @@ fun SearchScreen(
         targetState = vm.loading,
         transitionSpec = { materialFadeThrough() }
     ) { loading ->
-        if (loading) LoadingPage() else Content(vm, global)
+        if (loading) LoadingPage() else Content(vm, global, navigator)
     }
 }
 
 @Composable
-private fun Content(vm: SearchViewModel, global: GlobalStore) {
+private fun Content(vm: SearchViewModel, global: GlobalStore, navigator: world.hachimi.app.nav.Navigator) {
     BoxWithConstraints {
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
@@ -150,7 +152,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
                     modifier = Modifier.fillMaxWidth(),
                     name = item.username,
                     avatarUrl = item.avatarUrl,
-                    onClick = { global.nav.push(Route.Root.PublicUserSpace(item.uid)) },
+                    onClick = { navigator.push(Route.Root.PublicUserSpace(item.uid)) },
                 )
             }
 
@@ -166,7 +168,7 @@ private fun Content(vm: SearchViewModel, global: GlobalStore) {
                     coverUrl = item.coverUrl,
                     avatarUrl = item.userAvatarUrl,
                     songCount = item.songsCount,
-                    onClick = { global.nav.push(Route.Root.PublicPlaylist(item.id)) },
+                    onClick = { navigator.push(Route.Root.PublicPlaylist(item.id)) },
                     description = item.description
                 )
             }

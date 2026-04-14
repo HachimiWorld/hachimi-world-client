@@ -3,7 +3,6 @@ package world.hachimi.app
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -30,13 +29,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val global = koinInject<GlobalStore>()
 
-            BackHandler {
+            /*BackHandler {
                 if (global.nav.backStack.size > 1) {
                     global.nav.back()
                 } else {
                     finish()
                 }
-            }
+            }*/
 
             AppTheme(global.settings.darkMode ?: isSystemInDarkTheme()) {
                 AppEnvironment(global.settings.locale) {

@@ -126,6 +126,8 @@ private fun DetailContent(
     vm: ArtworkDetailViewModel,
     global: GlobalStore = koinInject()
 ) {
+    val navigator = world.hachimi.app.nav.LocalNavigator.current
+
     Column(
         Modifier.fillMaxSize()
             .navigationBarsPadding()
@@ -137,7 +139,7 @@ private fun DetailContent(
         vm.detail?.let { detail ->
             Row(Modifier.padding(top = 24.dp)) {
                 Button(onClick = {
-                    global.nav.push(Route.Root.CreationCenter.Modify(songId = vm.detail?.id ?: 0L))
+                    navigator.push(Route.Root.CreationCenter.Modify(songId = vm.detail?.id ?: 0L))
                 }) {
                     Text("编辑作品")
                 }

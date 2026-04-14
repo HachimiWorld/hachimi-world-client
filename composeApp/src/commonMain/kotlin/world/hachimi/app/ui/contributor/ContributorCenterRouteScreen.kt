@@ -18,6 +18,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.ContributorEntryViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.NeedLoginScreen
@@ -79,6 +80,8 @@ private fun Content(
     global: GlobalStore,
     vm: ContributorEntryViewModel
 ) {
+    val navigator = LocalNavigator.current
+
     if (!global.isLoggedIn) {
         NeedLoginScreen()
         return
@@ -101,7 +104,7 @@ private fun Content(
         )
 
         Button(
-            onClick = { global.nav.push(Route.Root.ContributorCenter.ReviewList) },
+            onClick = { navigator.push(Route.Root.ContributorCenter.ReviewList) },
         ) {
             Text("审核列表")
         }
@@ -109,7 +112,7 @@ private fun Content(
         Spacer(modifier = Modifier.height(12.dp))
 
         Button(
-            onClick = { global.nav.push(Route.Root.ContributorCenter.CreatePost) },
+            onClick = { navigator.push(Route.Root.ContributorCenter.CreatePost) },
         ) {
             Text("创建帖子")
         }

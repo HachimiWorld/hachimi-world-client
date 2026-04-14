@@ -53,6 +53,7 @@ import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.model.EventsListViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadMoreItem
@@ -75,6 +76,8 @@ fun EventsScreen(
     global: GlobalStore = koinInject(),
     vm: EventsListViewModel = koinViewModel(),
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.dispose() }
@@ -84,19 +87,19 @@ fun EventsScreen(
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> EventsContent(global, vm)
+            InitializeStatus.LOADED -> EventsContent(global, navigator, vm)
         }
     }
 }
 
 @Composable
-private fun EventsContent(global: GlobalStore, vm: EventsListViewModel) {
+private fun EventsContent(global: GlobalStore, navigator: world.hachimi.app.nav.Navigator, vm: EventsListViewModel) {
     BoxWithConstraints {
         val screenWidth = maxWidth
         if (screenWidth < WindowSize.MEDIUM) {
-            EventsListCompact(global, vm)
+            EventsListCompact(global, navigator, vm)
         } else {
-            EventsGridExpanded(global, vm, screenWidth)
+            EventsGridExpanded(global, navigator, vm, screenWidth)
         }
     }
 }
@@ -104,6 +107,7 @@ private fun EventsContent(global: GlobalStore, vm: EventsListViewModel) {
 @Composable
 private fun EventsListCompact(
     global: GlobalStore,
+    navigator: world.hachimi.app.nav.Navigator,
     vm: EventsListViewModel
 ) {
     val listState = rememberLazyListState()
@@ -137,7 +141,7 @@ private fun EventsListCompact(
             } else {
                 items(vm.items, key = { it.id }) { item ->
                     EventCardVertical(item, {
-                        global.nav.push(Route.Root.Events.Detail(item.id))
+                        navigator.push(Route.Root.Events.Detail(item.id))
                     })
                 }
 
@@ -160,6 +164,7 @@ private fun EventsListCompact(
 @Composable
 private fun EventsGridExpanded(
     global: GlobalStore,
+    navigator: world.hachimi.app.nav.Navigator,
     vm: EventsListViewModel,
     maxWidth: Dp
 ) {
@@ -207,7 +212,7 @@ private fun EventsGridExpanded(
                     val item = vm.items.first()
                     EventCardFeatured(
                         item = item,
-                        onClick = { global.nav.push(Route.Root.Events.Detail(item.id)) },
+                        onClick = { navigator.push(Route.Root.Events.Detail(item.id)) },
                         size = if (maxWidth >= 1040.dp) CardSize.LARGE else CardSize.MEDIUM
                     )
                 }
@@ -217,14 +222,14 @@ private fun EventsGridExpanded(
                 items(rest.take(twoColumnCount), key = { it.id }) { item ->
                     EventCardVertical(
                         item,
-                        onClick = { global.nav.push(Route.Root.Events.Detail(item.id)) }
+                        onClick = { navigator.push(Route.Root.Events.Detail(item.id)) }
                     )
                 }
 
                 items(rest.drop(twoColumnCount), key = { it.id }) { item ->
                     EventCardVertical(
                         item,
-                        onClick = { global.nav.push(Route.Root.Events.Detail(item.id)) }
+                        onClick = { navigator.push(Route.Root.Events.Detail(item.id)) }
                     )
                 }
 

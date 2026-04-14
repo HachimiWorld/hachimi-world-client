@@ -63,6 +63,7 @@ import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.Pagination
@@ -146,6 +147,8 @@ fun UserSpaceScreen(
 private fun Header(
     vm: UserSpaceViewModel, global: GlobalStore, modifier: Modifier = Modifier
 ) {
+    val navigator = LocalNavigator.current
+
     Column(modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -154,7 +157,7 @@ private fun Header(
                 style = MaterialTheme.typography.titleLarge
             )
             if (vm.myself) {
-                HachimiIconButton(onClick = { global.nav.push(Route.Root.EditProfile) }) {
+                HachimiIconButton(onClick = { navigator.push(Route.Root.EditProfile) }) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = stringResource(Res.string.user_edit_profile)

@@ -56,6 +56,7 @@ import world.hachimi.app.model.HomeViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.model.fromSearchSongItem
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.LocalWindowSize
@@ -77,6 +78,8 @@ fun HomeMainScreen(
     vm: HomeViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.unmount() }
@@ -117,7 +120,7 @@ fun HomeMainScreen(
                     status = vm.recentStatus,
                     loading = vm.recentLoading,
                     items = vm.recentSongs,
-                    onMoreClick = { global.nav.push(Route.Root.Home.Recent) },
+                    onMoreClick = { navigator.push(Route.Root.Home.Recent) },
                     onLoad = vm::mountRecent,
                     onRefresh = {},
                     onRetryClick = vm::retryRecent
@@ -131,7 +134,7 @@ fun HomeMainScreen(
                     status = vm.recommendStatus,
                     loading = vm.recommendLoading,
                     items = vm.recommendSongs,
-                    onMoreClick = { global.nav.push(Route.Root.Home.Recommend) },
+                    onMoreClick = { navigator.push(Route.Root.Home.Recommend) },
                     onLoad = vm::mountRecommend,
                     onRefresh = {},
                     onRetryClick = vm::retryRecommend
@@ -145,7 +148,7 @@ fun HomeMainScreen(
                     status = vm.hotStatus,
                     loading = vm.hotLoading,
                     items = vm.hotSongs,
-                    onMoreClick = { global.nav.push(Route.Root.Home.WeeklyHot) },
+                    onMoreClick = { navigator.push(Route.Root.Home.WeeklyHot) },
                     onLoad = vm::mountHot,
                     onRefresh = {},
                     onRetryClick = vm::retryHot
@@ -245,11 +248,13 @@ private fun CategorySegment(
     global: GlobalStore = koinInject(),
     vm: HomeViewModel = koinViewModel()
 ) {
+    val navigator = LocalNavigator.current
+
     Column(modifier) {
         SegmentHeader(
             modifier = Modifier.padding(horizontal = AdaptiveScreenMargin),
             text = category,
-            onMoreClick = { global.nav.push(Route.Root.Home.Category(category)) },
+            onMoreClick = { navigator.push(Route.Root.Home.Category(category)) },
             onLoad = { vm.mountCategory(category) },
         )
 

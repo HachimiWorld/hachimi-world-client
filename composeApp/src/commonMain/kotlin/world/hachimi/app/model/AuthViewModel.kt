@@ -11,7 +11,10 @@ import hachimiworld.composeapp.generated.resources.auth_password_too_short
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,6 +26,7 @@ import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
+import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.nav.Route
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
@@ -36,6 +40,12 @@ class AuthViewModel(
     private val dataStore: MyDataStore,
     private val global: GlobalStore,
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
+    private val _navigationRequests = MutableSharedFlow<NavigationRequest>(
+        extraBufferCapacity = 8,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val navigationRequests = _navigationRequests.asSharedFlow()
+
     var isOperating by mutableStateOf(false)
         private set
 
@@ -146,7 +156,7 @@ class AuthViewModel(
                 if (resp.ok) {
                     dataStore.set(PreferencesKeys.USER_NAME, name)
                     global.setLoginUser(uid.toLong(), name, null, false)
-                    global.nav.replace(Route.Root.Home.Main)
+                    navigate(NavigationRequest.Replace(listOf(Route.Root.Home.Main)))
                 } else {
                     global.alert(resp.err().msg)
                 }
@@ -160,7 +170,7 @@ class AuthViewModel(
     }
 
     fun skipProfile() {
-        global.nav.replace(Route.Root.Home.Main)
+        navigate(NavigationRequest.Replace(listOf(Route.Root.Home.Main)))
     }
 
     private suspend fun doLogin() {
@@ -193,7 +203,7 @@ class AuthViewModel(
                 dataStore.set(PreferencesKeys.USER_UID, profileData.uid)
                 dataStore.set(PreferencesKeys.USER_NAME, profileData.username)
                 global.setLoginUser(data.uid, data.username, profileData.avatarUrl, false)
-                global.nav.replace(Route.Root.Home.Main)
+                navigate(NavigationRequest.Replace(listOf(Route.Root.Home.Main)))
             } else {
                 global.alert(resp.err().msg)
             }
@@ -307,6 +317,10 @@ class AuthViewModel(
     }
 
     fun forgetPassword() {
-        global.nav.push(Route.ForgetPassword)
+        navigate(NavigationRequest.Push(Route.ForgetPassword))
+    }
+
+    private fun navigate(request: NavigationRequest) {
+        _navigationRequests.tryEmit(request)
     }
 }

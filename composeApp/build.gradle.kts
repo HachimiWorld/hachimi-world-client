@@ -157,6 +157,7 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.cio)
                 implementation(libs.kotlinx.browser)
+                implementation(libs.navigation3.browser)
                 implementation(npm("howler", "2.2.4"))
             }
         }

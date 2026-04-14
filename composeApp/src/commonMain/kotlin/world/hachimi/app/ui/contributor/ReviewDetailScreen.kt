@@ -152,6 +152,8 @@ private fun Content(
     source: ReviewScreenSource,
     global: GlobalStore = koinInject()
 ) {
+    val navigator = world.hachimi.app.nav.LocalNavigator.current
+
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
             .fillMaxWidthIn()
@@ -170,7 +172,7 @@ private fun Content(
                 data.status != PublishModule.SongPublishReviewBrief.STATUS_APPROVED
             ) {
                 Button(onClick = {
-                    global.nav.push(Route.Root.CreationCenter.ReviewModify(data.reviewId))
+                    navigator.push(Route.Root.CreationCenter.ReviewModify(data.reviewId))
                 }) {
                     Text(stringResource(Res.string.review_modify_draft))
                 }
@@ -327,6 +329,8 @@ private fun ReviewMetadataSection(
     data: PublishModule.SongPublishReviewData,
     source: ReviewScreenSource
 ) {
+    val navigator = world.hachimi.app.nav.LocalNavigator.current
+
     Text(
         text = stringResource(Res.string.review_detail_title),
         style = MaterialTheme.typography.titleLarge
@@ -336,7 +340,7 @@ private fun ReviewMetadataSection(
     }) {
         Text(
             modifier = Modifier.clickable {
-                global.nav.push(Route.Root.PublicUserSpace(data.uploaderUid))
+                navigator.push(Route.Root.PublicUserSpace(data.uploaderUid))
             },
             text = data.uploaderName + " " + data.uploaderUid
         )
@@ -349,13 +353,13 @@ private fun ReviewMetadataSection(
             Text(formatTime(data.submitTime, distance = true, precise = false, thresholdDay = 3))
             TextButton(onClick = {
                 when (source) {
-                    ReviewScreenSource.CREATION -> global.nav.push(
+                    ReviewScreenSource.CREATION -> navigator.push(
                         Route.Root.CreationCenter.ReviewHistory(
                             data.reviewId
                         )
                     )
 
-                    ReviewScreenSource.CONTRIBUTOR -> global.nav.push(
+                    ReviewScreenSource.CONTRIBUTOR -> navigator.push(
                         Route.Root.ContributorCenter.ReviewHistory(
                             data.reviewId
                         )
@@ -391,6 +395,8 @@ private fun ReviewDiscussionSection(
     vm: ReviewDetailViewModel,
     global: GlobalStore,
 ) {
+    val navigator = world.hachimi.app.nav.LocalNavigator.current
+
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -450,7 +456,7 @@ private fun ReviewDiscussionSection(
                             canDelete = vm.canDeleteComment(item),
                             onDelete = { vm.deleteComment(item.id) },
                             onNavToUserClick = { uid ->
-                                global.nav.push(Route.Root.PublicUserSpace(uid))
+                                navigator.push(Route.Root.PublicUserSpace(uid))
                             }
                         )
                     }

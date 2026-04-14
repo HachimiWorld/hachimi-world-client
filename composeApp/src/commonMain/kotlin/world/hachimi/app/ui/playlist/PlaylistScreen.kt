@@ -31,6 +31,7 @@ import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PlaylistViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
@@ -49,6 +50,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
         onDispose { vm.dispose() }
     }
     val global = koinInject<GlobalStore>()
+    val navigator = LocalNavigator.current
     AnimatedContent(
         targetState = vm.initializeStatus,
         modifier = Modifier.fillMaxSize(),
@@ -87,7 +89,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                             songCount = item.songsCount,
                             createTime = item.createTime,
                             onEnter = {
-                                global.nav.push(Route.Root.MyPlaylist.Detail(item.id))
+                                navigator.push(Route.Root.MyPlaylist.Detail(item.id))
                             }
                         )
                     }
@@ -108,7 +110,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
                             songCount = item.metadata.songsCount,
                             createTime = item.metadata.createTime,
                             onEnter = {
-                                global.nav.push(Route.Root.PublicPlaylist(item.metadata.id))
+                                navigator.push(Route.Root.PublicPlaylist(item.metadata.id))
                             }
                         )
                     }

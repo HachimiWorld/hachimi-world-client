@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewViewModel
+import world.hachimi.app.nav.HandleNavigationRequests
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
@@ -36,6 +38,8 @@ import world.hachimi.app.util.fillMaxWidthIn
 fun ReviewListScreen(
     vm: ReviewViewModel = koinViewModel()
 ) {
+    HandleNavigationRequests(vm.navigationRequests, LocalNavigator.current)
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose {

@@ -12,7 +12,10 @@ import hachimiworld.composeapp.generated.resources.auth_forget_send_code_failed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import world.hachimi.app.api.ApiClient
@@ -21,6 +24,7 @@ import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
+import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.nav.Route
 
 private const val TAG = "forget_password"
@@ -29,6 +33,12 @@ class ForgetPasswordViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
+    private val _navigationRequests = MutableSharedFlow<NavigationRequest>(
+        extraBufferCapacity = 4,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val navigationRequests = _navigationRequests.asSharedFlow()
+
     var operating by mutableStateOf(false)
         private set
     var email by mutableStateOf("")
@@ -100,7 +110,7 @@ class ForgetPasswordViewModel(
     }
 
     fun closeDialog() {
-        global.nav.replace(Route.Auth(true))
+        _navigationRequests.tryEmit(NavigationRequest.Replace(listOf(Route.Auth(true))))
     }
 
     private suspend fun generateCaptcha() {
