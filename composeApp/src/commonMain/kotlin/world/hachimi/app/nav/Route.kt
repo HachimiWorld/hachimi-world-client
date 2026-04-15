@@ -20,7 +20,7 @@ sealed interface Route : NavKey {
             data object Feed : Events
 
             @Serializable
-            @SerialName("/events/feed")
+            @SerialName("/events/detail")
             data class Detail(val postId: Long) : Events
         }
 

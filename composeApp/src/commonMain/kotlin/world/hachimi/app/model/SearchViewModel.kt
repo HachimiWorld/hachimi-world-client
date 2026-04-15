@@ -12,6 +12,7 @@ import hachimiworld.composeapp.generated.resources.search_sort_relevance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
@@ -27,6 +28,7 @@ class SearchViewModel(
 ) : ViewModel(
     CoroutineScope(Dispatchers.Default)
 ) {
+    @Serializable
     enum class SearchType {
         SONG, USER, ALBUM, PLAYLIST
     }

@@ -10,11 +10,10 @@ class RoutePathEncoderTest {
     @Test
     fun `encode without parameters`() {
         val route: Route = Route.Root.Home.Main
-        val (name, parameters) = encodeToRoutePath(route)
-        println(name)
-        println(parameters)
-        assertEquals("/home/main", name)
-        assertEquals(emptyMap<String, String?>(), parameters)
+        val result = encodeToBrowserPath(route)
+
+        assertEquals("/home/main", result.path)
+        assertEquals(emptyMap<String, String?>(), result.parameters)
     }
 
     @Test
@@ -23,49 +22,77 @@ class RoutePathEncoderTest {
             query = "test",
             type = SearchViewModel.SearchType.USER
         )
-        val (name, parameters) = encodeToRoutePath(route)
-        println(name)
-        println(parameters)
-        assertEquals("/search", name)
+        val result = encodeToBrowserPath(route)
+        assertEquals("/search", result.path)
         assertEquals(
             mapOf(
                 "query" to "test",
-                "type" to "1"
+                "type" to "USER"
             ),
-            parameters
+            result.parameters
+        )
+        val encoded = result.encodeToString()
+        assertEquals(
+            "/search?query=test&type=USER",
+            encoded
         )
     }
 
     @Test
     fun `encode without polymorphism`() {
         val route: Route.Root.Home.Category = Route.Root.Home.Category("rock")
-        val (name, parameters) = encodeToRoutePath(route)
-        println(name)
-        println(parameters)
-        assertEquals("/home/category", name)
-        assertEquals(mapOf("category" to "rock"), parameters)
+        val result = encodeToBrowserPath(route)
+        assertEquals("/home/category", result.path)
+        assertEquals(mapOf("category" to "rock"), result.parameters)
     }
 
     @Test
-    fun `build url fragments`() {
+    fun `encode browser path`() {
         assertEquals(
-            "home/category?category=rock",
-            buildBrowserPath("home/category", mapOf("category" to "rock"))
+            "home/category?category=rock%20%26%20ha",
+            BrowserPath("home/category", mapOf("category" to "rock & ha")).encodeToString()
         )
 
         assertEquals(
-            "home/category?order=desc",
-            buildBrowserPath("home/category", mapOf("category" to null, "order" to "desc"))
+            "home/category?order=desc&param3=value3",
+            BrowserPath(
+                "home/category",
+                mapOf("category" to null, "order" to "desc", "param3" to "value3")
+            ).encodeToString()
+        )
+
+
+        assertEquals(
+            "home/category",
+            BrowserPath("home/category", mapOf("category" to null)).encodeToString()
         )
 
         assertEquals(
             "home/category",
-            buildBrowserPath("home/category", mapOf("category" to null))
+            BrowserPath("home/category", emptyMap()).encodeToString()
+        )
+    }
+
+    @Test
+    fun `decode browser path`() {
+        assertEquals(
+            BrowserPath("home/category", mapOf("category" to "rock")),
+            BrowserPath.decodeFromString("home/category?category=rock")
         )
 
         assertEquals(
-            "home/category",
-            buildBrowserPath("home/category", emptyMap())
+            BrowserPath("home/category", mapOf("category" to null, "order" to "desc")),
+            BrowserPath.decodeFromString("home/category?category&order=desc")
+        )
+
+        assertEquals(
+            BrowserPath("home/category", mapOf("category" to null)),
+            BrowserPath.decodeFromString("home/category?category")
+        )
+
+        assertEquals(
+            BrowserPath("home/category", emptyMap()),
+            BrowserPath.decodeFromString("home/category")
         )
     }
 }
