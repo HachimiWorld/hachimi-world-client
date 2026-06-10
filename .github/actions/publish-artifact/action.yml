@@ -24,6 +24,26 @@ inputs:
   artifact_name:
     required: true
     description: 'Name for the uploaded GitHub Actions artifact'
+  version_name:
+    required: true
+    description: 'Version name from get-version-info'
+  version_code:
+    required: true
+    description: 'Version code from get-version-info'
+  s3_endpoint:
+    required: true
+  s3_key_id:
+    required: true
+  s3_secret_access_key:
+    required: true
+  s3_bucket:
+    required: true
+  s3_domain:
+    required: true
+  publish_version_token:
+    required: true
+  publish_version_url:
+    required: true
 
 runs:
   using: composite
@@ -32,7 +52,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_dir }}
       run: |
-        FILE_NAME="hachimi-world-${VERSION_NAME}-${VERSION_CODE}${{ inputs.file_suffix }}${{ inputs.file_extension }}"
+        FILE_NAME="hachimi-world-${{ inputs.version_name }}-${{ inputs.version_code }}${{ inputs.file_suffix }}${{ inputs.file_extension }}"
         echo "FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
         if [ ! -f "$FILE_NAME" ]; then
           mv ${{ inputs.file_pattern }} "$FILE_NAME"
@@ -48,10 +68,10 @@ runs:
     - name: Upload to S3
       uses: shallwefootball/s3-upload-action@master
       with:
-        endpoint: ${{ secrets.S3_ENDPOINT }}
-        aws_key_id: ${{ secrets.S3_KEY_ID }}
-        aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-        aws_bucket: ${{ secrets.S3_BUCKET }}
+        endpoint: ${{ inputs.s3_endpoint }}
+        aws_key_id: ${{ inputs.s3_key_id }}
+        aws_secret_access_key: ${{ inputs.s3_secret_access_key }}
+        aws_bucket: ${{ inputs.s3_bucket }}
         source_dir: ${{ inputs.source_dir }}
         destination_dir: ${{ inputs.s3_destination }}
 
@@ -62,11 +82,11 @@ runs:
       run: |
         # Use printf + tr instead of echo + sed to preserve UTF-8 multi-byte sequences
         printf '%s' "$PR_BODY" | tr -d '\r' > changelog.txt
-        DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/${{ inputs.s3_destination }}${FILE_NAME}"
+        DOWNLOAD_URL="https://${{ inputs.s3_domain }}/${{ inputs.s3_destination }}${FILE_NAME}"
 
         JSON_DATA=$(jq -n -r \
-          --arg name "$VERSION_NAME" \
-          --argjson code "$VERSION_CODE" \
+          --arg name "${{ inputs.version_name }}" \
+          --argjson code "${{ inputs.version_code }}" \
           --arg url "$DOWNLOAD_URL" \
           --arg variant "${{ inputs.variant }}" \
           --rawfile changelog changelog.txt \
@@ -78,11 +98,11 @@ runs:
             variant: $variant,
             release_time: (now | todateiso8601)
           }')
-        echo "Sending webhook to PUBLISH_VERSION_URL"
+        echo "Sending webhook to ${{ inputs.publish_version_url }}"
         echo "Payload: $JSON_DATA"
 
         curl --fail -X POST \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
+          -H "Authorization: Bearer ${{ inputs.publish_version_token }}" \
           --data-binary "$JSON_DATA" \
-          "${{ secrets.PUBLISH_VERSION_URL }}"
+          "${{ inputs.publish_version_url }}"

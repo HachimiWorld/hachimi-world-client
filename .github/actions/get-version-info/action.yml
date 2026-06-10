@@ -21,5 +21,3 @@ runs:
         VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
         echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_OUTPUT"
         echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_OUTPUT"
-        echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
-        echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"

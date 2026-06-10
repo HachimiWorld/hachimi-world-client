@@ -17,10 +17,19 @@ jobs:
       - name: Set build flavor to release
         run: printf "\n%s" "buildkonfig.flavor=release" >> gradle.properties
       - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with xcodebuild
         working-directory: iosApp/
         run: xcodebuild archive PRODUCT_NAME=HachimiWorld CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - uses: ./.github/actions/get-version-info
+        id: versions
+      - name: Set version env
+        run: |
+          echo "VERSION_NAME=${{ steps.versions.outputs.VERSION_NAME }}" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=${{ steps.versions.outputs.VERSION_CODE }}" >> "$GITHUB_ENV"
+
       - name: Package IPA
         working-directory: iosApp/build
         run: |
@@ -39,6 +48,15 @@ jobs:
           s3_destination: distribution/ios/
           variant: release-ios
           artifact_name: ios
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-macos:
     if: github.event.pull_request.merged == true
@@ -64,6 +82,9 @@ jobs:
             --library target/release/libhachimi.dylib \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with Gradle
         run: ./gradlew :desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
@@ -73,6 +94,7 @@ jobs:
           name: jpackage-logs
           path: desktopApp/build/compose/logs/
       - uses: ./.github/actions/get-version-info
+        id: versions
       - uses: ./.github/actions/publish-artifact
         with:
           source_dir: desktopApp/build/compose/binaries/main/dmg
@@ -81,6 +103,15 @@ jobs:
           s3_destination: distribution/macos/
           variant: release-macos
           artifact_name: macos
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-windows:
     if: github.event.pull_request.merged == true
@@ -107,6 +138,9 @@ jobs:
             --library target/release/hachimi.dll \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with Gradle
         run: ./gradlew :desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
@@ -116,6 +150,7 @@ jobs:
           name: jpackage-logs
           path: desktopApp/build/compose/logs/
       - uses: ./.github/actions/get-version-info
+        id: versions
       - uses: ./.github/actions/publish-artifact
         with:
           source_dir: desktopApp/build/compose/binaries/main/msi
@@ -124,6 +159,15 @@ jobs:
           s3_destination: distribution/windows/
           variant: release-windows
           artifact_name: windows
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-linux:
     if: github.event.pull_request.merged == true
@@ -153,6 +197,9 @@ jobs:
             --library target/release/libhachimi.so \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with Gradle
         run: ./gradlew desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
@@ -162,6 +209,7 @@ jobs:
           name: jpackage-logs
           path: desktopApp/build/compose/logs/
       - uses: ./.github/actions/get-version-info
+        id: versions
       - uses: ./.github/actions/publish-artifact
         with:
           source_dir: desktopApp/build/compose/binaries/main/deb
@@ -170,6 +218,15 @@ jobs:
           s3_destination: distribution/linux/
           variant: release-linux
           artifact_name: linux
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-android:
     if: github.event.pull_request.merged == true
@@ -191,6 +248,9 @@ jobs:
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > androidApp/android.jks
       - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build Release APK
         run: ./gradlew :androidApp:assembleRelease -P buildkonfig.flavor=release
         env:
@@ -206,6 +266,7 @@ jobs:
           name: jpackage-logs
           path: build/reports/problems
       - uses: ./.github/actions/get-version-info
+        id: versions
       - uses: ./.github/actions/publish-artifact
         with:
           source_dir: androidApp/build/outputs/apk/release
@@ -214,4 +275,13 @@ jobs:
           s3_destination: distribution/android/
           variant: release-android
           artifact_name: android
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
