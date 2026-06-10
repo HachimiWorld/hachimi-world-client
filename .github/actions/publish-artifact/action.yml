@@ -80,29 +80,27 @@ runs:
       env:
         PR_BODY: ${{ github.event.pull_request.body }}
       run: |
-        # Use printf + tr instead of echo + sed to preserve UTF-8 multi-byte sequences
+        # UTF-8 CL
         printf '%s' "$PR_BODY" | tr -d '\r' > changelog.txt
         DOWNLOAD_URL="https://${{ inputs.s3_domain }}/${{ inputs.s3_destination }}${FILE_NAME}"
 
+        # Maybe UTF-8 CRLF now
         JSON_DATA=$(jq -n -r \
           --arg name "${{ inputs.version_name }}" \
           --argjson code "${{ inputs.version_code }}" \
           --arg url "$DOWNLOAD_URL" \
           --arg variant "${{ inputs.variant }}" \
           --rawfile changelog changelog.txt \
-          '{
-            version_name: $name,
-            version_number: $code,
-            url: $url,
-            changelog: $changelog,
-            variant: $variant,
-            release_time: (now | todateiso8601)
-          }')
-        echo "Sending webhook to ${{ inputs.publish_version_url }}"
-        echo "Payload: $JSON_DATA"
+          '{ version_name: $name, version_number: $code, url: $url, changelog: $changelog, variant: $variant, release_time: (now | todateiso8601) }')
+        
+        # Write as UTF-8 CL to request_body.bin
+        printf '%s' "$JSON_DATA" | tr -d '\r' > request_body.bin
+        echo "Sending publish request"
 
+        # On windows runner, the request body might be converted to GBK or ASCII or whatever.
+        # Use --data-binary @request_body.bin to avoid charset conversation
         curl --fail -X POST \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer ${{ inputs.publish_version_token }}" \
-          --data-binary "$JSON_DATA" \
+          --data-binary @request_body.bin \
           "${{ inputs.publish_version_url }}"
