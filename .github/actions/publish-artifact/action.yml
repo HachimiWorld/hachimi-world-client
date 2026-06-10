@@ -1,0 +1,88 @@
+name: Publish Artifact
+description: Renames, uploads artifact, uploads to S3, and sends publish webhook
+
+inputs:
+  source_dir:
+    required: true
+    description: 'Directory containing the built artifact'
+  file_pattern:
+    required: true
+    description: 'Glob pattern to find the built artifact, e.g. *.dmg'
+  file_extension:
+    required: true
+    description: 'File extension for the renamed artifact, e.g. .dmg'
+  file_suffix:
+    required: false
+    default: ''
+    description: 'Optional filename suffix, e.g. -unsigned for iOS'
+  s3_destination:
+    required: true
+    description: 'S3 destination path, e.g. distribution/ios/'
+  variant:
+    required: true
+    description: 'Release variant, e.g. release-ios'
+  artifact_name:
+    required: true
+    description: 'Name for the uploaded GitHub Actions artifact'
+
+runs:
+  using: composite
+  steps:
+    - name: Rename output
+      shell: bash
+      working-directory: ${{ inputs.source_dir }}
+      run: |
+        FILE_NAME="hachimi-world-${VERSION_NAME}-${VERSION_CODE}${{ inputs.file_suffix }}${{ inputs.file_extension }}"
+        echo "FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
+        if [ ! -f "$FILE_NAME" ]; then
+          mv ${{ inputs.file_pattern }} "$FILE_NAME"
+        fi
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ inputs.source_dir }}/${{ env.FILE_NAME }}
+        compression-level: 0
+
+    - name: Upload to S3
+      uses: shallwefootball/s3-upload-action@master
+      with:
+        endpoint: ${{ secrets.S3_ENDPOINT }}
+        aws_key_id: ${{ secrets.S3_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+        aws_bucket: ${{ secrets.S3_BUCKET }}
+        source_dir: ${{ inputs.source_dir }}
+        destination_dir: ${{ inputs.s3_destination }}
+
+    - name: Send publish request
+      shell: bash
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      run: |
+        # Use printf + tr instead of echo + sed to preserve UTF-8 multi-byte sequences
+        printf '%s' "$PR_BODY" | tr -d '\r' > changelog.txt
+        DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/${{ inputs.s3_destination }}${FILE_NAME}"
+
+        JSON_DATA=$(jq -n -r \
+          --arg name "$VERSION_NAME" \
+          --argjson code "$VERSION_CODE" \
+          --arg url "$DOWNLOAD_URL" \
+          --arg variant "${{ inputs.variant }}" \
+          --rawfile changelog changelog.txt \
+          '{
+            version_name: $name,
+            version_number: $code,
+            url: $url,
+            changelog: $changelog,
+            variant: $variant,
+            release_time: (now | todateiso8601)
+          }')
+        echo "Sending webhook to PUBLISH_VERSION_URL"
+        echo "Payload: $JSON_DATA"
+
+        curl --fail -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
+          --data-binary "$JSON_DATA" \
+          "${{ secrets.PUBLISH_VERSION_URL }}"
