@@ -8,9 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -20,8 +18,6 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.isTraySupported
 import androidx.compose.ui.window.rememberTrayState
 import androidx.compose.ui.window.rememberWindowState
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.icon_vector
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -39,10 +35,10 @@ import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
 import world.hachimi.app.ui.design.HachimiPalette
 import world.hachimi.app.ui.theme.JvmTheme
+import world.hachimi.app.ui.theme.LocalWindow
 import world.hachimi.app.ui.window.WindowFrame
 import java.awt.Dimension
 
-internal val LocalWindow = staticCompositionLocalOf<ComposeWindow> { error("Not provided") }
 
 @OptIn(ExperimentalComposeUiApi::class, DelicateCoroutinesApi::class)
 fun main() {
@@ -60,7 +56,7 @@ fun main() {
             Logger.d("main", "Composer started")
             global.initialize()
         }
-        val icon = painterResource(Res.drawable.icon_vector)
+        val icon = painterResource(ResReexport.icon_vector)
         var showWindow by remember { mutableStateOf(true) }
         val trayState = rememberTrayState()
         var showCloseAskDialog by remember { mutableStateOf(false) }

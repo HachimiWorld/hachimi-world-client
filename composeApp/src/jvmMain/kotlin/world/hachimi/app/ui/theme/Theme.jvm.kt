@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontFamily
@@ -19,7 +20,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.hostOs
 import world.hachimi.app.BuildKonfig
-import world.hachimi.app.LocalWindow
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.ui.design.HachimiPalette
@@ -30,6 +30,8 @@ import java.awt.Color
 import kotlin.io.path.createTempFile
 import kotlin.io.path.moveTo
 import kotlin.io.path.writeBytes
+
+val LocalWindow = staticCompositionLocalOf<ComposeWindow> { error("Not provided") }
 
 @Composable
 fun JvmTheme(
