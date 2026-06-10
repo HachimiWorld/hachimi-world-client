@@ -1,4 +1,3 @@
-# TODO: Let the steps reusable by using composite action
 name: Release Distributions
 on:
   pull_request:
@@ -15,91 +14,50 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create local properties
-        run: |
-          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
-          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
-          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
       - name: Set build flavor to release
         run: printf "\n%s" "buildkonfig.flavor=release" >> gradle.properties
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/setup-build-env
         with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with xcodebuild
         working-directory: iosApp/
         run: xcodebuild archive PRODUCT_NAME=HachimiWorld CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-      - name: Get versions
-        shell: bash
+      - uses: ./.github/actions/get-version-info
+        id: versions
+      - name: Set version env
         run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "VERSION_NAME=${{ steps.versions.outputs.VERSION_NAME }}" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=${{ steps.versions.outputs.VERSION_CODE }}" >> "$GITHUB_ENV"
+
       - name: Package IPA
         working-directory: iosApp/build
         run: |
           FILE_NAME="hachimi-world-${VERSION_NAME}-${VERSION_CODE}-unsigned.ipa"
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+          echo "FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
           mkdir -p Payload
           cp -r Release-iphoneos/HachimiWorld.app/ Payload/HachimiWorld.app
           mkdir -p ipa
           zip -r "ipa/${FILE_NAME}" Payload
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/publish-artifact
         with:
-          name: ios
-          path: iosApp/build/ipa/*.ipa
-          compression-level: 0
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
-        with:
-          endpoint: ${{ secrets.S3_ENDPOINT }}
-          aws_key_id: ${{ secrets.S3_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: iosApp/build/ipa/
-          destination_dir: distribution/ios/
-      - name: Send publish request
-        shell: bash
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          echo "$PR_BODY" > changelog.txt
-          # Step 1: Replace \r\n with \n
-          sed 's/\r\n/\n/g' changelog.txt > changelog_tmp.txt
-          # Step 2: Replace standalone \r with \n
-          sed 's/\r/\n/g' changelog_tmp.txt > changelog_fixed.txt
-          mv changelog_fixed.txt changelog.txt
-          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/ios/$FILE_NAME"
-          # Prepare data
-          JSON_DATA=$(jq -n -r \
-          --arg name "$VERSION_NAME" \
-          --argjson code "$VERSION_CODE" \
-          --arg url "$DOWNLOAD_URL" \
-          --rawfile changelog changelog.txt \
-          '{
-            version_name: $name,
-            version_number: $code,
-            url: $url,
-            changelog: $changelog,
-            variant: "release-ios",
-            release_time: (now | todateiso8601)
-          }')
-          echo "Sending webhook to PUBLISH_VERSION_URL"
-          echo "Payload: $JSON_DATA"
+          source_dir: iosApp/build/ipa
+          file_pattern: '*.ipa'
+          file_extension: '.ipa'
+          file_suffix: '-unsigned'
+          s3_destination: distribution/ios/
+          variant: release-ios
+          artifact_name: ios
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
-          # Send webhook
-          curl --fail -X POST \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
-          --data-binary "$JSON_DATA" \
-          "${{ secrets.PUBLISH_VERSION_URL }}"
   build-macos:
     if: github.event.pull_request.merged == true
     runs-on: macos-latest
@@ -107,12 +65,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create local properties
-        run: |
-          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
-          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
-          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
       - name: Cache
         uses: actions/cache@v4
         with:
@@ -125,90 +77,41 @@ jobs:
         working-directory: ./rustLib
         run: |
           cargo build -r --lib
-          cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/release/libhachimi.dylib \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/setup-build-env
         with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
+        run: ./gradlew :desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: jpackage-logs
-          path: composeApp/build/compose/logs/
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: composeApp/build/compose/binaries/main/dmg/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.dmg
-          mv *.dmg $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+          path: desktopApp/build/compose/logs/
+      - uses: ./.github/actions/get-version-info
+        id: versions
+      - uses: ./.github/actions/publish-artifact
         with:
-          name: macos
-          path: composeApp/build/compose/binaries/main/dmg/*.dmg
-          compression-level: 0
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
-        with:
-          endpoint: ${{ secrets.S3_ENDPOINT }}
-          aws_key_id: ${{ secrets.S3_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: composeApp/build/compose/binaries/main/dmg/
-          destination_dir: distribution/macos/
-      - name: Send publish request
-        shell: bash
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          echo "$PR_BODY" > changelog.txt
-          # Step 1: Replace \r\n with \n
-          sed 's/\r\n/\n/g' changelog.txt > changelog_tmp.txt
-          # Step 2: Replace standalone \r with \n
-          sed 's/\r/\n/g' changelog_tmp.txt > changelog_fixed.txt
-          mv changelog_fixed.txt changelog.txt
-          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/macos/$FILE_NAME"
-          # Prepare data
-          JSON_DATA=$(jq -n -r \
-          --arg name "$VERSION_NAME" \
-          --argjson code "$VERSION_CODE" \
-          --arg url "$DOWNLOAD_URL" \
-          --rawfile changelog changelog.txt \
-          '{
-            version_name: $name,
-            version_number: $code,
-            url: $url,
-            changelog: $changelog,
-            variant: "release-macos",
-            release_time: (now | todateiso8601)
-          }')
-          echo "Sending webhook to PUBLISH_VERSION_URL"
-          echo "Payload: $JSON_DATA"
-
-          # Send webhook
-          curl --fail -X POST \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
-          --data-binary "$JSON_DATA" \
-          "${{ secrets.PUBLISH_VERSION_URL }}"
+          source_dir: desktopApp/build/compose/binaries/main/dmg
+          file_pattern: '*.dmg'
+          file_extension: '.dmg'
+          s3_destination: distribution/macos/
+          variant: release-macos
+          artifact_name: macos
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-windows:
     if: github.event.pull_request.merged == true
@@ -217,12 +120,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create local properties
-        run: |
-          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
-          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
-          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
       - name: Cache
         uses: actions/cache@v4
         with:
@@ -236,95 +133,42 @@ jobs:
         shell: bash
         run: |
           cargo build -r --lib
-          cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/release/hachimi.dll \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/setup-build-env
         with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
+        run: ./gradlew :desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: jpackage-logs
-          path: composeApp/build/compose/logs/
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: composeApp/build/compose/binaries/main/msi/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.msi
-          mv *.msi $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+          path: desktopApp/build/compose/logs/
+      - uses: ./.github/actions/get-version-info
+        id: versions
+      - uses: ./.github/actions/publish-artifact
         with:
-          name: windows
-          path: composeApp/build/compose/binaries/main/msi/*.msi
-          compression-level: 0
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
-        with:
-          endpoint: ${{ secrets.S3_ENDPOINT }}
-          aws_key_id: ${{ secrets.S3_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: composeApp/build/compose/binaries/main/msi/
-          destination_dir: distribution/windows/
-      - name: Send publish request
-        shell: bash
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          # Set UTF-8 encoding for the environment
-          chcp.com 65001
-          export LANG=en_US.UTF-8
-          export LC_ALL=en_US.UTF-8
-          # Export PR content as changelog
-          printf "%s" "$PR_BODY" > changelog.txt
-          # Step 1: Replace \r\n with \n
-          sed 's/\r\n/\n/g' changelog.txt > changelog_tmp.txt
-          # Step 2: Replace standalone \r with \n
-          sed 's/\r/\n/g' changelog_tmp.txt > changelog_fixed.txt
-          mv changelog_fixed.txt changelog.txt
-          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/windows/$FILE_NAME"
-          # Prepare data
-          JSON_DATA=$(jq -n -r \
-          --arg name "$VERSION_NAME" \
-          --argjson code "$VERSION_CODE" \
-          --arg url "$DOWNLOAD_URL" \
-          --rawfile changelog changelog.txt \
-          '{
-            version_name: $name,
-            version_number: $code,
-            url: $url,
-            changelog: $changelog,
-            variant: "release-windows",
-            release_time: (now | todateiso8601)
-          }')
-          echo "Sending webhook to PUBLISH_VERSION_URL"
-          echo "Payload: $JSON_DATA"
+          source_dir: desktopApp/build/compose/binaries/main/msi
+          file_pattern: '*.msi'
+          file_extension: '.msi'
+          s3_destination: distribution/windows/
+          variant: release-windows
+          artifact_name: windows
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
-          # Send webhook
-          curl --fail -X POST \
-          -H "Content-Type: application/json; charset=utf-8" \
-          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
-          --data-binary "$JSON_DATA" \
-          "${{ secrets.PUBLISH_VERSION_URL }}"
   build-linux:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -332,12 +176,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create local properties
-        run: |
-          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
-          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
-          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
       - name: Cache
         uses: actions/cache@v4
         with:
@@ -348,96 +186,48 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install dependencies
         run: |
-          sudo apt install libasound2-dev # This is essential for build `rodio` dependency.
+          sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev
       - name: Build rust library
         working-directory: ./rustLib
         run: |
           cargo build -r --lib
-          cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/release/libhachimi.so \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/setup-build-env
         with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build with Gradle
-        run: ./gradlew composeApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
+        run: ./gradlew desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: jpackage-logs
-          path: composeApp/build/compose/logs/
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: composeApp/build/compose/binaries/main/deb/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.deb
-          mv *.deb $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+          path: desktopApp/build/compose/logs/
+      - uses: ./.github/actions/get-version-info
+        id: versions
+      - uses: ./.github/actions/publish-artifact
         with:
-          name: linux
-          path: composeApp/build/compose/binaries/main/deb/*.deb
-          compression-level: 0
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
-        with:
-          endpoint: ${{ secrets.S3_ENDPOINT }}
-          aws_key_id: ${{ secrets.S3_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: composeApp/build/compose/binaries/main/deb/
-          destination_dir: distribution/linux/
-      - name: Send publish request
-        shell: bash
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          echo "$PR_BODY" > changelog.txt
-          # Step 1: Replace \r\n with \n
-          sed 's/\r\n/\n/g' changelog.txt > changelog_tmp.txt
-          # Step 2: Replace standalone \r with \n
-          sed 's/\r/\n/g' changelog_tmp.txt > changelog_fixed.txt
-          mv changelog_fixed.txt changelog.txt
-          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/linux/$FILE_NAME"
-          # Prepare data
-          JSON_DATA=$(jq -n -r \
-          --arg name "$VERSION_NAME" \
-          --argjson code "$VERSION_CODE" \
-          --arg url "$DOWNLOAD_URL" \
-          --rawfile changelog changelog.txt \
-          '{
-            version_name: $name,
-            version_number: $code,
-            url: $url,
-            changelog: $changelog,
-            variant: "release-linux",
-            release_time: (now | todateiso8601)
-          }')
-          echo "Sending webhook to PUBLISH_VERSION_URL"
-          echo "Payload: $JSON_DATA"
+          source_dir: desktopApp/build/compose/binaries/main/deb
+          file_pattern: '*.deb'
+          file_extension: '.deb'
+          s3_destination: distribution/linux/
+          variant: release-linux
+          artifact_name: linux
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
-          # Send webhook
-          curl --fail -X POST \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
-          --data-binary "$JSON_DATA" \
-          "${{ secrets.PUBLISH_VERSION_URL }}"
   build-android:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -445,17 +235,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create local properties
-        run: |
-          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
-          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
-          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -468,8 +247,12 @@ jobs:
       - name: Decode Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > androidApp/android.jks
+      - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
       - name: Build Release APK
-        run: ./gradlew assembleRelease -P buildkonfig.flavor=release
+        run: ./gradlew :androidApp:assembleRelease -P buildkonfig.flavor=release
         env:
           IS_CI: true
           ANDROID_KEYSTORE_FILE: android.jks
@@ -482,68 +265,23 @@ jobs:
         with:
           name: jpackage-logs
           path: build/reports/problems
-      - name: Get versions
-        shell: bash
-        run: |
-          VERSIONS=$(./gradlew printVersions --quiet)
-          VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
-          VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-      - name: Rename output
-        shell: bash
-        working-directory: androidApp/build/outputs/apk/release/
-        run: |
-          FILE_NAME=hachimi-world-${VERSION_NAME}-${VERSION_CODE}.apk
-          mv *.apk $FILE_NAME
-          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/get-version-info
+        id: versions
+      - uses: ./.github/actions/publish-artifact
         with:
-          name: android
-          path: androidApp/build/outputs/apk/release/
-          compression-level: 0
-      - name: Upload to S3
-        uses: shallwefootball/s3-upload-action@master
-        with:
-          endpoint: ${{ secrets.S3_ENDPOINT }}
-          aws_key_id: ${{ secrets.S3_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: androidApp/build/outputs/apk/release/
-          destination_dir: distribution/android/
-      - name: Send publish request
-        shell: bash
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          echo "$PR_BODY" > changelog.txt
-          # Step 1: Replace \r\n with \n
-          sed 's/\r\n/\n/g' changelog.txt > changelog_tmp.txt
-          # Step 2: Replace standalone \r with \n
-          sed 's/\r/\n/g' changelog_tmp.txt > changelog_fixed.txt
-          mv changelog_fixed.txt changelog.txt
-          DOWNLOAD_URL="https://${{ secrets.S3_DOMAIN }}/distribution/android/$FILE_NAME"
-          # Prepare data
-          JSON_DATA=$(jq -n -r \
-          --arg name "$VERSION_NAME" \
-          --argjson code "$VERSION_CODE" \
-          --arg url "$DOWNLOAD_URL" \
-          --rawfile changelog changelog.txt \
-          '{
-            version_name: $name,
-            version_number: $code,
-            url: $url,
-            changelog: $changelog,
-            variant: "release-android",
-            release_time: (now | todateiso8601)
-          }')
-          echo "Sending webhook to PUBLISH_VERSION_URL"
-          echo "Payload: $JSON_DATA"
+          source_dir: androidApp/build/outputs/apk/release
+          file_pattern: '*.apk'
+          file_extension: '.apk'
+          s3_destination: distribution/android/
+          variant: release-android
+          artifact_name: android
+          version_name: ${{ steps.versions.outputs.VERSION_NAME }}
+          version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+          s3_key_id: ${{ secrets.S3_KEY_ID }}
+          s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          s3_bucket: ${{ secrets.S3_BUCKET }}
+          s3_domain: ${{ secrets.S3_DOMAIN }}
+          publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
+          publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
-          # Send webhook
-          curl --fail -X POST \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.PUBLISH_VERSION_TOKEN }}" \
-          --data-binary "$JSON_DATA" \
-          "${{ secrets.PUBLISH_VERSION_URL }}"

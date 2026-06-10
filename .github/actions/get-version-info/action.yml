@@ -1,0 +1,23 @@
+name: Get Version Info
+description: Runs printVersions and exports VERSION_NAME and VERSION_CODE
+
+outputs:
+  VERSION_NAME:
+    description: 'Human-readable version name'
+    value: ${{ steps.versions.outputs.VERSION_NAME }}
+  VERSION_CODE:
+    description: 'Numeric version code'
+    value: ${{ steps.versions.outputs.VERSION_CODE }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get versions
+      id: versions
+      shell: bash
+      run: |
+        VERSIONS=$(./gradlew printVersions --quiet)
+        VERSION_NAME=$(echo "$VERSIONS" | awk '{print $1}')
+        VERSION_CODE=$(echo "$VERSIONS" | awk '{print $2}')
+        echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+        echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_OUTPUT"

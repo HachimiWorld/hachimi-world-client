@@ -1,0 +1,106 @@
+name: Publish Artifact
+description: Renames, uploads artifact, uploads to S3, and sends publish webhook
+
+inputs:
+  source_dir:
+    required: true
+    description: 'Directory containing the built artifact'
+  file_pattern:
+    required: true
+    description: 'Glob pattern to find the built artifact, e.g. *.dmg'
+  file_extension:
+    required: true
+    description: 'File extension for the renamed artifact, e.g. .dmg'
+  file_suffix:
+    required: false
+    default: ''
+    description: 'Optional filename suffix, e.g. -unsigned for iOS'
+  s3_destination:
+    required: true
+    description: 'S3 destination path, e.g. distribution/ios/'
+  variant:
+    required: true
+    description: 'Release variant, e.g. release-ios'
+  artifact_name:
+    required: true
+    description: 'Name for the uploaded GitHub Actions artifact'
+  version_name:
+    required: true
+    description: 'Version name from get-version-info'
+  version_code:
+    required: true
+    description: 'Version code from get-version-info'
+  s3_endpoint:
+    required: true
+  s3_key_id:
+    required: true
+  s3_secret_access_key:
+    required: true
+  s3_bucket:
+    required: true
+  s3_domain:
+    required: true
+  publish_version_token:
+    required: true
+  publish_version_url:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Rename output
+      shell: bash
+      working-directory: ${{ inputs.source_dir }}
+      run: |
+        FILE_NAME="hachimi-world-${{ inputs.version_name }}-${{ inputs.version_code }}${{ inputs.file_suffix }}${{ inputs.file_extension }}"
+        echo "FILE_NAME=$FILE_NAME" >> "$GITHUB_ENV"
+        if [ ! -f "$FILE_NAME" ]; then
+          mv ${{ inputs.file_pattern }} "$FILE_NAME"
+        fi
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ inputs.source_dir }}/${{ env.FILE_NAME }}
+        compression-level: 0
+
+    - name: Upload to S3
+      uses: shallwefootball/s3-upload-action@master
+      with:
+        endpoint: ${{ inputs.s3_endpoint }}
+        aws_key_id: ${{ inputs.s3_key_id }}
+        aws_secret_access_key: ${{ inputs.s3_secret_access_key }}
+        aws_bucket: ${{ inputs.s3_bucket }}
+        source_dir: ${{ inputs.source_dir }}
+        destination_dir: ${{ inputs.s3_destination }}
+
+    - name: Send publish request
+      shell: bash
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      run: |
+        # UTF-8 CL
+        printf '%s' "$PR_BODY" | tr -d '\r' > changelog.txt
+        DOWNLOAD_URL="https://${{ inputs.s3_domain }}/${{ inputs.s3_destination }}${FILE_NAME}"
+
+        # Maybe UTF-8 CRLF now
+        JSON_DATA=$(jq -n -r \
+          --arg name "${{ inputs.version_name }}" \
+          --argjson code "${{ inputs.version_code }}" \
+          --arg url "$DOWNLOAD_URL" \
+          --arg variant "${{ inputs.variant }}" \
+          --rawfile changelog changelog.txt \
+          '{ version_name: $name, version_number: $code, url: $url, changelog: $changelog, variant: $variant, release_time: (now | todateiso8601) }')
+        
+        # Write as UTF-8 CL to request_body.bin
+        printf '%s' "$JSON_DATA" | tr -d '\r' > request_body.bin
+        echo "Sending publish request"
+
+        # On windows runner, the request body might be converted to GBK or ASCII or whatever.
+        # Use --data-binary @request_body.bin to avoid charset conversation
+        curl --fail -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ inputs.publish_version_token }}" \
+          --data-binary @request_body.bin \
+          "${{ inputs.publish_version_url }}"
