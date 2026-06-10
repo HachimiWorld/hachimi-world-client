@@ -1,5 +1,10 @@
 # Unreleased
 
+1. Migrated to navigation3.
+2. Fixed charsets issues in changelog.
+
+# 1.2.0
+
 ## Features 新功能
 
 1. Added like/dislike feature. 新增喜欢/不喜欢功能。
