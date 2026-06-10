@@ -5,7 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import world.hachimi.app.api.ApiClient
@@ -95,6 +100,7 @@ class ChangelogViewModel(
     }
 
     fun loadMore() = viewModelScope.launch {
+        if (initializeStatus != InitializeStatus.LOADED) return@launch
         if (loading || loadingMore || noMoreData) return@launch
 
         loadingMutex.withLock {
