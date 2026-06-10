@@ -36,7 +36,7 @@ jobs:
         working-directory: ./rustLib
         run: |
           cargo build --lib
-          cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/libhachimi.dylib \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
@@ -74,7 +74,7 @@ jobs:
         shell: bash
         run: |
           cargo build --lib
-          cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/hachimi.dll \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
@@ -115,7 +115,7 @@ jobs:
         working-directory: ./rustLib
         run: |
           cargo build --lib
-          cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/libhachimi.so \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
