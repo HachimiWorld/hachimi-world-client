@@ -11,7 +11,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.koin.core.context.startKoin
-import world.hachimi.app.di.appModule
+import world.hachimi.app.di.webModule
 import world.hachimi.app.font.WithFont
 import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
@@ -34,7 +34,7 @@ fun main() {
     val startRoute = getStartDestination()
     val playIntent = getPlayIntent()
     val koin = startKoin {
-        modules(appModule)
+        modules(webModule)
     }
 
     val global = koin.koin.get<GlobalStore>()

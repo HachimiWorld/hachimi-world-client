@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
@@ -22,6 +23,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
+@KoinViewModel
 class HomeViewModel(
     private val api: ApiClient,
     private val global: GlobalStore

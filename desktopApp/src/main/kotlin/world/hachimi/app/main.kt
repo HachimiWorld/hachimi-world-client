@@ -26,7 +26,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
-import world.hachimi.app.di.appModule
+import org.koin.plugin.module.dsl.module
+import world.hachimi.app.di.JvmModule
 import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
@@ -46,7 +47,7 @@ fun main() {
 
     Logger.d("main", "Starting application")
     val koin = startKoin {
-        modules(appModule)
+        module<JvmModule>()
     }
 
     val global = koin.koin.get<GlobalStore>()

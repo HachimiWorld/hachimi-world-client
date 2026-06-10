@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.koinCompiler)
 }
 
 kotlin {
@@ -51,6 +52,7 @@ kotlin {
 
                 implementation(project.dependencies.platform(libs.koin.bom))
                 implementation(libs.koin.core)
+                implementation(libs.koin.annotations)
                 implementation(libs.koin.compose)
                 implementation(libs.koin.compose.viewmodel)
                 implementation(libs.koin.compose.viewmodelNavigation)

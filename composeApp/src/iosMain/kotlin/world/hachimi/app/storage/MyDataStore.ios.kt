@@ -1,5 +1,6 @@
 
 package world.hachimi.app.storage
+import org.koin.core.annotation.Singleton
 import platform.Foundation.NSUserDefaults
 import kotlin.reflect.KClass
 
@@ -14,6 +15,7 @@ actual class PreferenceKey<T : Any> {
 }
 
 @Suppress("UNCHECKED_CAST")
+@Singleton
 class MyDataStoreImpl : MyDataStore {
     private val userDefaults = NSUserDefaults.standardUserDefaults
 

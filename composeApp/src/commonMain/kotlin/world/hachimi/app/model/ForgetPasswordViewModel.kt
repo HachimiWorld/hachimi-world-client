@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.AuthModule
@@ -29,6 +30,7 @@ import world.hachimi.app.nav.Route
 
 private const val TAG = "forget_password"
 
+@KoinViewModel
 class ForgetPasswordViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,

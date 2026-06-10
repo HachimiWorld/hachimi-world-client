@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
@@ -25,6 +26,7 @@ import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.nav.Route
 
+@KoinViewModel
 class ReviewViewModel(
     private val api: ApiClient,
     private val global: GlobalStore

@@ -11,6 +11,7 @@ import hachimiworld.composeapp.generated.resources.review_discussion_content_emp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
@@ -18,6 +19,7 @@ import world.hachimi.app.api.ok
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 
+@KoinViewModel
 class ReviewDetailViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,

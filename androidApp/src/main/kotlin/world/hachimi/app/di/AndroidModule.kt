@@ -1,30 +1,57 @@
 package world.hachimi.app.di
 
+import android.content.ComponentName
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import io.github.vinceglb.filekit.AndroidFile
 import okio.Path.Companion.toOkioPath
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Singleton
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.getPlatform
-import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.player.AndroidPlayerEngine
+import world.hachimi.app.player.PlayerEngine
+import world.hachimi.app.service.PlaybackService
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.MyDataStoreImpl
 import world.hachimi.app.storage.SongCache
 import world.hachimi.app.storage.SongCacheImpl
 
-val appModule = module {
-    single { ApiClient(BuildKonfig.API_BASE_URL) }
-    single { getPreferencesDataStore() }
-    single<MyDataStore> { MyDataStoreImpl(get()) }
-    single<SongCache> { SongCacheImpl() }
+@Module
+@ComponentScan("world.hachimi.app")
+class AndroidModule {
+    @Singleton
+    fun provideApiClient(): ApiClient {
+        return ApiClient(BuildKonfig.API_BASE_URL)
+    }
 
-    singleOf(::GlobalStore)
+    @Singleton
+    fun provideDataStore(): DataStore<Preferences> {
+        return getPreferencesDataStore()
+    }
 
-    applyViewModels()
+    @Singleton
+    fun provideMyDataStore(dataStore: DataStore<Preferences>): MyDataStore {
+        return MyDataStoreImpl(dataStore)
+    }
+
+    @Singleton
+    fun providePlayerEngine(context: Context): PlayerEngine {
+        val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+        return AndroidPlayerEngine(controllerFuture)
+    }
+
+    @Singleton
+    fun provideSongCache(): SongCache {
+        return SongCacheImpl()
+    }
 }
 
 private fun getPreferencesDataStore(): DataStore<Preferences> {

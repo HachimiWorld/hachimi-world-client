@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.koinCompiler)
 }
 
 kotlin {
@@ -19,7 +20,7 @@ kotlin {
 
     android {
         namespace = "world.hachimi.app.shared"
-        compileSdk = 36
+        compileSdk = 37
 
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
@@ -84,6 +85,7 @@ kotlin {
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.annotations)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodelNavigation)
 

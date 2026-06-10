@@ -10,12 +10,14 @@ import hachimiworld.composeapp.generated.resources.playlist_login_required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
+@KoinViewModel
 class PlaylistViewModel(
     private val api: ApiClient,
     private val global: GlobalStore

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.koinCompiler)
 }
 
 val gitVersionCode = providers.exec {
@@ -21,7 +22,7 @@ val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }
 
 android {
     namespace = "world.hachimi.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "world.hachimi.app"
@@ -92,6 +93,7 @@ dependencies {
     implementation(libs.filekit.coil)
 
     implementation(libs.koin.android)
+    implementation(libs.koin.annotations)
     implementation(libs.koin.compose)
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.koin.compose.viewmodelNavigation)

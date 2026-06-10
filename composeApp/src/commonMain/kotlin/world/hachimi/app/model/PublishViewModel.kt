@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
@@ -68,6 +69,7 @@ import world.hachimi.app.util.singleLined
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
+@KoinViewModel
 class PublishViewModel(
     private val global: GlobalStore,
     private val api: ApiClient

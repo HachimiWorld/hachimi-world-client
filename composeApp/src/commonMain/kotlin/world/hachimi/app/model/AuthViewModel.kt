@@ -19,6 +19,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.AuthModule
@@ -35,6 +36,7 @@ import world.hachimi.app.util.validatePasswordPattern
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
+@KoinViewModel
 class AuthViewModel(
     private val api: ApiClient,
     private val dataStore: MyDataStore,

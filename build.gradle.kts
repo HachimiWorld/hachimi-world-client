@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.koinCompiler) apply false
 }
 
 val gitVersionCode = providers.exec {

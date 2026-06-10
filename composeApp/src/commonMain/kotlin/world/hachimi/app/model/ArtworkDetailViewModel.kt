@@ -5,10 +5,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hachimiworld.composeapp.generated.resources.*
-import kotlinx.coroutines.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_jmid_already_used
+import hachimiworld.composeapp.generated.resources.artwork_jmid_prefix_not_set
+import hachimiworld.composeapp.generated.resources.publish_change_success
+import hachimiworld.composeapp.generated.resources.publish_jmid_number_format
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
@@ -20,6 +31,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private const val TAG = "artwork_detail"
 
+@KoinViewModel
 class ArtworkDetailViewModel(
     private val global: GlobalStore,
     private val api: ApiClient

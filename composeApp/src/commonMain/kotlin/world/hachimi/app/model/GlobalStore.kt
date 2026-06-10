@@ -24,6 +24,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
+import org.koin.core.annotation.Singleton
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.AuthError
@@ -52,6 +53,7 @@ import kotlin.time.Duration.Companion.seconds
  *
  * // TODO: Decouple the logics here
  */
+@Singleton
 class GlobalStore(
     private val dataStore: MyDataStore,
     private val api: ApiClient,

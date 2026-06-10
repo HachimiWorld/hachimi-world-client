@@ -13,12 +13,14 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PostModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
+@KoinViewModel
 class EventsListViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,
