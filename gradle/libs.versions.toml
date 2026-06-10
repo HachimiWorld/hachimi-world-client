@@ -32,7 +32,7 @@ koin-bom = "4.2.0"
 
 constraintlayoutMultiplatform = "0.6.0"
 logback = "1.5.32"
-buildkonfig = "0.17.1"
+buildkonfig = "0.21.2"
 coil = "3.4.0"
 filekit = "0.13.0"
 mp3spi = "1.9.5.4"

@@ -11,7 +11,7 @@
     <title>（实验性）基米天堂 Web 端</title>
 
     <!--    <link type="text/css" rel="stylesheet" href="styles.css">-->
-    <!--    <script type="application/javascript" src="composeApp.js"></script>-->
+    <!--    <script type="application/javascript" src="webApp.js"></script>-->
     <style>
         html, body {
             width: 100%;
@@ -88,8 +88,8 @@
         const scriptError = () => {
             if (fallback === false) {
                 fallback = true
-                // Maybe in development mode, so we try to load composeApp.js, because we haven't created the compatible dist
-                document.body.appendChild(createScript("composeApp.js"));
+                // Maybe in development mode, so we try to load webApp.js, because we haven't created the compatible dist
+                document.body.appendChild(createScript("webApp.js"));
             } else {
                 alert("加载失败，若多次重试仍然失败，请更换为谷歌浏览器访问")
             }
@@ -121,7 +121,7 @@
                 typeof WebAssembly?.validate === "function" &&
                 WebAssembly.validate(simpleWasmModule);
 
-            document.body.appendChild(createScript(hasSupportOfAllRequiredWasmFeatures() ? "originWasmComposeApp.js" : "originJsComposeApp.js"));
+            document.body.appendChild(createScript(hasSupportOfAllRequiredWasmFeatures() ? "originWasmWebApp.js" : "originJsWebApp.js"));
         }
 
         if (document.readyState === "loading") {
