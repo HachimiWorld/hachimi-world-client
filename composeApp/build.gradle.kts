@@ -29,7 +29,6 @@ kotlin {
     }
 
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -46,6 +45,7 @@ kotlin {
     }
 
     jvm()
+
     js {
         browser()
         binaries.executable()
@@ -162,7 +162,7 @@ kotlin {
         }
         jsMain { }
         wasmJsMain { }
-        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { iosTarget->
+        listOf(iosArm64Main, iosSimulatorArm64Main).forEach { iosTarget->
             iosTarget {
                 dependsOn(nonAndroidMain)
                 dependencies {
@@ -190,6 +190,7 @@ dependencies {
 //    add("kspIosArm64", libs.room.compiler)
 }
 
+// Android-based preview support
 dependencies {
     androidRuntimeClasspath(libs.compose.ui.tooling)
 }

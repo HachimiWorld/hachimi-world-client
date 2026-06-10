@@ -97,8 +97,10 @@ fun handlePermission(): Promise<PermissionStatus> = js(
 
 fun queryLocalFonts(): Promise<JsArray<FontData>> = js("window.queryLocalFonts()")
 
-private val preferredCJKFontFamilies = linkedSetOf("Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Noto Sans CJK");
-private val preferredEmojiFontFamilies = linkedSetOf("Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji");
+private val preferredCJKFontFamilies =
+    linkedSetOf("Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Noto Sans CJK");
+private val preferredEmojiFontFamilies =
+    linkedSetOf("Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji");
 
 // Demibold Italic
 private fun parseFontStyle(styleString: String): Pair<FontWeight, FontStyle> {
@@ -210,9 +212,9 @@ suspend fun loadFonts(enableEmoji: Boolean): FontFamily {
     return fontFamily
 }
 
-actual suspend fun loadFontFromCache(url: String) : ByteArray? {
+actual suspend fun loadFontFromCache(url: String): ByteArray? {
     val caches = window.caches.open("font-cache").await<Cache>()
-    val response = caches.match(url, CacheQueryOptions()).await<Response?>()
+    val response = caches.match(url, CacheQueryOptions()).await() as? Response?
         ?: return null
 
     val arrayBuffer = response.arrayBuffer().await<ArrayBuffer>()

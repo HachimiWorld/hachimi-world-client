@@ -8,6 +8,5 @@ actual fun getCurrentPlatform(): Platform = when (hostOs) {
     OS.Linux -> Platform.Linux
     OS.Windows -> Platform.Windows
     OS.MacOS -> Platform.MacOS
-    OS.JS -> Platform.Web
     else -> Platform.Unknown
 }
