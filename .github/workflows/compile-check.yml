@@ -12,7 +12,7 @@ concurrency:
   group: compile-check-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  build-android:
+  compile-android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,9 +31,9 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Compile
-        run: ./gradlew assembleDebug
-  build-web:
+      - name: Compile android target
+        run: ./gradlew :androidApp:assembleDebug
+  compile-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,5 +52,7 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Compile
-        run: ./gradlew compileKotlinWasmJs
+      - name: Compile js target
+        run: ./gradlew :webApp:compileKotlinJs
+      - name: Compile wasmJs target
+        run: ./gradlew :webApp:compileKotlinWasmJs
