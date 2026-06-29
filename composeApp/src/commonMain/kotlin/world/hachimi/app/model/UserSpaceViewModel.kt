@@ -55,19 +55,8 @@ class UserSpaceViewModel(
     private var uid: Long? = null
 
     fun mounted(uid: Long?) {
-        when (initializeStatus) {
-            InitializeStatus.INIT, InitializeStatus.FAILED -> {
-                initialize(uid)
-            }
-
-            InitializeStatus.LOADED -> {
-                // Just refresh?
-                if (this.uid != uid) {
-                    initialize(uid)
-                } else {
-                    refresh()
-                }
-            }
+        if (this.uid != uid) {
+            initialize(uid)
         }
     }
 
@@ -123,10 +112,6 @@ class UserSpaceViewModel(
             isFollowing = if (isFollowing) true else null,
             followerCount = followerCount,
         )
-    }
-
-    private fun refresh() {
-
     }
 
     fun updateSongPage(pageIndex: Long, pageSize: Long) = viewModelScope.launch {
