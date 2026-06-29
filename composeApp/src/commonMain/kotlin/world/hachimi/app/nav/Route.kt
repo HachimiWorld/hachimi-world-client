@@ -186,6 +186,14 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/changelog")
         data object Changelog : Root
+
+        @Serializable
+        @SerialName("/following")
+        data object FollowingList : Root
+
+        @Serializable
+        @SerialName("/followers")
+        data object FollowersList : Root
     }
 
     @Serializable

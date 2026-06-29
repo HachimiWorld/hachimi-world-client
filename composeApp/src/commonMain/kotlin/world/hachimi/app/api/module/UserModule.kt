@@ -32,10 +32,16 @@ class UserModule(
         val bio: String?,
         val gender: Int?,
         val isBanned: Boolean,
-        /**
-         * @since 260401
-         */
-        val connectedAccounts: List<ConnectedAccountItem>
+        /** @since 260401 */
+        val connectedAccounts: List<ConnectedAccountItem>,
+        /** @since 260619 */
+        val followerCount: Long = 0,
+        /** @since 260619 */
+        val followingCount: Long = 0,
+        /** @since 260619 */
+        val isFollowing: Boolean? = null,
+        /** @since 260619 */
+        val isFollowedBy: Boolean? = null,
     )
 
     @Serializable
@@ -167,4 +173,77 @@ class UserModule(
 
     suspend fun connectionVerifyChallenge(req: ConnectionVerifyChallengeReq): WebResult<Unit> =
         client.post("/user/connection/verify_challenge", req)
+
+    // ================================================================
+    // Follow Feature
+    // ================================================================
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowingItem(
+        val user: PublicUserProfile,
+        /** @since 260626 */
+        val isMutual: Boolean = false,
+        /** @since 260626 */
+        val followedAt: String = "",
+    )
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowerItem(
+        val user: PublicUserProfile,
+        /** @since 260626 */
+        val isMutual: Boolean = false,
+        /** @since 260626 */
+        val followedAt: String = "",
+    )
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowingReq(
+        val after: String? = null,
+        val limit: Int? = null,
+    )
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowersReq(
+        val after: String? = null,
+        val limit: Int? = null,
+    )
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowListResp<T>(
+        val items: List<T>,
+        val nextCursor: String? = null,
+    )
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowReq(
+        val targetUid: Long,
+    )
+
+    /** @since 260626 */
+    @Serializable
+    data class FollowResp(
+        val followerCount: Long,
+    )
+
+    /** @since 260626 */
+    suspend fun following(req: FollowingReq): WebResult<FollowListResp<FollowingItem>> =
+        client.get("/user/following", req)
+
+    /** @since 260626 */
+    suspend fun followers(req: FollowersReq): WebResult<FollowListResp<FollowerItem>> =
+        client.get("/user/followers", req)
+
+    /** @since 260626 */
+    suspend fun follow(req: FollowReq): WebResult<FollowResp> =
+        client.post("/user/follow", req)
+
+    /** @since 260626 */
+    suspend fun unfollow(req: FollowReq): WebResult<FollowResp> =
+        client.post("/user/unfollow", req)
 }

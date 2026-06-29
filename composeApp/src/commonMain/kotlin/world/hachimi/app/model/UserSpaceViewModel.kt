@@ -107,6 +107,18 @@ class UserSpaceViewModel(
         }
     }
 
+    /**
+     * Update follow state on the currently loaded profile after a follow/unfollow action
+     * succeeds. Called from the screen in response to FollowViewModel.lastActionResult.
+     */
+    fun updateFollowState(isFollowing: Boolean, followerCount: Long) {
+        val p = profile ?: return
+        profile = p.copy(
+            isFollowing = if (isFollowing) true else null,
+            followerCount = followerCount,
+        )
+    }
+
     private fun refresh() {
 
     }

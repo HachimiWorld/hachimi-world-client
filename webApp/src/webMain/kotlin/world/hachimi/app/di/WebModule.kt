@@ -14,6 +14,7 @@ import world.hachimi.app.model.CreatePostViewModel
 import world.hachimi.app.model.EditProfileViewModel
 import world.hachimi.app.model.EventDetailViewModel
 import world.hachimi.app.model.EventsListViewModel
+import world.hachimi.app.model.FollowViewModel
 import world.hachimi.app.model.ForgetPasswordViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.HomeViewModel
@@ -113,4 +114,5 @@ fun org.koin.core.module.Module.applyViewModels() {
     viewModelOf(::EventsListViewModel)
     viewModelOf(::EventDetailViewModel)
     viewModelOf(::ChangelogViewModel)
+    viewModelOf(::FollowViewModel)
 }

@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.model.FollowListType
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
@@ -49,6 +50,7 @@ import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.events.EventsRouteScreen
+import world.hachimi.app.ui.follow.FollowListScreen
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.likes.RecentLikeScreen
@@ -145,6 +147,14 @@ private fun RootNavHost(global: GlobalStore, navigator: Navigator) {
 
                 Route.Root.EditProfile -> NavEntry(key) {
                     if (global.isLoggedIn) EditProfileScreen() else NeedLoginScreen()
+                }
+
+                Route.Root.FollowingList -> NavEntry(key) {
+                    if (global.isLoggedIn) FollowListScreen(FollowListType.FOLLOWING) else NeedLoginScreen()
+                }
+
+                Route.Root.FollowersList -> NavEntry(key) {
+                    if (global.isLoggedIn) FollowListScreen(FollowListType.FOLLOWERS) else NeedLoginScreen()
                 }
             }
         }
