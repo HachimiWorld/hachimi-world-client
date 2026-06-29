@@ -115,9 +115,9 @@ fun SideNavigation(
                 modifier = Modifier.fillMaxWidth(),
                 icon = Icons.Default.PersonAdd,
                 label = stringResource(Res.string.nav_my_subscribe),
-                selected = content == Route.Root.MySubscribe,
+                selected = content is Route.Root.FollowingList,
                 onSelectedChange = {
-                    onChange(Route.Root.MySubscribe)
+                    onChange(Route.Root.FollowingList)
                 }
             )
 
