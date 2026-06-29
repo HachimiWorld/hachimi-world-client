@@ -59,4 +59,12 @@
     <string name="follow_retry">重试</string>
     <string name="follow_loading">加载中…</string>
     <string name="follow_deactivated">已注销用户</string>
+
+    <string name="user_space_public_playlists">公开歌单</string>
+    <string name="user_space_playlist_songs_count">%1$d 首</string>
+
+    <string name="user_space_tab_songs">作品</string>
+    <string name="user_space_tab_playlists">歌单</string>
+    <string name="user_space_tab_activity">动态</string>
+    <string name="user_space_activity_empty">即将推出</string>
 </resources>

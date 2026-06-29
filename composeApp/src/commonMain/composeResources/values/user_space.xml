@@ -59,4 +59,12 @@
     <string name="follow_retry">Retry</string>
     <string name="follow_loading">Loading…</string>
     <string name="follow_deactivated">Deactivated User</string>
+
+    <string name="user_space_public_playlists">Public Playlists</string>
+    <string name="user_space_playlist_songs_count">%1$d songs</string>
+
+    <string name="user_space_tab_songs">Songs</string>
+    <string name="user_space_tab_playlists">Playlists</string>
+    <string name="user_space_tab_activity">Activity</string>
+    <string name="user_space_activity_empty">Coming soon</string>
 </resources>

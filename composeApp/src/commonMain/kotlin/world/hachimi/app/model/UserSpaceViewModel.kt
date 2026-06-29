@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
+import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
@@ -40,6 +41,9 @@ class UserSpaceViewModel(
     val privateConnections = mutableStateListOf<UserModule.ConnectionItem>()
 
     var loadingPrivateConnections by mutableStateOf(false)
+        private set
+    val publicPlaylists = mutableStateListOf<PlaylistModule.PlaylistMetadata>()
+    var loadingPlaylists by mutableStateOf(false)
         private set
     val songs = mutableStateListOf<SongModule.PublicSongDetail>()
     var pageIndex by mutableStateOf(0L)
@@ -76,6 +80,7 @@ class UserSpaceViewModel(
         profile = null
         songs.clear()
         privateConnections.clear()
+        publicPlaylists.clear()
 
         // Initialize
         if (uid == null) {
@@ -97,7 +102,8 @@ class UserSpaceViewModel(
                     pageIndex = 0
                     pageSize = 30
                     loadSongs()
-                }
+                },
+                async { loadPublicPlaylists() }
             )
             if (myself) {
                 deferred.add(async { refreshConnections() })
@@ -191,6 +197,25 @@ class UserSpaceViewModel(
                     explicit = it.explicit,
                 )
             })
+        }
+    }
+
+    private suspend fun loadPublicPlaylists() {
+        loadingPlaylists = true
+        try {
+            val resp = api.playlistModule.listPublicByUser(PlaylistModule.ListPublicByUserReq(userId = uid!!))
+            if (resp.ok) {
+                val data = resp.ok()
+                publicPlaylists.clear()
+                publicPlaylists.addAll(data.playlists)
+            } else {
+                val err = resp.err()
+                Logger.e(TAG, "Failed to load public playlists: ${err.msg}")
+            }
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to load public playlists", e)
+        } finally {
+            loadingPlaylists = false
         }
     }
 

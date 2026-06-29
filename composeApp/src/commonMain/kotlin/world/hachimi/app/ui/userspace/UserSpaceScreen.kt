@@ -30,9 +30,17 @@ import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
@@ -60,11 +68,17 @@ import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm
 import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm_subtitle
 import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm_title
 import hachimiworld.composeapp.generated.resources.player_play_all
+import hachimiworld.composeapp.generated.resources.playlist_cover_cd
 import hachimiworld.composeapp.generated.resources.user_edit_profile
+import hachimiworld.composeapp.generated.resources.user_space_activity_empty
 import hachimiworld.composeapp.generated.resources.user_space_all_works
 import hachimiworld.composeapp.generated.resources.user_space_empty
 import hachimiworld.composeapp.generated.resources.user_space_female_cd
 import hachimiworld.composeapp.generated.resources.user_space_male_cd
+import hachimiworld.composeapp.generated.resources.user_space_playlist_songs_count
+import hachimiworld.composeapp.generated.resources.user_space_tab_activity
+import hachimiworld.composeapp.generated.resources.user_space_tab_playlists
+import hachimiworld.composeapp.generated.resources.user_space_tab_songs
 import hachimiworld.composeapp.generated.resources.user_space_title
 import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
 import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
@@ -73,6 +87,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.api.CoilHeaders
+import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.FollowViewModel
 import world.hachimi.app.model.GlobalStore
@@ -118,6 +133,8 @@ fun UserSpaceScreen(
 
     BoxWithConstraints {
         val constraintsMaxWidth = maxWidth
+        var selectedTab by remember { mutableIntStateOf(0) }
+        val navigator = LocalNavigator.current
 
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
@@ -129,32 +146,164 @@ fun UserSpaceScreen(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Header(vm, global, Modifier.fillMaxWidth())
             }
-            items(vm.songs, key = { it.id }) { song ->
-                SongCard(
-                    item = song,
-                    onClick = {
-                        global.player.insertToQueue(
-                            item = GlobalStore.MusicQueueItem.fromPublicDetail(song),
-                            instantPlay = true,
-                            append = false
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+
+            // Tab row
             item(span = { GridItemSpan(maxLineSpan) }) {
-                if (vm.total > vm.pageSize) {
-                    Pagination(
-                        total = vm.total.toInt(),
-                        pageSize = vm.pageSize.toInt(),
-                        pageIndex = vm.pageIndex.toInt(),
-                        onPageChange = { pageIndex, pageSize ->
-                            vm.updateSongPage(pageIndex.toLong(), pageSize.toLong())
-                        },
-                        modifier = Modifier.padding(vertical = 16.dp)
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = HachimiTheme.colorScheme.surface,
+                    contentColor = HachimiTheme.colorScheme.primary,
+                    indicator = { tabPositions ->
+                        if (selectedTab < tabPositions.size) {
+                            TabRowDefaults.SecondaryIndicator(
+                                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                                color = HachimiTheme.colorScheme.primary
+                            )
+                        }
+                    },
+                    divider = {}
+                ) {
+                    Tab(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        text = {
+                            Text(
+                                text = stringResource(Res.string.user_space_tab_songs),
+                                color = if (selectedTab == 0) HachimiTheme.colorScheme.primary
+                                    else HachimiTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = if (selectedTab == 0) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        }
+                    )
+                    Tab(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        text = {
+                            Text(
+                                text = stringResource(Res.string.user_space_tab_playlists),
+                                color = if (selectedTab == 1) HachimiTheme.colorScheme.primary
+                                    else HachimiTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = if (selectedTab == 1) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        }
+                    )
+                    Tab(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        text = {
+                            Text(
+                                text = stringResource(Res.string.user_space_tab_activity),
+                                color = if (selectedTab == 2) HachimiTheme.colorScheme.primary
+                                    else HachimiTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = if (selectedTab == 2) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        }
                     )
                 }
             }
+
+            when (selectedTab) {
+                0 -> {
+                    // Songs tab: "All works" title + play all button
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(Res.string.user_space_all_works),
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Box(Modifier.weight(1f))
+                            if (vm.songs.isNotEmpty()) Button(
+                                onClick = { vm.playAll() }
+                            ) {
+                                Icon(
+                                    Icons.Default.PlayArrow,
+                                    contentDescription = stringResource(Res.string.common_play_cd)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(Res.string.player_play_all))
+                            }
+                        }
+                    }
+
+                    if (vm.loadingSongs) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.height(300.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    } else if (vm.songs.isEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.height(300.dp), contentAlignment = Alignment.Center) {
+                                Text(text = stringResource(Res.string.user_space_empty))
+                            }
+                        }
+                    } else {
+                        items(vm.songs, key = { it.id }) { song ->
+                            SongCard(
+                                item = song,
+                                onClick = {
+                                    global.player.insertToQueue(
+                                        item = GlobalStore.MusicQueueItem.fromPublicDetail(song),
+                                        instantPlay = true,
+                                        append = false
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        if (vm.total > vm.pageSize) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                Pagination(
+                                    total = vm.total.toInt(),
+                                    pageSize = vm.pageSize.toInt(),
+                                    pageIndex = vm.pageIndex.toInt(),
+                                    onPageChange = { pageIndex, pageSize ->
+                                        vm.updateSongPage(pageIndex.toLong(), pageSize.toLong())
+                                    },
+                                    modifier = Modifier.padding(vertical = 16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                1 -> {
+                    // Playlists tab
+                    if (vm.loadingPlaylists) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    } else if (vm.publicPlaylists.isEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                                Text(text = stringResource(Res.string.user_space_empty))
+                            }
+                        }
+                    } else {
+                        vm.publicPlaylists.forEach { playlist ->
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                PublicPlaylistCard(
+                                    playlist = playlist,
+                                    onClick = { navigator.push(Route.Root.PublicPlaylist(playlist.id)) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+
+                2 -> {
+                    // Activity tab: placeholder
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                            Text(text = stringResource(Res.string.user_space_activity_empty))
+                        }
+                    }
+                }
+            }
+
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Spacer(
                     Modifier.navigationBarsPadding()
@@ -260,34 +409,6 @@ private fun Header(
                         onFollowingClick = { navigator.push(Route.Root.FollowingList) }
                     )
                 }
-            }
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
-            Text(
-                text = stringResource(Res.string.user_space_all_works),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-            )
-            Box(Modifier.weight(1f))
-            if (vm.songs.isNotEmpty()) Button(
-                modifier = Modifier,
-                onClick = { vm.playAll() }
-            ) {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = stringResource(Res.string.common_play_cd)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(Res.string.player_play_all))
-            }
-        }
-
-        if (vm.loadingSongs) Box(modifier.height(300.dp), Alignment.Center) {
-            CircularProgressIndicator()
-        } else if (vm.songs.isEmpty()) {
-            Box(modifier.height(300.dp), Alignment.Center) {
-                Text(text = stringResource(Res.string.user_space_empty))
             }
         }
     }
@@ -485,6 +606,55 @@ private fun InlineStatItem(
                 color = HachimiTheme.colorScheme.onSurfaceVariant.copy(0.45f),
                 modifier = Modifier.padding(start = 1.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun PublicPlaylistCard(
+    playlist: PlaylistModule.PlaylistMetadata,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(56.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = HachimiTheme.colorScheme.surface
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .httpHeaders(CoilHeaders)
+                        .data(playlist.coverUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = stringResource(Res.string.playlist_cover_cd),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = playlist.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(Res.string.user_space_playlist_songs_count, playlist.songsCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = HachimiTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

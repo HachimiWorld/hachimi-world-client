@@ -3,6 +3,7 @@
 ## Features 新功能
 
 1. Support following users. 支持关注用户。
+2. Show public playlists in user space. 新增在神人空间显示公开歌单。
 
 ## Enhancements 改进
 
