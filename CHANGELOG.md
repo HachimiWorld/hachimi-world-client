@@ -1,7 +1,16 @@
 # Unreleased
 
-1. Migrated to navigation3.
-2. Fixed charsets issues in changelog.
+## Features 新功能
+
+1. Support following users. 支持关注用户。
+
+## Enhancements 改进
+
+1. Migrated to navigation3. 迁移到 Navigation3。
+
+## Fixes 修复
+
+1. Fixed charsets issues in changelog. 修复更新日志的字符集问题。
 
 # 1.2.0
 
