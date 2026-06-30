@@ -28,9 +28,13 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
-fun Avatar(avatarUrl: String?, size: Dp = 180.dp) {
+fun Avatar(
+    avatarUrl: String?,
+    size: Dp = 180.dp,
+    modifier: Modifier = Modifier,
+) {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .size(size)
             .shadow(12.dp, CircleShape)
             .border(3.dp, Color.White, CircleShape)

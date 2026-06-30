@@ -1,10 +1,10 @@
 package world.hachimi.app.ui.userspace
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -54,7 +55,7 @@ import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import soup.compose.material.motion.animation.materialFadeThrough
+import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.model.FollowViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
@@ -69,9 +70,12 @@ import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.PlaceholderDefaults
 import world.hachimi.app.ui.design.components.TabBar
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.placeholder
+import world.hachimi.app.ui.design.components.placeholderValue
 import world.hachimi.app.ui.follow.components.UnfollowDialog
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.userspace.component.Avatar
@@ -283,127 +287,14 @@ private fun Header(
             }
         }
 
-        AnimatedContent(
-            targetState = vm.loadingProfile,
-            transitionSpec = { materialFadeThrough() }
-        ) {
-            if (it) Box(modifier.height(200.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            } else vm.profile?.let { profile ->
-                if (isCompact) {
-                    // Mobile: centered Column layout
-                    Column(
-                        modifier,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Avatar(avatarUrl = profile.avatarUrl, size = 120.dp)
-
-                        SelectionContainer {
-                            Text(
-                                text = profile.username,
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-
-                        if (!profile.bio.isNullOrBlank()) {
-                            SelectionContainer {
-                                Text(
-                                    text = profile.bio,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = HachimiTheme.colorScheme.onSurface.copy(0.7f),
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-
-                        Row(horizontalArrangement = Arrangement.Center) {
-                            profile.gender?.let { GenderIcon(it, Modifier.padding(end = 4.dp)) }
-
-                            SelectionContainer {
-                                Text(
-                                    text = stringResource(
-                                        Res.string.user_space_uid_prefix,
-                                        profile.uid
-                                    ),
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
-
-                        StatsRow(
-                            profile = profile,
-                            myself = vm.myself,
-                            isCompact = isCompact,
-                            followVM = followVM,
-                            onFollowersClick = { navigator.push(Route.Root.FollowersList) },
-                            onFollowingClick = { navigator.push(Route.Root.FollowingList) },
-                            modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth()
-                        )
-
-                        Connections(vm = vm)
-                    }
-                } else {
-                    // PC: Row layout with avatar on left, info on right
-                    Row(modifier, verticalAlignment = Alignment.Top) {
-                        Avatar(avatarUrl = profile.avatarUrl)
-
-                        Column(
-                            Modifier.padding(start = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SelectionContainer {
-                                Text(
-                                    text = profile.username,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-
-                            if (!profile.bio.isNullOrBlank()) {
-                                SelectionContainer {
-                                    Text(
-                                        text = profile.bio,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = HachimiTheme.colorScheme.onSurface.copy(0.7f),
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                            }
-
-                            Row {
-                                profile.gender?.let { GenderIcon(it, Modifier.padding(end = 4.dp)) }
-
-                                SelectionContainer {
-                                    Text(
-                                        text = stringResource(
-                                            Res.string.user_space_uid_prefix,
-                                            profile.uid
-                                        ),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            }
-
-                            StatsRow(
-                                profile = profile,
-                                myself = vm.myself,
-                                isCompact = isCompact,
-                                followVM = followVM,
-                                onFollowersClick = { navigator.push(Route.Root.FollowersList) },
-                                onFollowingClick = { navigator.push(Route.Root.FollowingList) },
-                                modifier = Modifier.padding(vertical = 8.dp)
-                                    .wrapContentWidth(align = Alignment.Start)
-                            )
-
-                            // Read-only connected accounts
-                            Connections(vm = vm)
-                        }
-                    }
-                }
-            }
-        }
+        HeaderProfileContent(
+            profile = vm.profile,
+            loading = vm.loadingProfile,
+            isCompact = isCompact,
+            myself = vm.myself,
+            followVM = followVM,
+            navigator = navigator,
+        )
     }
 
     // Unfollow dialog - shown from profile page too
@@ -421,5 +312,140 @@ private fun Header(
             onConfirm = { followVM.confirmUnfollow() },
             onDismiss = { followVM.dismissUnfollowDialog() }
         )
+    }
+}
+
+@Composable
+private fun HeaderProfileContent(
+    profile: UserModule.PublicUserProfile?,
+    loading: Boolean,
+    isCompact: Boolean,
+    myself: Boolean,
+    followVM: FollowViewModel,
+    navigator: Navigator,
+    modifier: Modifier = Modifier,
+) {
+    if (!loading && profile == null) return
+
+    val avatarSize = if (isCompact) 120.dp else 180.dp
+    val showBio = loading || !profile?.bio.isNullOrBlank()
+    val connectionAccounts = when {
+        loading -> listOf(
+            UserModule.ConnectedAccountItem(
+                type = UserModule.CONNECTION_TYPE_BILIBILI,
+                id = "",
+                name = PlaceholderDefaults.SHORT_TEXT,
+            )
+        )
+        else -> profile?.connectedAccounts.orEmpty()
+    }
+    val showConnections = loading || connectionAccounts.isNotEmpty()
+
+    val infoContent: @Composable ColumnScope.() -> Unit = {
+        SelectionContainer {
+            Text(
+                text = placeholderValue(loading, profile?.username.orEmpty()),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = if (isCompact) TextAlign.Center else TextAlign.Unspecified,
+                modifier = Modifier.placeholder(loading),
+            )
+        }
+
+        if (showBio) {
+            SelectionContainer {
+                Text(
+                    text = placeholderValue(loading, profile?.bio.orEmpty(), PlaceholderDefaults.MEDIUM_TEXT),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = HachimiTheme.colorScheme.onSurface.copy(0.7f),
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = if (isCompact) TextAlign.Center else TextAlign.Unspecified,
+                    modifier = Modifier.placeholder(loading),
+                )
+            }
+        }
+
+        Row(
+            horizontalArrangement = if (isCompact) Arrangement.Center else Arrangement.Start,
+        ) {
+            if (!loading) {
+                profile?.gender?.let { GenderIcon(it, Modifier.padding(end = 4.dp)) }
+            }
+            SelectionContainer {
+                Text(
+                    text = if (loading) {
+                        PlaceholderDefaults.SHORT_TEXT
+                    } else {
+                        stringResource(Res.string.user_space_uid_prefix, profile!!.uid)
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.placeholder(loading),
+                )
+            }
+        }
+
+        val statsModifier = Modifier
+            .placeholder(loading)
+            .padding(vertical = 8.dp)
+            .then(if (isCompact) Modifier.fillMaxWidth() else Modifier.wrapContentWidth(align = Alignment.Start))
+
+        if (loading) {
+            StatsRow(
+                followerCount = 0,
+                followingCount = 0,
+                myself = myself,
+                isFollowing = false,
+                isFollowLoading = false,
+                onFollow = {},
+                onUnfollow = {},
+                onFollowersClick = {},
+                onFollowingClick = {},
+                modifier = statsModifier,
+            )
+        } else {
+            StatsRow(
+                profile = profile!!,
+                myself = myself,
+                isCompact = isCompact,
+                followVM = followVM,
+                onFollowersClick = { navigator.push(Route.Root.FollowersList) },
+                onFollowingClick = { navigator.push(Route.Root.FollowingList) },
+                modifier = statsModifier,
+            )
+        }
+
+        if (showConnections) {
+            Connections(
+                accounts = connectionAccounts,
+                modifier = Modifier.placeholder(loading),
+            )
+        }
+    }
+
+    if (isCompact) {
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Avatar(
+                avatarUrl = if (loading) null else profile?.avatarUrl,
+                size = avatarSize,
+                modifier = Modifier.placeholder(loading, CircleShape),
+            )
+            infoContent()
+        }
+    } else {
+        Row(modifier = modifier, verticalAlignment = Alignment.Top) {
+            Avatar(
+                avatarUrl = if (loading) null else profile?.avatarUrl,
+                size = avatarSize,
+                modifier = Modifier.placeholder(loading, CircleShape),
+            )
+            Column(
+                Modifier.padding(start = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = infoContent,
+            )
+        }
     }
 }
