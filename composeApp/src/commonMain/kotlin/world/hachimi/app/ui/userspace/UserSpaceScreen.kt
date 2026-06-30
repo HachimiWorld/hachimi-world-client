@@ -285,7 +285,7 @@ private fun Header(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Avatar(avatarUrl = profile.avatarUrl, size = 80.dp)
+                        Avatar(avatarUrl = profile.avatarUrl, size = 120.dp)
 
                         SelectionContainer {
                             Text(

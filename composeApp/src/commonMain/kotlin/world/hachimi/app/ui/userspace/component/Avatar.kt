@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.userspace.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -22,16 +23,18 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.CoilHeaders
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.theme.PreviewTheme
 
 @Composable
-fun Avatar(avatarUrl: String?, size: Dp = 120.dp) {
+fun Avatar(avatarUrl: String?, size: Dp = 180.dp) {
     Surface(
         modifier = Modifier
             .size(size)
             .shadow(12.dp, CircleShape)
-            .border(3.dp, Color.White, CircleShape),
+            .border(3.dp, Color.White, CircleShape)
+            .background(HachimiTheme.colorScheme.background, CircleShape),
         shape = CircleShape
     ) {
         AsyncImage(
