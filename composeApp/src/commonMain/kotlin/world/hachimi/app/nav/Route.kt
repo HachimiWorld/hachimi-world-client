@@ -194,6 +194,10 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/followers")
         data object FollowersList : Root
+
+        @Serializable
+        @SerialName("/settings/devices")
+        data object DeviceManagement : Root
     }
 
     @Serializable

@@ -66,6 +66,7 @@ import world.hachimi.app.ui.root.component.ExpandedTopAppBar
 import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
+import world.hachimi.app.ui.settings.DeviceManagementScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
@@ -155,6 +156,10 @@ private fun RootNavHost(global: GlobalStore, navigator: Navigator) {
 
                 Route.Root.FollowersList -> NavEntry(key) {
                     if (global.isLoggedIn) FollowListScreen(FollowListType.FOLLOWERS) else NeedLoginScreen()
+                }
+
+                Route.Root.DeviceManagement -> NavEntry(key) {
+                    if (global.isLoggedIn) DeviceManagementScreen() else NeedLoginScreen()
                 }
             }
         }

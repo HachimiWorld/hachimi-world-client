@@ -55,7 +55,7 @@ class UserSpaceViewModel(
     private var uid: Long? = null
 
     fun mounted(uid: Long?) {
-        if (this.uid != uid) {
+        if (this.uid != uid || initializeStatus == InitializeStatus.INIT) {
             initialize(uid)
         }
     }

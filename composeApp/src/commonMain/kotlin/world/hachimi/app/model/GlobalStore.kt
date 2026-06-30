@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.jsonPrimitive
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.annotation.Singleton
 import world.hachimi.app.BuildKonfig
@@ -33,6 +34,7 @@ import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.VersionModule
 import world.hachimi.app.api.ok
+import world.hachimi.app.api.parseJwtWithoutVerification
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.NavigationRequest
@@ -65,6 +67,8 @@ class GlobalStore(
     var isLoggedIn by mutableStateOf(false)
         private set
     var userInfo by mutableStateOf<UserInfo?>(null)
+        private set
+    var currentJti: String? = null
         private set
     var playerExpanded by mutableStateOf(false)
         private set
@@ -132,10 +136,12 @@ class GlobalStore(
 
         if (uid != null && username != null && accessToken != null && refreshToken != null) {
             api.setToken(accessToken, refreshToken)
+            currentJti = extractJti(refreshToken)
             api.setAuthListener(object : AuthenticationListener {
                 override suspend fun onTokenChange(accessToken: String, refreshToken: String) {
                     dataStore.set(PreferencesKeys.AUTH_ACCESS_TOKEN, accessToken)
                     dataStore.set(PreferencesKeys.AUTH_REFRESH_TOKEN, refreshToken)
+                    currentJti = extractJti(refreshToken)
                 }
 
                 override suspend fun onAuthenticationError(err: AuthError) {
@@ -156,6 +162,12 @@ class GlobalStore(
             isLoggedIn = true
             userInfo = UserInfo(uid, username, avatarUrl = avatar)
         }
+    }
+
+    private fun extractJti(token: String): String? {
+        return try {
+            parseJwtWithoutVerification(token)["jti"]?.jsonPrimitive?.content
+        } catch (_: Exception) { null }
     }
 
     fun logout() = scope.launch {
@@ -179,6 +191,7 @@ class GlobalStore(
         dataStore.delete(PreferencesKeys.AUTH_REFRESH_TOKEN)
         isLoggedIn = false
         userInfo = null
+        currentJti = null
         if (navigateHome) {
             replaceAppRoutes(Route.Root.Home.Main)
         }

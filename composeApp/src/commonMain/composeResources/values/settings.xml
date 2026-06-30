@@ -32,4 +32,21 @@
     <string name="settings_language_follow_system">Follow system</string>
     <string name="settings_language_en">English</string>
     <string name="settings_language_zh">简体中文</string>
+
+    <!-- Device management -->
+    <string name="settings_device_management">Device management</string>
+    <string name="settings_view_device_management">View all</string>
+    <string name="settings_device_current_label">Current device</string>
+    <string name="settings_device_other_label">Other devices</string>
+    <string name="settings_device_last_active">Last active: %1$s</string>
+    <string name="settings_device_fisrt_login">First login%1$s</string>
+    <string name="settings_device_logout">Log out</string>
+    <string name="settings_device_empty">No other devices logged in</string>
+    <string name="settings_device_load_error">Failed to load device list</string>
+    <string name="settings_device_retry">Retry</string>
+    <string name="settings_device_unknown">Unknown device</string>
+    <string name="settings_device_logout_confirm_title">Log out</string>
+    <string name="settings_device_logout_confirm_message">Are you sure you want to log out from %1$s?</string>
+    <string name="settings_device_logout_confirm">Log out</string>
+    <string name="settings_device_logout_cancel">Cancel</string>
 </resources>

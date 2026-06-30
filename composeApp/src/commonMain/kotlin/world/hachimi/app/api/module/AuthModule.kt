@@ -1,7 +1,5 @@
 package world.hachimi.app.api.module
 
-import world.hachimi.app.api.ApiClient
-import world.hachimi.app.api.WebResult
 import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -9,8 +7,10 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import world.hachimi.app.api.ApiClient
+import world.hachimi.app.api.WebResult
+import kotlin.time.Instant
 
 class AuthModule(
     private val client: ApiClient
@@ -111,4 +111,35 @@ class AuthModule(
 
     suspend fun resetPassword(req: ResetPasswordReq): WebResult<Unit>
         = client.post("/auth/reset_password", req, auth = false)
+
+
+    @Serializable
+    data class DeviceItem(
+        val id: Long,
+        val deviceInfo: String?,
+        val ipAddress: String?,
+        val lastUsedTime: Instant?,
+        val createTime: Instant,
+        /**
+         * @since 260630
+         */
+        val tokenId: String
+    )
+
+
+    @Serializable
+    data class DeviceListResp(
+        val devices: List<DeviceItem>,
+    )
+
+    @Serializable
+    data class DeviceLogoutReq(
+        val deviceId: Long,
+    )
+
+    suspend fun deviceList(): WebResult<DeviceListResp> =
+        client.get("/auth/device/list")
+
+    suspend fun deviceLogout(req: DeviceLogoutReq): WebResult<Unit> =
+        client.post("/auth/device/logout", req)
 }

@@ -11,6 +11,7 @@ import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.ChangelogViewModel
 import world.hachimi.app.model.ContributorEntryViewModel
 import world.hachimi.app.model.CreatePostViewModel
+import world.hachimi.app.model.DeviceManagementViewModel
 import world.hachimi.app.model.EditProfileViewModel
 import world.hachimi.app.model.EventDetailViewModel
 import world.hachimi.app.model.EventsListViewModel
@@ -115,4 +116,5 @@ fun org.koin.core.module.Module.applyViewModels() {
     viewModelOf(::EventDetailViewModel)
     viewModelOf(::ChangelogViewModel)
     viewModelOf(::FollowViewModel)
+    viewModelOf(::DeviceManagementViewModel)
 }

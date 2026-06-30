@@ -19,13 +19,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -49,6 +49,7 @@ import hachimiworld.composeapp.generated.resources.settings_dark_mode_follow_sys
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_label
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_off
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_on
+import hachimiworld.composeapp.generated.resources.settings_device_management
 import hachimiworld.composeapp.generated.resources.settings_dropdown_cd
 import hachimiworld.composeapp.generated.resources.settings_feedback
 import hachimiworld.composeapp.generated.resources.settings_github_text
@@ -65,7 +66,6 @@ import hachimiworld.composeapp.generated.resources.settings_player_effects
 import hachimiworld.composeapp.generated.resources.settings_title
 import hachimiworld.composeapp.generated.resources.settings_version_code
 import hachimiworld.composeapp.generated.resources.settings_version_name
-import hachimiworld.composeapp.generated.resources.settings_view_changelog
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.BuildKonfig
@@ -78,6 +78,7 @@ import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
+import world.hachimi.app.ui.design.components.Switcher
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.util.AdaptiveScreenMargin
@@ -111,6 +112,10 @@ fun SettingsScreen(
             Section(title = { Text("系统") }) {
                 CloseBehaviorSetting(globalStore.settings)
             }
+        }
+
+        Section(title = { Text("账户") }) {
+            DeviceManagementEntry()
         }
 
         Section(title = { Text("关于") }) {
@@ -237,7 +242,7 @@ private fun DiffusionBackgroundSetting(globalStore: GlobalStore) {
         label = { Text(stringResource(Res.string.settings_player_effects)) },
         onClick = { onClick() }
     ) {
-        Switch(globalStore.settings.enableDiffusionBackground, { onClick() })
+        Switcher(globalStore.settings.enableDiffusionBackground, { onClick() })
     }
 }
 
@@ -250,7 +255,7 @@ private fun LoudnessNormalizationSetting(globalStore: GlobalStore) {
         label = { Text(stringResource(Res.string.settings_loudness)) },
         onClick = { onClick() }
     ) {
-        Switch(globalStore.settings.enableLoudnessNormalization, {
+        Switcher(globalStore.settings.enableLoudnessNormalization, {
             onClick()
         })
     }
@@ -265,7 +270,7 @@ private fun KidsModeSetting(globalStore: GlobalStore) {
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_kids_mode)) },
         onClick = { onClick() }) {
-        Switch(globalStore.settings.kidsMode, {
+        Switcher(globalStore.settings.kidsMode, {
             onClick()
         })
     }
@@ -313,9 +318,7 @@ private fun Info(globalStore: GlobalStore) {
         label = { Text(stringResource(Res.string.settings_changelog)) },
         onClick = { navigator.push(Route.Root.Changelog) }
     ) {
-        TextButton(onClick = { navigator.push(Route.Root.Changelog) }) {
-            Text(stringResource(Res.string.settings_view_changelog))
-        }
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_feedback)) },
@@ -371,6 +374,17 @@ private fun LinkButton(
             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = stringResource(Res.string.settings_open_in_browser_cd)
         )
+    }
+}
+
+@Composable
+private fun DeviceManagementEntry() {
+    val navigator = LocalNavigator.current
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_device_management)) },
+        onClick = { navigator.push(Route.Root.DeviceManagement) }
+    ) {
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
 }
 
