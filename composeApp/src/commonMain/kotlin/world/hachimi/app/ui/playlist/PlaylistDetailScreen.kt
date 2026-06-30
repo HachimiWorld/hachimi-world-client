@@ -1,72 +1,51 @@
 package world.hachimi.app.ui.playlist
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.network.httpHeaders
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
+import dev.chrisbanes.haze.HazeState
 import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.play_all
-import hachimiworld.composeapp.generated.resources.playlist_cover_cd
-import hachimiworld.composeapp.generated.resources.playlist_description_placeholder
 import hachimiworld.composeapp.generated.resources.playlist_private_badge
-import hachimiworld.composeapp.generated.resources.playlist_song_count
-import hachimiworld.composeapp.generated.resources.playlist_songs_list
-import hachimiworld.composeapp.generated.resources.song_cover_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PlaylistDetailViewModel
-import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.TagBadge
-import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.EditDialog
+import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.util.WindowSize
 import world.hachimi.app.util.contentPaddingForMaxWidth
 import kotlin.time.Duration.Companion.seconds
 
@@ -91,10 +70,10 @@ fun PlaylistDetailScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        Header(vm, info, modifier = Modifier.fillMaxWidth())
+                        Header(global, info, vm)
                     }
 
                     itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
@@ -125,12 +104,7 @@ fun PlaylistDetailScreen(
                         )
                     }
 
-                    item {
-                        Spacer(
-                            Modifier.navigationBarsPadding()
-                                .padding(LocalContentInsets.current.asPaddingValues())
-                        )
-                    }
+                    listTailSpacerItem()
                 }
             }
 
@@ -143,90 +117,83 @@ fun PlaylistDetailScreen(
 
 @Composable
 private fun Header(
-    vm: PlaylistDetailViewModel,
+    global: GlobalStore,
     info: PlaylistModule.PlaylistItem,
-    modifier: Modifier = Modifier
+    vm: PlaylistDetailViewModel
 ) {
-    Column(modifier) {
-        Row(Modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier.size(128.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .clickable(
-                        onClick = { vm.editCover() },
-                        enabled = !vm.coverUploading
-                    )
-                    .background(LocalContentColor.current.copy(0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                val hazeState = rememberHazeState()
-                AsyncImage(
-                    modifier = Modifier.hazeSource(hazeState).fillMaxSize(),
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                        .httpHeaders(CoilHeaders)
-                        .data(info.coverUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = stringResource(Res.string.playlist_cover_cd),
-                    contentScale = ContentScale.Crop,
-                    placeholder = ColorPainter(LocalContentColor.current.copy(alpha = 0.12f))
-                )
-                if (vm.coverUploading) {
-                    if (vm.coverUploadingProgress == 0f || vm.coverUploadingProgress == 1f) CircularProgressIndicator()
-                    else CircularProgressIndicator(progress = { vm.coverUploadingProgress })
-                }
-                if (!info.isPublic) {
-                    TagBadge(
-                        hazeState,
-                        tag = stringResource(Res.string.playlist_private_badge),
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier.weight(1f).padding(start = 24.dp).height(120.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable(onClick = { vm.edit() })
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = info.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    text = info.description ?: stringResource(Res.string.playlist_description_placeholder),
-                    style = MaterialTheme.typography.bodySmall,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+    @Composable
+    fun BoxScope.Overlay(hazeState: HazeState) {
+        if (vm.coverUploading) {
+            if (vm.coverUploadingProgress == 0f || vm.coverUploadingProgress == 1f)
+                CircularProgressIndicator()
+            else
+                LinearProgressIndicator(progress = { vm.coverUploadingProgress })
         }
-
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(Res.string.playlist_songs_list), style = MaterialTheme.typography.titleLarge
+        if (!info.isPublic) {
+            TagBadge(
+                hazeState,
+                tag = stringResource(Res.string.playlist_private_badge),
+                modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
             )
+        }
+        Box(Modifier.fillMaxSize().clickable { vm.editCover() })
+    }
 
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = stringResource(Res.string.playlist_song_count, vm.songs.size),
-                style = MaterialTheme.typography.bodySmall
+    Column {
+        val navigator = LocalNavigator.current
+        val userInfo = global.userInfo
+        if (LocalWindowSize.current.width < WindowSize.COMPACT) {
+            CompactHeader(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                username = userInfo?.name ?: "",
+                avatarUrl = userInfo?.avatarUrl,
+                description = info.description,
+                title = info.name,
+                coverUrl = info.coverUrl,
+                updateTime = info.updateTime,
+                count = vm.songs.size,
+                onNavToUserClick = {
+                    userInfo?.uid?.let { navigator.push(Route.Root.PublicUserSpace(it)) }
+                },
+                onPlayAllClick = { vm.playAll() },
+                coverOverlay = { hazeState ->
+                    Overlay(hazeState)
+                },
+                action = {
+                    Button(
+                        onClick = { vm.edit() },
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        Icon(Icons.Default.Settings, contentDescription = "Edit")
+                    }
+                }
             )
-
-            Spacer(Modifier.weight(1f))
-            Button(
-                modifier = Modifier,
-                onClick = { vm.playAll() }
-            ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.song_cover_cd))
-                Spacer(Modifier.width(16.dp))
-                Text(stringResource(Res.string.play_all))
-            }
+        } else {
+            Header(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                username = userInfo?.name ?: "",
+                avatarUrl = userInfo?.avatarUrl,
+                description = info.description,
+                title = info.name,
+                coverUrl = info.coverUrl,
+                updateTime = info.updateTime,
+                count = vm.songs.size,
+                onNavToUserClick = {
+                    userInfo?.uid?.let { navigator.push(Route.Root.PublicUserSpace(it)) }
+                },
+                onPlayAllClick = { vm.playAll() },
+                coverOverlay = { hazeState ->
+                    Overlay(hazeState)
+                },
+                extraActions = {
+                    Button(
+                        onClick = { vm.edit() },
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        Icon(Icons.Default.Settings, contentDescription = "Edit")
+                    }
+                }
+            )
         }
     }
 }
