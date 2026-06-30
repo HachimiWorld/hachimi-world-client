@@ -44,6 +44,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.model.DeviceManagementViewModel
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Card
@@ -156,7 +157,7 @@ private fun DeviceCard(
                         Text(
                             text = ip,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = HachimiTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -167,7 +168,7 @@ private fun DeviceCard(
                         text = stringResource(Res.string.settings_device_fisrt_login,
                             formatDistance(device.createTime, precise = false, fullFormat = LocalDateTime.Formats.YMD)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = HachimiTheme.colorScheme.onSurfaceVariant
                     )
 
                     // Last active time
@@ -178,7 +179,7 @@ private fun DeviceCard(
                                 formatDistance(lastUsed, precise = false, thresholdDay = Int.MAX_VALUE)
                             ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = HachimiTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -213,7 +214,7 @@ private fun EmptyState() {
         Text(
             text = stringResource(Res.string.settings_device_empty),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = HachimiTheme.colorScheme.onSurfaceVariant
         )
     }
 }
