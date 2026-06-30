@@ -7,7 +7,8 @@
 
 ## Enhancements 改进
 
-1. Migrated to navigation3. 迁移到 Navigation3。
+1. Optimize the layout of the playlist page. 优化歌单页面布局。
+2. Migrated to navigation3. 迁移到 Navigation3。
 
 ## Fixes 修复
 
