@@ -43,11 +43,11 @@ fun PublicPlaylistCard(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.clickable(onClick = onClick).padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(

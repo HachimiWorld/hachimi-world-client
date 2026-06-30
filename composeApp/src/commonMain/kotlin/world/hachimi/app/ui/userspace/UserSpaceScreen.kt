@@ -8,18 +8,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -61,7 +59,6 @@ import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.design.HachimiTheme
@@ -79,6 +76,7 @@ import world.hachimi.app.ui.userspace.component.GenderIcon
 import world.hachimi.app.ui.userspace.component.PublicPlaylistCard
 import world.hachimi.app.ui.userspace.component.StatsRow
 import world.hachimi.app.ui.userspace.component.TabBar
+import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.WindowSize
@@ -106,8 +104,10 @@ fun UserSpaceScreen(
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(constraintsMaxWidth),
-            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintsMaxWidth),
-            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+            contentPadding = contentPaddingForMaxWidth(
+                PaddingValues(AdaptiveScreenMargin),
+                constraintsMaxWidth
+            ),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -115,7 +115,11 @@ fun UserSpaceScreen(
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                TabBar(selectedIndex = selectedTab, onTabSelected = { selectedTab = it })
+                TabBar(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    selectedIndex = selectedTab,
+                    onTabSelected = { selectedTab = it }
+                )
             }
 
             when (selectedTab) {
@@ -124,19 +128,17 @@ fun UserSpaceScreen(
                 2 -> {
                     // Activity tab: placeholder
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(text = stringResource(Res.string.user_space_activity_empty))
                         }
                     }
                 }
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(
-                    Modifier.navigationBarsPadding()
-                        .padding(LocalContentInsets.current.asPaddingValues())
-                )
-            }
+            listTailSpacerItem()
         }
     }
 }
@@ -145,7 +147,6 @@ private fun LazyGridScope.artworkTabContents(
     vm: UserSpaceViewModel,
     global: GlobalStore
 ) {
-    // Songs tab: "All works" title + play all button
     item(span = { GridItemSpan(maxLineSpan) }) {
         if (vm.songs.isNotEmpty()) Button(
             modifier = Modifier.wrapContentWidth(align = Alignment.Start),
@@ -173,7 +174,10 @@ private fun LazyGridScope.artworkTabContents(
             }
         }
     } else {
-        items(vm.songs, key = { it.id }) { song ->
+        itemsIndexed(
+            items = vm.songs,
+            key = { _, item -> item.id }
+        ) { index, song ->
             SongCard(
                 item = song,
                 onClick = {
@@ -183,7 +187,7 @@ private fun LazyGridScope.artworkTabContents(
                         append = false
                     )
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
             )
         }
         if (vm.total > vm.pageSize) {
@@ -224,7 +228,7 @@ private fun LazyGridScope.playlistsTabContents(
                 PublicPlaylistCard(
                     playlist = playlist,
                     onClick = { navigator.push(Route.Root.PublicPlaylist(playlist.id)) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                 )
             }
         }
@@ -312,7 +316,10 @@ private fun Header(
 
                             SelectionContainer {
                                 Text(
-                                    text = stringResource(Res.string.user_space_uid_prefix, profile.uid),
+                                    text = stringResource(
+                                        Res.string.user_space_uid_prefix,
+                                        profile.uid
+                                    ),
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -362,7 +369,10 @@ private fun Header(
 
                                 SelectionContainer {
                                     Text(
-                                        text = stringResource(Res.string.user_space_uid_prefix, profile.uid),
+                                        text = stringResource(
+                                            Res.string.user_space_uid_prefix,
+                                            profile.uid
+                                        ),
                                         style = MaterialTheme.typography.labelSmall
                                     )
                                 }
@@ -375,7 +385,8 @@ private fun Header(
                                 followVM = followVM,
                                 onFollowersClick = { navigator.push(Route.Root.FollowersList) },
                                 onFollowingClick = { navigator.push(Route.Root.FollowingList) },
-                                modifier = Modifier.padding(vertical = 8.dp).wrapContentWidth(align = Alignment.Start)
+                                modifier = Modifier.padding(vertical = 8.dp)
+                                    .wrapContentWidth(align = Alignment.Start)
                             )
 
                             // Read-only connected accounts
@@ -394,7 +405,10 @@ private fun Header(
             subtitle = stringResource(Res.string.follow_unfollow_confirm_subtitle),
             confirmText = stringResource(Res.string.follow_unfollow_confirm),
             cancelText = stringResource(Res.string.follow_cancel),
-            confirmTitle = stringResource(Res.string.follow_unfollow_confirm_title, target.username),
+            confirmTitle = stringResource(
+                Res.string.follow_unfollow_confirm_title,
+                target.username
+            ),
             loading = followVM.actionLoading,
             onConfirm = { followVM.confirmUnfollow() },
             onDismiss = { followVM.dismissUnfollowDialog() }
