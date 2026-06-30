@@ -46,6 +46,9 @@ import hachimiworld.composeapp.generated.resources.player_play_all
 import hachimiworld.composeapp.generated.resources.user_edit_profile
 import hachimiworld.composeapp.generated.resources.user_space_activity_empty
 import hachimiworld.composeapp.generated.resources.user_space_empty
+import hachimiworld.composeapp.generated.resources.user_space_tab_activity
+import hachimiworld.composeapp.generated.resources.user_space_tab_playlists
+import hachimiworld.composeapp.generated.resources.user_space_tab_songs
 import hachimiworld.composeapp.generated.resources.user_space_title
 import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
 import org.jetbrains.compose.resources.stringResource
@@ -66,6 +69,7 @@ import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.TabBar
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.follow.components.UnfollowDialog
@@ -75,7 +79,6 @@ import world.hachimi.app.ui.userspace.component.Connections
 import world.hachimi.app.ui.userspace.component.GenderIcon
 import world.hachimi.app.ui.userspace.component.PublicPlaylistCard
 import world.hachimi.app.ui.userspace.component.StatsRow
-import world.hachimi.app.ui.userspace.component.TabBar
 import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.AdaptiveListSpacing
 import world.hachimi.app.util.AdaptiveScreenMargin
@@ -116,9 +119,14 @@ fun UserSpaceScreen(
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 TabBar(
+                    tabs = listOf(
+                        stringResource(Res.string.user_space_tab_songs),
+                        stringResource(Res.string.user_space_tab_playlists),
+                        stringResource(Res.string.user_space_tab_activity),
+                    ),
                     modifier = Modifier.padding(vertical = 8.dp),
                     selectedIndex = selectedTab,
-                    onTabSelected = { selectedTab = it }
+                    onTabSelected = { selectedTab = it },
                 )
             }
 
