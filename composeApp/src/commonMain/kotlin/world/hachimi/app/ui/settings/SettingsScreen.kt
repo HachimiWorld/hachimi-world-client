@@ -2,7 +2,6 @@ package world.hachimi.app.ui.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,10 +26,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -76,8 +70,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.Card
-import world.hachimi.app.ui.design.components.DropdownMenu
-import world.hachimi.app.ui.design.components.DropdownMenuItem
+import world.hachimi.app.ui.design.components.Select
 import world.hachimi.app.ui.design.components.Switcher
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
@@ -141,95 +134,54 @@ private fun Section(title: @Composable () -> Unit, content: @Composable () -> Un
 
 @Composable
 private fun LanguageSetting(settings: Settings) {
-    var expandedLang by remember { mutableStateOf(false) }
     PropertyItem(
         label = {
             Icon(Icons.Default.Language, stringResource(Res.string.settings_language_label))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(Res.string.settings_language_label))
         },
-        onClick = { expandedLang = true }
+        onClick = null,
     ) {
-        Box {
-            TextButton(onClick = { expandedLang = true }) {
+        Select(
+            value = settings.locale,
+            onValueChange = settings::updateLocale,
+            options = listOf(null, "en", "zh"),
+            expandIconContentDescription = stringResource(Res.string.settings_dropdown_cd),
+            label = { locale ->
                 Text(
-                    when (settings.locale) {
+                    when (locale) {
                         "en" -> stringResource(Res.string.settings_language_en)
                         "zh", "zh_CN", "zh-CN" -> stringResource(Res.string.settings_language_zh)
                         null -> stringResource(Res.string.settings_language_follow_system)
-                        else -> settings.locale
-                            ?: stringResource(Res.string.settings_language_follow_system)
+                        else -> locale ?: stringResource(Res.string.settings_language_follow_system)
                     }
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
-                )
-            }
-            DropdownMenu(expandedLang, onDismissRequest = { expandedLang = false }) {
-                DropdownMenuItem(onClick = {
-                    settings.updateLocale(null)
-                    expandedLang = false
-                }, text = { Text(stringResource(Res.string.settings_language_follow_system)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateLocale("en")
-                    expandedLang = false
-                }, text = { Text(stringResource(Res.string.settings_language_en)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateLocale("zh")
-                    expandedLang = false
-                }, text = { Text(stringResource(Res.string.settings_language_zh)) })
-            }
-        }
+            },
+        )
     }
 }
 
 @Composable
 private fun DarkModeSetting(globalStore: GlobalStore) {
-    var expanded by remember { mutableStateOf(false) }
     PropertyItem(
-        label = {
-            Text(stringResource(Res.string.settings_dark_mode_label))
-        },
-        onClick = {
-            expanded = true
-        }
+        label = { Text(stringResource(Res.string.settings_dark_mode_label)) },
+        onClick = null,
     ) {
-        Box {
-            TextButton(onClick = { expanded = true }) {
+        Select(
+            value = globalStore.settings.darkMode,
+            onValueChange = globalStore.settings::updateDarkMode,
+            options = listOf(null, true, false),
+            expandIconContentDescription = stringResource(Res.string.settings_dropdown_cd),
+            label = { mode ->
                 Text(
-                    when (globalStore.settings.darkMode) {
+                    when (mode) {
                         true -> stringResource(Res.string.settings_dark_mode_on)
                         false -> stringResource(Res.string.settings_dark_mode_off)
                         null -> stringResource(Res.string.settings_dark_mode_follow_system)
                     }
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
-                )
-            }
-            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(onClick = {
-                    globalStore.settings.updateDarkMode(null)
-                    expanded = false
-                }, text = {
-                    Text(stringResource(Res.string.settings_dark_mode_follow_system))
-                })
-                DropdownMenuItem(onClick = {
-                    globalStore.settings.updateDarkMode(true)
-                    expanded = false
-                }, text = {
-                    Text(stringResource(Res.string.settings_dark_mode_on))
-                })
-                DropdownMenuItem(onClick = {
-                    globalStore.settings.updateDarkMode(false)
-                    expanded = false
-                }, text = {
-                    Text(stringResource(Res.string.settings_dark_mode_off))
-                })
-            }
-        }
+            },
+        )
     }
 }
 
@@ -390,42 +342,24 @@ private fun DeviceManagementEntry() {
 
 @Composable
 private fun CloseBehaviorSetting(settings: Settings) {
-    var expanded by remember { mutableStateOf(false) }
-
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_close_behavior)) },
-        onClick = { expanded = true }
+        onClick = null,
     ) {
-        Box {
-            TextButton(onClick = { expanded = true }) {
+        Select(
+            value = settings.closeBehavior,
+            onValueChange = settings::updateCloseBehavior,
+            options = Settings.CloseBehavior.entries,
+            expandIconContentDescription = stringResource(Res.string.settings_dropdown_cd),
+            label = { behavior ->
                 Text(
-                    when (settings.closeBehavior) {
+                    when (behavior) {
                         Settings.CloseBehavior.ASK -> stringResource(Res.string.settings_close_behavior_ask)
                         Settings.CloseBehavior.MINIMIZE_TO_TRAY -> stringResource(Res.string.settings_close_behavior_minimize_to_tray)
                         Settings.CloseBehavior.EXIT -> stringResource(Res.string.settings_close_behavior_exit)
                     }
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
-                )
-            }
-            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(onClick = {
-                    settings.updateCloseBehavior(Settings.CloseBehavior.ASK)
-                    expanded = false
-                }, text = { Text(stringResource(Res.string.settings_close_behavior_ask)) })
-                DropdownMenuItem(
-                    onClick = {
-                        settings.updateCloseBehavior(Settings.CloseBehavior.MINIMIZE_TO_TRAY)
-                        expanded = false
-                    },
-                    text = { Text(stringResource(Res.string.settings_close_behavior_minimize_to_tray)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateCloseBehavior(Settings.CloseBehavior.EXIT)
-                    expanded = false
-                }, text = { Text(stringResource(Res.string.settings_close_behavior_exit)) })
-            }
-        }
+            },
+        )
     }
 }
