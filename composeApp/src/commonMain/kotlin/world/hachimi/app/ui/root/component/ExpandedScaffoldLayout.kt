@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.WindowSize
+import world.hachimi.app.ui.util.WindowSize
 
 @Composable
 fun ExpandedScaffoldLayout(

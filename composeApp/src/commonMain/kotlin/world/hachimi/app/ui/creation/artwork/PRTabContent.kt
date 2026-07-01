@@ -33,7 +33,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 
 @Composable
 fun PRTabContent(

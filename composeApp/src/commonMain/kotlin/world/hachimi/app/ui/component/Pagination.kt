@@ -36,7 +36,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.WindowSize
+import world.hachimi.app.ui.util.WindowSize
 
 @Composable
 fun Pagination(

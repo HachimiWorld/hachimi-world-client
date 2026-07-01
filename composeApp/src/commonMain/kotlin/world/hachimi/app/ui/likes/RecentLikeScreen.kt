@@ -66,9 +66,9 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.util.YMDHM
-import world.hachimi.app.util.contentPaddingForMaxWidth
 import world.hachimi.app.util.formatDaysDistance
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.formatTime

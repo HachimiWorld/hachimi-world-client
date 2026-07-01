@@ -38,8 +38,8 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.util.formatTime
 
 @Composable

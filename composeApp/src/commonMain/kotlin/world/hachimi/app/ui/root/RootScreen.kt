@@ -70,8 +70,8 @@ import world.hachimi.app.ui.settings.DeviceManagementScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.fillMaxWidthIn
 
 @Composable
 fun RootScreen() {

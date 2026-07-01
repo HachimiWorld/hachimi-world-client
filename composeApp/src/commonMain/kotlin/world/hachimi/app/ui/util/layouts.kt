@@ -1,4 +1,4 @@
-package world.hachimi.app.util
+package world.hachimi.app.ui.util
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues

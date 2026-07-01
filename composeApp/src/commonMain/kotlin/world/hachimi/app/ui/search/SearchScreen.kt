@@ -59,8 +59,8 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.search.components.SearchPlaylistItem
 import world.hachimi.app.ui.search.components.SearchSongItem
 import world.hachimi.app.ui.search.components.SearchUserItem
-import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 
 @Composable
 fun SearchScreen(

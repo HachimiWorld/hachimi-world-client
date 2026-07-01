@@ -49,8 +49,8 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.TopWithFooter
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.TopWithFooter
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant

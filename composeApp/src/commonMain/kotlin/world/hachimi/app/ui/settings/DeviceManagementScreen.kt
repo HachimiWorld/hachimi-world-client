@@ -54,8 +54,8 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.listTailSpacerItem
-import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatDistance
 

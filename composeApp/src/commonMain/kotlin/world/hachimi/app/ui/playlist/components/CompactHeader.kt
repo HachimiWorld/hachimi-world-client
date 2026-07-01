@@ -55,8 +55,8 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.util.YMD
-import world.hachimi.app.util.fillMaxWidthIn
 import world.hachimi.app.util.formatTime
 import kotlin.time.Clock
 import kotlin.time.Instant

@@ -83,12 +83,12 @@ import world.hachimi.app.ui.userspace.component.Connections
 import world.hachimi.app.ui.userspace.component.GenderIcon
 import world.hachimi.app.ui.userspace.component.PublicPlaylistCard
 import world.hachimi.app.ui.userspace.component.StatsRow
+import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.calculateGridColumns
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.ui.util.listTailSpacerItem
-import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.calculateGridColumns
-import world.hachimi.app.util.contentPaddingForMaxWidth
 
 @Composable
 fun UserSpaceScreen(

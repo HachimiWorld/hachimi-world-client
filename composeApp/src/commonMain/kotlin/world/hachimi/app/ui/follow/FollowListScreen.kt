@@ -53,9 +53,9 @@ import world.hachimi.app.ui.follow.components.FollowerItemCard
 import world.hachimi.app.ui.follow.components.FollowingItemCard
 import world.hachimi.app.ui.follow.components.LoadingSkeleton
 import world.hachimi.app.ui.follow.components.UnfollowDialog
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.listTailSpacerItem
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.WindowSize
 
 @Composable
 fun FollowListScreen(

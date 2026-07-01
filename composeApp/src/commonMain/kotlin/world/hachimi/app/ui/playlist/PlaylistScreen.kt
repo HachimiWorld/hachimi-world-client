@@ -31,11 +31,11 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.playlist.components.FavoritePlaylistItem
 import world.hachimi.app.ui.playlist.components.PlaylistItem
+import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
-import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.calculateGridColumns
-import world.hachimi.app.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.calculateGridColumns
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 
 @Composable
 fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {

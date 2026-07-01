@@ -79,8 +79,8 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds

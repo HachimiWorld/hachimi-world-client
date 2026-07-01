@@ -20,11 +20,11 @@ import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.ui.util.listTailSpacerItem
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.fillMaxWidthIn
 import kotlin.time.Duration.Companion.seconds
 
 @Composable

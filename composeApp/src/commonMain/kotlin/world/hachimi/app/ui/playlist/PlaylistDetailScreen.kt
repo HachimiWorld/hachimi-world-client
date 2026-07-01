@@ -44,11 +44,11 @@ import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.EditDialog
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.ui.util.fadeInFadeOut
 import world.hachimi.app.ui.util.listTailSpacerItem
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.contentPaddingForMaxWidth
 import kotlin.time.Duration.Companion.seconds
 
 @Composable

@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.launch
 import world.hachimi.app.ui.design.components.TabBar
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 
 private enum class Tab(
     val title: String

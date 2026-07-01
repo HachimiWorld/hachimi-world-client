@@ -45,10 +45,10 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.home.components.SongCard
-import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.calculateGridColumns
-import world.hachimi.app.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.calculateGridColumns
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 
 @Composable
 fun RecommendScreen(

@@ -67,11 +67,11 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.ui.util.horizontalFadingEdges
-import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.fillMaxWidthIn
 
 @Composable
 fun HomeMainScreen(
