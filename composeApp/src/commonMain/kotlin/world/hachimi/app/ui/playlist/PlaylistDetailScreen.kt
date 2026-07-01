@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.playlist
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.EditDialog
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.ui.util.fadeInFadeOut
 import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.AdaptiveScreenMargin
 import world.hachimi.app.util.WindowSize
@@ -62,55 +64,64 @@ fun PlaylistDetailScreen(
     }
 
     val global = koinInject<GlobalStore>()
-    when (vm.initStatus) {
-        InitializeStatus.INIT -> LoadingPage()
-        InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-        InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
-            vm.playlistInfo?.let { info ->
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    item {
-                        Header(global, info, vm)
-                    }
+    AnimatedContent(
+        targetState = vm.initStatus,
+        transitionSpec = { fadeInFadeOut() }
+    ) { initStatus ->
+        when (initStatus) {
+            InitializeStatus.INIT -> LoadingPage()
+            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
+                vm.playlistInfo?.let { info ->
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = contentPaddingForMaxWidth(
+                            PaddingValues(
+                                AdaptiveScreenMargin
+                            ), maxWidth
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        item {
+                            Header(global, info, vm)
+                        }
 
-                    itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
-                        SongItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            orderIndex = index,
-                            title = song.title,
-                            onClick = {
-                                global.player.insertToQueue(
-                                    GlobalStore.MusicQueueItem(
-                                        id = song.songId,
-                                        displayId = song.songDisplayId,
-                                        name = song.title,
-                                        artist = song.uploaderName,
-                                        duration = song.durationSeconds.seconds,
-                                        coverUrl = song.coverUrl,
-                                        explicit = null // TODO(playlist): Get explicit info
-                                    ), true, false
-                                )
-                            },
-                            coverUrl = song.coverUrl,
-                            artist = song.uploaderName,
-                            duration = song.durationSeconds.seconds,
-                            editable = true,
-                            onRemoveClick = {
-                                vm.removeFromPlaylist(song.songId)
-                            }
-                        )
-                    }
+                        itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
+                            SongItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                orderIndex = index,
+                                title = song.title,
+                                onClick = {
+                                    global.player.insertToQueue(
+                                        GlobalStore.MusicQueueItem(
+                                            id = song.songId,
+                                            displayId = song.songDisplayId,
+                                            name = song.title,
+                                            artist = song.uploaderName,
+                                            duration = song.durationSeconds.seconds,
+                                            coverUrl = song.coverUrl,
+                                            explicit = null // TODO(playlist): Get explicit info
+                                        ), true, false
+                                    )
+                                },
+                                coverUrl = song.coverUrl,
+                                artist = song.uploaderName,
+                                duration = song.durationSeconds.seconds,
+                                editable = true,
+                                onRemoveClick = {
+                                    vm.removeFromPlaylist(song.songId)
+                                }
+                            )
+                        }
 
-                    listTailSpacerItem()
+                        listTailSpacerItem()
+                    }
                 }
+
+                if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
+
+                EditDialog(vm)
             }
-
-            if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
-
-            EditDialog(vm)
         }
     }
 }
