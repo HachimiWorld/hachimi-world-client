@@ -1,7 +1,8 @@
 package world.hachimi.app.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -25,10 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.settings_device_current_label
-import hachimiworld.composeapp.generated.resources.settings_device_empty
 import hachimiworld.composeapp.generated.resources.settings_device_fisrt_login
 import hachimiworld.composeapp.generated.resources.settings_device_last_active
-import hachimiworld.composeapp.generated.resources.settings_device_load_error
 import hachimiworld.composeapp.generated.resources.settings_device_logout
 import hachimiworld.composeapp.generated.resources.settings_device_logout_cancel
 import hachimiworld.composeapp.generated.resources.settings_device_logout_confirm
@@ -36,17 +36,19 @@ import hachimiworld.composeapp.generated.resources.settings_device_logout_confir
 import hachimiworld.composeapp.generated.resources.settings_device_logout_confirm_title
 import hachimiworld.composeapp.generated.resources.settings_device_management
 import hachimiworld.composeapp.generated.resources.settings_device_other_label
-import hachimiworld.composeapp.generated.resources.settings_device_retry
 import hachimiworld.composeapp.generated.resources.settings_device_unknown
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import soup.compose.material.motion.animation.materialFadeIn
+import soup.compose.material.motion.animation.materialFadeOut
 import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.model.DeviceManagementViewModel
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.ui.component.LoadingPage
+import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AlertDialog
-import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
@@ -75,26 +77,15 @@ fun DeviceManagementScreen(
         )
 
         // Content
-        when {
-            vm.initializeStatus == InitializeStatus.INIT && vm.loading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            vm.initializeStatus == InitializeStatus.FAILED && vm.devices.isEmpty() -> {
-                ErrorState(
-                    message = vm.error ?: stringResource(Res.string.settings_device_load_error),
-                    onRetry = { vm.loadDevices() }
-                )
-            }
-
-            vm.devices.isEmpty() && vm.initializeStatus != InitializeStatus.INIT -> {
-                EmptyState()
-            }
-
-            else -> {
-                DeviceList(vm)
+        AnimatedContent(
+            targetState = vm.initializeStatus,
+            transitionSpec = { materialFadeIn() togetherWith materialFadeOut() },
+            modifier = Modifier.weight(1f).fillMaxWidth()
+        ) {
+            when(it) {
+                InitializeStatus.INIT -> LoadingPage()
+                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.LOADED -> Content(vm)
             }
         }
     }
@@ -105,39 +96,40 @@ fun DeviceManagementScreen(
 }
 
 @Composable
-private fun DeviceList(vm: DeviceManagementViewModel) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin, vertical = 8.dp)
-    ) {
-        vm.currentDevice?.let { current ->
-            item(key = "current_device") {
-                Column {
-                    Text(stringResource(Res.string.settings_device_current_label), style = MaterialTheme.typography.titleSmall)
-                    Spacer(Modifier.height(8.dp))
-                    DeviceCard(current, vm, isCurrent = true)
+private fun Content(vm: DeviceManagementViewModel) {
+    PullToRefreshBox(vm.loading, onRefresh = {}) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin, vertical = 8.dp)
+        ) {
+            vm.currentDevice?.let { current ->
+                item(key = "current_device") {
+                    Column {
+                        Text(stringResource(Res.string.settings_device_current_label), style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        DeviceCard(current, vm)
+                    }
                 }
             }
+            item {
+                Text(
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                    text = stringResource(Res.string.settings_device_other_label), style = MaterialTheme.typography.titleSmall
+                )
+            }
+            items(vm.otherDevices.toList(), key = { it.id }) { device ->
+                DeviceCard(device, vm)
+            }
+            listTailSpacerItem()
         }
-        item {
-            Text(
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
-                text = stringResource(Res.string.settings_device_other_label), style = MaterialTheme.typography.titleSmall
-            )
-        }
-        items(vm.otherDevices.toList(), key = { it.id }) { device ->
-            DeviceCard(device, vm, isCurrent = false)
-        }
-        listTailSpacerItem()
     }
 }
 
 @Composable
 private fun DeviceCard(
     device: AuthModule.DeviceItem,
-    vm: DeviceManagementViewModel,
-    isCurrent: Boolean
+    vm: DeviceManagementViewModel
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -163,7 +155,7 @@ private fun DeviceCard(
                 }
 
 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+               Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(Res.string.settings_device_fisrt_login,
                             formatDistance(device.createTime, precise = false, fullFormat = LocalDateTime.Formats.YMD)),
@@ -200,40 +192,6 @@ private fun DeviceCard(
                 } else {
                     Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.settings_device_logout))
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmptyState() {
-    Box(
-        Modifier.fillMaxSize().padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = stringResource(Res.string.settings_device_empty),
-            style = MaterialTheme.typography.bodyLarge,
-            color = HachimiTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Box(
-        Modifier.fillMaxSize().padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.error
-            )
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = onRetry) {
-                Text(stringResource(Res.string.settings_device_retry))
             }
         }
     }

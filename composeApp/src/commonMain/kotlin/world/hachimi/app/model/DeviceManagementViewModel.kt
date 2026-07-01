@@ -25,6 +25,12 @@ class DeviceManagementViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
+    var initializeStatus by mutableStateOf(InitializeStatus.INIT)
+        private set
+    var loading by mutableStateOf(false)
+        private set
+    var error by mutableStateOf<String?>(null)
+        private set
 
     val devices = mutableStateListOf<AuthModule.DeviceItem>()
 
@@ -36,12 +42,6 @@ class DeviceManagementViewModel(
     val otherDevices: List<AuthModule.DeviceItem>
         get() = currentDevice?.let { cur -> devices.filter { it.id != cur.id } } ?: devices.toList()
 
-    var initializeStatus by mutableStateOf(InitializeStatus.INIT)
-        private set
-    var loading by mutableStateOf(false)
-        private set
-    var error by mutableStateOf<String?>(null)
-        private set
 
     /** Set of device IDs currently being logged out. */
     val logoutLoading = mutableStateListOf<Long>()
@@ -50,41 +50,58 @@ class DeviceManagementViewModel(
     var logoutTarget by mutableStateOf<AuthModule.DeviceItem?>(null)
         private set
 
-    fun mounted() {
-        loadDevices()
+    fun mounted() = viewModelScope.launch {
+        if (initializeStatus == InitializeStatus.INIT) {
+            init()
+        } else {
+            refresh()
+        }
     }
 
-    fun loadDevices() {
-        loading = true
-        viewModelScope.launch {
+    fun retry() = viewModelScope.launch {
+        if (initializeStatus == InitializeStatus.FAILED) {
+            init()
+        }
+    }
+
+    fun refresh() = viewModelScope.launch {
+        try {
+            load()
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to refresh devices", e)
+        }
+    }
+
+    private suspend fun init() {
+        if (initializeStatus == InitializeStatus.INIT) {
             try {
-                error = null
-                devices.clear()
-                currentDevice = null
-                val resp = api.authModule.deviceList()
-                if (resp.ok) {
-                    val list = resp.ok().devices
-                    devices.addAll(list)
-                    currentDevice = list.find { it.tokenId == global.currentJti }
-                    if (initializeStatus == InitializeStatus.INIT) {
-                        initializeStatus = InitializeStatus.LOADED
-                    }
-                } else {
-                    val err = resp.err()
-                    error = err.msg
-                    if (initializeStatus == InitializeStatus.INIT) {
-                        initializeStatus = InitializeStatus.FAILED
-                    }
-                }
+                load()
+                initializeStatus = InitializeStatus.LOADED
             } catch (e: Throwable) {
-                Logger.e(TAG, "Failed to load device list", e)
+                Logger.e(TAG, "Failed to load devices", e)
                 error = e.message
-                if (initializeStatus == InitializeStatus.INIT) {
-                    initializeStatus = InitializeStatus.FAILED
-                }
-            } finally {
-                loading = false
+                initializeStatus = InitializeStatus.FAILED
             }
+        }
+    }
+
+    private suspend fun load() {
+        loading = true
+        try {
+            error = null
+            val resp = api.authModule.deviceList()
+            if (resp.ok) {
+                val list = resp.ok().devices
+                devices.clear()
+                devices.addAll(list)
+                currentDevice = list.find { it.tokenId == global.currentJti }
+            } else {
+                val err = resp.err()
+                error = err.msg
+                global.alert(err.msg)
+            }
+        } finally {
+            loading = false
         }
     }
 
