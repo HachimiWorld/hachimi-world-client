@@ -26,6 +26,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisZ
+import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.HandleNavigationRequests
 import world.hachimi.app.nav.LocalNavigator
@@ -66,39 +67,44 @@ fun App(
     global: GlobalStore = koinInject(),
     navigator: Navigator = remember { Navigator(Route.Root.Default) }
 ) {
-    setupCoil()
-    ProvideLocalWindowSize {
-        Surface(
-            Modifier.fillMaxSize(),
-            color = HachimiTheme.colorScheme.background,
-            contentColor = HachimiTheme.colorScheme.onSurface
-        ) {
-            Box(Modifier.fillMaxSize()) {
-                SharedTransitionLayout {
-                    CompositionLocalProvider(
-                        LocalNavigator provides navigator,
-                        LocalSharedTransitionScope provides this
-                    ) {
-                        HandleNavigationRequests(global.appNavigationRequests)
-                        AppNavHost(global)
-                        AnimatedVisibility(
-                            global.playerExpanded,
-                            enter = slideInVertically(initialOffsetY = { it }),
-                            exit = slideOutVertically(targetOffsetY = { it })
-                        ) {
-                            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                                PlayerScreen2()
+    CompositionLocalProvider(LocalNavigator provides navigator) {
+        AppEnvironment(global.settings.locale) {
+            // Apply locale environment before rendering App
+            setupCoil()
+            ProvideLocalWindowSize {
+                Surface(
+                    Modifier.fillMaxSize(),
+                    color = HachimiTheme.colorScheme.background,
+                    contentColor = HachimiTheme.colorScheme.onSurface
+                ) {
+                    Box(Modifier.fillMaxSize()) {
+                        SharedTransitionLayout {
+                            CompositionLocalProvider(
+                                LocalSharedTransitionScope provides this
+                            ) {
+                                HandleNavigationRequests(global.appNavigationRequests)
+                                AppNavHost(global)
+                                AnimatedVisibility(
+                                    global.playerExpanded,
+                                    enter = slideInVertically(initialOffsetY = { it }),
+                                    exit = slideOutVertically(targetOffsetY = { it })
+                                ) {
+                                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                        PlayerScreen2()
+                                    }
+                                }
                             }
                         }
+                        SnackbarHost(
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                                .padding(bottom = 120.dp),
+                            hostState = global.snackbarHostState,
+                        )
                     }
                 }
-                SnackbarHost(
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
-                    hostState = global.snackbarHostState,
-                )
+                GlobalDialogs(global)
             }
         }
-        GlobalDialogs(global)
     }
 }
 

@@ -28,7 +28,6 @@ import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
 import org.koin.plugin.module.dsl.module
 import world.hachimi.app.di.JvmModule
-import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
@@ -127,10 +126,7 @@ fun main() {
                         darkMode,
                         ::onCloseRequest
                     ) {
-                        // Apply locale environment before rendering App
-                        AppEnvironment(global.settings.locale) {
-                            App(global)
-                        }
+                        App(global)
                         if (showCloseAskDialog) CloseAskDialog(
                             onCancel = {
                                 showCloseAskDialog = false

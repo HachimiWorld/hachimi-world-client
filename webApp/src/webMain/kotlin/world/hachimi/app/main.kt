@@ -13,7 +13,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.koin.core.context.startKoin
 import world.hachimi.app.di.webModule
 import world.hachimi.app.font.WithFont
-import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.Navigator
@@ -76,9 +75,7 @@ fun main() {
 
         WithFont(global) {
             // Apply locale environment so the app follows the selected locale
-            AppEnvironment(global.settings.locale) {
-                App(global, navigator)
-            }
+            App(global, navigator)
         }
     }
 }
