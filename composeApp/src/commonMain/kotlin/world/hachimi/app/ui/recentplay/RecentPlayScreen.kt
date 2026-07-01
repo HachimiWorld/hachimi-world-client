@@ -1,16 +1,12 @@
 package world.hachimi.app.ui.recentplay
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,17 +33,15 @@ import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.CoilHeaders
-import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPlayViewModel
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadMoreItem
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.YMDHM
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
@@ -62,45 +56,44 @@ fun RecentPlayScreen(
     }
 
     val state = rememberLazyListState()
-    LaunchedEffect(state.canScrollForward, vm.loading, vm.hasMore) {
-        if (!vm.loading && vm.hasMore && !state.canScrollForward) {
+    LaunchedEffect(state.canScrollForward, vm.refreshing, vm.hasMore) {
+        if (!vm.refreshing && vm.hasMore && !state.canScrollForward) {
             vm.loadMore()
         }
     }
 
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-        when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
-                LazyColumn(
-                    state = state,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth)
-                ) {
-                    item {
-                        Text(
-                            modifier = Modifier.padding(bottom = 12.dp),
-                            text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                    items(vm.history, key = { item -> item.songInfo.id }) { item ->
-                        RecentPlayItem(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                            coverUrl = item.songInfo.coverUrl,
-                            title = item.songInfo.title,
-                            artist = item.songInfo.uploaderName,
-                            playTime = item.playTime,
-                            onPlayClick = { vm.play(item) }
-                        )
-                    }
-                    item {
-                        LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
-                    }
-                    item {
-                        Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
-                    }
+    InitStatusScaffold(
+        initializeStatus = vm.initializeStatus,
+        isLoading = vm.refreshing,
+        onRetryClick = { vm.retry() },
+        modifier = Modifier.fillMaxSize()
+    ) {
+        BoxWithConstraints {
+            LazyColumn(
+                state = state,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth)
+            ) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(bottom = 12.dp),
+                        text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
+                    )
                 }
+                items(vm.history, key = { item -> item.songInfo.id }) { item ->
+                    RecentPlayItem(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        coverUrl = item.songInfo.coverUrl,
+                        title = item.songInfo.title,
+                        artist = item.songInfo.uploaderName,
+                        playTime = item.playTime,
+                        onPlayClick = { vm.play(item) }
+                    )
+                }
+                item {
+                    LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loadingMore)
+                }
+                listTailSpacerItem()
             }
         }
     }

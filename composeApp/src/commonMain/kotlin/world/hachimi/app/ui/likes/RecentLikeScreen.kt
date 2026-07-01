@@ -1,6 +1,5 @@
 package world.hachimi.app.ui.likes
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,10 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,19 +44,14 @@ import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.nav_recent_like
 import hachimiworld.composeapp.generated.resources.play_all
 import hachimiworld.composeapp.generated.resources.player_unlike
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
-import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentLikeViewModel
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadMoreItem
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -67,11 +59,11 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
-import world.hachimi.app.util.YMDHM
+import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.formatDaysDistance
 import world.hachimi.app.util.formatSongDuration
-import world.hachimi.app.util.formatTime
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -85,12 +77,13 @@ fun RecentLikeScreen(
 		onDispose { vm.dispose() }
 	}
 
-	AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-		when (it) {
-			InitializeStatus.INIT -> LoadingPage()
-			InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-			InitializeStatus.LOADED -> Content(vm)
-		}
+	InitStatusScaffold(
+        initializeStatus = vm.initializeStatus,
+        isLoading = vm.loading,
+        onRetryClick = { vm.retry() },
+        modifier = Modifier.fillMaxSize(),
+    ) {
+		Content(vm)
 	}
 }
 
@@ -116,7 +109,7 @@ private fun Content(vm: RecentLikeViewModel) {
 			state = state,
 			modifier = Modifier.fillMaxSize(),
 			contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			verticalArrangement = Arrangement.spacedBy(8.dp),
 		) {
 			item {
 				Header(vm)
@@ -130,7 +123,7 @@ private fun Content(vm: RecentLikeViewModel) {
 							val daysOffset = today.toEpochDays() - group.date.toEpochDays()
 							formatDaysDistance(daysOffset.toInt()) ?: group.date.toString()
 						},
-						style = MaterialTheme.typography.titleMedium,
+						style = MaterialTheme.typography.titleSmall,
 					)
 				}
 				items(
@@ -150,9 +143,7 @@ private fun Content(vm: RecentLikeViewModel) {
 				LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
 			}
 
-			item {
-				Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
-			}
+			listTailSpacerItem()
 		}
 	}
 }
@@ -232,10 +223,6 @@ private fun RecentLikeItem(
 				Text(
 					text = formatSongDuration(item.songData.durationSeconds.seconds),
 					style = MaterialTheme.typography.bodySmall,
-				)
-				Text(
-					text = formatTime(item.likedTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMDHM),
-					style = MaterialTheme.typography.labelSmall,
 				)
 			}
 

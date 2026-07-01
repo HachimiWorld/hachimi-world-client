@@ -1,7 +1,5 @@
 package world.hachimi.app.ui.settings
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -19,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -40,13 +37,8 @@ import hachimiworld.composeapp.generated.resources.settings_device_unknown
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import soup.compose.material.motion.animation.materialFadeIn
-import soup.compose.material.motion.animation.materialFadeOut
 import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.model.DeviceManagementViewModel
-import world.hachimi.app.model.InitializeStatus
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Card
@@ -55,6 +47,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatDistance
@@ -77,16 +70,13 @@ fun DeviceManagementScreen(
         )
 
         // Content
-        AnimatedContent(
-            targetState = vm.initializeStatus,
-            transitionSpec = { materialFadeIn() togetherWith materialFadeOut() },
-            modifier = Modifier.weight(1f).fillMaxWidth()
+        InitStatusScaffold(
+            initializeStatus = vm.initializeStatus,
+            isLoading = vm.loading,
+            onRetryClick = { vm.retry() },
+            modifier = Modifier.fillMaxSize()
         ) {
-            when(it) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-                InitializeStatus.LOADED -> Content(vm)
-            }
+            Content(vm)
         }
     }
 
@@ -97,32 +87,30 @@ fun DeviceManagementScreen(
 
 @Composable
 private fun Content(vm: DeviceManagementViewModel) {
-    PullToRefreshBox(vm.loading, onRefresh = {}) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin, vertical = 8.dp)
-        ) {
-            vm.currentDevice?.let { current ->
-                item(key = "current_device") {
-                    Column {
-                        Text(stringResource(Res.string.settings_device_current_label), style = MaterialTheme.typography.titleSmall)
-                        Spacer(Modifier.height(8.dp))
-                        DeviceCard(current, vm)
-                    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin, vertical = 8.dp)
+    ) {
+        vm.currentDevice?.let { current ->
+            item(key = "current_device") {
+                Column {
+                    Text(stringResource(Res.string.settings_device_current_label), style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.height(8.dp))
+                    DeviceCard(current, vm)
                 }
             }
-            item {
-                Text(
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
-                    text = stringResource(Res.string.settings_device_other_label), style = MaterialTheme.typography.titleSmall
-                )
-            }
-            items(vm.otherDevices.toList(), key = { it.id }) { device ->
-                DeviceCard(device, vm)
-            }
-            listTailSpacerItem()
         }
+        item {
+            Text(
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                text = stringResource(Res.string.settings_device_other_label), style = MaterialTheme.typography.titleSmall
+            )
+        }
+        items(vm.otherDevices.toList(), key = { it.id }) { device ->
+            DeviceCard(device, vm)
+        }
+        listTailSpacerItem()
     }
 }
 
