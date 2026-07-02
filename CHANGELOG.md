@@ -1,4 +1,4 @@
-# Unreleased
+# 1.3.0
 
 ## Features 新功能
 
@@ -10,6 +10,7 @@
 
 1. Optimize the layout of the playlist page. 优化歌单页面布局。
 2. Migrated to navigation3. 迁移到 Navigation3。
+3. Optimize the splash screen on Android. 优化 Android 端启动闪屏。
 
 ## Fixes 修复
 
