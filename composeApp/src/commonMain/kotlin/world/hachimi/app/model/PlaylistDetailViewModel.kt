@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
@@ -24,6 +25,7 @@ import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Duration.Companion.seconds
 
+@KoinViewModel
 class PlaylistDetailViewModel(
     private val api: ApiClient,
     private val global: GlobalStore

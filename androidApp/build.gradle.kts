@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.koinCompiler)
+    alias(libs.plugins.baselineprofile)
 }
 
 val gitVersionCode = providers.exec {
@@ -21,7 +23,7 @@ val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }
 
 android {
     namespace = "world.hachimi.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "world.hachimi.app"
@@ -73,7 +75,10 @@ android {
 
 
 dependencies {
+    "baselineProfile"(project(":baselineprofile"))
     implementation(projects.composeApp)
+
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
@@ -92,6 +97,7 @@ dependencies {
     implementation(libs.filekit.coil)
 
     implementation(libs.koin.android)
+    implementation(libs.koin.annotations)
     implementation(libs.koin.compose)
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.koin.compose.viewmodelNavigation)
@@ -115,6 +121,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)

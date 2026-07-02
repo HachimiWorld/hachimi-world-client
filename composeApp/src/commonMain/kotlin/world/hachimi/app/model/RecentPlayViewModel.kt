@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlayHistoryModule
@@ -16,15 +17,18 @@ import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Instant
 
+@KoinViewModel
 class RecentPlayViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ): ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
-    var loading by mutableStateOf(false)
+    var refreshing by mutableStateOf(false)
         private set
     var hasMore by mutableStateOf(true)
+        private set
+    var loadingMore by mutableStateOf(false)
         private set
     private val _history = mutableStateListOf<PlayHistoryModule.PlayHistoryItem>()
     val history: List<PlayHistoryModule.PlayHistoryItem> = _history
@@ -56,7 +60,11 @@ class RecentPlayViewModel(
 
     fun loadMore(clear: Boolean = false) = viewModelScope.launch {
         if (!clear && !hasMore) return@launch
-        loading = true
+        if (cursor == null) {
+            refreshing = true
+        } else {
+            loadingMore = true
+        }
 
         try {
             val resp = api.playHistoryModule.cursor(PlayHistoryModule.CursorReq(
@@ -92,7 +100,8 @@ class RecentPlayViewModel(
             }
             return@launch
         } finally {
-            loading = false
+            refreshing = false
+            loadingMore = false
         }
     }
 

@@ -1,6 +1,5 @@
 package world.hachimi.app.ui.root
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,8 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
@@ -33,9 +34,13 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
+import world.hachimi.app.model.FollowListType
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.Logo
@@ -45,6 +50,7 @@ import world.hachimi.app.ui.creation.CreationCenterScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.events.EventsRouteScreen
+import world.hachimi.app.ui.follow.FollowListScreen
 import world.hachimi.app.ui.home.HomeScreen
 import world.hachimi.app.ui.insets.currentSafeAreaInsets
 import world.hachimi.app.ui.likes.RecentLikeScreen
@@ -60,59 +66,112 @@ import world.hachimi.app.ui.root.component.ExpandedTopAppBar
 import world.hachimi.app.ui.root.component.SideNavigation
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
+import world.hachimi.app.ui.settings.DeviceManagementScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
-import world.hachimi.app.util.WindowSize
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.fillMaxWidthIn
 
 @Composable
-fun RootScreen(routeContent: Route.Root) {
+fun RootScreen() {
+    val navigator = LocalNavigator.current
     val global = koinInject<GlobalStore>()
+    val currentRoot = navigator.rootBackStack.lastOrNull() ?: return
+
     AdaptiveScreen(
         navigationContent = { onChange ->
             SideNavigation(
-                content = routeContent,
+                content = currentRoot,
                 onChange = { onChange(it) }
             )
         },
         content = {
-            val slideDistance = rememberSlideDistance()
-
-            AnimatedContent(
-                targetState = routeContent,
-                transitionSpec = { materialSharedAxisY(true, slideDistance) }
-            ) { routeContent ->
-                when (routeContent) {
-                    is Route.Root.Events -> EventsRouteScreen(routeContent)
-                    is Route.Root.Home -> HomeScreen(routeContent)
-                    is Route.Root.Search -> SearchScreen(routeContent.query, routeContent.type)
-                    Route.Root.RecentLike -> if (global.isLoggedIn) RecentLikeScreen() else NeedLoginScreen()
-                    Route.Root.RecentPlay -> if (global.isLoggedIn) RecentPlayScreen() else NeedLoginScreen()
-                    is Route.Root.MyPlaylist -> if (global.isLoggedIn) PlaylistRouteScreen(routeContent) else NeedLoginScreen()
-                    Route.Root.MySubscribe -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
-                    is Route.Root.CreationCenter -> if (global.isLoggedIn) CreationCenterScreen(routeContent) else NeedLoginScreen()
-                    Route.Root.CommitteeCenter -> if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
-                    is Route.Root.ContributorCenter -> if (global.isLoggedIn) ContributorCenterScreen(routeContent) else NeedLoginScreen()
-                    Route.Root.UserSpace -> UserSpaceScreen(null)
-                    Route.Root.Settings -> SettingsScreen()
-                    Route.Root.Changelog -> ChangelogScreen()
-                    is Route.Root.PublicUserSpace -> UserSpaceScreen(routeContent.userId)
-                    is Route.Root.PublicPlaylist -> if (global.isLoggedIn) PublicPlaylistScreen(routeContent.playlistId) else NeedLoginScreen()
-                    Route.Root.EditProfile -> if (global.isLoggedIn) EditProfileScreen() else NeedLoginScreen()
-                }
-            }
+            RootNavHost(global, navigator)
         }
     )
 
 }
 
 @Composable
+private fun RootNavHost(global: GlobalStore, navigator: Navigator) {
+    val slideDistance = rememberSlideDistance()
+
+    NavDisplay(
+        backStack = navigator.rootBackStack,
+        onBack = navigator::back,
+        sharedTransitionScope = LocalSharedTransitionScope.current,
+        modifier = Modifier.fillMaxSize(),
+        transitionSpec = { materialSharedAxisY(true, slideDistance) },
+        popTransitionSpec = { materialSharedAxisY(false, slideDistance) },
+        predictivePopTransitionSpec = { materialSharedAxisY(false, slideDistance) },
+        entryProvider = { key ->
+            when (key) {
+                is Route.Root.Events -> NavEntry(key) { EventsRouteScreen(key) }
+                is Route.Root.Home -> NavEntry(key) { HomeScreen(key) }
+                is Route.Root.Search -> NavEntry(key) { SearchScreen(key.query, key.type) }
+                Route.Root.RecentLike -> NavEntry(key) {
+                    if (global.isLoggedIn) RecentLikeScreen() else NeedLoginScreen()
+                }
+
+                Route.Root.RecentPlay -> NavEntry(key) {
+                    if (global.isLoggedIn) RecentPlayScreen() else NeedLoginScreen()
+                }
+
+                is Route.Root.MyPlaylist -> NavEntry(key) {
+                    if (global.isLoggedIn) PlaylistRouteScreen(key) else NeedLoginScreen()
+                }
+
+                Route.Root.MySubscribe -> NavEntry(key) {
+                    if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
+                }
+
+                is Route.Root.CreationCenter -> NavEntry(key) {
+                    if (global.isLoggedIn) CreationCenterScreen(key) else NeedLoginScreen()
+                }
+
+                Route.Root.CommitteeCenter -> NavEntry(key) {
+                    if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
+                }
+
+                is Route.Root.ContributorCenter -> NavEntry(key) {
+                    if (global.isLoggedIn) ContributorCenterScreen(key) else NeedLoginScreen()
+                }
+
+                Route.Root.UserSpace -> NavEntry(key) { UserSpaceScreen(null) }
+                Route.Root.Settings -> NavEntry(key) { SettingsScreen() }
+                Route.Root.Changelog -> NavEntry(key) { ChangelogScreen() }
+                is Route.Root.PublicUserSpace -> NavEntry(key) { UserSpaceScreen(key.userId) }
+                is Route.Root.PublicPlaylist -> NavEntry(key) {
+                    if (global.isLoggedIn) PublicPlaylistScreen(key.playlistId) else NeedLoginScreen()
+                }
+
+                Route.Root.EditProfile -> NavEntry(key) {
+                    if (global.isLoggedIn) EditProfileScreen() else NeedLoginScreen()
+                }
+
+                Route.Root.FollowingList -> NavEntry(key) {
+                    if (global.isLoggedIn) FollowListScreen(FollowListType.FOLLOWING) else NeedLoginScreen()
+                }
+
+                Route.Root.FollowersList -> NavEntry(key) {
+                    if (global.isLoggedIn) FollowListScreen(FollowListType.FOLLOWERS) else NeedLoginScreen()
+                }
+
+                Route.Root.DeviceManagement -> NavEntry(key) {
+                    if (global.isLoggedIn) DeviceManagementScreen() else NeedLoginScreen()
+                }
+            }
+        }
+    )
+}
+
+@Composable
 private fun AdaptiveScreen(
     navigationContent: @Composable (onChange: (Route) -> Unit) -> Unit,
-    global: GlobalStore = koinInject(),
     content: @Composable () -> Unit
 ) {
+    val navigator = LocalNavigator.current
     val scope = rememberCoroutineScope()
     if (LocalWindowSize.current.width < WindowSize.COMPACT) {
         CompactScreen({ state ->
@@ -120,14 +179,14 @@ private fun AdaptiveScreen(
                 scope.launch {
                     delay(120)
                     state.close()
-                    global.nav.push(it)
+                    navigator.push(it)
                 }
             }
         }, content)
     } else {
         ExpandedScreen({
             navigationContent({
-                global.nav.push(it)
+                navigator.push(it)
             })
         }, content)
     }

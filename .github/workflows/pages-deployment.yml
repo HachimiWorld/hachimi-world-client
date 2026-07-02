@@ -28,13 +28,13 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
-        run: ./gradlew composeApp:composeCompatibilityBrowserDistribution -Pbuildkonfig.flavor=release
+        run: ./gradlew webApp:composeCompatibilityBrowserDistribution -Pbuildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: logs
-          path: composeApp/build/compose/logs/
+          path: webApp/build/compose/logs/
       - name: Get versions
         shell: bash
         run: |
@@ -44,11 +44,11 @@ jobs:
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
       - name: Copy favicon.ico
-        run: cp icons/icon.ico composeApp/build/dist/composeWebCompatibility/productionExecutable/favicon.ico
+        run: cp icons/icon.ico webApp/build/dist/composeWebCompatibility/productionExecutable/favicon.ico
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy composeApp/build/dist/composeWebCompatibility/productionExecutable --project-name=hachimi-world-client
+          command: pages deploy webApp/build/dist/composeWebCompatibility/productionExecutable --project-name=hachimi-world-client
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

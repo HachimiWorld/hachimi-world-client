@@ -29,9 +29,9 @@ import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.WinUser
 import io.github.composefluent.gallery.jna.windows.ComposeWindowProcedure
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst
-import world.hachimi.app.LocalWindow
 import world.hachimi.app.ui.insets.LocalSafeAreaInsets
 import world.hachimi.app.ui.insets.SafeAreaInsets
+import world.hachimi.app.ui.theme.LocalWindow
 
 val LocalWindowFrameState: ProvidableCompositionLocal<WindowFrameState?> =
     staticCompositionLocalOf { null }

@@ -10,6 +10,6 @@
     <string name="playlist_edit_title">编辑歌单</string>
     <string name="playlist_favorite">收藏</string>
     <string name="playlist_unfavorite">已收藏</string>
-    <string name="playlist_update_time">更新时间：%1$s</string>
+    <string name="playlist_update_time">%1$s</string>
     <string name="playlist_login_required">歌单功能登录后可用</string>
 </resources>

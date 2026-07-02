@@ -16,8 +16,8 @@ import world.hachimi.app.ui.player.fullscreen.components.BackgroundContainer
 import world.hachimi.app.ui.player.fullscreen.components.rememberAsyncPainterAndColor
 import world.hachimi.app.ui.theme.LocalDarkMode
 import world.hachimi.app.ui.theme.rememberSystemUIController
+import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.util.PlatformBackHandler
-import world.hachimi.app.util.WindowSize
 
 @Composable
 fun PlayerScreen2(

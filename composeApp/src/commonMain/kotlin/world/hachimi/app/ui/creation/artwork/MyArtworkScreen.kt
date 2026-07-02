@@ -1,8 +1,6 @@
 package world.hachimi.app.ui.creation.artwork
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,15 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
 import kotlinx.coroutines.launch
-import world.hachimi.app.ui.design.components.AccentButton
-import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
-
+import world.hachimi.app.ui.design.components.TabBar
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 
 private enum class Tab(
     val title: String
@@ -35,20 +28,22 @@ fun MyArtworkScreen() {
     Column(Modifier.fillMaxSize().fillMaxWidthIn()) {
         val scope = rememberCoroutineScope()
 
-        Row(Modifier.padding(top = AdaptiveScreenMargin, start = AdaptiveScreenMargin, end = AdaptiveScreenMargin), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Tab.entries.fastForEachIndexed { index, tab ->
-                val selected = pagerState.currentPage == index
-                if (selected) AccentButton(onClick = {}) {
-                    Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                } else Button(onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
-                }) {
-                    Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        TabBar(
+            tabs = Tab.entries.map { it.title },
+            selectedIndex = pagerState.currentPage,
+            onTabSelected = { index ->
+                scope.launch {
+                    pagerState.animateScrollToPage(index)
                 }
-            }
-        }
+            },
+            modifier = Modifier.padding(
+                top = AdaptiveScreenMargin,
+                start = AdaptiveScreenMargin,
+                end = AdaptiveScreenMargin,
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
 
         HorizontalPager(pagerState, modifier = Modifier.fillMaxWidth().weight(1f)) {
             when (it) {

@@ -3,11 +3,11 @@ package world.hachimi.app
 import android.app.Application
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
-import world.hachimi.app.di.androidModule
-import world.hachimi.app.di.appModule
+import org.koin.plugin.module.dsl.module
+import world.hachimi.app.di.AndroidModule
 import world.hachimi.app.model.GlobalStore
 
-class MyApplication: Application() {
+class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
@@ -15,7 +15,7 @@ class MyApplication: Application() {
 
         val koin = startKoin {
             androidContext(this@MyApplication)
-            modules(appModule, androidModule)
+            module<AndroidModule>()
         }
 
         val global = koin.koin.get<GlobalStore>()

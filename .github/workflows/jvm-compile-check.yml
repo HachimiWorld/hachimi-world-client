@@ -12,7 +12,7 @@ concurrency:
   group: jvm-compile-check-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  build-macos:
+  compile-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
         working-directory: ./rustLib
         run: |
           cargo build --lib
-          cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/libhachimi.dylib \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
@@ -48,7 +48,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
-        run: ./gradlew compileKotlinJvm
+        run: ./gradlew :desktopApp:compileKotlin
   build-windows:
     runs-on: windows-latest
     steps:
@@ -74,7 +74,7 @@ jobs:
         shell: bash
         run: |
           cargo build --lib
-          cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/hachimi.dll \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
@@ -86,7 +86,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
-        run: ./gradlew compileKotlinJvm
+        run: ./gradlew :desktopApp:compileKotlin
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -115,7 +115,7 @@ jobs:
         working-directory: ./rustLib
         run: |
           cargo build --lib
-          cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
+          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
           cargo run --bin uniffi-bindgen generate \
             --library target/debug/libhachimi.so \
             --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
@@ -127,4 +127,4 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
-        run: ./gradlew compileKotlinJvm
+        run: ./gradlew :desktopApp:compileKotlin

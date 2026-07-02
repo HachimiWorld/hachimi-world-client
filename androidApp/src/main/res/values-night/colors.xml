@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches HachimiPalette.backgroundDark -->
+    <color name="app_background">#2B2A25</color>
+    <color name="splash_background">#2B2A25</color>
+</resources>

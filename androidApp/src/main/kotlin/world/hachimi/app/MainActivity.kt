@@ -3,20 +3,24 @@ package world.hachimi.app
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import org.koin.compose.koinInject
-import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.theme.AppTheme
+import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : ComponentActivity() {
+    private val keepSplashScreen = AtomicBoolean(true)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen().setKeepOnScreenCondition { keepSplashScreen.get() }
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Force the 3-button navigation bar to be transparent
@@ -30,18 +34,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             val global = koinInject<GlobalStore>()
 
-            BackHandler {
-                if (global.nav.backStack.size > 1) {
-                    global.nav.back()
-                } else {
-                    finish()
+            LaunchedEffect(global.initialized) {
+                if (global.initialized) {
+                    keepSplashScreen.set(false)
                 }
             }
 
             AppTheme(global.settings.darkMode ?: isSystemInDarkTheme()) {
-                AppEnvironment(global.settings.locale) {
-                    App(global)
-                }
+                App(global)
             }
         }
     }

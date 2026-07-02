@@ -18,12 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
@@ -38,7 +36,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
@@ -58,6 +55,8 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishViewModel
 import world.hachimi.app.model.PublishViewModel.LyricsType
 import world.hachimi.app.model.PublishViewModel.Type
+import world.hachimi.app.nav.HandleNavigationRequests
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
@@ -69,16 +68,16 @@ import world.hachimi.app.ui.creation.publish.components.TagEdit
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Card
-import world.hachimi.app.ui.design.components.DropdownMenu
-import world.hachimi.app.ui.design.components.DropdownMenuItem
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.RadioButton
+import world.hachimi.app.ui.design.components.Select
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.singleLined
 import kotlin.time.Duration.Companion.seconds
@@ -90,10 +89,13 @@ fun PublishScreen(
     vm: PublishViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, songId, reviewId) {
         vm.mounted(songId, reviewId)
         onDispose { vm.dispose() }
     }
+    HandleNavigationRequests(vm.navigationRequests, navigator)
     AnimatedContent(vm.initializeStatus) {
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
@@ -105,7 +107,7 @@ fun PublishScreen(
     if (vm.showPrefixInactiveDialog) PrefixInactiveDialog(
         onExit = {
             vm.showPrefixInactiveDialog = false
-            global.nav.back()
+            navigator.back()
         }
     )
 }
@@ -129,7 +131,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
             )
 
             if (vm.type == Type.CREATE) Text(
-                "尊重劳动成果，请勿搬运作品。暂不收录时长或结构明显短于 TV Size 的作品。",
+                "温馨提示：\n本站尊重每一位创作者的劳动成果，因此我们不会收录搬运的作品。\n若您是首次投稿，您可以前往个人资料页绑定您的 BiliBili 账号便于审核确认您是作者。\n此外，暂不收录下类作品：\n1. 时长过短的作品（建议至少包含一整个段落）；\n2. 与“哈基米音乐”无关的作品；\n3. 不适宜收录的作品（如政治敏感等）",
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -174,7 +176,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     FormItem(
                         header = { Text("设置封面*") },
                         subtitle = {
-                            Text("支持 jpg, png, webp 格式的图片。封面在所有地方都只会以裁剪的方式显示为正方形，如果您的封面原先是长方形，建议进行适当的调整。请勿通过拉伸比例的方式来调整，请勿使用透明图片。")
+                            Text("支持 jpg, png, webp 格式。请使用正方形图片作为封面。")
                         }
                     ) {
                         Surface(
@@ -241,7 +243,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
 
                     FormItem(
                         header = { Text("标题*") },
-                        subtitle = { Text("填写一个您认为适合永久流传的纯文字标题。如 钢铁雄基4 这类与原曲标题关联性强的纯文字标题。请不要在标题中添加标签、Emoji等复杂内容。请不要使用标题来引流，后续可能会做专门用于推荐的标题。") }
+                        subtitle = { Text("请使用纯文字标题。请不要在标题中添加标签、Emoji、符号等内容。如 钢铁雄基、哈基哈基天使") }
                     ) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -253,7 +255,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
 
                     FormItem(
                         header = { Text("副标题") },
-                        subtitle = { Text("可选。副标题通常是一句简短的描述，或是 OST 的出处，如《XXX》OP、《XXX》游戏原声带。无需在此处填写原作标题，原作信息请在后方对应的输入框中填写。") }
+                        subtitle = { Text("可选。通常是一句简短的描述，或 OST 的出处，如《XXX》OP、《XXX》游戏原声带。") }
                     ) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -265,7 +267,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
 
                     FormItem(
                         header = { Text("标签") },
-                        subtitle = { Text("使用标签描述你的曲风类型（如古典、流行、J-Pop、ACG、R&B）、创作类型（如纯净哈基米、原曲不使用）。不建议添加过多的标签。若只有英文请按照每单词首字母大写空格隔开，或使用行业标准写法。请勿使用符号和 Emoji") }
+                        subtitle = { Text("描述你的曲风类型（如古典、流行、J-Pop、ACG、R&B）、创作类型（如纯净哈基米、原曲不使用）。\n不建议添加过多的标签。若只有英文请按照每单词首字母大写空格隔开，或使用行业标准写法。请勿使用符号和 Emoji") }
                     ) {
                         TagEdit(vm)
                     }
@@ -303,15 +305,16 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                             LyricsType.entries.forEach {
                                 RadioButton(
                                     selected = vm.lyricsType == it,
-                                    onClick = { vm.lyricsType = it })
-                                Text(
-                                    text = when (it) {
-                                        LyricsType.LRC -> "LRC歌词"
-                                        LyricsType.TEXT -> "文本歌词"
-                                        LyricsType.NONE -> "不填写"
-                                    },
-                                    style = MaterialTheme.typography.labelLarge
-                                )
+                                    onClick = { vm.lyricsType = it }
+                                ) {
+                                    Text(
+                                        when (it) {
+                                            LyricsType.LRC -> "LRC歌词"
+                                            LyricsType.TEXT -> "文本歌词"
+                                            LyricsType.NONE -> "不填写"
+                                        }
+                                    )
+                                }
                             }
                         }
 
@@ -345,18 +348,24 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = vm.creationType == 0,
-                                onClick = { vm.creationType = 0 })
-                            Text("原创", style = MaterialTheme.typography.labelLarge)
+                                onClick = { vm.creationType = 0 }
+                            ) {
+                                Text("原创")
+                            }
 
                             RadioButton(
                                 selected = vm.creationType == 1,
-                                onClick = { vm.creationType = 1 })
-                            Text("二创", style = MaterialTheme.typography.labelLarge)
+                                onClick = { vm.creationType = 1 }
+                            ) {
+                                Text("二创")
+                            }
 
                             RadioButton(
                                 selected = vm.creationType == 2,
-                                onClick = { vm.creationType = 2 })
-                            Text("三创", style = MaterialTheme.typography.labelLarge)
+                                onClick = { vm.creationType = 2 }
+                            ) {
+                                Text("三创")
+                            }
                         }
                     }
 
@@ -537,13 +546,17 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = vm.explicit == false,
-                                onClick = { vm.explicit = false })
-                            Text("全年龄", style = MaterialTheme.typography.labelLarge)
+                                onClick = { vm.explicit = false }
+                            ) {
+                                Text("全年龄")
+                            }
 
                             RadioButton(
                                 selected = vm.explicit == true,
-                                onClick = { vm.explicit = true })
-                            Text("非全年龄", style = MaterialTheme.typography.labelLarge)
+                                onClick = { vm.explicit = true }
+                            ) {
+                                Text("非全年龄")
+                            }
                         }
                     }
                 }
@@ -651,13 +664,15 @@ private fun AddStaffDialog(vm: PublishViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    RadioButton(selected = type == 0, onClick = { type = 0 })
-                    Text(text = "站内用户")
+                    RadioButton(selected = type == 0, onClick = { type = 0 }) {
+                        Text(text = "站内用户")
+                    }
                     RadioButton(selected = type == 1, onClick = {
                         vm.addStaffUid = ""
                         type = 1
-                    })
-                    Text(text = "站外艺术家")
+                    }) {
+                        Text(text = "站外艺术家")
+                    }
                 }
 
                 if (type == 0) TextField(
@@ -708,7 +723,14 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box {
+                    Select(
+                        value = platform,
+                        onValueChange = { platform = it },
+                        options = presetPlatforms,
+                    ) {
+                        Text(translatePlatformLabel(it ?: "选择平台"))
+                    }
+                    /*Box {
                         var dropdown by remember { mutableStateOf(false) }
                         TextButton(
                             onClick = { dropdown = true },
@@ -734,7 +756,7 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                                 )
                             }
                         }
-                    }
+                    }*/
                     if (platform == "bilibili") {
                         TextField(
                             modifier = Modifier,

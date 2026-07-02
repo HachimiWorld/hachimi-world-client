@@ -47,27 +47,39 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
+import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.util.LrcParser
 import world.hachimi.app.util.parseJmid
 import world.hachimi.app.util.singleLined
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
+@KoinViewModel
 class PublishViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
+    private val _navigationRequests = MutableSharedFlow<NavigationRequest>(
+        extraBufferCapacity = 4,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val navigationRequests = _navigationRequests.asSharedFlow()
+
     enum class Type {
         CREATE, EDIT, REVIEW_EDIT
     }
@@ -795,7 +807,7 @@ class PublishViewModel(
 
     fun closeDialog() {
         showSuccessDialog = false
-        global.nav.back()
+        _navigationRequests.tryEmit(NavigationRequest.Back)
     }
 
     fun addStaff() {

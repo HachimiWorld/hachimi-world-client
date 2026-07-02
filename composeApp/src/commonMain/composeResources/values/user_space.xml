@@ -36,4 +36,35 @@
     <string name="user_connections_generate">Generate Code</string>
     <string name="user_connections_linked_success">Account linked successfully!</string>
     <string name="user_connections_open_bilibili">Open Bilibili profile</string>
+
+    <!-- Follow feature -->
+    <string name="follow_followers">Followers</string>
+    <string name="follow_following">Following</string>
+    <string name="follow_follow">Follow</string>
+    <string name="follow_following_label">Following</string>
+    <string name="follow_unfollow">Unfollow</string>
+    <string name="follow_unfollow_confirm_title">Unfollow %1$s?</string>
+    <string name="follow_unfollow_confirm_subtitle">They will be removed from your following list.</string>
+    <string name="follow_unfollow_confirm">Confirm Unfollow</string>
+    <string name="follow_cancel">Cancel</string>
+    <string name="follow_mutual">Mutual</string>
+    <string name="follow_following_list_title">Following</string>
+    <string name="follow_followers_list_title">Followers</string>
+    <string name="follow_empty_following">You haven\'t followed anyone yet.</string>
+    <string name="follow_empty_following_subtitle"></string>
+    <string name="follow_empty_followers">No one has followed you yet.</string>
+    <string name="follow_empty_followers_subtitle">Complete your profile or publish some works.</string>
+    <string name="follow_discover">Discover Creators</string>
+    <string name="follow_load_error">Failed to load. Please retry.</string>
+    <string name="follow_retry">Retry</string>
+    <string name="follow_loading">Loading…</string>
+    <string name="follow_deactivated">Deactivated User</string>
+
+    <string name="user_space_public_playlists">Public Playlists</string>
+    <string name="user_space_playlist_songs_count">%1$d songs</string>
+
+    <string name="user_space_tab_songs">Songs</string>
+    <string name="user_space_tab_playlists">Playlists</string>
+    <string name="user_space_tab_activity">Activity</string>
+    <string name="user_space_activity_empty">Coming soon</string>
 </resources>

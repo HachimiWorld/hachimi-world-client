@@ -37,6 +37,7 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishedTabViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
@@ -48,8 +49,8 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.TopWithFooter
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.TopWithFooter
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
@@ -59,6 +60,8 @@ fun PublishedTabContent(
     vm: PublishedTabViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.dispose() }
@@ -89,7 +92,7 @@ fun PublishedTabContent(
                             )
 
                             Button(onClick = {
-                                global.nav.push(Route.Root.CreationCenter.Publish)
+                                navigator.push(Route.Root.CreationCenter.Publish)
                             }) {
                                 Text("发布作品")
                             }
@@ -103,7 +106,7 @@ fun PublishedTabContent(
                             title = item.title,
                             subtitle = item.subtitle,
                             createTime = item.createTime,
-                            onClick = { global.nav.push(Route.Root.CreationCenter.ArtworkDetail(item.id)) }
+                            onClick = { navigator.push(Route.Root.CreationCenter.ArtworkDetail(item.id)) }
                         )
                     }
                     item {

@@ -1,84 +1,94 @@
 package world.hachimi.app.ui.userspace
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.network.httpHeaders
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_logout
 import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.follow_cancel
+import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm
+import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm_subtitle
+import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm_title
 import hachimiworld.composeapp.generated.resources.player_play_all
 import hachimiworld.composeapp.generated.resources.user_edit_profile
-import hachimiworld.composeapp.generated.resources.user_space_all_works
+import hachimiworld.composeapp.generated.resources.user_space_activity_empty
 import hachimiworld.composeapp.generated.resources.user_space_empty
-import hachimiworld.composeapp.generated.resources.user_space_female_cd
-import hachimiworld.composeapp.generated.resources.user_space_male_cd
+import hachimiworld.composeapp.generated.resources.user_space_tab_activity
+import hachimiworld.composeapp.generated.resources.user_space_tab_playlists
+import hachimiworld.composeapp.generated.resources.user_space_tab_songs
 import hachimiworld.composeapp.generated.resources.user_space_title
 import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
-import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import soup.compose.material.motion.animation.materialFadeThrough
-import world.hachimi.app.api.CoilHeaders
-import world.hachimi.app.getPlatform
+import world.hachimi.app.api.module.UserModule
+import world.hachimi.app.model.FollowViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
+import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.Pagination
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.Surface
+import world.hachimi.app.ui.design.components.PlaceholderDefaults
+import world.hachimi.app.ui.design.components.TabBar
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
+import world.hachimi.app.ui.design.components.placeholder
+import world.hachimi.app.ui.design.components.placeholderValue
+import world.hachimi.app.ui.follow.components.UnfollowDialog
 import world.hachimi.app.ui.home.components.SongCard
-import world.hachimi.app.ui.userspace.component.ConnectionChip
-import world.hachimi.app.util.AdaptiveListSpacing
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.calculateGridColumns
-import world.hachimi.app.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.userspace.component.Avatar
+import world.hachimi.app.ui.userspace.component.Connections
+import world.hachimi.app.ui.userspace.component.GenderIcon
+import world.hachimi.app.ui.userspace.component.PublicPlaylistCard
+import world.hachimi.app.ui.userspace.component.StatsRow
+import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.WindowSize
+import world.hachimi.app.ui.util.calculateGridColumns
+import world.hachimi.app.ui.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.listTailSpacerItem
 
 @Composable
 fun UserSpaceScreen(
@@ -95,47 +105,142 @@ fun UserSpaceScreen(
 
     BoxWithConstraints {
         val constraintsMaxWidth = maxWidth
+        var selectedTab by remember { mutableIntStateOf(0) }
+        val navigator = LocalNavigator.current
 
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(constraintsMaxWidth),
-            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintsMaxWidth),
-            verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+            contentPadding = contentPaddingForMaxWidth(
+                PaddingValues(AdaptiveScreenMargin),
+                constraintsMaxWidth
+            ),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Header(vm, global, Modifier.fillMaxWidth())
             }
-            items(vm.songs, key = { it.id }) { song ->
-                SongCard(
-                    item = song,
-                    onClick = {
-                        global.player.insertToQueue(
-                            item = GlobalStore.MusicQueueItem.fromPublicDetail(song),
-                            instantPlay = true,
-                            append = false
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                TabBar(
+                    tabs = listOf(
+                        stringResource(Res.string.user_space_tab_songs),
+                        stringResource(Res.string.user_space_tab_playlists),
+                        stringResource(Res.string.user_space_tab_activity),
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    selectedIndex = selectedTab,
+                    onTabSelected = { selectedTab = it },
                 )
             }
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                if (vm.total > vm.pageSize) {
-                    Pagination(
-                        total = vm.total.toInt(),
-                        pageSize = vm.pageSize.toInt(),
-                        pageIndex = vm.pageIndex.toInt(),
-                        onPageChange = { pageIndex, pageSize ->
-                            vm.updateSongPage(pageIndex.toLong(), pageSize.toLong())
-                        },
-                        modifier = Modifier.padding(vertical = 16.dp)
-                    )
+
+            when (selectedTab) {
+                0 -> artworkTabContents(vm, global)
+                1 -> playlistsTabContents(vm, navigator)
+                2 -> {
+                    // Activity tab: placeholder
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier.height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = stringResource(Res.string.user_space_activity_empty))
+                        }
+                    }
                 }
             }
+
+            listTailSpacerItem()
+        }
+    }
+}
+
+private fun LazyGridScope.artworkTabContents(
+    vm: UserSpaceViewModel,
+    global: GlobalStore
+) {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        if (vm.songs.isNotEmpty()) Button(
+            modifier = Modifier.wrapContentWidth(align = Alignment.Start),
+            onClick = { vm.playAll() }
+        ) {
+            Icon(
+                Icons.Default.PlayArrow,
+                contentDescription = stringResource(Res.string.common_play_cd)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(Res.string.player_play_all))
+        }
+    }
+
+    if (vm.loadingSongs) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Box(modifier = Modifier.height(300.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+    } else if (vm.songs.isEmpty()) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Box(modifier = Modifier.height(300.dp), contentAlignment = Alignment.Center) {
+                Text(text = stringResource(Res.string.user_space_empty))
+            }
+        }
+    } else {
+        itemsIndexed(
+            items = vm.songs,
+            key = { _, item -> item.id }
+        ) { index, song ->
+            SongCard(
+                item = song,
+                onClick = {
+                    global.player.insertToQueue(
+                        item = GlobalStore.MusicQueueItem.fromPublicDetail(song),
+                        instantPlay = true,
+                        append = false
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            )
+        }
+        if (vm.total > vm.pageSize) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(
-                    Modifier.navigationBarsPadding()
-                        .padding(LocalContentInsets.current.asPaddingValues())
+                Pagination(
+                    total = vm.total.toInt(),
+                    pageSize = vm.pageSize.toInt(),
+                    pageIndex = vm.pageIndex.toInt(),
+                    onPageChange = { pageIndex, pageSize ->
+                        vm.updateSongPage(pageIndex.toLong(), pageSize.toLong())
+                    },
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun LazyGridScope.playlistsTabContents(
+    vm: UserSpaceViewModel,
+    navigator: Navigator
+) {
+    if (vm.loadingPlaylists) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+    } else if (vm.publicPlaylists.isEmpty()) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                Text(text = stringResource(Res.string.user_space_empty))
+            }
+        }
+    } else {
+        vm.publicPlaylists.forEach { playlist ->
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                PublicPlaylistCard(
+                    playlist = playlist,
+                    onClick = { navigator.push(Route.Root.PublicPlaylist(playlist.id)) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                 )
             }
         }
@@ -144,8 +249,24 @@ fun UserSpaceScreen(
 
 @Composable
 private fun Header(
-    vm: UserSpaceViewModel, global: GlobalStore, modifier: Modifier = Modifier
+    vm: UserSpaceViewModel,
+    global: GlobalStore,
+    modifier: Modifier = Modifier,
 ) {
+    val navigator = LocalNavigator.current
+    val isCompact = LocalWindowSize.current.width < WindowSize.COMPACT
+    val followVM: FollowViewModel = koinViewModel()
+
+    // When a follow/unfollow action completes, update the profile state locally
+    LaunchedEffect(followVM.lastActionResult) {
+        followVM.lastActionResult?.let { result ->
+            if (vm.profile?.uid == result.uid) {
+                vm.updateFollowState(result.isFollowing, result.followerCount)
+            }
+            followVM.consumeLastActionResult()
+        }
+    }
+
     Column(modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -154,7 +275,7 @@ private fun Header(
                 style = MaterialTheme.typography.titleLarge
             )
             if (vm.myself) {
-                HachimiIconButton(onClick = { global.nav.push(Route.Root.EditProfile) }) {
+                HachimiIconButton(onClick = { navigator.push(Route.Root.EditProfile) }) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = stringResource(Res.string.user_edit_profile)
@@ -166,145 +287,165 @@ private fun Header(
             }
         }
 
-        AnimatedContent(
-            targetState = vm.loadingProfile,
-            transitionSpec = { materialFadeThrough() }
-        ) {
-            if (it) Box(modifier.height(200.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            } else vm.profile?.let { profile ->
-                Row(modifier) {
-                    Avatar(avatarUrl = profile.avatarUrl)
-
-                    Column(Modifier.padding(start = 24.dp)) {
-                        SelectionContainer {
-                            Text(
-                                text = profile.username,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-
-                        SelectionContainer {
-                            Text(
-                                modifier = Modifier.padding(top = 4.dp),
-                                text = profile.bio ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-
-                        Row(modifier = Modifier.padding(top = 4.dp)) {
-                            profile.gender?.let { GenderIcon(it, Modifier.padding(end = 4.dp)) }
-
-                            SelectionContainer {
-                                Text(
-                                    text = stringResource(Res.string.user_space_uid_prefix, profile.uid),
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
-
-                        // Read-only connected accounts
-                        Connections(vm = vm, modifier = Modifier.padding(top = 4.dp))
-                    }
-                }
-            }
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
-            Text(
-                text = stringResource(Res.string.user_space_all_works),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-            )
-            Box(Modifier.weight(1f))
-            if (vm.songs.isNotEmpty()) Button(
-                modifier = Modifier,
-                onClick = { vm.playAll() }
-            ) {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = stringResource(Res.string.common_play_cd)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(Res.string.player_play_all))
-            }
-        }
-
-        if (vm.loadingSongs) Box(modifier.height(300.dp), Alignment.Center) {
-            CircularProgressIndicator()
-        } else if (vm.songs.isEmpty()) {
-            Box(modifier.height(300.dp), Alignment.Center) {
-                Text(text = stringResource(Res.string.user_space_empty))
-            }
-        }
+        HeaderProfileContent(
+            profile = vm.profile,
+            loading = vm.loadingProfile,
+            isCompact = isCompact,
+            myself = vm.myself,
+            followVM = followVM,
+            navigator = navigator,
+        )
     }
-}
 
-@Composable
-private fun GenderIcon(
-    gender: Int,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier.size(16.dp)) {
-        when (gender) {
-            0 -> Icon(
-                Icons.Default.Male,
-                contentDescription = stringResource(Res.string.user_space_male_cd)
-            )
-
-            1 -> Icon(
-                Icons.Default.Female,
-                contentDescription = stringResource(Res.string.user_space_female_cd)
-            )
-        }
-    }
-}
-
-@Composable
-private fun Avatar(avatarUrl: String?) {
-    Surface(
-        modifier = Modifier.size(120.dp),
-        shape = CircleShape
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalPlatformContext.current)
-                .httpHeaders(CoilHeaders)
-                .data(avatarUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
-            modifier = Modifier.fillMaxSize(),
-            filterQuality = FilterQuality.High,
-            contentScale = ContentScale.Crop
+    // Unfollow dialog - shown from profile page too
+    followVM.unfollowDialogTarget?.let { target ->
+        UnfollowDialog(
+            username = target.username,
+            subtitle = stringResource(Res.string.follow_unfollow_confirm_subtitle),
+            confirmText = stringResource(Res.string.follow_unfollow_confirm),
+            cancelText = stringResource(Res.string.follow_cancel),
+            confirmTitle = stringResource(
+                Res.string.follow_unfollow_confirm_title,
+                target.username
+            ),
+            loading = followVM.actionLoading,
+            onConfirm = { followVM.confirmUnfollow() },
+            onDismiss = { followVM.dismissUnfollowDialog() }
         )
     }
 }
 
 @Composable
-private fun Connections(
-    vm: UserSpaceViewModel,
-    modifier: Modifier = Modifier
+private fun HeaderProfileContent(
+    profile: UserModule.PublicUserProfile?,
+    loading: Boolean,
+    isCompact: Boolean,
+    myself: Boolean,
+    followVM: FollowViewModel,
+    navigator: Navigator,
+    modifier: Modifier = Modifier,
 ) {
-    val profile = vm.profile ?: return
-    FlowRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        profile.connectedAccounts.fastForEach {
-            ConnectionChip(
-                name = it.name,
-                type = it.type,
-                onOpen = { openUserSpaceConnectionUrl(it.type, it.id) }
+    if (!loading && profile == null) return
+
+    val avatarSize = if (isCompact) 120.dp else 180.dp
+    val showBio = loading || !profile?.bio.isNullOrBlank()
+    val connectionAccounts = when {
+        loading -> listOf(
+            UserModule.ConnectedAccountItem(
+                type = UserModule.CONNECTION_TYPE_BILIBILI,
+                id = "",
+                name = PlaceholderDefaults.SHORT_TEXT,
+            )
+        )
+        else -> profile?.connectedAccounts.orEmpty()
+    }
+    val showConnections = loading || connectionAccounts.isNotEmpty()
+
+    val infoContent: @Composable ColumnScope.() -> Unit = {
+        SelectionContainer {
+            Text(
+                text = placeholderValue(loading, profile?.username.orEmpty()),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = if (isCompact) TextAlign.Center else TextAlign.Unspecified,
+                modifier = Modifier.placeholder(loading),
+            )
+        }
+
+        if (showBio) {
+            SelectionContainer {
+                Text(
+                    text = placeholderValue(loading, profile?.bio.orEmpty(), PlaceholderDefaults.MEDIUM_TEXT),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = HachimiTheme.colorScheme.onSurface.copy(0.7f),
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = if (isCompact) TextAlign.Center else TextAlign.Unspecified,
+                    modifier = Modifier.placeholder(loading),
+                )
+            }
+        }
+
+        Row(
+            horizontalArrangement = if (isCompact) Arrangement.Center else Arrangement.Start,
+        ) {
+            if (!loading) {
+                profile?.gender?.let { GenderIcon(it, Modifier.padding(end = 4.dp)) }
+            }
+            SelectionContainer {
+                Text(
+                    text = if (loading) {
+                        PlaceholderDefaults.SHORT_TEXT
+                    } else {
+                        stringResource(Res.string.user_space_uid_prefix, profile!!.uid)
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.placeholder(loading),
+                )
+            }
+        }
+
+        val statsModifier = Modifier
+            .placeholder(loading)
+            .padding(vertical = 8.dp)
+            .then(if (isCompact) Modifier.fillMaxWidth() else Modifier.wrapContentWidth(align = Alignment.Start))
+
+        if (loading) {
+            StatsRow(
+                followerCount = 0,
+                followingCount = 0,
+                myself = myself,
+                isFollowing = false,
+                isFollowLoading = false,
+                onFollow = {},
+                onUnfollow = {},
+                onFollowersClick = {},
+                onFollowingClick = {},
+                modifier = statsModifier,
+            )
+        } else {
+            StatsRow(
+                profile = profile!!,
+                myself = myself,
+                isCompact = isCompact,
+                followVM = followVM,
+                onFollowersClick = { navigator.push(Route.Root.FollowersList) },
+                onFollowingClick = { navigator.push(Route.Root.FollowingList) },
+                modifier = statsModifier,
+            )
+        }
+
+        if (showConnections) {
+            Connections(
+                accounts = connectionAccounts,
+                modifier = Modifier.placeholder(loading),
             )
         }
     }
-}
 
-private fun openUserSpaceConnectionUrl(type: String, id: String) {
-    when (type) {
-        "bilibili" -> getPlatform().openUrl("https://space.bilibili.com/$id")
-        else -> {}
+    if (isCompact) {
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Avatar(
+                avatarUrl = if (loading) null else profile?.avatarUrl,
+                size = avatarSize,
+                modifier = Modifier.placeholder(loading, CircleShape),
+            )
+            infoContent()
+        }
+    } else {
+        Row(modifier = modifier, verticalAlignment = Alignment.Top) {
+            Avatar(
+                avatarUrl = if (loading) null else profile?.avatarUrl,
+                size = avatarSize,
+                modifier = Modifier.placeholder(loading, CircleShape),
+            )
+            Column(
+                Modifier.padding(start = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = infoContent,
+            )
+        }
     }
 }

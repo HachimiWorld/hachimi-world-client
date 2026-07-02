@@ -29,6 +29,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.CreatePostViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
@@ -40,8 +41,8 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextField
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.util.singleLined
 
 @Composable
@@ -62,6 +63,8 @@ fun CreatePostScreen(global: GlobalStore = koinInject(), vm: CreatePostViewModel
 
 @Composable
 private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
+    val navigator = LocalNavigator.current
+
     Box(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .navigationBarsPadding()
@@ -160,12 +163,12 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                 confirmButton = {
                     Button(onClick = {
                         vm.closeSuccessDialog()
-                        global.nav.back()
+                        navigator.back()
                     }) { Text("完成") }
                 },
                 onDismissRequest = {
                     vm.closeSuccessDialog()
-                    global.nav.back()
+                    navigator.back()
                 }
             )
         }

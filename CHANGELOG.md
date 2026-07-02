@@ -1,4 +1,22 @@
-# Unreleased
+# 1.3.0
+
+## Features 新功能
+
+1. Support following users. 支持关注用户。
+2. Show public playlists in user space. 新增在神人空间显示公开歌单。
+3. Support login device management. 支持登录设备管理。
+
+## Enhancements 改进
+
+1. Optimize the layout of the playlist page. 优化歌单页面布局。
+2. Migrated to navigation3. 迁移到 Navigation3。
+3. Optimize the splash screen on Android. 优化 Android 端启动闪屏。
+
+## Fixes 修复
+
+1. Fixed charsets issues in changelog. 修复更新日志的字符集问题。
+
+# 1.2.0
 
 ## Features 新功能
 

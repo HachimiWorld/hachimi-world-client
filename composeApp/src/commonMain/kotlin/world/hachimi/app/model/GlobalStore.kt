@@ -5,19 +5,39 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
-import hachimiworld.composeapp.generated.resources.*
-import kotlinx.coroutines.*
+import androidx.navigation3.runtime.NavKey
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_auth_token_invalid
+import hachimiworld.composeapp.generated.resources.global_already_latest_version
+import hachimiworld.composeapp.generated.resources.global_check_update_failed
+import hachimiworld.composeapp.generated.resources.global_error_check_min_api_failed
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.jsonPrimitive
 import org.jetbrains.compose.resources.StringResource
+import org.koin.core.annotation.Singleton
 import world.hachimi.app.BuildKonfig
-import world.hachimi.app.api.*
+import world.hachimi.app.api.ApiClient
+import world.hachimi.app.api.AuthError
+import world.hachimi.app.api.AuthenticationListener
+import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.VersionModule
+import world.hachimi.app.api.ok
+import world.hachimi.app.api.parseJwtWithoutVerification
 import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
-import world.hachimi.app.nav.Navigator
+import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.nav.Route
 import world.hachimi.app.player.PlayerEngine
 import world.hachimi.app.storage.MyDataStore
@@ -35,6 +55,7 @@ import kotlin.time.Duration.Companion.seconds
  *
  * // TODO: Decouple the logics here
  */
+@Singleton
 class GlobalStore(
     private val dataStore: MyDataStore,
     private val api: ApiClient,
@@ -43,16 +64,22 @@ class GlobalStore(
 ) {
     var initialized by mutableStateOf(false)
     val settings by lazy { Settings(dataStore, player) }
-    val nav = Navigator(Route.Root.Home.Main)
     var isLoggedIn by mutableStateOf(false)
         private set
     var userInfo by mutableStateOf<UserInfo?>(null)
+        private set
+    var currentJti: String? = null
         private set
     var playerExpanded by mutableStateOf(false)
         private set
     val player = PlayerService(this, dataStore, api, engine, songCache)
     private val scope = CoroutineScope(Dispatchers.Default)
     val snackbarHostState = SnackbarHostState()
+    private val _appNavigationRequests = MutableSharedFlow<NavigationRequest>(
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val appNavigationRequests = _appNavigationRequests.asSharedFlow()
 
     @Serializable
     data class MusicQueueItem(
@@ -109,19 +136,21 @@ class GlobalStore(
 
         if (uid != null && username != null && accessToken != null && refreshToken != null) {
             api.setToken(accessToken, refreshToken)
+            currentJti = extractJti(refreshToken)
             api.setAuthListener(object : AuthenticationListener {
                 override suspend fun onTokenChange(accessToken: String, refreshToken: String) {
                     dataStore.set(PreferencesKeys.AUTH_ACCESS_TOKEN, accessToken)
                     dataStore.set(PreferencesKeys.AUTH_REFRESH_TOKEN, refreshToken)
+                    currentJti = extractJti(refreshToken)
                 }
 
                 override suspend fun onAuthenticationError(err: AuthError) {
                     // TODO: Should we process other errors?
                     when (err) {
                         is AuthError.RefreshTokenError -> {
-                            logout()
+                            logoutInternal(navigateHome = false)
                             alert(Res.string.auth_auth_token_invalid)
-                            nav.push(Route.Auth())
+                            replaceAppRoutes(Route.Root.Home.Main, Route.Auth())
                         }
 
                         is AuthError.ErrorHttpResponse -> {}
@@ -135,16 +164,37 @@ class GlobalStore(
         }
     }
 
+    private fun extractJti(token: String): String? {
+        return try {
+            parseJwtWithoutVerification(token)["jti"]?.jsonPrimitive?.content
+        } catch (_: Exception) { null }
+    }
+
     fun logout() = scope.launch {
+        logoutInternal()
+    }
+
+    fun requestAppNavigation(request: NavigationRequest) {
+        _appNavigationRequests.tryEmit(request)
+    }
+
+    private fun replaceAppRoutes(vararg routes: NavKey) {
+        requestAppNavigation(NavigationRequest.Replace(routes.toList()))
+    }
+
+    private suspend fun logoutInternal(navigateHome: Boolean = true) {
         api.setToken(null, null)
         dataStore.delete(PreferencesKeys.USER_UID)
         dataStore.delete(PreferencesKeys.USER_NAME)
         dataStore.delete(PreferencesKeys.USER_AVATAR)
         dataStore.delete(PreferencesKeys.AUTH_ACCESS_TOKEN)
         dataStore.delete(PreferencesKeys.AUTH_REFRESH_TOKEN)
-        nav.replace(Route.Root.Home.Main)
         isLoggedIn = false
         userInfo = null
+        currentJti = null
+        if (navigateHome) {
+            replaceAppRoutes(Route.Root.Home.Main)
+        }
     }
 
     //    @Deprecated("Use alert with i18n instead")

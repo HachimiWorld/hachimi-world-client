@@ -36,4 +36,35 @@
     <string name="user_connections_generate">生成验证码</string>
     <string name="user_connections_linked_success">关联成功！</string>
     <string name="user_connections_open_bilibili">打开B站主页</string>
+
+    <!-- 关注功能 -->
+    <string name="follow_followers">粉丝</string>
+    <string name="follow_following">关注</string>
+    <string name="follow_follow">关注</string>
+    <string name="follow_following_label">已关注</string>
+    <string name="follow_unfollow">取消关注</string>
+    <string name="follow_unfollow_confirm_title">确定不再关注 %1$s？</string>
+    <string name="follow_unfollow_confirm_subtitle">该用户将从你的关注列表中移除</string>
+    <string name="follow_unfollow_confirm">不再关注</string>
+    <string name="follow_cancel">取消</string>
+    <string name="follow_mutual">互相关注</string>
+    <string name="follow_following_list_title">我的关注</string>
+    <string name="follow_followers_list_title">我的粉丝</string>
+    <string name="follow_empty_following">你还没有关注任何人</string>
+    <string name="follow_empty_following_subtitle"></string>
+    <string name="follow_empty_followers">还没有人关注你</string>
+    <string name="follow_empty_followers_subtitle">完善个人资料或发布作品吧</string>
+    <string name="follow_discover">去发现创作者</string>
+    <string name="follow_load_error">加载失败，请重试</string>
+    <string name="follow_retry">重试</string>
+    <string name="follow_loading">加载中…</string>
+    <string name="follow_deactivated">已注销用户</string>
+
+    <string name="user_space_public_playlists">公开歌单</string>
+    <string name="user_space_playlist_songs_count">%1$d 首</string>
+
+    <string name="user_space_tab_songs">作品</string>
+    <string name="user_space_tab_playlists">歌单</string>
+    <string name="user_space_tab_activity">动态</string>
+    <string name="user_space_activity_empty">即将推出</string>
 </resources>

@@ -67,12 +67,12 @@ import hachimiworld.composeapp.generated.resources.auth_skip
 import hachimiworld.composeapp.generated.resources.auth_verification_sent_subtitle
 import hachimiworld.composeapp.generated.resources.auth_welcome_home
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialSharedAxisX
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.AuthViewModel
-import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.nav.HandleNavigationRequests
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.auth.components.CaptchaDialog
 import world.hachimi.app.ui.auth.components.FormContent
 import world.hachimi.app.ui.auth.components.PasswordToggleButton
@@ -97,13 +97,15 @@ fun AuthScreen(
         vm.mounted()
         onDispose { vm.unmount() }
     }
-    val global = koinInject<GlobalStore>()
+    val navigator = LocalNavigator.current
     var isLogin by remember(displayLoginAsInitial) { mutableStateOf(displayLoginAsInitial) }
+
+    HandleNavigationRequests(vm.navigationRequests, navigator)
 
     Box(Modifier.fillMaxSize().padding(top = currentSafeAreaInsets().top)) {
         HachimiIconButton(
             modifier = Modifier.padding(24.dp).align(Alignment.TopStart),
-            onClick = { global.nav.back() },
+            onClick = { navigator.back() },
             touchMode = true
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

@@ -25,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.MyPRViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadMoreItem
@@ -32,7 +33,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 
 @Composable
 fun PRTabContent(
@@ -40,6 +41,8 @@ fun PRTabContent(
     global: GlobalStore = koinInject(),
     scrollState: LazyListState = rememberLazyListState()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.dispose() }
@@ -84,7 +87,7 @@ fun PRTabContent(
                             status = item.status,
                             type = item.type,
                             onClick = {
-                                global.nav.push(Route.Root.CreationCenter.ReviewDetail(item.reviewId))
+                                navigator.push(Route.Root.CreationCenter.ReviewDetail(item.reviewId))
                             }
                         )
                     }

@@ -10,6 +10,6 @@
     <string name="playlist_edit_title">Edit playlist</string>
     <string name="playlist_favorite">Favorite</string>
     <string name="playlist_unfavorite">Unfavorite</string>
-    <string name="playlist_update_time">Update Time: %1$s</string>
+    <string name="playlist_update_time">%1$s</string>
     <string name="playlist_login_required">Playlist features require login</string>
 </resources>

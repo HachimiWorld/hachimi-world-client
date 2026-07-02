@@ -1,0 +1,30 @@
+name: Setup Build Environment
+description: Creates local.properties and sets up JDK 21 + Gradle
+
+inputs:
+  config_api_base_url:
+    required: true
+    description: 'API base URL'
+  config_assets_base_url:
+    required: true
+    description: 'Assets base URL'
+
+runs:
+  using: composite
+  steps:
+    - name: Create local properties
+      shell: bash
+      run: |
+        echo "app.release.apiBaseUrl=${{ inputs.config_api_base_url }}" > local.properties
+        echo "app.dev.apiBaseUrl=${{ inputs.config_api_base_url }}" >> local.properties
+        echo "app.release.assetsBaseUrl=${{ inputs.config_assets_base_url }}" >> local.properties
+        echo "app.dev.assetsBaseUrl=${{ inputs.config_assets_base_url }}" >> local.properties
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v5

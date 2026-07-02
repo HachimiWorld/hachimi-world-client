@@ -2,7 +2,6 @@ package world.hachimi.app.ui.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,20 +17,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -49,6 +43,7 @@ import hachimiworld.composeapp.generated.resources.settings_dark_mode_follow_sys
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_label
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_off
 import hachimiworld.composeapp.generated.resources.settings_dark_mode_on
+import hachimiworld.composeapp.generated.resources.settings_device_management
 import hachimiworld.composeapp.generated.resources.settings_dropdown_cd
 import hachimiworld.composeapp.generated.resources.settings_feedback
 import hachimiworld.composeapp.generated.resources.settings_github_text
@@ -65,22 +60,22 @@ import hachimiworld.composeapp.generated.resources.settings_player_effects
 import hachimiworld.composeapp.generated.resources.settings_title
 import hachimiworld.composeapp.generated.resources.settings_version_code
 import hachimiworld.composeapp.generated.resources.settings_version_name
-import hachimiworld.composeapp.generated.resources.settings_view_changelog
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.design.components.Card
-import world.hachimi.app.ui.design.components.DropdownMenu
-import world.hachimi.app.ui.design.components.DropdownMenuItem
+import world.hachimi.app.ui.design.components.Select
+import world.hachimi.app.ui.design.components.Switcher
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
-import world.hachimi.app.util.AdaptiveScreenMargin
-import world.hachimi.app.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.fillMaxWidthIn
 
 @Composable
 fun SettingsScreen(
@@ -112,6 +107,10 @@ fun SettingsScreen(
             }
         }
 
+        Section(title = { Text("账户") }) {
+            DeviceManagementEntry()
+        }
+
         Section(title = { Text("关于") }) {
             Info(globalStore)
         }
@@ -135,95 +134,54 @@ private fun Section(title: @Composable () -> Unit, content: @Composable () -> Un
 
 @Composable
 private fun LanguageSetting(settings: Settings) {
-    var expandedLang by remember { mutableStateOf(false) }
     PropertyItem(
         label = {
             Icon(Icons.Default.Language, stringResource(Res.string.settings_language_label))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(Res.string.settings_language_label))
         },
-        onClick = { expandedLang = true }
+        onClick = null,
     ) {
-        Box {
-            TextButton(onClick = { expandedLang = true }) {
+        Select(
+            value = settings.locale,
+            onValueChange = settings::updateLocale,
+            options = listOf(null, "en", "zh"),
+            expandIconContentDescription = stringResource(Res.string.settings_dropdown_cd),
+            label = { locale ->
                 Text(
-                    when (settings.locale) {
+                    when (locale) {
                         "en" -> stringResource(Res.string.settings_language_en)
                         "zh", "zh_CN", "zh-CN" -> stringResource(Res.string.settings_language_zh)
                         null -> stringResource(Res.string.settings_language_follow_system)
-                        else -> settings.locale
-                            ?: stringResource(Res.string.settings_language_follow_system)
+                        else -> locale ?: stringResource(Res.string.settings_language_follow_system)
                     }
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
-                )
-            }
-            DropdownMenu(expandedLang, onDismissRequest = { expandedLang = false }) {
-                DropdownMenuItem(onClick = {
-                    settings.updateLocale(null)
-                    expandedLang = false
-                }, text = { Text(stringResource(Res.string.settings_language_follow_system)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateLocale("en")
-                    expandedLang = false
-                }, text = { Text(stringResource(Res.string.settings_language_en)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateLocale("zh")
-                    expandedLang = false
-                }, text = { Text(stringResource(Res.string.settings_language_zh)) })
-            }
-        }
+            },
+        )
     }
 }
 
 @Composable
 private fun DarkModeSetting(globalStore: GlobalStore) {
-    var expanded by remember { mutableStateOf(false) }
     PropertyItem(
-        label = {
-            Text(stringResource(Res.string.settings_dark_mode_label))
-        },
-        onClick = {
-            expanded = true
-        }
+        label = { Text(stringResource(Res.string.settings_dark_mode_label)) },
+        onClick = null,
     ) {
-        Box {
-            TextButton(onClick = { expanded = true }) {
+        Select(
+            value = globalStore.settings.darkMode,
+            onValueChange = globalStore.settings::updateDarkMode,
+            options = listOf(null, true, false),
+            expandIconContentDescription = stringResource(Res.string.settings_dropdown_cd),
+            label = { mode ->
                 Text(
-                    when (globalStore.settings.darkMode) {
+                    when (mode) {
                         true -> stringResource(Res.string.settings_dark_mode_on)
                         false -> stringResource(Res.string.settings_dark_mode_off)
                         null -> stringResource(Res.string.settings_dark_mode_follow_system)
                     }
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
-                )
-            }
-            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(onClick = {
-                    globalStore.settings.updateDarkMode(null)
-                    expanded = false
-                }, text = {
-                    Text(stringResource(Res.string.settings_dark_mode_follow_system))
-                })
-                DropdownMenuItem(onClick = {
-                    globalStore.settings.updateDarkMode(true)
-                    expanded = false
-                }, text = {
-                    Text(stringResource(Res.string.settings_dark_mode_on))
-                })
-                DropdownMenuItem(onClick = {
-                    globalStore.settings.updateDarkMode(false)
-                    expanded = false
-                }, text = {
-                    Text(stringResource(Res.string.settings_dark_mode_off))
-                })
-            }
-        }
+            },
+        )
     }
 }
 
@@ -236,7 +194,7 @@ private fun DiffusionBackgroundSetting(globalStore: GlobalStore) {
         label = { Text(stringResource(Res.string.settings_player_effects)) },
         onClick = { onClick() }
     ) {
-        Switch(globalStore.settings.enableDiffusionBackground, { onClick() })
+        Switcher(globalStore.settings.enableDiffusionBackground, { onClick() })
     }
 }
 
@@ -249,7 +207,7 @@ private fun LoudnessNormalizationSetting(globalStore: GlobalStore) {
         label = { Text(stringResource(Res.string.settings_loudness)) },
         onClick = { onClick() }
     ) {
-        Switch(globalStore.settings.enableLoudnessNormalization, {
+        Switcher(globalStore.settings.enableLoudnessNormalization, {
             onClick()
         })
     }
@@ -264,7 +222,7 @@ private fun KidsModeSetting(globalStore: GlobalStore) {
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_kids_mode)) },
         onClick = { onClick() }) {
-        Switch(globalStore.settings.kidsMode, {
+        Switcher(globalStore.settings.kidsMode, {
             onClick()
         })
     }
@@ -272,6 +230,8 @@ private fun KidsModeSetting(globalStore: GlobalStore) {
 
 @Composable
 private fun Info(globalStore: GlobalStore) {
+    val navigator = LocalNavigator.current
+
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_client_type)) },
         onClick = null
@@ -308,11 +268,9 @@ private fun Info(globalStore: GlobalStore) {
     }
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_changelog)) },
-        onClick = { globalStore.nav.push(Route.Root.Changelog) }
+        onClick = { navigator.push(Route.Root.Changelog) }
     ) {
-        TextButton(onClick = { globalStore.nav.push(Route.Root.Changelog) }) {
-            Text(stringResource(Res.string.settings_view_changelog))
-        }
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_feedback)) },
@@ -372,43 +330,36 @@ private fun LinkButton(
 }
 
 @Composable
-private fun CloseBehaviorSetting(settings: Settings) {
-    var expanded by remember { mutableStateOf(false) }
+private fun DeviceManagementEntry() {
+    val navigator = LocalNavigator.current
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_device_management)) },
+        onClick = { navigator.push(Route.Root.DeviceManagement) }
+    ) {
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
+    }
+}
 
+@Composable
+private fun CloseBehaviorSetting(settings: Settings) {
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_close_behavior)) },
-        onClick = { expanded = true }
+        onClick = null,
     ) {
-        Box {
-            TextButton(onClick = { expanded = true }) {
+        Select(
+            value = settings.closeBehavior,
+            onValueChange = settings::updateCloseBehavior,
+            options = Settings.CloseBehavior.entries,
+            expandIconContentDescription = stringResource(Res.string.settings_dropdown_cd),
+            label = { behavior ->
                 Text(
-                    when (settings.closeBehavior) {
+                    when (behavior) {
                         Settings.CloseBehavior.ASK -> stringResource(Res.string.settings_close_behavior_ask)
                         Settings.CloseBehavior.MINIMIZE_TO_TRAY -> stringResource(Res.string.settings_close_behavior_minimize_to_tray)
                         Settings.CloseBehavior.EXIT -> stringResource(Res.string.settings_close_behavior_exit)
                     }
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(Res.string.settings_dropdown_cd)
-                )
-            }
-            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(onClick = {
-                    settings.updateCloseBehavior(Settings.CloseBehavior.ASK)
-                    expanded = false
-                }, text = { Text(stringResource(Res.string.settings_close_behavior_ask)) })
-                DropdownMenuItem(
-                    onClick = {
-                        settings.updateCloseBehavior(Settings.CloseBehavior.MINIMIZE_TO_TRAY)
-                        expanded = false
-                    },
-                    text = { Text(stringResource(Res.string.settings_close_behavior_minimize_to_tray)) })
-                DropdownMenuItem(onClick = {
-                    settings.updateCloseBehavior(Settings.CloseBehavior.EXIT)
-                    expanded = false
-                }, text = { Text(stringResource(Res.string.settings_close_behavior_exit)) })
-            }
-        }
+            },
+        )
     }
 }

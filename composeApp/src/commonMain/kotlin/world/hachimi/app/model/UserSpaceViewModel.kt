@@ -13,14 +13,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
+import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Duration.Companion.seconds
 
+@KoinViewModel
 class UserSpaceViewModel(
     private val api: ApiClient,
     private val global: GlobalStore
@@ -39,6 +42,9 @@ class UserSpaceViewModel(
 
     var loadingPrivateConnections by mutableStateOf(false)
         private set
+    val publicPlaylists = mutableStateListOf<PlaylistModule.PlaylistMetadata>()
+    var loadingPlaylists by mutableStateOf(false)
+        private set
     val songs = mutableStateListOf<SongModule.PublicSongDetail>()
     var pageIndex by mutableStateOf(0L)
         private set
@@ -49,19 +55,8 @@ class UserSpaceViewModel(
     private var uid: Long? = null
 
     fun mounted(uid: Long?) {
-        when (initializeStatus) {
-            InitializeStatus.INIT, InitializeStatus.FAILED -> {
-                initialize(uid)
-            }
-
-            InitializeStatus.LOADED -> {
-                // Just refresh?
-                if (this.uid != uid) {
-                    initialize(uid)
-                } else {
-                    refresh()
-                }
-            }
+        if (this.uid != uid || initializeStatus == InitializeStatus.INIT) {
+            initialize(uid)
         }
     }
 
@@ -74,6 +69,7 @@ class UserSpaceViewModel(
         profile = null
         songs.clear()
         privateConnections.clear()
+        publicPlaylists.clear()
 
         // Initialize
         if (uid == null) {
@@ -95,7 +91,8 @@ class UserSpaceViewModel(
                     pageIndex = 0
                     pageSize = 30
                     loadSongs()
-                }
+                },
+                async { loadPublicPlaylists() }
             )
             if (myself) {
                 deferred.add(async { refreshConnections() })
@@ -105,8 +102,16 @@ class UserSpaceViewModel(
         }
     }
 
-    private fun refresh() {
-
+    /**
+     * Update follow state on the currently loaded profile after a follow/unfollow action
+     * succeeds. Called from the screen in response to FollowViewModel.lastActionResult.
+     */
+    fun updateFollowState(isFollowing: Boolean, followerCount: Long) {
+        val p = profile ?: return
+        profile = p.copy(
+            isFollowing = if (isFollowing) true else null,
+            followerCount = followerCount,
+        )
     }
 
     fun updateSongPage(pageIndex: Long, pageSize: Long) = viewModelScope.launch {
@@ -177,6 +182,25 @@ class UserSpaceViewModel(
                     explicit = it.explicit,
                 )
             })
+        }
+    }
+
+    private suspend fun loadPublicPlaylists() {
+        loadingPlaylists = true
+        try {
+            val resp = api.playlistModule.listPublicByUser(PlaylistModule.ListPublicByUserReq(userId = uid!!))
+            if (resp.ok) {
+                val data = resp.ok()
+                publicPlaylists.clear()
+                publicPlaylists.addAll(data.playlists)
+            } else {
+                val err = resp.err()
+                Logger.e(TAG, "Failed to load public playlists: ${err.msg}")
+            }
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to load public playlists", e)
+        } finally {
+            loadingPlaylists = false
         }
     }
 

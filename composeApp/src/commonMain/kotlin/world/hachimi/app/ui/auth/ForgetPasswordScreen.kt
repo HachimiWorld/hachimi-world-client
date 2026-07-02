@@ -51,10 +51,10 @@ import hachimiworld.composeapp.generated.resources.auth_send
 import hachimiworld.composeapp.generated.resources.auth_verify_code_placeholder
 import hachimiworld.composeapp.generated.resources.common_ok
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.ForgetPasswordViewModel
-import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.nav.HandleNavigationRequests
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.auth.components.CaptchaDialog
 import world.hachimi.app.ui.auth.components.FormCard
 import world.hachimi.app.ui.auth.components.FormContent
@@ -77,11 +77,14 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
         vm.mounted()
         onDispose { vm.dispose() }
     }
-    val global = koinInject<GlobalStore>()
+    val navigator = LocalNavigator.current
+
+    HandleNavigationRequests(vm.navigationRequests, navigator)
+
     Box(Modifier.fillMaxSize().padding(top = currentSafeAreaInsets().top)) {
         HachimiIconButton(
             modifier = Modifier.padding(24.dp).align(Alignment.TopStart),
-            onClick = { global.nav.back() },
+            onClick = { navigator.back() },
             touchMode = true
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -218,7 +221,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                     Row(Modifier.fillMaxWidth()) {
                         TextButton(
                             modifier = Modifier.size(width = 112.dp, height = 48.dp),
-                            onClick = { global.nav.back() }
+                            onClick = { navigator.back() }
                         ) {
                             Text(stringResource(Res.string.auth_back))
                         }

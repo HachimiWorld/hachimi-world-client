@@ -23,12 +23,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
+@KoinViewModel
 class EditProfileViewModel(
     private val api: ApiClient,
     private val global: GlobalStore

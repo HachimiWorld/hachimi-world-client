@@ -30,4 +30,21 @@
     <!-- Language selection -->
     <string name="settings_language_label">语言</string>
     <string name="settings_language_follow_system">跟随系统</string>
+
+    <!-- Device management -->
+    <string name="settings_device_management">设备管理</string>
+    <string name="settings_view_device_management">查看全部</string>
+    <string name="settings_device_current_label">当前设备</string>
+    <string name="settings_device_other_label">其他设备</string>
+    <string name="settings_device_last_active">最后活跃：%1$s</string>
+    <string name="settings_device_fisrt_login">首次登录：%1$s</string>
+    <string name="settings_device_logout">退出登录</string>
+    <string name="settings_device_empty">没有其他登录设备</string>
+    <string name="settings_device_load_error">加载设备列表失败</string>
+    <string name="settings_device_retry">重试</string>
+    <string name="settings_device_unknown">未知设备</string>
+    <string name="settings_device_logout_confirm_title">退出登录</string>
+    <string name="settings_device_logout_confirm_message">确定要从 %1$s 退出登录吗？</string>
+    <string name="settings_device_logout_confirm">退出</string>
+    <string name="settings_device_logout_cancel">取消</string>
 </resources>

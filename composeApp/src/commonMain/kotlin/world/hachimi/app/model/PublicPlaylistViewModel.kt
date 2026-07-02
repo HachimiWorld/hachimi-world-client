@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
@@ -20,6 +21,7 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "PublicPlaylistViewModel"
 
+@KoinViewModel
 class PublicPlaylistViewModel(
     private val global: GlobalStore,
     private val api: ApiClient

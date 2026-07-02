@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
@@ -18,6 +19,7 @@ import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Duration.Companion.seconds
 
+@KoinViewModel
 class RecentLikeViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,

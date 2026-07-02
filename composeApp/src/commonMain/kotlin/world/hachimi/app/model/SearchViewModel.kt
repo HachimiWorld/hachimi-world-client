@@ -12,7 +12,9 @@ import hachimiworld.composeapp.generated.resources.search_sort_relevance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
@@ -21,12 +23,14 @@ import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
+@KoinViewModel
 class SearchViewModel(
     private val global: GlobalStore,
     private val api: ApiClient
 ) : ViewModel(
     CoroutineScope(Dispatchers.Default)
 ) {
+    @Serializable
     enum class SearchType {
         SONG, USER, ALBUM, PLAYLIST
     }

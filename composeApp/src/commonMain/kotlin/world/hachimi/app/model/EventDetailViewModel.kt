@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PostModule
@@ -16,6 +17,7 @@ import world.hachimi.app.logging.Logger
 
 private const val TAG = "event_detail"
 
+@KoinViewModel
 class EventDetailViewModel(
     private val api: ApiClient,
     private val global: GlobalStore,

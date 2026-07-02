@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +19,7 @@ import hachimiworld.composeapp.generated.resources.playlist_edit_title
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.model.PlaylistDetailViewModel
 import world.hachimi.app.ui.design.components.AlertDialog
+import world.hachimi.app.ui.design.components.Switcher
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
@@ -73,7 +73,7 @@ private fun EditDialog(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(Res.string.player_create_playlist_private_label))
-                    Switch(
+                    Switcher(
                         modifier = Modifier.padding(start = 16.dp),
                         checked = private,
                         onCheckedChange = onPrivateChange
