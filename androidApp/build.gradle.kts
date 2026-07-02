@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.koinCompiler)
+    alias(libs.plugins.baselineprofile)
 }
 
 val gitVersionCode = providers.exec {
@@ -74,7 +75,10 @@ android {
 
 
 dependencies {
+    "baselineProfile"(project(":baselineprofile"))
     implementation(projects.composeApp)
+
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
