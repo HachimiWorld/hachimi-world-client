@@ -8,11 +8,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>（实验性）基米天堂 Web 端</title>
+    <title>基米天堂</title>
 
-    <!--    <link type="text/css" rel="stylesheet" href="styles.css">-->
-    <!--    <script type="application/javascript" src="webApp.js"></script>-->
     <style>
+        :root {
+            color-scheme: light dark;
+            --loading-background: #EBE9E7;
+            --loading-text: rgba(0, 0, 0, 0.87);
+            --loading-muted: rgba(0, 0, 0, 0.60);
+            --loading-track: rgba(0, 0, 0, 0.10);
+            --loading-accent: #FF7022;
+        }
+
         html, body {
             width: 100%;
             height: 100%;
@@ -21,47 +28,123 @@
             overflow: hidden;
         }
 
-        /* Center to whole page */
-        #loading {
-            height: 100%;
-            width: 100%;
+        body {
+            background: var(--loading-background);
+            color: var(--loading-text);
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
 
+        #loading {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .loading-content {
+            width: min(280px, 100%);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
         }
 
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            font-size: 16px;
+        .loading-icon {
+            position: relative;
+            width: 128px;
+            height: 128px;
+        }
+
+        .loading-icon img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .loading-icon-pulse {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            animation: loading-pulse 1.45s cubic-bezier(0.18, 0.75, 0.3, 1) infinite;
+        }
+
+        #tip {
+            margin: 12px 0 0;
+            color: var(--loading-muted);
+            font-size: 14px;
             line-height: 1.5;
         }
 
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #2B2A25;
-                color: rgba(255, 255, 255, 0.87);
-            }
+        .loading-track {
+            width: 100%;
+            height: 3px;
+            margin-top: 28px;
+            overflow: hidden;
+            border-radius: 99px;
+            background: var(--loading-track);
         }
 
-        @media (prefers-color-scheme: light) {
-            body {
-                background-color: #EBE9E7;
-                color: rgba(0, 0, 0, 0.87);
-            }
+        .loading-track::after {
+            content: "";
+            display: block;
+            width: 38%;
+            height: 100%;
+            border-radius: inherit;
+            background: var(--loading-accent);
+            animation: loading-sweep 2s ease-in-out infinite;
+        }
+
+        .loading-track.has-progress::after {
+            width: var(--loading-progress, 0%);
+            animation: none;
+        }
+
+        #loading-percent {
+            min-height: 18px;
+            margin-top: 10px;
+            color: var(--loading-muted);
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
         }
 
         #tip2 {
-            position: fixed;
+            position: absolute;
+            right: 24px;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            left: 24px;
+            margin: 0;
+            color: var(--loading-muted);
             font-size: 12px;
-            bottom: 12px;
-            margin-left: 24px;
-            margin-right: 24px;
+            line-height: 1.6;
+        }
+
+        @keyframes loading-pulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            55%, 100% { transform: scale(1.35); opacity: 0; }
+        }
+
+        @keyframes loading-sweep {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(165%); }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --loading-background: #2B2A25;
+                --loading-text: rgba(255, 255, 255, 0.87);
+                --loading-muted: rgba(255, 255, 255, 0.60);
+                --loading-track: rgba(255, 255, 255, 0.10);
+                --loading-accent: #FF782F;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .loading-icon-pulse, .loading-track::after {
+                animation: none;
+            }
         }
     </style>
     <script>
@@ -80,9 +163,19 @@
     </script>
     <script>
         let fallback = false
+        let loadFailed = false
+
+        const showLoadingError = (message) => {
+            const tip = document.getElementById("tip")
+            const tip2 = document.getElementById("tip2")
+            if (!tip || !tip2) return
+            tip.innerText = message
+            tip.hidden = false
+            tip2.hidden = false
+        }
 
         const scriptLoaded = () => {
-            console.log("Wasm loaded")
+            console.log("Web app script loaded")
         }
 
         const scriptError = () => {
@@ -91,7 +184,8 @@
                 // Maybe in development mode, so we try to load webApp.js, because we haven't created the compatible dist
                 document.body.appendChild(createScript("webApp.js"));
             } else {
-                alert("加载失败，若多次重试仍然失败，请更换为谷歌浏览器访问")
+                loadFailed = true
+                showLoadingError("加载失败，请刷新页面重试")
             }
         }
 
@@ -102,6 +196,93 @@
             script.onload = scriptLoaded
             script.onerror = scriptError
             return script;
+        }
+
+        const monitorWasmLoading = () => {
+            if (typeof window.fetch !== "function" || typeof Response === "undefined") return;
+
+            const originalFetch = window.fetch;
+            const percentLabel = document.getElementById("loading-percent");
+            const progressTrack = document.getElementById("loading-track");
+            let loadedBytes = 0;
+            let totalBytes = 0;
+            let totalIsKnown = true;
+            let displayedUnits = 0;
+            const readers = new Set();
+
+            // Only inspect Wasm startup requests. Keep the original Response intact for
+            // instantiateStreaming. Response body chunks are decoded, while
+            // Content-Length describes encoded bytes when Content-Encoding is set.
+            const updateProgressLabel = () => {
+                if (!totalIsKnown || totalBytes < loadedBytes || totalBytes === 0) {
+                    percentLabel.textContent = "";
+                    percentLabel.hidden = true;
+                    progressTrack.classList.remove("has-progress");
+                    return;
+                }
+                const percent = Math.min(100, Math.floor(loadedBytes / totalBytes * 100));
+                percentLabel.textContent = `${percent}%`;
+                percentLabel.hidden = false;
+                progressTrack.style.setProperty("--loading-progress", `${percent}%`);
+                progressTrack.classList.add("has-progress");
+            };
+
+            const monitoredFetch = function (resource, options) {
+                const url = typeof resource === "string" ? resource : resource?.url ?? String(resource);
+                if (!/\.wasm(?:[?#]|$)/i.test(url)) {
+                    return originalFetch.apply(this, arguments);
+                }
+
+                return originalFetch.apply(this, arguments).then((response) => {
+                    if (response.ok && response.body) {
+                        try {
+                            const reader = response.clone().body.getReader();
+                            readers.add(reader);
+                            const contentLength = Number(response.headers.get("Content-Length"));
+                            const contentEncoding = response.headers.get("Content-Encoding");
+                            if (Number.isSafeInteger(contentLength) && contentLength > 0 &&
+                                (!contentEncoding || contentEncoding.toLowerCase() === "identity")) {
+                                totalBytes += contentLength;
+                            } else {
+                                totalIsKnown = false;
+                            }
+                            updateProgressLabel();
+                            (async () => {
+                                let responseLoadedBytes = 0;
+                                try {
+                                    while (true) {
+                                        const { done, value } = await reader.read();
+                                        if (done) break;
+                                        loadedBytes += value.byteLength;
+                                        responseLoadedBytes += value.byteLength;
+                                        const units = Math.floor(loadedBytes / (256 * 1024));
+                                        if (units > displayedUnits) {
+                                            displayedUnits = units;
+                                            updateProgressLabel();
+                                        }
+                                    }
+                                    updateProgressLabel();
+                                    console.debug("Wasm loaded bytes", { url, loadedBytes: responseLoadedBytes });
+                                } finally {
+                                    readers.delete(reader);
+                                }
+                            })().catch(() => {});
+                        } catch (_) {
+                            // The animated loader remains usable when a response cannot be cloned.
+                        }
+                    }
+                    return response;
+                });
+            };
+
+            window.fetch = monitoredFetch;
+            const observer = new MutationObserver(() => {
+                if (document.getElementById("loading")) return;
+                if (window.fetch === monitoredFetch) window.fetch = originalFetch;
+                for (const reader of readers) reader.cancel().catch(() => {});
+                observer.disconnect();
+            });
+            observer.observe(document.body, { childList: true });
         }
 
         const loadApp = () => {
@@ -121,7 +302,9 @@
                 typeof WebAssembly?.validate === "function" &&
                 WebAssembly.validate(simpleWasmModule);
 
-            document.body.appendChild(createScript(hasSupportOfAllRequiredWasmFeatures() ? "originWasmWebApp.js" : "originJsWebApp.js"));
+            const useWasm = hasSupportOfAllRequiredWasmFeatures();
+            monitorWasmLoading();
+            document.body.appendChild(createScript(useWasm ? "originWasmWebApp.js" : "originJsWebApp.js"));
         }
 
         if (document.readyState === "loading") {
@@ -131,25 +314,31 @@
         }
 
         setTimeout(() => {
-            let tip = document.getElementById("tip")
-            if (tip) {
-                tip.innerText = "首次加载需要较长时间，请耐心等待"
-            }
-        }, 5000)
+            const tip = document.getElementById("tip")
+            if (!tip || loadFailed) return
+            tip.innerText = "首次加载需要较长时间，请耐心等待"
+            tip.hidden = false
+        }, 6000)
 
         setTimeout(() => {
-            let tip2 = document.getElementById("tip2")
-            if (tip2) {
-                tip2.style.display = "block"
-            }
-        })
+            const tip2 = document.getElementById("tip2")
+            if (tip2) tip2.hidden = false
+        }, 15000)
     </script>
 </head>
 <body>
-<div id="loading">
-    <p id="tip">加载中，请稍候</p>
-    <p id="tip2" style="display: block">
-        网页端为实验性功能<br>若无法访问请尝试使用最新版 Google Chrome 浏览器
+<div id="loading" role="status" aria-label="正在加载基米天堂">
+    <div class="loading-content">
+        <div class="loading-icon" aria-hidden="true">
+            <img src="icon_3d.webp" alt="">
+            <img class="loading-icon-pulse" src="icon_3d.webp" alt="">
+        </div>
+        <p id="tip" hidden></p>
+        <div id="loading-track" class="loading-track" aria-hidden="true"></div>
+        <div id="loading-percent" aria-hidden="true" hidden></div>
+    </div>
+    <p id="tip2" hidden>
+        网页端为实验性功能<br>若持续无法加载，请检查网络连接或更新浏览器
     </p>
 </div>
 </body>
