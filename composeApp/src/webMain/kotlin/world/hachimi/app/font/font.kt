@@ -33,10 +33,8 @@ import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.dp
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.head
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.HttpHeaders
 import io.ktor.utils.io.core.remaining
 import io.ktor.utils.io.exhausted
 import io.ktor.utils.io.readRemaining
@@ -54,7 +52,6 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.AppTheme
-import world.hachimi.app.util.formatBytes
 import kotlin.js.ExperimentalWasmJsInterop
 
 @Composable
@@ -107,7 +104,7 @@ private fun MinFontLoadingPage(state: FontState) {
             ) {
                 if (state.error == null) {
                     val bytesTotal = state.bytesTotal
-                    if (bytesTotal != null) {
+                    if (bytesTotal != null && bytesTotal > 0) {
                         val animatedProgress =
                             animateFloatAsState(targetValue = bytesTotal.let {
                                 (state.bytesRead.toFloat() / it.toFloat()).coerceIn(0f, 1f)
@@ -117,7 +114,7 @@ private fun MinFontLoadingPage(state: FontState) {
                             color = LocalContentColor.current,
                             trackColor = LocalContentColor.current.copy(0.12f)
                         )
-                        Text("${formatBytes(state.bytesRead)} / ${formatBytes(bytesTotal)}")
+                        Text("${(state.bytesRead * 100 / bytesTotal).coerceIn(0, 100)}%")
                     } else {
                         CircularProgressIndicator(
                             color = LocalContentColor.current,
@@ -169,7 +166,7 @@ class FontState(
     private val fullFontUrl = BuildKonfig.ASSETS_BASE_URL + "/fonts/MiSansVF.ttf"
     private val fullFontSize = 20_093_424L // MiSansVF.ttf file size
     private val minFontUrl = BuildKonfig.ASSETS_BASE_URL + "/fonts/MiSansVF-Min.ttf"
-    private val minFontSize = 20_093_424L // Not sure
+    private val minFontSize = 1_974_332L // MiSansVF-Min.ttf file size
 
     var error by mutableStateOf<FontLoadError?>(null)
     var fontsLoaded by mutableStateOf(false)
@@ -309,26 +306,34 @@ suspend fun loadFontFromWeb(
             socketTimeoutMillis = 60_000
         }
     }
-    val contentLength = client.head(url)
-        .headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: -1
-    Logger.d("Font", "Content length: $contentLength bytes")
+    // Browser streams contain decoded bytes. CDN compression can omit Content-Length,
+    // and Ktor's browser engine removes it from GET responses, so use the asset size.
+    val totalBytes = size.takeIf { it > 0 }
+    Logger.d("Font", "Expected decoded size: $totalBytes bytes ($url)")
+    onProgress(0, totalBytes)
 
-    val buffer = client.prepareGet(url).execute {
-        val buffer = Buffer()
-        val channel = it.bodyAsChannel()
-        var totalBytesRead = 0L
+    try {
+        val buffer = client.prepareGet(url).execute {
+            val buffer = Buffer()
+            val channel = it.bodyAsChannel()
+            var totalBytesRead = 0L
 
-        while (!channel.exhausted()) {
-            val chunk = channel.readRemaining(1024 * 8)
-            totalBytesRead += chunk.remaining
-            chunk.transferTo(buffer)
-            onProgress(totalBytesRead, contentLength)
+            while (!channel.exhausted()) {
+                val chunk = channel.readRemaining(1024 * 8)
+                totalBytesRead += chunk.remaining
+                chunk.transferTo(buffer)
+                onProgress(totalBytesRead, totalBytes)
+            }
+            Logger.d("Font", "Loaded decoded bytes: $totalBytesRead / $totalBytes ($url)")
+            if (totalBytes != null && totalBytesRead != totalBytes) {
+                Logger.w("Font", "Asset size changed; update the expected font size ($url)")
+            }
+            buffer
         }
-        buffer
+        return buffer.readByteArray()
+    } finally {
+        client.close()
     }
-
-    val bytes = buffer.readByteArray()
-    return bytes
 }
 
 fun resolveToFontFamily(

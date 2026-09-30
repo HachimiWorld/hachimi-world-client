@@ -208,11 +208,15 @@
             let totalBytes = 0;
             let totalIsKnown = true;
             let displayedUnits = 0;
+            let assetSizes;
+            const resourceProgress = new Map();
             const readers = new Set();
 
             // Only inspect Wasm startup requests. Keep the original Response intact for
             // instantiateStreaming. Response body chunks are decoded, while
             // Content-Length describes encoded bytes when Content-Encoding is set.
+            // The entry bundle supplies decoded sizes as `__hachimiWasmSizes`, recorded at
+            // build time by `webApp/webpack.config.d/wasm-progress.js`.
             const updateProgressLabel = () => {
                 if (!totalIsKnown || totalBytes < loadedBytes || totalBytes === 0) {
                     percentLabel.textContent = "";
@@ -240,11 +244,28 @@
                             readers.add(reader);
                             const contentLength = Number(response.headers.get("Content-Length"));
                             const contentEncoding = response.headers.get("Content-Encoding");
-                            if (Number.isSafeInteger(contentLength) && contentLength > 0 &&
-                                (!contentEncoding || contentEncoding.toLowerCase() === "identity")) {
-                                totalBytes += contentLength;
-                            } else {
-                                totalIsKnown = false;
+                            if (assetSizes === undefined) {
+                                assetSizes = Object.entries(window.__hachimiWasmSizes ?? {})
+                                    .filter(([name, size]) => name.endsWith(".wasm") &&
+                                        Number.isSafeInteger(size) && size > 0);
+                                totalBytes = assetSizes.reduce((sum, [, size]) => sum + size, 0);
+                                console.info("[WasmProgress] Build-time sizes", {
+                                    sizes: Object.fromEntries(assetSizes), totalBytes
+                                });
+                            }
+                            const pathname = new URL(url, document.baseURI).pathname;
+                            const asset = assetSizes.find(([name]) => pathname.endsWith(`/${name}`));
+                            const resourceKey = asset?.[0] ?? pathname;
+                            const expectedBytes = asset?.[1] ?? (
+                                Number.isSafeInteger(contentLength) && contentLength > 0 &&
+                                (!contentEncoding || contentEncoding.toLowerCase() === "identity")
+                                    ? contentLength : null);
+                            if (!resourceProgress.has(resourceKey)) {
+                                resourceProgress.set(resourceKey, 0);
+                                if (!asset) {
+                                    if (expectedBytes !== null) totalBytes += expectedBytes;
+                                    else totalIsKnown = false;
+                                }
                             }
                             updateProgressLabel();
                             (async () => {
@@ -253,8 +274,11 @@
                                     while (true) {
                                         const { done, value } = await reader.read();
                                         if (done) break;
-                                        loadedBytes += value.byteLength;
                                         responseLoadedBytes += value.byteLength;
+                                        const previousBytes = resourceProgress.get(resourceKey);
+                                        const currentBytes = Math.max(previousBytes, responseLoadedBytes);
+                                        resourceProgress.set(resourceKey, currentBytes);
+                                        loadedBytes += currentBytes - previousBytes;
                                         const units = Math.floor(loadedBytes / (256 * 1024));
                                         if (units > displayedUnits) {
                                             displayedUnits = units;
@@ -262,7 +286,11 @@
                                         }
                                     }
                                     updateProgressLabel();
-                                    console.debug("Wasm loaded bytes", { url, loadedBytes: responseLoadedBytes });
+                                    console.info("[WasmProgress] Loaded", {
+                                        url, loadedBytes: responseLoadedBytes, expectedBytes,
+                                        contentLength, contentEncoding,
+                                        totalLoadedBytes: loadedBytes, totalBytes, totalIsKnown
+                                    });
                                 } finally {
                                     readers.delete(reader);
                                 }
