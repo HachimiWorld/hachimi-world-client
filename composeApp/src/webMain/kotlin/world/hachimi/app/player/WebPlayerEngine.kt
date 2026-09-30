@@ -6,10 +6,16 @@ import howler.HowlOptions
 import howler.buildHowl
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.khronos.webgl.toUint8Array
-import org.w3c.dom.url.URL
-import org.w3c.files.Blob
-import org.w3c.files.BlobPropertyBag
+import js.array.toJsArray as toBrowserArray
+import js.buffer.toArrayBuffer
+import js.objects.unsafeJso
+import web.blob.Blob
+import web.mediasession.MediaImage
+import web.mediasession.MediaMetadata
+import web.mediasession.MediaMetadataInit
+import web.mediasession.MediaSession
+import web.navigator.navigator
+import web.url.URL
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.player.PlayerEngine.Companion.mixVolume
 import kotlin.js.*
@@ -98,15 +104,12 @@ class WebPlayerEngine : AbstractPlatformPlayerEngine() {
                 val url: String
                 val coverUrl: String?
 
-                @Suppress("MISSING_DEPENDENCY_SUPERCLASS") // FIXME: Suppress the compilation error
                 when (item) {
                     is SongItem.Local -> {
-                        val uint8array = item.audioBytes.toUByteArray().toUint8Array()
-                        val blob = Blob(arrayOf(uint8array as JsAny?).toJsArray(), BlobPropertyBag())
+                        val blob = Blob(listOf(item.audioBytes.toArrayBuffer()).toBrowserArray())
                         url = URL.createObjectURL(blob)
 
-                        val coverUint8Array = item.coverBytes?.toUByteArray()?.toUint8Array()
-                        val coverBlob = coverUint8Array?.let { Blob(arrayOf(it as JsAny?).toJsArray(), BlobPropertyBag()) }
+                        val coverBlob = item.coverBytes?.let { Blob(listOf(it.toArrayBuffer()).toBrowserArray()) }
                         coverUrl = coverBlob?.let { URL.createObjectURL(it) }
                     }
                     is SongItem.Remote -> {
@@ -142,17 +145,18 @@ class WebPlayerEngine : AbstractPlatformPlayerEngine() {
                     this.isReady = true
                 }
 
-                @Suppress("MISSING_DEPENDENCY_SUPERCLASS") // FIXME: Suppress the compilation error
                 try {
                     val metadata = MediaMetadata(
-                        MediaMetadataInit(
-                            title = item.title,
-                        artist = item.artist,
-                        artwork = (coverUrl?.let {
-                            arrayOf(MediaImage(src = it))
-                        } ?: emptyArray()).toJsArray()
-                    ))
-                    navigator.mediaSession?.let {
+                        unsafeJso<MediaMetadataInit>().apply {
+                            title = item.title
+                            artist = item.artist
+                            artwork = (coverUrl?.let { cover ->
+                                listOf(unsafeJso<MediaImage>().apply { src = cover })
+                            } ?: emptyList()).toBrowserArray()
+                        }
+                    )
+                    val mediaSession: MediaSession? = navigator.mediaSession
+                    mediaSession?.let {
                         Logger.d("player", "set metadata: $metadata")
                         it.metadata = metadata
                     }

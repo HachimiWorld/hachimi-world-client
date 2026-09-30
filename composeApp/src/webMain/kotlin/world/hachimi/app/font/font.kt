@@ -40,7 +40,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.utils.io.core.remaining
 import io.ktor.utils.io.exhausted
 import io.ktor.utils.io.readRemaining
-import kotlinx.browser.window
+import web.prompts.alert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
@@ -226,7 +226,7 @@ class FontState(
         } catch (e: Throwable) {
             error = FontLoadError.NotSupported
             Logger.e(TAG, "Failed to load min font from web", e)
-            window.alert("加载字体失败")
+            alert("加载字体失败")
             return@withContext
         } finally {
             loadingMinFont = false
@@ -265,7 +265,7 @@ class FontState(
 
         if (result.state != "granted") {
             error.value = FontLoadError.PermissionDenied
-            window.alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
+            alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
             return@withContext
         }*/
 
@@ -279,16 +279,16 @@ class FontState(
             when (exception?.name) {
                 "NotAllowedError", "SecurityError" -> {
                     error.value = FontLoadError.PermissionDenied
-                    window.alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
+                    alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
                 }
                 else -> {
                     error.value = FontLoadError.NotSupported
-                    window.alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
+                    alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
                 }
             }
         } catch (_: Throwable) {
             error.value = FontLoadError.NotSupported
-            window.alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
+            alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
         }*/
     }
 }
@@ -296,15 +296,6 @@ class FontState(
 enum class FontLoadError {
     NotSupported, PermissionDenied
 }
-
-expect suspend fun loadFontFromCache(
-    url: String
-): ByteArray?
-
-expect suspend fun saveFontCache(
-    url: String,
-    data: ByteArray
-)
 
 suspend fun loadFontFromWeb(
     url: String,

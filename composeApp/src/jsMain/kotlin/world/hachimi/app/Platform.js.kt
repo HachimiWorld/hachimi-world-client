@@ -1,14 +1,17 @@
 package world.hachimi.app
 
 import io.github.vinceglb.filekit.PlatformFile
-import kotlinx.browser.window
+import web.window.WindowTarget
+import web.window._blank
+import web.navigator.navigator
+import web.window.window
 
 class JsPlatform : Platform {
     override val name: String = "Web/JS"
     // Get chrome or wasm virtual machine version
     override val platformVersion: String = "1"
     override val variant: String = "${BuildKonfig.BUILD_TYPE}-js"
-    override val userAgent: String = "HachimiWorld-js/${BuildKonfig.VERSION_NAME} (${window.navigator.userAgent}; ${window.navigator.platform})"
+    override val userAgent: String = "HachimiWorld-js/${BuildKonfig.VERSION_NAME} (${navigator.userAgent}; ${navigator.platform})"
 
     override fun getCacheDir(): PlatformFile {
         TODO()
@@ -19,7 +22,7 @@ class JsPlatform : Platform {
     }
 
     override fun openUrl(url: String) {
-        window.open(url, target = "_blank")
+        window.open(url, target = WindowTarget._blank)
     }
 }
 

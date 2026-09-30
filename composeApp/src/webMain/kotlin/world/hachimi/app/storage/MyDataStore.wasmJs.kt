@@ -2,7 +2,7 @@
 
 package world.hachimi.app.storage
 
-import kotlinx.browser.localStorage
+import web.storage.localStorage
 import kotlin.reflect.KClass
 
 class MyDataStoreImpl(): MyDataStore {

@@ -7,23 +7,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
-import io.ktor.util.toJsArray
-import kotlinx.browser.window
+import js.buffer.ArrayBuffer
+import js.buffer.toByteArray
 import kotlinx.coroutines.await
-import org.khronos.webgl.ArrayBuffer
-import org.khronos.webgl.Int8Array
-import org.w3c.fetch.Response
-import org.w3c.files.Blob
-import org.w3c.files.FileReader
-import org.w3c.workers.Cache
-import org.w3c.workers.CacheQueryOptions
+import web.blob.Blob
+import web.blob.arrayBuffer
 import world.hachimi.app.logging.Logger
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.js.Promise
 import kotlin.time.TimeSource
-import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
-import kotlin.wasm.unsafe.withScopedMemoryAllocator
 
 external interface DOMException : JsAny {
     val code: String
@@ -33,34 +24,6 @@ external interface DOMException : JsAny {
 
 @Composable
 internal fun returnsNullable(): Any? = null
-
-suspend fun loadRes(url: String): ArrayBuffer {
-    return window.fetch(url).await<Response>().arrayBuffer().await()
-}
-
-fun ArrayBuffer.toByteArray(): ByteArray {
-    val source = Int8Array(this, 0, byteLength)
-    return jsInt8ArrayToKotlinByteArray(source)
-}
-
-internal fun jsExportInt8ArrayToWasm(src: Int8Array, size: Int, dstAddr: Int): Unit = js(
-    """{
-    const mem8 = new Int8Array(wasmExports.memory.buffer, dstAddr, size);
-    mem8.set(src);
-}"""
-)
-
-internal fun jsInt8ArrayToKotlinByteArray(x: Int8Array): ByteArray {
-    val size = x.length
-
-    @OptIn(UnsafeWasmMemoryApi::class)
-    return withScopedMemoryAllocator { allocator ->
-        val memBuffer = allocator.allocate(size)
-        val dstAddress = memBuffer.address.toInt()
-        jsExportInt8ArrayToWasm(x, size, dstAddress)
-        ByteArray(size) { i -> (memBuffer + i).loadByte() }
-    }
-}
 
 external class FontData : JsAny {
     val postscriptName: String
@@ -73,15 +36,7 @@ external class FontData : JsAny {
 
 suspend fun FontData.readArrayBuffer(): ArrayBuffer {
     val blob = blob().await<Blob>()
-    val reader = FileReader()
-    reader.readAsArrayBuffer(blob)
-    suspendCoroutine<Unit> { cont ->
-        reader.addEventListener("loadend") {
-            cont.resume(Unit)
-        }
-    }
-    val buffer = reader.result as ArrayBuffer
-    return buffer
+    return blob.arrayBuffer()
 }
 
 external interface PermissionStatus : JsAny {
@@ -210,19 +165,4 @@ suspend fun loadFonts(enableEmoji: Boolean): FontFamily {
     val fontFamily = FontFamily(composeFonts)
     Logger.d("Font", "Fonts loaded successfully")
     return fontFamily
-}
-
-actual suspend fun loadFontFromCache(url: String): ByteArray? {
-    val caches = window.caches.open("font-cache").await<Cache>()
-    val response = caches.match(url, CacheQueryOptions()).await() as? Response?
-        ?: return null
-
-    val arrayBuffer = response.arrayBuffer().await<ArrayBuffer>()
-    val bytes = arrayBuffer.toByteArray()
-    return bytes
-}
-
-actual suspend fun saveFontCache(url: String, data: ByteArray) {
-    val caches = window.caches.open("font-cache").await<Cache>()
-    caches.put(url, Response(data.toJsArray()))
 }

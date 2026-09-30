@@ -20,7 +20,7 @@ composeMaterialIconsExtended = "1.7.3"
 junit = "4.13.2"
 kotlinx-coroutines = "1.11.0"
 kotlinx-atomicfu = "0.33.0"
-kotlinx-browser = "0.5.0"
+kotlin-wrappers = "2026.9.3"
 ktor = "3.6.0"
 kotlinx-datetime = "0.8.0"
 
@@ -76,7 +76,7 @@ androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version.ref = 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
+kotlinWrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 
 materialMotion = { module = "io.github.fornewid:material-motion-compose-core", version.ref = "materialMotion" }
 
