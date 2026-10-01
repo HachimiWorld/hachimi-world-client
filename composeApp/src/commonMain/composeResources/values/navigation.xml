@@ -10,4 +10,11 @@
     <string name="nav_committee_center">Committee Center</string>
     <string name="nav_contributor_center">Contributor Center</string>
     <string name="nav_settings">Settings</string>
+
+    <!-- Web: native client promo -->
+    <string name="client_promo_title">Get the app</string>
+    <string name="client_promo_desc">Smoother playback, offline cache and system media controls.</string>
+    <string name="client_promo_banner">Listen in the app for a better experience</string>
+    <string name="client_promo_download">Download</string>
+    <string name="client_promo_dismiss_cd">Dismiss</string>
 </resources>

@@ -85,10 +85,14 @@ import world.hachimi.app.ui.playlist.PlaylistDetailScreen
 import world.hachimi.app.ui.playlist.PlaylistScreen
 import world.hachimi.app.ui.playlist.PublicPlaylistScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
+import world.hachimi.app.ui.root.component.ClientPromoState
+import world.hachimi.app.ui.root.component.CompactClientPromoBanner
 import world.hachimi.app.ui.root.component.CompactSideNavigation
+import world.hachimi.app.ui.root.component.ExpandedClientPromoCard
 import world.hachimi.app.ui.root.component.CompactTopAppBar
 import world.hachimi.app.ui.root.component.ExpandedScaffoldLayout
 import world.hachimi.app.ui.root.component.ExpandedSideNavigation
+import world.hachimi.app.ui.root.component.rememberClientPromoState
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.DeviceManagementScreen
@@ -115,6 +119,7 @@ fun RootScreen() {
     val global = koinInject<GlobalStore>()
     val currentPrimary = navigator.currentPrimary ?: return
     val scope = rememberCoroutineScope()
+    val clientPromo = rememberClientPromoState()
 
     if (LocalWindowSize.current.width < WindowSize.COMPACT) {
         CompactScreen(
@@ -136,6 +141,7 @@ fun RootScreen() {
             },
             global = global,
             navigator = navigator,
+            clientPromo = clientPromo,
         )
     } else {
         ExpandedScreen(
@@ -143,6 +149,7 @@ fun RootScreen() {
                 ExpandedSideNavigation(
                     content = currentPrimary,
                     onChange = navigator::switchPrimary,
+                    promo = { ExpandedClientPromoCard(clientPromo) },
                 )
             },
             global = global,
@@ -321,6 +328,7 @@ private fun CompactScreen(
     navigationContent: @Composable (drawerState: DrawerState) -> Unit,
     global: GlobalStore,
     navigator: Navigator,
+    clientPromo: ClientPromoState,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -376,6 +384,7 @@ private fun CompactScreen(
                                     global = global,
                                     onExpandNavClick = openDrawer,
                                 )
+                                CompactClientPromoBanner(clientPromo)
                                 // consume for *descendants* (not AppBar siblings): body must not
                                 // re-apply multiplatform top insets already handled by AppBar.
                                 Box(

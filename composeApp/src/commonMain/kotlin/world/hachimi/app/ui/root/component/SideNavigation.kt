@@ -94,6 +94,7 @@ fun ExpandedSideNavigation(
     content: Route.Root,
     onChange: (Route.Root) -> Unit = {},
     modifier: Modifier = Modifier,
+    promo: @Composable () -> Unit = {},
 ) {
     val navigator = LocalNavigator.current
     var searchText by remember { mutableStateOf("") }
@@ -119,6 +120,7 @@ fun ExpandedSideNavigation(
             includeSettings = true,
         )
 
+        promo()
         AuthFooter()
     }
 }
