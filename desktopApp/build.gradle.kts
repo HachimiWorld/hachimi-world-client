@@ -62,6 +62,15 @@ compose.desktop {
         mainClass = "world.hachimi.app.MainKt"
         jvmArgs += listOf("-XX:+UseZGC", "-XX:+ZGenerational", "-Xms128M", "-Xmx512M")
         val flavor = project.findProperty("buildkonfig.flavor")
+
+        // Installers compare these versions to decide whether a package upgrades the installed one,
+        // so they must grow with every release. The tag version repeats between tags, and jpackage derives
+        // the MSI ProductCode from it, so Windows refuses a second package with the same version.
+        // Use the git commit count as the build component; the in-app version name stays the tag version.
+        val (versionMajor, versionMinor) = gitVersionNameShort.get().split('.').plus("0").take(2)
+        val windowsInstallerVersion = "$versionMajor.$versionMinor.${gitVersionCode.get()}"
+        val macBuildVersion = gitVersionCode.get().toString()
+
         when (flavor) {
             "release" -> nativeDistributions {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -75,6 +84,7 @@ compose.desktop {
 
                 windows {
                     upgradeUuid = "1544B476-25C9-4A01-705E-B374B14B2F1B"
+                    msiPackageVersion = windowsInstallerVersion
                     perUserInstall = true
                     dirChooser = false
                     shortcut = true
@@ -86,6 +96,7 @@ compose.desktop {
                     packageName = "基米天堂"
                     dockName = "基米天堂"
                     bundleID = "world.hachimi.app"
+                    packageBuildVersion = macBuildVersion
                     iconFile.set(rootProject.file("icons/icon.icns"))
                 }
                 linux {
@@ -101,6 +112,7 @@ compose.desktop {
 
                 windows {
                     upgradeUuid = "8AD88FC9-A6A2-478D-9E80-FF735EE15785"
+                    exePackageVersion = windowsInstallerVersion
                     perUserInstall = true
                     dirChooser = false
                     shortcut = true
@@ -110,6 +122,7 @@ compose.desktop {
                 macOS {
                     packageName = "基米天堂 Dev"
                     bundleID = "world.hachimi.app.dev"
+                    packageBuildVersion = macBuildVersion
                     appCategory = "public.app-category.entertainment"
                     iconFile.set(rootProject.file("icons/icon.icns"))
                 }
