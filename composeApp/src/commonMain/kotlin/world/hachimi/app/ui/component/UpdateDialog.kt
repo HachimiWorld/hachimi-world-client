@@ -24,6 +24,7 @@ import world.hachimi.app.ui.theme.PreviewTheme
 
 /**
  * @param changelogs list of (versionName, changelog) pairs, ordered from latest to oldest
+ * @param notes extra lines under the versions, e.g. the package size
  */
 @Composable
 fun UpgradeDialog(
@@ -32,16 +33,21 @@ fun UpgradeDialog(
     changelogs: List<Pair<String, String>>,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
+    title: String = stringResource(Res.string.update_found_title),
+    confirmText: String = stringResource(Res.string.update_confirm),
+    dismissText: String = stringResource(Res.string.update_ignore),
+    notes: List<String> = emptyList(),
 ) {
     AlertDialog(
         modifier = Modifier.width(320.dp),
         title = {
-            Text(stringResource(Res.string.update_found_title))
+            Text(title)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(Res.string.update_current_version, currentVersion))
                 Text(stringResource(Res.string.update_new_version, newVersion))
+                notes.forEach { Text(it) }
                 HorizontalDivider()
                 Text(
                     stringResource(Res.string.update_changelog_title),
@@ -75,12 +81,12 @@ fun UpgradeDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(Res.string.update_confirm))
+                Text(confirmText)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.update_ignore))
+                Text(dismissText)
             }
         }
     )

@@ -18,6 +18,14 @@
     <string name="update_confirm">Upgrade now</string>
     <string name="update_ignore">Ignore</string>
     <string name="update_icon_cd">Upgrade</string>
+    <string name="update_ready_title">Update ready</string>
+    <string name="update_download">Download</string>
+    <string name="update_install">Install now</string>
+    <string name="update_later">Later</string>
+    <string name="update_package_size">Package size: %1$s</string>
+    <string name="update_metered_hint">You are on a metered network.</string>
+    <string name="update_download_failed">Failed to download the update</string>
+    <string name="update_install_failed">Couldn't open the package. Downloading it in the browser instead.</string>
 
     <!-- Changelog History Dialog -->
     <string name="changelog_history_title">Changelog History</string>

@@ -18,6 +18,14 @@
     <string name="update_confirm">立即升级</string>
     <string name="update_ignore">忽略</string>
     <string name="update_icon_cd">升级</string>
+    <string name="update_ready_title">新版本已就绪</string>
+    <string name="update_download">下载</string>
+    <string name="update_install">立即安装</string>
+    <string name="update_later">稍后</string>
+    <string name="update_package_size">安装包大小：%1$s</string>
+    <string name="update_metered_hint">当前使用的是计费网络。</string>
+    <string name="update_download_failed">更新下载失败</string>
+    <string name="update_install_failed">无法打开安装包，已改为在浏览器中下载</string>
 
     <!-- Changelog History Dialog -->
     <string name="changelog_history_title">更新历史</string>

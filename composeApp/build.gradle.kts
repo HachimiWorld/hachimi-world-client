@@ -133,8 +133,14 @@ kotlin {
         val nonAndroidMain = create("nonAndroidMain") {
             dependsOn(commonMain.get())
         }
+        // Shared by Android and Desktop, for code built on java.io / java.security
+        val jvmAndAndroidMain = create("jvmAndAndroidMain") {
+            dependsOn(commonMain.get())
+        }
+        androidMain.get().dependsOn(jvmAndAndroidMain)
         jvmMain {
             dependsOn(nonAndroidMain)
+            dependsOn(jvmAndAndroidMain)
             dependencies {
                 implementation(compose.desktop.currentOs) {
                     exclude("org.jetbrains.compose.material")

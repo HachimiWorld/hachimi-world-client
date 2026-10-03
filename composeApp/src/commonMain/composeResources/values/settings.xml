@@ -19,6 +19,11 @@
     <string name="settings_check_update">Check for updates</string>
     <string name="settings_check_update_action">Check now</string>
     <string name="settings_check_update_checking">Checking…</string>
+    <string name="settings_auto_download_update">Download updates automatically</string>
+    <string name="settings_auto_download_update_wifi">Download updates automatically on Wi-Fi</string>
+    <string name="settings_update_downloading">Downloading %1$s</string>
+    <string name="settings_update_install">Install %1$s</string>
+    <string name="settings_update_retry">Download failed, retry</string>
     <string name="settings_changelog">Changelog</string>
     <string name="settings_view_changelog">View all</string>
     <string name="settings_feedback">Feedback</string>
