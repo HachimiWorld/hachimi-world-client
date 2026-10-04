@@ -1,4 +1,7 @@
 //! System media controls: SMTC on Windows, Now Playing on macOS, MPRIS on Linux.
+//!
+//! Windows names the app in the media overlay after the Start menu shortcut of its executable. Dev runs go through
+//! `java.exe`, which has none, so they show "Unknown app"; installed builds show the app name and icon.
 
 use std::fmt::Debug;
 use std::sync::mpsc;
