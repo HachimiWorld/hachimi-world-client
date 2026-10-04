@@ -17,19 +17,27 @@ package uniffi.hachimi
 // compile the Rust component. The easiest way to ensure this is to bundle the Kotlin
 // helpers directly inline like we're doing here.
 
+import com.sun.jna.Library
+import com.sun.jna.IntegerType
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.sun.jna.Callback
+import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 // This is a helper for safely working with byte buffers returned from the Rust code.
 // A rust-owned buffer is represented by its capacity, its current length, and a
@@ -610,8 +618,30 @@ internal open class UniffiForeignFutureResultVoid(
 internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
     fun callback(`callbackData`: Long,`result`: UniffiForeignFutureResultVoid.UniffiByValue,)
 }
+internal interface UniffiCallbackInterfaceMediaControlsListenerMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfacePlayerEventListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "onEvent")
+internal open class UniffiVTableCallbackInterfaceMediaControlsListener(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `onEvent`: UniffiCallbackInterfaceMediaControlsListenerMethod0? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `onEvent`: UniffiCallbackInterfaceMediaControlsListenerMethod0? = null,
+    ): UniffiVTableCallbackInterfaceMediaControlsListener(`uniffiFree`,`uniffiClone`,`onEvent`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceMediaControlsListener) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `onEvent` = other.`onEvent`
+    }
+
 }
 @Structure.FieldOrder("uniffiFree", "uniffiClone", "onEvent")
 internal open class UniffiVTableCallbackInterfacePlayerEventListener(
@@ -657,6 +687,12 @@ internal object IntegrityCheckingUniffiLib {
     }
     external fun uniffi_hachimi_checksum_func_init(
     ): Short
+    external fun uniffi_hachimi_checksum_method_mediacontrols_set_metadata(
+    ): Short
+    external fun uniffi_hachimi_checksum_method_mediacontrols_set_playback(
+    ): Short
+    external fun uniffi_hachimi_checksum_method_mediacontrolslistener_on_event(
+    ): Short
     external fun uniffi_hachimi_checksum_method_player_append_media_item(
     ): Short
     external fun uniffi_hachimi_checksum_method_player_buffer_progress(
@@ -687,6 +723,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Short
     external fun uniffi_hachimi_checksum_method_playereventlistener_on_event(
     ): Short
+    external fun uniffi_hachimi_checksum_constructor_mediacontrols_new(
+    ): Short
     external fun uniffi_hachimi_checksum_constructor_player_new(
     ): Short
     external fun ffi_hachimi_uniffi_contract_version(
@@ -705,9 +743,28 @@ internal object UniffiLib {
 
     init {
         Native.register(UniffiLib::class.java, findLibraryName(componentName = "hachimi"))
+        uniffiCallbackInterfaceMediaControlsListener.register(this)
         uniffiCallbackInterfacePlayerEventListener.register(this)
         
     }
+    external fun uniffi_hachimi_fn_clone_mediacontrols(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_hachimi_fn_free_mediacontrols(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_hachimi_fn_constructor_mediacontrols_new(`displayName`: RustBuffer.ByValue,`dbusName`: RustBuffer.ByValue,`listener`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_hachimi_fn_method_mediacontrols_set_metadata(`ptr`: Long,`info`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_hachimi_fn_method_mediacontrols_set_playback(`ptr`: Long,`state`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_hachimi_fn_clone_mediacontrolslistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_hachimi_fn_free_mediacontrolslistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_hachimi_fn_init_callback_vtable_mediacontrolslistener(`vtable`: UniffiVTableCallbackInterfaceMediaControlsListener,
+    ): Unit
+    external fun uniffi_hachimi_fn_method_mediacontrolslistener_on_event(`ptr`: Long,`event`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_hachimi_fn_clone_player(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_hachimi_fn_free_player(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -874,6 +931,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_hachimi_checksum_func_init() != 32847.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_hachimi_checksum_method_mediacontrols_set_metadata() != 32954.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_hachimi_checksum_method_mediacontrols_set_playback() != 8319.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_hachimi_checksum_method_mediacontrolslistener_on_event() != 53271.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_hachimi_checksum_method_player_append_media_item() != 50316.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -917,6 +983,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_hachimi_checksum_method_playereventlistener_on_event() != 34038.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_hachimi_checksum_constructor_mediacontrols_new() != 32475.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_hachimi_checksum_constructor_player_new() != 2645.toShort()) {
@@ -1314,6 +1383,595 @@ public object FfiConverterDuration: FfiConverterRustBuffer<java.time.Duration> {
         buf.putLong(value.seconds)
         // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
         buf.putInt(value.nano)
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * All platform calls run on a dedicated thread. On Windows that thread owns the hidden window SMTC is bound to,
+ * so it must keep pumping window messages.
+ */
+public interface MediaControlsInterface {
+    
+    fun `setMetadata`(`info`: MediaInfo?)
+    
+    fun `setPlayback`(`state`: PlaybackState)
+    
+    companion object
+}
+
+/**
+ * All platform calls run on a dedicated thread. On Windows that thread owns the hidden window SMTC is bound to,
+ * so it must keep pumping window messages.
+ */
+open class MediaControls: Disposable, AutoCloseable, MediaControlsInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * `dbus_name` becomes `org.mpris.MediaPlayer2.<dbus_name>` on Linux.
+     */
+    constructor(`displayName`: kotlin.String, `dbusName`: kotlin.String, `listener`: MediaControlsListener) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(MediaControlsException) { _status ->
+    UniffiLib.uniffi_hachimi_fn_constructor_mediacontrols_new(
+    
+        FfiConverterString.lower(`displayName`),FfiConverterString.lower(`dbusName`),FfiConverterTypeMediaControlsListener.lower(`listener`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_hachimi_fn_free_mediacontrols(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_hachimi_fn_clone_mediacontrols(handle, status)
+        }
+    }
+
+    override fun `setMetadata`(`info`: MediaInfo?)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_hachimi_fn_method_mediacontrols_set_metadata(
+        it,
+        FfiConverterOptionalTypeMediaInfo.lower(`info`),_status)
+}
+    }
+    
+    
+
+    override fun `setPlayback`(`state`: PlaybackState)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_hachimi_fn_method_mediacontrols_set_playback(
+        it,
+        FfiConverterTypePlaybackState.lower(`state`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMediaControls: FfiConverter<MediaControls, Long> {
+    override fun lower(value: MediaControls): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): MediaControls {
+        return MediaControls(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): MediaControls {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: MediaControls) = 8UL
+
+    override fun write(value: MediaControls, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+public interface MediaControlsListener {
+    
+    fun `onEvent`(`event`: MediaControlEvent)
+    
+    companion object
+}
+
+open class MediaControlsListenerImpl: Disposable, AutoCloseable, MediaControlsListener
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_hachimi_fn_free_mediacontrolslistener(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_hachimi_fn_clone_mediacontrolslistener(handle, status)
+        }
+    }
+
+    override fun `onEvent`(`event`: MediaControlEvent)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_hachimi_fn_method_mediacontrolslistener_on_event(
+        it,
+        FfiConverterTypeMediaControlEvent.lower(`event`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceMediaControlsListener {
+    internal object `onEvent`: UniffiCallbackInterfaceMediaControlsListenerMethod0 {
+        override fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeMediaControlsListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onEvent`(
+                    FfiConverterTypeMediaControlEvent.lift(`event`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeMediaControlsListener.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeMediaControlsListener.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceMediaControlsListener.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `onEvent`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_hachimi_fn_init_callback_vtable_mediacontrolslistener(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMediaControlsListener: FfiConverter<MediaControlsListener, Long> {
+    internal val handleMap = UniffiHandleMap<MediaControlsListener>()
+
+    override fun lower(value: MediaControlsListener): Long {
+        if (value is MediaControlsListenerImpl) {
+             // Rust-implemented object.  Clone the handle and return it
+            return value.uniffiCloneHandle()
+         } else {
+            // Kotlin object, generate a new vtable handle and return that.
+            return handleMap.insert(value)
+         }
+    }
+
+    override fun lift(value: Long): MediaControlsListener {
+        if ((value and 1.toLong()) == 0.toLong()) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return MediaControlsListenerImpl(UniffiWithHandle, value)
+        } else {
+            // Kotlin-generated handle, get the object from the handle map
+            return handleMap.remove(value)
+        }
+    }
+
+    override fun read(buf: ByteBuffer): MediaControlsListener {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: MediaControlsListener) = 8UL
+
+    override fun write(value: MediaControlsListener, buf: ByteBuffer) {
+        buf.putLong(lower(value))
     }
 }
 
@@ -2081,6 +2739,55 @@ public object FfiConverterTypePlayerEventListener: FfiConverter<PlayerEventListe
 
 
 
+data class MediaInfo (
+    var `title`: kotlin.String
+    , 
+    var `artist`: kotlin.String
+    , 
+    /**
+     * Absolute path of a local cover image file.
+     */
+    var `coverPath`: kotlin.String?
+    , 
+    var `duration`: java.time.Duration?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMediaInfo: FfiConverterRustBuffer<MediaInfo> {
+    override fun read(buf: ByteBuffer): MediaInfo {
+        return MediaInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalDuration.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: MediaInfo) = (
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`artist`) +
+            FfiConverterOptionalString.allocationSize(value.`coverPath`) +
+            FfiConverterOptionalDuration.allocationSize(value.`duration`)
+    )
+
+    override fun write(value: MediaInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`artist`, buf)
+            FfiConverterOptionalString.write(value.`coverPath`, buf)
+            FfiConverterOptionalDuration.write(value.`duration`, buf)
+    }
+}
+
+
+
 data class MediaItem (
     var `audioUrl`: kotlin.String
     , 
@@ -2124,6 +2831,346 @@ public object FfiConverterTypeMediaItem: FfiConverterRustBuffer<MediaItem> {
             FfiConverterInt.write(value.`durationSecs`, buf)
     }
 }
+
+
+
+/**
+ * Commands sent by the system, e.g. media keys or the OS media widget.
+ */
+sealed class MediaControlEvent {
+    
+    object Play : MediaControlEvent()
+    
+    
+    object Pause : MediaControlEvent()
+    
+    
+    object Toggle : MediaControlEvent()
+    
+    
+    object Next : MediaControlEvent()
+    
+    
+    object Previous : MediaControlEvent()
+    
+    
+    object Stop : MediaControlEvent()
+    
+    
+    /**
+     * Seek relative to the current position. `offset` is `None` when the system does not specify one.
+     */
+    data class SeekBy(
+        val `forward`: kotlin.Boolean, 
+        val `offset`: java.time.Duration?) : MediaControlEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    data class SetPosition(
+        val `position`: java.time.Duration) : MediaControlEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Bring the app window to the front.
+     */
+    object Raise : MediaControlEvent()
+    
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMediaControlEvent : FfiConverterRustBuffer<MediaControlEvent>{
+    override fun read(buf: ByteBuffer): MediaControlEvent {
+        return when(buf.getInt()) {
+            1 -> MediaControlEvent.Play
+            2 -> MediaControlEvent.Pause
+            3 -> MediaControlEvent.Toggle
+            4 -> MediaControlEvent.Next
+            5 -> MediaControlEvent.Previous
+            6 -> MediaControlEvent.Stop
+            7 -> MediaControlEvent.SeekBy(
+                FfiConverterBoolean.read(buf),
+                FfiConverterOptionalDuration.read(buf),
+                )
+            8 -> MediaControlEvent.SetPosition(
+                FfiConverterDuration.read(buf),
+                )
+            9 -> MediaControlEvent.Raise
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: MediaControlEvent) = when(value) {
+        is MediaControlEvent.Play -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is MediaControlEvent.Pause -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is MediaControlEvent.Toggle -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is MediaControlEvent.Next -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is MediaControlEvent.Previous -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is MediaControlEvent.Stop -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is MediaControlEvent.SeekBy -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterBoolean.allocationSize(value.`forward`)
+                + FfiConverterOptionalDuration.allocationSize(value.`offset`)
+            )
+        }
+        is MediaControlEvent.SetPosition -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterDuration.allocationSize(value.`position`)
+            )
+        }
+        is MediaControlEvent.Raise -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+    }
+
+    override fun write(value: MediaControlEvent, buf: ByteBuffer) {
+        when(value) {
+            is MediaControlEvent.Play -> {
+                buf.putInt(1)
+                Unit
+            }
+            is MediaControlEvent.Pause -> {
+                buf.putInt(2)
+                Unit
+            }
+            is MediaControlEvent.Toggle -> {
+                buf.putInt(3)
+                Unit
+            }
+            is MediaControlEvent.Next -> {
+                buf.putInt(4)
+                Unit
+            }
+            is MediaControlEvent.Previous -> {
+                buf.putInt(5)
+                Unit
+            }
+            is MediaControlEvent.Stop -> {
+                buf.putInt(6)
+                Unit
+            }
+            is MediaControlEvent.SeekBy -> {
+                buf.putInt(7)
+                FfiConverterBoolean.write(value.`forward`, buf)
+                FfiConverterOptionalDuration.write(value.`offset`, buf)
+                Unit
+            }
+            is MediaControlEvent.SetPosition -> {
+                buf.putInt(8)
+                FfiConverterDuration.write(value.`position`, buf)
+                Unit
+            }
+            is MediaControlEvent.Raise -> {
+                buf.putInt(9)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+
+
+
+
+
+sealed class MediaControlsException: kotlin.Exception() {
+    
+    class InitException(
+        
+        val `msg`: kotlin.String
+        ) : MediaControlsException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<MediaControlsException> {
+        override fun lift(error_buf: RustBuffer.ByValue): MediaControlsException = FfiConverterTypeMediaControlsError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMediaControlsError : FfiConverterRustBuffer<MediaControlsException> {
+    override fun read(buf: ByteBuffer): MediaControlsException {
+        
+
+        return when(buf.getInt()) {
+            1 -> MediaControlsException.InitException(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: MediaControlsException): ULong {
+        return when(value) {
+            is MediaControlsException.InitException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+        }
+    }
+
+    override fun write(value: MediaControlsException, buf: ByteBuffer) {
+        when(value) {
+            is MediaControlsException.InitException -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+sealed class PlaybackState {
+    
+    data class Playing(
+        val `position`: java.time.Duration) : PlaybackState()
+        
+    {
+        
+
+        companion object
+    }
+    
+    data class Paused(
+        val `position`: java.time.Duration) : PlaybackState()
+        
+    {
+        
+
+        companion object
+    }
+    
+    object Stopped : PlaybackState()
+    
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePlaybackState : FfiConverterRustBuffer<PlaybackState>{
+    override fun read(buf: ByteBuffer): PlaybackState {
+        return when(buf.getInt()) {
+            1 -> PlaybackState.Playing(
+                FfiConverterDuration.read(buf),
+                )
+            2 -> PlaybackState.Paused(
+                FfiConverterDuration.read(buf),
+                )
+            3 -> PlaybackState.Stopped
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: PlaybackState) = when(value) {
+        is PlaybackState.Playing -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterDuration.allocationSize(value.`position`)
+            )
+        }
+        is PlaybackState.Paused -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterDuration.allocationSize(value.`position`)
+            )
+        }
+        is PlaybackState.Stopped -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+    }
+
+    override fun write(value: PlaybackState, buf: ByteBuffer) {
+        when(value) {
+            is PlaybackState.Playing -> {
+                buf.putInt(1)
+                FfiConverterDuration.write(value.`position`, buf)
+                Unit
+            }
+            is PlaybackState.Paused -> {
+                buf.putInt(2)
+                FfiConverterDuration.write(value.`position`, buf)
+                Unit
+            }
+            is PlaybackState.Stopped -> {
+                buf.putInt(3)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
 
 
 
@@ -2335,6 +3382,102 @@ public object FfiConverterTypePlayerEvent : FfiConverterRustBuffer<PlayerEvent>{
 }
 
 
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?> {
+    override fun read(buf: ByteBuffer): kotlin.String? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterString.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.String?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterString.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.String?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterString.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalDuration: FfiConverterRustBuffer<java.time.Duration?> {
+    override fun read(buf: ByteBuffer): java.time.Duration? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterDuration.read(buf)
+    }
+
+    override fun allocationSize(value: java.time.Duration?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterDuration.allocationSize(value)
+        }
+    }
+
+    override fun write(value: java.time.Duration?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterDuration.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeMediaInfo: FfiConverterRustBuffer<MediaInfo?> {
+    override fun read(buf: ByteBuffer): MediaInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeMediaInfo.read(buf)
+    }
+
+    override fun allocationSize(value: MediaInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeMediaInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: MediaInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeMediaInfo.write(value, buf)
+        }
+    }
+}
 
 
 

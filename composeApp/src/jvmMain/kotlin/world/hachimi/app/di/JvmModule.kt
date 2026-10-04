@@ -10,6 +10,8 @@ import org.koin.core.annotation.Singleton
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.JVMPlatform
 import world.hachimi.app.api.ApiClient
+import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.player.DesktopMediaControls
 import world.hachimi.app.player.PlayerEngine
 import world.hachimi.app.player.RustPlayerEngine
 import world.hachimi.app.storage.MyDataStore
@@ -43,6 +45,11 @@ class JvmModule {
     @Singleton
     fun provideSongCache(): SongCache {
         return SongCacheImpl()
+    }
+
+    @Singleton
+    fun provideDesktopMediaControls(globalStore: GlobalStore, api: ApiClient): DesktopMediaControls {
+        return DesktopMediaControls(globalStore.player, api)
     }
 }
 

@@ -3,6 +3,7 @@ package world.hachimi.app
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
+import world.hachimi.app.player.DesktopMediaControls
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
 import world.hachimi.app.ui.design.HachimiPalette
@@ -49,6 +51,8 @@ fun main() {
     }
 
     val global = koin.koin.get<GlobalStore>()
+    val mediaControls = koin.koin.get<DesktopMediaControls>()
+    mediaControls.initialize()
 
     // Return here after the last window closes instead of exiting, so the update installer can start
     application(exitProcessOnExit = false) {
@@ -67,13 +71,18 @@ fun main() {
 
         val windowState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
 
-        if (isNativeTraySupported) AppEnvironment(global.settings.locale) {
-            val restoreWindow = remember {
-                {
-                    showWindow = true
-                    windowState.isMinimized = false
-                }
+        val restoreWindow = remember {
+            {
+                showWindow = true
+                windowState.isMinimized = false
             }
+        }
+        DisposableEffect(Unit) {
+            mediaControls.onRaise = restoreWindow
+            onDispose { mediaControls.onRaise = null }
+        }
+
+        if (isNativeTraySupported) AppEnvironment(global.settings.locale) {
             AppTray(
                 icon = icon,
                 player = global.player,

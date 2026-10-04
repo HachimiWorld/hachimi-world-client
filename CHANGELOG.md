@@ -3,6 +3,7 @@
 ## Enhancements 改进
 
 1. Desktop: switched to a native system tray, with playback controls in the tray menu. 桌面端改用原生系统托盘，托盘菜单可控制播放。
+2. Desktop: integrated with system media controls (media keys, Windows media overlay, macOS Now Playing, Linux MPRIS). 桌面端接入系统媒体控制（媒体键、Windows 媒体浮窗、macOS 正在播放、Linux MPRIS）。
 
 # 1.4.1
 
