@@ -11,13 +11,30 @@
     <string name="global_already_latest_version">Already up to date</string>
 
     <!-- Update / Upgrade Dialog -->
-    <string name="update_found_title">Update available</string>
-    <string name="update_current_version">Current: %1$s</string>
-    <string name="update_new_version">New: %1$s</string>
-    <string name="update_changelog_title">Changelog</string>
-    <string name="update_confirm">Upgrade now</string>
-    <string name="update_ignore">Ignore</string>
-    <string name="update_icon_cd">Upgrade</string>
+    <string name="update_current_version">Current version %1$s</string>
+    <string name="update_download">Download</string>
+    <string name="update_install">Install now</string>
+    <string name="update_install_restart">Restart and install</string>
+    <string name="update_installs_on_exit">Installs when you quit</string>
+    <string name="update_later">Later</string>
+    <string name="update_metered_hint">You are on a metered network.</string>
+    <string name="update_download_failed">Failed to download the update</string>
+    <string name="update_open_website">Get it from the website</string>
+    <string name="update_retry">Retry</string>
+    <string name="update_install_failed">Couldn't open the package. Downloading it in the browser instead.</string>
+
+    <!-- Update notice (side rail card / phone banner) -->
+    <string name="update_notice_available">Version %1$s</string>
+    <string name="update_notice_downloading">Downloading %1$s</string>
+    <string name="update_notice_ready">%1$s is ready</string>
+    <string name="update_notice_failed">Failed to download %1$s</string>
+    <string name="update_notice_details">What's new</string>
+    <string name="update_notice_failed_hint">Or get it from the website</string>
+    <string name="update_notice_download">Download</string>
+    <string name="update_notice_open">Get it</string>
+    <string name="update_notice_install">Install</string>
+    <string name="update_notice_retry">Retry</string>
+    <string name="update_notice_dismiss_cd">Hide</string>
 
     <!-- Changelog History Dialog -->
     <string name="changelog_history_title">Changelog History</string>

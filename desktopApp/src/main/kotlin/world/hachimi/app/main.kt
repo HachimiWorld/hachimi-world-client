@@ -18,6 +18,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.isTraySupported
 import androidx.compose.ui.window.rememberTrayState
 import androidx.compose.ui.window.rememberWindowState
+import kotlin.system.exitProcess
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -51,10 +52,15 @@ fun main() {
 
     val global = koin.koin.get<GlobalStore>()
 
-    application {
+    // Return here after the last window closes instead of exiting, so the update installer can start
+    application(exitProcessOnExit = false) {
         LaunchedEffect(Unit) {
             Logger.d("main", "Composer started")
             global.initialize()
+        }
+        LaunchedEffect(Unit) {
+            // The update installer runs once the app has quit
+            global.updates.exitRequests.collect { exitApplication() }
         }
         val icon = painterResource(ResReexport.icon_vector)
         var showWindow by remember { mutableStateOf(true) }
@@ -152,6 +158,10 @@ fun main() {
             }
         }
     }
+
+    // Install a downloaded update the user put off, so it lands before the next launch
+    global.updates.onAppExit()
+    exitProcess(0)
 }
 
 @Composable

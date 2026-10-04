@@ -54,6 +54,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.update.OFFICIAL_DOWNLOAD_PAGE
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
@@ -84,14 +85,13 @@ class ClientPromoState(
     }
 
     fun download() {
-        getPlatform().openUrl(DOWNLOAD_URL)
+        getPlatform().openUrl(OFFICIAL_DOWNLOAD_PAGE)
         dismiss()
     }
 
     private companion object {
         val KEY_DISMISSED_AT = PreferenceKey("client_promo_dismissed_at", Long::class)
         val SNOOZE = 14.days
-        const val DOWNLOAD_URL = "https://hachimi.world/#download"
     }
 }
 

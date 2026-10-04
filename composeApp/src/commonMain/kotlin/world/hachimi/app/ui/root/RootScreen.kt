@@ -90,8 +90,10 @@ import world.hachimi.app.ui.root.component.CompactClientPromoBanner
 import world.hachimi.app.ui.root.component.CompactSideNavigation
 import world.hachimi.app.ui.root.component.ExpandedClientPromoCard
 import world.hachimi.app.ui.root.component.CompactTopAppBar
+import world.hachimi.app.ui.root.component.CompactUpdateBanner
 import world.hachimi.app.ui.root.component.ExpandedScaffoldLayout
 import world.hachimi.app.ui.root.component.ExpandedSideNavigation
+import world.hachimi.app.ui.root.component.ExpandedUpdateCard
 import world.hachimi.app.ui.root.component.rememberClientPromoState
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
@@ -149,7 +151,10 @@ fun RootScreen() {
                 ExpandedSideNavigation(
                     content = currentPrimary,
                     onChange = navigator::switchPrimary,
-                    promo = { ExpandedClientPromoCard(clientPromo) },
+                    promo = {
+                        ExpandedClientPromoCard(clientPromo)
+                        ExpandedUpdateCard(global.updates)
+                    },
                 )
             },
             global = global,
@@ -385,6 +390,7 @@ private fun CompactScreen(
                                     onExpandNavClick = openDrawer,
                                 )
                                 CompactClientPromoBanner(clientPromo)
+                                CompactUpdateBanner(global.updates)
                                 // consume for *descendants* (not AppBar siblings): body must not
                                 // re-apply multiplatform top insets already handled by AppBar.
                                 Box(

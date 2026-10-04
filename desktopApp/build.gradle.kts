@@ -84,7 +84,7 @@ compose.desktop {
 
                 windows {
                     upgradeUuid = "1544B476-25C9-4A01-705E-B374B14B2F1B"
-                    msiPackageVersion = windowsInstallerVersion
+                    packageVersion = windowsInstallerVersion
                     perUserInstall = true
                     dirChooser = false
                     shortcut = true
@@ -112,7 +112,7 @@ compose.desktop {
 
                 windows {
                     upgradeUuid = "8AD88FC9-A6A2-478D-9E80-FF735EE15785"
-                    exePackageVersion = windowsInstallerVersion
+                    packageVersion = windowsInstallerVersion
                     perUserInstall = true
                     dirChooser = false
                     shortcut = true
