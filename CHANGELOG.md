@@ -1,3 +1,9 @@
+# 1.4.1
+
+## Fixes 修复
+
+1. Fixed songs not playing on Android. 修复 Android 端无法播放歌曲的问题。
+
 # 1.4.0
 
 ## Features 新功能
