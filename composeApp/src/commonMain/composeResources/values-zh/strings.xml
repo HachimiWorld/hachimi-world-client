@@ -19,6 +19,10 @@
 
     <string name="app_menu_show_window">显示窗口</string>
     <string name="app_menu_quit">退出</string>
+    <string name="app_menu_play">播放</string>
+    <string name="app_menu_pause">暂停</string>
+    <string name="app_menu_previous">上一首</string>
+    <string name="app_menu_next">下一首</string>
 
     <!-- Date/time labels -->
     <string name="date_after_tomorrow">后天</string>

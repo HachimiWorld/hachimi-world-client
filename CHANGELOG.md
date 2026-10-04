@@ -1,3 +1,9 @@
+# Unreleased
+
+## Enhancements 改进
+
+1. Desktop: switched to a native system tray, with playback controls in the tray menu. 桌面端改用原生系统托盘，托盘菜单可控制播放。
+
 # 1.4.1
 
 ## Fixes 修复

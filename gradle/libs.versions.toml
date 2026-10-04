@@ -42,6 +42,7 @@ jflac = "1.5.2"
 
 haze = "1.7.3"
 jna = "5.19.1"
+composeNativeTray = "2.1.7"
 kmpalette = "3.1.0"
 
 multiplatform-nav3-ui = "1.1.1"
@@ -130,6 +131,7 @@ haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 
 jna-platform = { module = "net.java.dev.jna:jna-platform-jpms", version.ref = "jna" }
 jna = { module = "net.java.dev.jna:jna-jpms", version.ref = "jna" }
+composeNativeTray = { module = "dev.nucleusframework:composenativetray", version.ref = "composeNativeTray" }
 
 kmpalette-core = { module = "com.kmpalette:kmpalette-core", version.ref = "kmpalette" }
 kmpalette-extensions-base64 = { module = "com.kmpalette:extensions-base64", version.ref = "kmpalette" }

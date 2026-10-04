@@ -12,11 +12,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import androidx.compose.ui.window.isTraySupported
-import androidx.compose.ui.window.rememberTrayState
 import androidx.compose.ui.window.rememberWindowState
 import kotlin.system.exitProcess
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -29,6 +26,7 @@ import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
 import org.koin.plugin.module.dsl.module
 import world.hachimi.app.di.JvmModule
+import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
@@ -64,21 +62,25 @@ fun main() {
         }
         val icon = painterResource(ResReexport.icon_vector)
         var showWindow by remember { mutableStateOf(true) }
-        val trayState = rememberTrayState()
         var showCloseAskDialog by remember { mutableStateOf(false) }
         var rememberCloseChoice by remember { mutableStateOf(false) }
 
-        if (isTraySupported) Tray(
-            icon = icon, state = trayState,
-            onAction = { showWindow = true },
-            menu = {
-                Item("Show Window", onClick = { showWindow = true })
-                Separator()
-                Item("Exit", onClick = ::exitApplication)
-            }
-        )
-
         val windowState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
+
+        if (isNativeTraySupported) AppEnvironment(global.settings.locale) {
+            val restoreWindow = remember {
+                {
+                    showWindow = true
+                    windowState.isMinimized = false
+                }
+            }
+            AppTray(
+                icon = icon,
+                player = global.player,
+                onShowWindow = restoreWindow,
+                onExit = ::exitApplication
+            )
+        }
 
         fun minimizeToTray() {
             showWindow = false
@@ -89,7 +91,7 @@ fun main() {
         }
 
         fun onCloseRequest() {
-            if (isTraySupported) {
+            if (isNativeTraySupported) {
                 when (global.settings.closeBehavior) {
                     Settings.CloseBehavior.EXIT -> exitApplication()
                     Settings.CloseBehavior.MINIMIZE_TO_TRAY -> minimizeToTray()
