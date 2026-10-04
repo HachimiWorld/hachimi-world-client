@@ -3,4 +3,8 @@
     <string name="app_name">@string/app_name_base</string>
     <string name="app_name_base">基米天堂</string>
     <string name="app_name_dev">基米天堂 Dev</string>
+    <string name="media_like">点赞</string>
+    <string name="media_unlike">取消点赞</string>
+    <string name="media_shuffle_on">开启随机播放</string>
+    <string name="media_shuffle_off">关闭随机播放</string>
 </resources>
