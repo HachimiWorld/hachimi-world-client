@@ -99,7 +99,9 @@ class PlaybackService : MediaSessionService(), MediaSession.Callback {
         session: MediaSession,
         controller: MediaSession.ControllerInfo
     ): MediaSession.ConnectionResult {
-        val connectionResult = super.onConnect(session, controller)
+        // Since Media3 1.11 the default onConnect returns a placeholder with no commands, so start from the
+        // documented defaults: full access for trusted controllers (this app, the system), read-only otherwise
+        val connectionResult = MediaSession.ConnectionResult.AcceptedResultBuilder(session, controller).build()
         val availablePlayerCommands = connectionResult.availablePlayerCommands.buildUpon()
             .add(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
             .add(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
