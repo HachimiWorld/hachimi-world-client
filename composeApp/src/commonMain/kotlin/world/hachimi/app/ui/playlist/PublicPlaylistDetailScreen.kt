@@ -16,6 +16,8 @@ import world.hachimi.app.model.PublicPlaylistViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
 import world.hachimi.app.ui.playlist.components.Header
@@ -24,6 +26,7 @@ import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
 import world.hachimi.app.ui.util.listTailSpacerItem
 import kotlin.time.Duration.Companion.seconds
 
@@ -32,6 +35,8 @@ fun PublicPlaylistScreen(
     playlistId: Long,
     vm: PublicPlaylistViewModel = koinViewModel()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, playlistId) {
         vm.mounted(playlistId)
         onDispose {
@@ -39,38 +44,45 @@ fun PublicPlaylistScreen(
         }
     }
 
-    InitStatusScaffold(
-        initializeStatus = vm.initStatus,
-        isLoading = vm.loading,
-        onRetryClick = { vm.retry() },
+    ScreenScaffold(
+        title = { Text(vm.playlistInfo?.name.orEmpty(), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
     ) {
-        Box(Modifier.fillMaxSize()) {
-            val playlistInfo = vm.playlistInfo
-            val userInfo = vm.creatorProfile
-            if (playlistInfo != null && userInfo != null) LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(AdaptiveScreenMargin),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                item {
-                    Header(vm)
-                }
+        InitStatusScaffold(
+            initializeStatus = vm.initStatus,
+            isLoading = vm.loading,
+            onRetryClick = { vm.retry() },
+        ) {
+            Box(Modifier.fillMaxSize()) {
+                val playlistInfo = vm.playlistInfo
+                val userInfo = vm.creatorProfile
+                if (playlistInfo != null && userInfo != null) LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(AdaptiveScreenMargin),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listHeadInsetsSpacerItem()
+                    item {
+                        Header(vm)
+                    }
 
-                itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
-                    SongItem(
-                        modifier = Modifier.fillMaxWidthIn(),
-                        orderIndex = index,
-                        title = song.title,
-                        onClick = { vm.play(song) },
-                        coverUrl = song.coverUrl,
-                        artist = song.uploaderName,
-                        duration = song.durationSeconds.seconds,
-                        editable = false,
-                        onRemoveClick = {}
-                    )
-                }
+                    itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
+                        SongItem(
+                            modifier = Modifier.fillMaxWidthIn(),
+                            orderIndex = index,
+                            title = song.title,
+                            onClick = { vm.play(song) },
+                            coverUrl = song.coverUrl,
+                            artist = song.uploaderName,
+                            duration = song.durationSeconds.seconds,
+                            editable = false,
+                            onRemoveClick = {}
+                        )
+                    }
 
-                listTailSpacerItem()
+                    listTailSpacerItem()
+                }
             }
         }
     }

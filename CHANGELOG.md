@@ -1,3 +1,14 @@
+# 1.4.0
+
+## Features 新功能
+
+1. Web: suggest downloading the native client for a better experience. Web 端新增下载客户端的提示，引导使用客户端获得更好体验。
+2. Support automatic updates on Windows, macOS and Android. Windows、macOS 和 Android 端支持自动更新。
+
+## Enhancements 改进
+
+1. Reworked the home layout and navigation. 调整首页布局与导航。
+
 # 1.3.0
 
 ## Features 新功能

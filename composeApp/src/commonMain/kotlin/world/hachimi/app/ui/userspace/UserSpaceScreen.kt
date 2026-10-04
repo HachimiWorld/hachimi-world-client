@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -26,7 +27,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -50,13 +50,11 @@ import hachimiworld.composeapp.generated.resources.user_space_empty
 import hachimiworld.composeapp.generated.resources.user_space_tab_activity
 import hachimiworld.composeapp.generated.resources.user_space_tab_playlists
 import hachimiworld.composeapp.generated.resources.user_space_tab_songs
-import hachimiworld.composeapp.generated.resources.user_space_title
 import hachimiworld.composeapp.generated.resources.user_space_uid_prefix
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.UserModule
-import world.hachimi.app.model.FollowViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
@@ -65,6 +63,7 @@ import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.Pagination
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -93,6 +92,7 @@ import world.hachimi.app.ui.util.listTailSpacerItem
 @Composable
 fun UserSpaceScreen(
     uid: Long?,
+    showToolbar: Boolean = true,
     vm: UserSpaceViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
@@ -103,12 +103,14 @@ fun UserSpaceScreen(
         }
     }
 
-    BoxWithConstraints {
-        val constraintsMaxWidth = maxWidth
-        var selectedTab by remember { mutableIntStateOf(0) }
-        val navigator = LocalNavigator.current
+    val navigator = LocalNavigator.current
 
-        LazyVerticalGrid(
+    val content: @Composable () -> Unit = {
+        BoxWithConstraints {
+            val constraintsMaxWidth = maxWidth
+            var selectedTab by remember { mutableIntStateOf(0) }
+
+            LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(constraintsMaxWidth),
             contentPadding = contentPaddingForMaxWidth(
@@ -118,7 +120,7 @@ fun UserSpaceScreen(
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Header(vm, global, Modifier.fillMaxWidth())
+                Header(vm, Modifier.fillMaxWidth().statusBarsPadding())
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -152,6 +154,32 @@ fun UserSpaceScreen(
 
             listTailSpacerItem()
         }
+        }
+    }
+
+    if (showToolbar) {
+        ScreenScaffold(
+            title = { Text(vm.profile?.username.orEmpty(), maxLines = 1) },
+            showBack = true,
+            onBack = navigator::back,
+            actions = {
+                if (vm.myself) {
+                    HachimiIconButton(onClick = { navigator.push(Route.Root.EditProfile) }) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = stringResource(Res.string.user_edit_profile)
+                        )
+                    }
+                    TextButton(onClick = { global.logout() }) {
+                        Text(stringResource(Res.string.auth_logout))
+                    }
+                }
+            },
+        ) {
+            content()
+        }
+    } else {
+        content()
     }
 }
 
@@ -250,67 +278,37 @@ private fun LazyGridScope.playlistsTabContents(
 @Composable
 private fun Header(
     vm: UserSpaceViewModel,
-    global: GlobalStore,
     modifier: Modifier = Modifier,
 ) {
     val navigator = LocalNavigator.current
     val isCompact = LocalWindowSize.current.width < WindowSize.COMPACT
-    val followVM: FollowViewModel = koinViewModel()
-
-    // When a follow/unfollow action completes, update the profile state locally
-    LaunchedEffect(followVM.lastActionResult) {
-        followVM.lastActionResult?.let { result ->
-            if (vm.profile?.uid == result.uid) {
-                vm.updateFollowState(result.isFollowing, result.followerCount)
-            }
-            followVM.consumeLastActionResult()
-        }
-    }
 
     Column(modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = stringResource(Res.string.user_space_title),
-                style = MaterialTheme.typography.titleLarge
-            )
-            if (vm.myself) {
-                HachimiIconButton(onClick = { navigator.push(Route.Root.EditProfile) }) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = stringResource(Res.string.user_edit_profile)
-                    )
-                }
-                TextButton(onClick = { global.logout() }) {
-                    Text(stringResource(Res.string.auth_logout))
-                }
-            }
-        }
-
         HeaderProfileContent(
             profile = vm.profile,
             loading = vm.loadingProfile,
             isCompact = isCompact,
             myself = vm.myself,
-            followVM = followVM,
+            isFollowLoading = vm.followActionLoading,
+            onFollow = vm::follow,
+            onUnfollow = vm::showUnfollowDialog,
             navigator = navigator,
         )
     }
 
-    // Unfollow dialog - shown from profile page too
-    followVM.unfollowDialogTarget?.let { target ->
+    vm.unfollowDialogUsername?.let { username ->
         UnfollowDialog(
-            username = target.username,
+            username = username,
             subtitle = stringResource(Res.string.follow_unfollow_confirm_subtitle),
             confirmText = stringResource(Res.string.follow_unfollow_confirm),
             cancelText = stringResource(Res.string.follow_cancel),
             confirmTitle = stringResource(
                 Res.string.follow_unfollow_confirm_title,
-                target.username
+                username
             ),
-            loading = followVM.actionLoading,
-            onConfirm = { followVM.confirmUnfollow() },
-            onDismiss = { followVM.dismissUnfollowDialog() }
+            loading = vm.followActionLoading,
+            onConfirm = { vm.confirmUnfollow() },
+            onDismiss = { vm.dismissUnfollowDialog() }
         )
     }
 }
@@ -321,7 +319,9 @@ private fun HeaderProfileContent(
     loading: Boolean,
     isCompact: Boolean,
     myself: Boolean,
-    followVM: FollowViewModel,
+    isFollowLoading: Boolean,
+    onFollow: () -> Unit,
+    onUnfollow: () -> Unit,
     navigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
@@ -388,30 +388,18 @@ private fun HeaderProfileContent(
             .padding(vertical = 8.dp)
             .then(if (isCompact) Modifier.fillMaxWidth() else Modifier.wrapContentWidth(align = Alignment.Start))
 
-        if (loading) {
-            StatsRow(
-                followerCount = 0,
-                followingCount = 0,
-                myself = myself,
-                isFollowing = false,
-                isFollowLoading = false,
-                onFollow = {},
-                onUnfollow = {},
-                onFollowersClick = {},
-                onFollowingClick = {},
-                modifier = statsModifier,
-            )
-        } else {
-            StatsRow(
-                profile = profile!!,
-                myself = myself,
-                isCompact = isCompact,
-                followVM = followVM,
-                onFollowersClick = { navigator.push(Route.Root.FollowersList) },
-                onFollowingClick = { navigator.push(Route.Root.FollowingList) },
-                modifier = statsModifier,
-            )
-        }
+        StatsRow(
+            followerCount = if (loading) 0 else profile!!.followerCount,
+            followingCount = if (loading) 0 else profile!!.followingCount,
+            myself = myself,
+            isFollowing = if (loading) false else profile!!.isFollowing,
+            isFollowLoading = isFollowLoading,
+            onFollow = onFollow,
+            onUnfollow = onUnfollow,
+            onFollowersClick = { navigator.push(Route.Root.FollowersList) },
+            onFollowingClick = { navigator.push(Route.Root.FollowingList) },
+            modifier = statsModifier,
+        )
 
         if (showConnections) {
             Connections(

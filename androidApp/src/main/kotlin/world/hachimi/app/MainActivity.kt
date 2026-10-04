@@ -6,7 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
@@ -37,11 +41,15 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(global.initialized) {
                 if (global.initialized) {
                     keepSplashScreen.set(false)
+                    reportFullyDrawn()
                 }
             }
 
-            AppTheme(global.settings.darkMode ?: isSystemInDarkTheme()) {
-                App(global)
+            // Expose Compose testTag as resource-id for UI Automator / Baseline Profile.
+            Box(Modifier.semantics { testTagsAsResourceId = true }) {
+                AppTheme(global.settings.darkMode ?: isSystemInDarkTheme()) {
+                    App(global)
+                }
             }
         }
     }

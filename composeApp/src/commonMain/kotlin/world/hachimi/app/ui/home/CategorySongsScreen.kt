@@ -1,16 +1,12 @@
 package world.hachimi.app.ui.home
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -24,21 +20,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_empty
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.home_category_title
+import hachimiworld.composeapp.generated.resources.play_all
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.fromSearchSongItem
-import world.hachimi.app.ui.LocalContentInsets
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.InitStatusScaffold
+import world.hachimi.app.ui.util.ListTailSpacer
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 
@@ -48,15 +51,23 @@ fun CategorySongsScreen(
     vm: CategorySongsViewModel = koinViewModel(),
     global: GlobalStore = koinInject(),
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(category, vm) {
         vm.mounted(category)
         onDispose { vm.unmount() }
     }
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-        when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Content(category, vm, global)
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.home_category_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back
+    ) {
+        InitStatusScaffold(
+            initializeStatus = vm.initializeStatus,
+            isLoading = vm.loading,
+            onRetryClick = { vm.retry() },
+        ) {
+            Content(category, vm, global)
         }
     }
 }
@@ -65,7 +76,7 @@ fun CategorySongsScreen(
 private fun Content(category: String, vm: CategorySongsViewModel, global: GlobalStore) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("空空如也")
+            Text(stringResource(Res.string.common_empty))
         } else LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
@@ -75,14 +86,13 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 FlowRow(
-                    modifier = Modifier,
+                    modifier = Modifier.multiplatformStatusBarsPadding(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        text = "${category}", style = MaterialTheme.typography.titleLarge
+                        text = category,
+                        style = MaterialTheme.typography.titleLarge,
                     )
-
                     Spacer(Modifier.weight(1f))
 
                     Button(
@@ -94,9 +104,12 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
                             global.player.playAll(items)
                         }
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = stringResource(Res.string.common_play_cd),
+                        )
                         Spacer(Modifier.width(8.dp))
-                        Text("播放全部")
+                        Text(stringResource(Res.string.play_all))
                     }
                 }
             }
@@ -121,7 +134,7 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+                ListTailSpacer()
             }
         }
     }

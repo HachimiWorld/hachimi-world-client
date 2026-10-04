@@ -4,17 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -28,7 +23,9 @@ import world.hachimi.app.model.PlaylistViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
+import world.hachimi.app.ui.insets.multiplatformSystemBarsPadding
 import world.hachimi.app.ui.playlist.components.FavoritePlaylistItem
 import world.hachimi.app.ui.playlist.components.PlaylistItem
 import world.hachimi.app.ui.util.AdaptiveListSpacing
@@ -36,6 +33,8 @@ import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.listTailPadding
+import world.hachimi.app.ui.util.listTailSpacerItem
 
 @Composable
 fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
@@ -56,14 +55,15 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
 @Composable
 private fun Content(vm: PlaylistViewModel, navigator: Navigator) {
     if (vm.playlists.isEmpty()) Box(
-        Modifier.fillMaxSize().navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues()),
+        Modifier.fillMaxSize()
+            .multiplatformStatusBarsPadding()
+            .listTailPadding(),
         contentAlignment = Alignment.Center
     ) {
         Text(stringResource(Res.string.playlist_empty))
     } else BoxWithConstraints {
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().multiplatformSystemBarsPadding(),
             columns = calculateGridColumns(maxWidth),
             contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
@@ -71,9 +71,9 @@ private fun Content(vm: PlaylistViewModel, navigator: Navigator) {
         ) {
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "my-header") {
                 Text(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
                     text = stringResource(Res.string.playlist_my_playlists_title),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
                 )
             }
 
@@ -111,11 +111,7 @@ private fun Content(vm: PlaylistViewModel, navigator: Navigator) {
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(
-                    Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues())
-                )
-            }
+            listTailSpacerItem()
         }
     }
 }

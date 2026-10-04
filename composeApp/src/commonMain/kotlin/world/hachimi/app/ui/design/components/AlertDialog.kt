@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -56,7 +57,7 @@ fun AlertDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                CompositionLocalProvider(LocalTextStyle provides titleStyle) {
+                                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleLarge) {
                                     it.invoke()
                                 }
                             }

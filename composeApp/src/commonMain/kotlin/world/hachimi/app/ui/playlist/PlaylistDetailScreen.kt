@@ -37,9 +37,11 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.TagBadge
+import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.EditDialog
 import world.hachimi.app.ui.playlist.components.Header
@@ -48,6 +50,7 @@ import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.ui.util.fadeInFadeOut
+import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
 import world.hachimi.app.ui.util.listTailSpacerItem
 import kotlin.time.Duration.Companion.seconds
 
@@ -56,6 +59,8 @@ fun PlaylistDetailScreen(
     playlistId: Long,
     vm: PlaylistDetailViewModel = koinViewModel(),
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, playlistId) {
         vm.mounted(playlistId)
         onDispose {
@@ -64,6 +69,11 @@ fun PlaylistDetailScreen(
     }
 
     val global = koinInject<GlobalStore>()
+    ScreenScaffold(
+        title = { Text(vm.playlistInfo?.name.orEmpty(), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
     AnimatedContent(
         targetState = vm.initStatus,
         transitionSpec = { fadeInFadeOut() }
@@ -82,6 +92,7 @@ fun PlaylistDetailScreen(
                         ),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        listHeadInsetsSpacerItem()
                         item {
                             Header(global, info, vm)
                         }
@@ -123,6 +134,7 @@ fun PlaylistDetailScreen(
                 EditDialog(vm)
             }
         }
+    }
     }
 }
 

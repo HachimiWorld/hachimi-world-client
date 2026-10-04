@@ -1,59 +1,39 @@
 package world.hachimi.app.ui.insets
 
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-data class SafeAreaInsets(
-    val top: Dp = 0.dp,
-    val bottom: Dp = 0.dp,
-    val start: Dp = 0.dp,
-    val end: Dp = 0.dp
-)
+/**
+ * Desktop-only caption band (Windows custom title bar / mac traffic lights).
+ * Mobile implementations return empty insets.
+ *
+ * Combined types below participate in the normal [windowInsetsPadding] /
+ * [consumeWindowInsets] tree — prefer them over hand-rolled Dp paddings.
+ */
+expect val WindowInsets.Companion.multiplatformCaptionBar: WindowInsets
 
-val LocalSafeAreaInsets = compositionLocalOf { SafeAreaInsets() }
+/** Optional override for caption height (e.g. Windows [LocalMultiplatformCaptionBarHeight]). */
+val LocalMultiplatformCaptionBarHeight = compositionLocalOf { 0.dp }
 
-@Composable
-fun currentSafeAreaInsets(): SafeAreaInsets {
-    return when (remember { getCurrentPlatform() }) {
-        Platform.MacOS -> SafeAreaInsets(top = 28.dp)
-        Platform.Windows -> LocalSafeAreaInsets.current
-        Platform.Linux -> SafeAreaInsets()
-        Platform.Android, Platform.iOS -> {
-            val density = LocalDensity.current
-            val insets = WindowInsets.safeDrawing
-            val direction = LocalLayoutDirection.current
-            SafeAreaInsets(
-                top = with(density) { insets.getTop(density).toDp() },
-                bottom = with(density) { insets.getBottom(density).toDp() },
-                start = with(density) { insets.getLeft(density, direction).toDp() },
-                end = with(density) { insets.getRight(density, direction).toDp() }
-            )
-        }
-        else -> SafeAreaInsets()
-    }
-}
+val WindowInsets.Companion.multiplatformStatusBars: WindowInsets
+    @Composable
+    get() = WindowInsets.multiplatformCaptionBar.add(WindowInsets.statusBars)
 
-@Composable
-fun Modifier.safeAreaPadding(): Modifier = this.then(
-    Modifier.padding(
-        start = currentSafeAreaInsets().start,
-        top = currentSafeAreaInsets().top,
-        end = currentSafeAreaInsets().end,
-        bottom = currentSafeAreaInsets().bottom
-    )
-)
+val WindowInsets.Companion.multiplatformNavigationBars: WindowInsets
+    @Composable
+    get() = WindowInsets.multiplatformCaptionBar.add(WindowInsets.navigationBars)
 
-enum class Platform {
-    MacOS, Windows, Linux, Android, Web, iOS, Unknown
-}
+val WindowInsets.Companion.multiplatformSystemBars: WindowInsets
+    @Composable
+    get() = WindowInsets.multiplatformCaptionBar.add(WindowInsets.systemBars)
 
-expect fun getCurrentPlatform(): Platform
+val WindowInsets.Companion.multiplatformSafeDrawing: WindowInsets
+    @Composable
+    get() = WindowInsets.multiplatformCaptionBar.add(WindowInsets.safeDrawing)

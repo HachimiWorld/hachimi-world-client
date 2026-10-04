@@ -84,14 +84,27 @@ runs:
         printf '%s' "$PR_BODY" | tr -d '\r' > changelog.txt
         DOWNLOAD_URL="https://${{ inputs.s3_domain }}/${{ inputs.s3_destination }}${FILE_NAME}"
 
+        # Package metadata for in-app updates (resume + integrity check).
+        # macOS runners may lack sha256sum, so fall back to shasum.
+        PACKAGE_FILE="${{ inputs.source_dir }}/${FILE_NAME}"
+        PACKAGE_SIZE=$(wc -c < "$PACKAGE_FILE" | tr -d ' ')
+        if command -v sha256sum > /dev/null; then
+          PACKAGE_SHA256=$(sha256sum "$PACKAGE_FILE" | cut -d ' ' -f 1)
+        else
+          PACKAGE_SHA256=$(shasum -a 256 "$PACKAGE_FILE" | cut -d ' ' -f 1)
+        fi
+        echo "Package size: $PACKAGE_SIZE, sha256: $PACKAGE_SHA256"
+
         # Maybe UTF-8 CRLF now
         JSON_DATA=$(jq -n -r \
           --arg name "${{ inputs.version_name }}" \
           --argjson code "${{ inputs.version_code }}" \
           --arg url "$DOWNLOAD_URL" \
           --arg variant "${{ inputs.variant }}" \
+          --argjson size "$PACKAGE_SIZE" \
+          --arg sha256 "$PACKAGE_SHA256" \
           --rawfile changelog changelog.txt \
-          '{ version_name: $name, version_number: $code, url: $url, changelog: $changelog, variant: $variant, release_time: (now | todateiso8601) }')
+          '{ version_name: $name, version_number: $code, url: $url, changelog: $changelog, variant: $variant, size: $size, sha256: $sha256, release_time: (now | todateiso8601) }')
         
         # Write as UTF-8 CL to request_body.bin
         printf '%s' "$JSON_DATA" | tr -d '\r' > request_body.bin

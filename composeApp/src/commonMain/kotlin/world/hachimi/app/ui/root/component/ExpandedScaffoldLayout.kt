@@ -21,15 +21,12 @@ import world.hachimi.app.ui.util.WindowSize
 
 @Composable
 fun ExpandedScaffoldLayout(
-    appbar: @Composable () -> Unit,
     navigation: @Composable () -> Unit,
     footerPlayer: @Composable () -> Unit,
     content: @Composable (contentPadding: PaddingValues) -> Unit,
     modifier: Modifier = Modifier
 ) {
     SubcomposeLayout(modifier) { constraints ->
-        val appbarPlaceable = subcompose(Slots.AppBar, appbar).first()
-            .measure(constraints.copy(minHeight = 0, minWidth = 0))
         val compactMode = constraints.maxWidth < WindowSize.MEDIUM.roundToPx()
         val (navigationPlaceable, footerPlayerPlaceable) = if (compactMode) {
             val footerPlayerPlaceable = subcompose(Slots.FooterPlayer, footerPlayer).first()
@@ -37,15 +34,12 @@ fun ExpandedScaffoldLayout(
             val navigationPlaceable = subcompose(Slots.Navigation, navigation).first()
                 .measure(constraints.copy(
                     minHeight = 0, minWidth = 0,
-                    maxHeight = constraints.maxHeight - footerPlayerPlaceable.height - appbarPlaceable.height
+                    maxHeight = constraints.maxHeight - footerPlayerPlaceable.height
                 ))
             navigationPlaceable to footerPlayerPlaceable
         } else {
             val navigationPlaceable = subcompose(Slots.Navigation, navigation).first()
-                .measure(constraints.copy(
-                    minHeight = 0, minWidth = 0,
-                    maxHeight = constraints.maxHeight - appbarPlaceable.height
-                ))
+                .measure(constraints.copy(minHeight = 0, minWidth = 0))
             val footerPlayerPlaceable = subcompose(Slots.FooterPlayer, footerPlayer).first()
                 .measure(constraints.copy(
                     minHeight = 0, minWidth = 0,
@@ -56,7 +50,6 @@ fun ExpandedScaffoldLayout(
 
         val contentPlaceable = subcompose(Slots.Content) {
             content(PaddingValues(
-                top = appbarPlaceable.height.toDp(),
                 start = navigationPlaceable.width.toDp(),
                 bottom = footerPlayerPlaceable.height.toDp()
             ))
@@ -64,8 +57,7 @@ fun ExpandedScaffoldLayout(
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             contentPlaceable.place(0, 0)
-            appbarPlaceable.place(0, 0)
-            navigationPlaceable.place(0, appbarPlaceable.height)
+            navigationPlaceable.place(0, 0)
             if (compactMode) {
                 footerPlayerPlaceable.place(0, constraints.maxHeight - footerPlayerPlaceable.height)
             } else {
@@ -76,7 +68,7 @@ fun ExpandedScaffoldLayout(
 }
 
 private enum class Slots {
-    AppBar, Navigation, FooterPlayer, Content
+    Navigation, FooterPlayer, Content
 }
 
 @Preview(device = Devices.DESKTOP)
@@ -87,9 +79,6 @@ private enum class Slots {
 private fun Preview() {
     PreviewTheme(background = true) {
         ExpandedScaffoldLayout(
-            appbar = {
-                Box(Modifier.height(100.dp).fillMaxWidth().border(1.dp, Color.Red))
-            },
             navigation = {
                 Box(Modifier.width(300.dp).fillMaxHeight().border(1.dp, Color.Blue))
             },

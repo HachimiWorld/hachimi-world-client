@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.footer.components
+package world.hachimi.app.ui.player.miniplayer.components
 
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition

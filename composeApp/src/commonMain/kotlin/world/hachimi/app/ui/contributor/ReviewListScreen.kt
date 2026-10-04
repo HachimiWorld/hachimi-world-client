@@ -4,14 +4,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -24,21 +21,23 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewViewModel
 import world.hachimi.app.nav.HandleNavigationRequests
 import world.hachimi.app.nav.LocalNavigator
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.util.AdaptiveListSpacing
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listTailPadding
 
 @Composable
 fun ReviewListScreen(
     vm: ReviewViewModel = koinViewModel()
 ) {
-    HandleNavigationRequests(vm.navigationRequests, LocalNavigator.current)
+    val navigator = LocalNavigator.current
+    HandleNavigationRequests(vm.navigationRequests, navigator)
 
     DisposableEffect(vm) {
         vm.mounted()
@@ -47,20 +46,25 @@ fun ReviewListScreen(
         }
     }
 
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-        when (it) {
-            InitializeStatus.INIT -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
-            }
+    ScreenScaffold(
+        title = { Text("审核作品 (${vm.total})", maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
+        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+            when (it) {
+                InitializeStatus.INIT -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator()
+                }
 
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
-                if (vm.isContributor) Content(vm)
-                else NotContributor()
+                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
+                    if (vm.isContributor) Content(vm)
+                    else NotContributor()
+                }
             }
         }
     }
-
 }
 
 @Preview
@@ -76,17 +80,11 @@ private fun NotContributor() {
 private fun Content(vm: ReviewViewModel) {
     Column(
         Modifier.fillMaxSize()
-            .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues())
+            .multiplatformStatusBarsPadding()
+            .listTailPadding()
             .padding(vertical = 24.dp),
         Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            modifier = Modifier.padding(horizontal = AdaptiveListSpacing).fillMaxWidthIn(),
-            text = "审核作品 (${vm.total})",
-            style = MaterialTheme.typography.titleLarge
-        )
-
         Box(Modifier.weight(1f)) {
             LazyColumn() {
                 items(vm.items, key = { item -> item.reviewId }) { item ->

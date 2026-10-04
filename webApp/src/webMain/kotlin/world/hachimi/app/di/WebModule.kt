@@ -1,6 +1,7 @@
 package world.hachimi.app.di
 
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import world.hachimi.app.BuildKonfig
@@ -115,6 +116,12 @@ fun org.koin.core.module.Module.applyViewModels() {
     viewModelOf(::EventsListViewModel)
     viewModelOf(::EventDetailViewModel)
     viewModelOf(::ChangelogViewModel)
-    viewModelOf(::FollowViewModel)
+    viewModel { parameters ->
+        FollowViewModel(
+            listType = parameters[0],
+            api = get(),
+            global = get()
+        )
+    }
     viewModelOf(::DeviceManagementViewModel)
 }

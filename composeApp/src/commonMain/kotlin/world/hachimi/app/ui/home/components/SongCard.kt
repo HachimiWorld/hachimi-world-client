@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.TagBadge
@@ -84,7 +86,7 @@ fun SongCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(modifier = modifier.defaultMinSize(minWidth = 160.dp)) {
+    Card(modifier = modifier.defaultMinSize(minWidth = 160.dp).testTag(TestTags.SONG_CARD)) {
         Column(Modifier.clickable(onClick = onClick).padding(8.dp)) {
             Box(Modifier.aspectRatio(1f).background(LocalContentColor.current.copy(0.12f), RoundedCornerShape(8.dp))) {
                 val hazeState = rememberHazeState()

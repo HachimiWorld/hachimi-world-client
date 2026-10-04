@@ -42,7 +42,7 @@ private const val MaximizeGlyph = '\uE922'
 private const val RestoreGlyph = '\uE923'
 private const val CloseGlyph = '\uE8BB'
 
-val CaptionBarHeight = 32.dp
+val WindowsCaptionBarHeight = 32.dp
 
 @Composable
 fun CaptionBar(
@@ -57,7 +57,7 @@ fun CaptionBar(
     onCloseBounds: (Rect) -> Unit,
 ) {
     CompositionLocalProvider(LocalContentColor provides if (darkMode) HachimiPalette.onSurfaceDark else HachimiPalette.onSurfaceLight) {
-        Row(modifier.height(CaptionBarHeight), horizontalArrangement = Arrangement.End) {
+        Row(modifier.height(WindowsCaptionBarHeight), horizontalArrangement = Arrangement.End) {
             CaptionButton(
                 modifier = Modifier.onGloballyPositioned { onMinBounds(it.boundsInWindow()) },
                 onClick = onMinClick,

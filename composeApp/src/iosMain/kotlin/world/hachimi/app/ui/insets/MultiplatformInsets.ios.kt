@@ -1,3 +1,6 @@
 package world.hachimi.app.ui.insets
 
-actual fun getCurrentPlatform(): Platform = Platform.iOS
+import androidx.compose.foundation.layout.WindowInsets
+
+actual val WindowInsets.Companion.multiplatformCaptionBar: WindowInsets
+    get() = WindowInsets()

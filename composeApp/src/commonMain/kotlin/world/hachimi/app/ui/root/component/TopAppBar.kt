@@ -6,13 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +52,7 @@ import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.CardShadow
@@ -55,7 +60,7 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.SubtleButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.insets.multiplatformSafeDrawing
 
 @Composable
 fun CompactTopAppBar(
@@ -68,11 +73,13 @@ fun CompactTopAppBar(
     Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                .padding(top = currentSafeAreaInsets().top)
-                .consumeWindowInsets(WindowInsets.statusBars),
+                .windowInsetsPadding(WindowInsets.multiplatformSafeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onExpandNavClick) {
+            IconButton(
+                onClick = onExpandNavClick,
+                modifier = Modifier.testTag(TestTags.NAV_MENU),
+            ) {
                 Icon(Icons.Default.Menu, contentDescription = "Menu")
             }
             var searchText by remember { mutableStateOf("") }
@@ -88,12 +95,12 @@ fun CompactTopAppBar(
                 val userInfo = global.userInfo!!
                 AvatarOnly(
                     avatarUrl = userInfo.avatarUrl,
-                    onClick = { navigator.push(Route.Root.UserSpace) }
+                    onClick = { navigator.push(Route.Root.UserSpace) },
                 )
             } else {
                 AvatarOnly(
                     avatarUrl = null,
-                    onClick = { navigator.push(Route.Auth()) }
+                    onClick = { navigator.push(Route.Auth()) },
                 )
             }
         }
@@ -110,9 +117,8 @@ fun ExpandedTopAppBar(
     Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
         Row(
             modifier = Modifier
-                .padding(top = currentSafeAreaInsets().top)
-                .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 8.dp)
-                .consumeWindowInsets(WindowInsets.statusBars),
+                .windowInsetsPadding(WindowInsets.multiplatformSafeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+                .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -196,13 +202,21 @@ private fun NameAvatar(
 }
 
 @Composable
-private fun AvatarOnly(avatarUrl: String?, onClick: () -> Unit) {
+private fun AvatarOnly(
+    avatarUrl: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(start = 8.dp)
             .size(40.dp)
             .clip(CircleShape)
             .background(LocalContentColor.current.copy(0.12f))
+            // testTag + contentDescription on the clickable node so UI Automator can find it
+            // even when AsyncImage has no bitmap (guest blank avatar).
+            .semantics { contentDescription = "User Avatar" }
+            .testTag(TestTags.PROFILE_AVATAR)
             .clickable(onClick = onClick)
     ) {
         AsyncImage(
@@ -211,7 +225,7 @@ private fun AvatarOnly(avatarUrl: String?, onClick: () -> Unit) {
                 .data(avatarUrl)
                 .crossfade(true)
                 .build(),
-            contentDescription = "User Avatar",
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )

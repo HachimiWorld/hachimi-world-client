@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,16 +28,19 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewHistoryViewModel
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listTailPadding
 import world.hachimi.app.util.formatTime
 
 @Composable
@@ -55,11 +56,17 @@ fun ReviewHistoryScreen(
         onDispose { vm.dispose() }
     }
 
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) { status ->
-        when (status) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Content(vm = vm, global = global, navigator = navigator)
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.review_history_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
+        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) { status ->
+            when (status) {
+                InitializeStatus.INIT -> LoadingPage()
+                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.LOADED -> Content(vm = vm, global = global, navigator = navigator)
+            }
         }
     }
 }
@@ -68,21 +75,15 @@ fun ReviewHistoryScreen(
 private fun Content(
     vm: ReviewHistoryViewModel,
     global: GlobalStore,
-    navigator: world.hachimi.app.nav.Navigator,
+    navigator: Navigator,
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
-            .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues())
+            .multiplatformStatusBarsPadding()
+            .listTailPadding()
             .padding(vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            modifier = Modifier.padding(horizontal = AdaptiveScreenMargin).fillMaxWidthIn(),
-            text = stringResource(Res.string.review_history_title),
-            style = MaterialTheme.typography.titleLarge
-        )
-
         Box(Modifier.weight(1f)) {
             if (vm.items.isEmpty() && !vm.loading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

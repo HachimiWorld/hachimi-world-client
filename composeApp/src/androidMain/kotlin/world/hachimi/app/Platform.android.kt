@@ -29,7 +29,8 @@ class AndroidPlatform : Platform {
     }
 }
 
-private lateinit var applicationContext: Context
+internal lateinit var applicationContext: Context
+    private set
 
 fun initializeGlobalContext(context: Context) {
     applicationContext = context

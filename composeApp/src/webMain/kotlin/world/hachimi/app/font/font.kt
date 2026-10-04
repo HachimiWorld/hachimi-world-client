@@ -33,14 +33,12 @@ import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.dp
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.head
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.HttpHeaders
 import io.ktor.utils.io.core.remaining
 import io.ktor.utils.io.exhausted
 import io.ktor.utils.io.readRemaining
-import kotlinx.browser.window
+import web.prompts.alert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
@@ -54,7 +52,6 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.AppTheme
-import world.hachimi.app.util.formatBytes
 import kotlin.js.ExperimentalWasmJsInterop
 
 @Composable
@@ -107,7 +104,7 @@ private fun MinFontLoadingPage(state: FontState) {
             ) {
                 if (state.error == null) {
                     val bytesTotal = state.bytesTotal
-                    if (bytesTotal != null) {
+                    if (bytesTotal != null && bytesTotal > 0) {
                         val animatedProgress =
                             animateFloatAsState(targetValue = bytesTotal.let {
                                 (state.bytesRead.toFloat() / it.toFloat()).coerceIn(0f, 1f)
@@ -117,7 +114,7 @@ private fun MinFontLoadingPage(state: FontState) {
                             color = LocalContentColor.current,
                             trackColor = LocalContentColor.current.copy(0.12f)
                         )
-                        Text("${formatBytes(state.bytesRead)} / ${formatBytes(bytesTotal)}")
+                        Text("${(state.bytesRead * 100 / bytesTotal).coerceIn(0, 100)}%")
                     } else {
                         CircularProgressIndicator(
                             color = LocalContentColor.current,
@@ -169,7 +166,7 @@ class FontState(
     private val fullFontUrl = BuildKonfig.ASSETS_BASE_URL + "/fonts/MiSansVF.ttf"
     private val fullFontSize = 20_093_424L // MiSansVF.ttf file size
     private val minFontUrl = BuildKonfig.ASSETS_BASE_URL + "/fonts/MiSansVF-Min.ttf"
-    private val minFontSize = 20_093_424L // Not sure
+    private val minFontSize = 1_974_332L // MiSansVF-Min.ttf file size
 
     var error by mutableStateOf<FontLoadError?>(null)
     var fontsLoaded by mutableStateOf(false)
@@ -226,7 +223,7 @@ class FontState(
         } catch (e: Throwable) {
             error = FontLoadError.NotSupported
             Logger.e(TAG, "Failed to load min font from web", e)
-            window.alert("加载字体失败")
+            alert("加载字体失败")
             return@withContext
         } finally {
             loadingMinFont = false
@@ -265,7 +262,7 @@ class FontState(
 
         if (result.state != "granted") {
             error.value = FontLoadError.PermissionDenied
-            window.alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
+            alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
             return@withContext
         }*/
 
@@ -279,16 +276,16 @@ class FontState(
             when (exception?.name) {
                 "NotAllowedError", "SecurityError" -> {
                     error.value = FontLoadError.PermissionDenied
-                    window.alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
+                    alert("请授予字体访问权限，前往 [浏览器设置 - 隐私与安全 - 网站设置] 查看权限设定")
                 }
                 else -> {
                     error.value = FontLoadError.NotSupported
-                    window.alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
+                    alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
                 }
             }
         } catch (_: Throwable) {
             error.value = FontLoadError.NotSupported
-            window.alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
+            alert("加载字体失败，当前仅支持 PC 端 Chrome / Edge 浏览器最新版本，不支持 Firefox, Safari 浏览器")
         }*/
     }
 }
@@ -296,15 +293,6 @@ class FontState(
 enum class FontLoadError {
     NotSupported, PermissionDenied
 }
-
-expect suspend fun loadFontFromCache(
-    url: String
-): ByteArray?
-
-expect suspend fun saveFontCache(
-    url: String,
-    data: ByteArray
-)
 
 suspend fun loadFontFromWeb(
     url: String,
@@ -318,26 +306,34 @@ suspend fun loadFontFromWeb(
             socketTimeoutMillis = 60_000
         }
     }
-    val contentLength = client.head(url)
-        .headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: -1
-    Logger.d("Font", "Content length: $contentLength bytes")
+    // Browser streams contain decoded bytes. CDN compression can omit Content-Length,
+    // and Ktor's browser engine removes it from GET responses, so use the asset size.
+    val totalBytes = size.takeIf { it > 0 }
+    Logger.d("Font", "Expected decoded size: $totalBytes bytes ($url)")
+    onProgress(0, totalBytes)
 
-    val buffer = client.prepareGet(url).execute {
-        val buffer = Buffer()
-        val channel = it.bodyAsChannel()
-        var totalBytesRead = 0L
+    try {
+        val buffer = client.prepareGet(url).execute {
+            val buffer = Buffer()
+            val channel = it.bodyAsChannel()
+            var totalBytesRead = 0L
 
-        while (!channel.exhausted()) {
-            val chunk = channel.readRemaining(1024 * 8)
-            totalBytesRead += chunk.remaining
-            chunk.transferTo(buffer)
-            onProgress(totalBytesRead, contentLength)
+            while (!channel.exhausted()) {
+                val chunk = channel.readRemaining(1024 * 8)
+                totalBytesRead += chunk.remaining
+                chunk.transferTo(buffer)
+                onProgress(totalBytesRead, totalBytes)
+            }
+            Logger.d("Font", "Loaded decoded bytes: $totalBytesRead / $totalBytes ($url)")
+            if (totalBytes != null && totalBytesRead != totalBytes) {
+                Logger.w("Font", "Asset size changed; update the expected font size ($url)")
+            }
+            buffer
         }
-        buffer
+        return buffer.readByteArray()
+    } finally {
+        client.close()
     }
-
-    val bytes = buffer.readByteArray()
-    return bytes
 }
 
 fun resolveToFontFamily(

@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,7 +37,6 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishedTabViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
@@ -51,6 +48,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.TopWithFooter
+import world.hachimi.app.ui.util.listTailPadding
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
@@ -112,7 +110,7 @@ fun PublishedTabContent(
                     item {
                         Pagination(
                             modifier = Modifier.fillMaxWidth().padding(AdaptiveScreenMargin)
-                                .navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()),
+                                .listTailPadding(),
                             total = vm.total.toInt(),
                             currentPage = vm.currentPage,
                             pageSize = vm.pageSize,

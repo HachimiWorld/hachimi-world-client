@@ -4,15 +4,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -38,15 +34,18 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.WeeklyHotViewModel
 import world.hachimi.app.model.fromPublicDetail
-import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.ListTailSpacer
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 
@@ -55,15 +54,23 @@ fun WeeklyHotScreen(
     vm: WeeklyHotViewModel = koinViewModel(),
     global: GlobalStore = koinInject(),
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.unmount() }
     }
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-        when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Content(vm, global)
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.home_weekly_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
+        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+            when (it) {
+                InitializeStatus.INIT -> LoadingPage()
+                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.LOADED -> Content(vm, global)
+            }
         }
     }
 }
@@ -82,18 +89,14 @@ private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 FlowRow(
-                    modifier = Modifier,
+                    modifier = Modifier.multiplatformStatusBarsPadding(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
+                    itemVerticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = stringResource(Res.string.home_weekly_title), style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(
-                            text = stringResource(Res.string.home_weekly_subtitle),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
+                    Text(
+                        text = stringResource(Res.string.home_weekly_subtitle),
+                        style = MaterialTheme.typography.titleSmall
+                    )
 
                     Spacer(Modifier.weight(1f))
 
@@ -126,7 +129,7 @@ private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+                ListTailSpacer()
             }
         }
     }

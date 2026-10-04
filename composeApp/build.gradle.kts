@@ -27,6 +27,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_21)
         }
         androidResources.enable = true // This is used to enable the composeMultiplatform resources in android
+        withHostTest {  }
     }
 
     listOf(
@@ -129,11 +130,17 @@ kotlin {
             implementation(libs.ktor.client.cio)
             implementation(libs.androidx.datastore.preferences)
         }
-        val nonAndroidMain by creating {
+        val nonAndroidMain = create("nonAndroidMain") {
             dependsOn(commonMain.get())
         }
+        // Shared by Android and Desktop, for code built on java.io / java.security
+        val jvmAndAndroidMain = create("jvmAndAndroidMain") {
+            dependsOn(commonMain.get())
+        }
+        androidMain.get().dependsOn(jvmAndAndroidMain)
         jvmMain {
             dependsOn(nonAndroidMain)
+            dependsOn(jvmAndAndroidMain)
             dependencies {
                 implementation(compose.desktop.currentOs) {
                     exclude("org.jetbrains.compose.material")
@@ -146,8 +153,6 @@ kotlin {
                 implementation(libs.androidx.datastore.preferences)
 //            implementation(libs.room.runtime)
 //            implementation(libs.androidx.sqlite.bundled)
-                implementation(libs.mp3spi)
-                implementation(libs.jflac)
 
                 implementation(libs.jna)
                 implementation(libs.jna.platform)
@@ -157,7 +162,7 @@ kotlin {
             dependsOn(nonAndroidMain)
             dependencies {
                 implementation(libs.ktor.client.cio)
-                implementation(libs.kotlinx.browser)
+                implementation(libs.kotlinWrappers.browser)
                 implementation(libs.navigation3.browser)
                 implementation(npm("howler", "2.2.4"))
             }
@@ -211,6 +216,11 @@ val gitVersionName = providers.exec {
 
 val gitVersionNameShort = gitVersionName.map { it.substringBefore("-") }
 
+// Unix ms of HEAD. Must be stable: System.currentTimeMillis() rewrites BuildKonfig.kt
+// on every Gradle run and Compose Hot Reload --auto watches that file → infinite reload.
+val gitCommitTimeMs = providers.exec {
+    commandLine("git", "log", "-1", "--format=%ct")
+}.standardOutput.asText.map { it.trim().toLong() * 1000 }
 
 buildkonfig {
     packageName = "world.hachimi.app"
@@ -219,7 +229,7 @@ buildkonfig {
     val props = Properties().apply { load(rootProject.file(SdkConstants.FN_LOCAL_PROPERTIES).reader()) }
 
     defaultConfigs {
-        buildConfigField(Type.LONG, "BUILD_TIME", System.currentTimeMillis().toString())
+        buildConfigField(Type.LONG, "BUILD_TIME", gitCommitTimeMs.get().toString())
         buildConfigField(Type.INT, "VERSION_CODE", gitVersionCode.get().toString())
         buildConfigField(Type.STRING, "VERSION_NAME", gitVersionName.get())
 

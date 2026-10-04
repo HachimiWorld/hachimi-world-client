@@ -11,13 +11,30 @@
     <string name="global_already_latest_version">已是最新版本</string>
 
     <!-- Update / Upgrade Dialog -->
-    <string name="update_found_title">发现新版本</string>
-    <string name="update_current_version">当前版本：%1$s</string>
-    <string name="update_new_version">新版本：%1$s</string>
-    <string name="update_changelog_title">更新日志</string>
-    <string name="update_confirm">立即升级</string>
-    <string name="update_ignore">忽略</string>
-    <string name="update_icon_cd">升级</string>
+    <string name="update_current_version">当前版本 %1$s</string>
+    <string name="update_download">下载</string>
+    <string name="update_install">立即安装</string>
+    <string name="update_install_restart">重启并安装</string>
+    <string name="update_installs_on_exit">退出时自动安装</string>
+    <string name="update_later">稍后</string>
+    <string name="update_metered_hint">当前使用的是计费网络。</string>
+    <string name="update_download_failed">更新下载失败</string>
+    <string name="update_open_website">前往官网下载</string>
+    <string name="update_retry">重试</string>
+    <string name="update_install_failed">无法打开安装包，已改为在浏览器中下载</string>
+
+    <!-- Update notice (side rail card / phone banner) -->
+    <string name="update_notice_available">新版本 %1$s</string>
+    <string name="update_notice_downloading">正在下载 %1$s</string>
+    <string name="update_notice_ready">%1$s 已就绪</string>
+    <string name="update_notice_failed">%1$s 下载失败</string>
+    <string name="update_notice_details">查看更新内容</string>
+    <string name="update_notice_failed_hint">可前往官网下载</string>
+    <string name="update_notice_download">下载</string>
+    <string name="update_notice_open">前往下载</string>
+    <string name="update_notice_install">安装</string>
+    <string name="update_notice_retry">重试</string>
+    <string name="update_notice_dismiss_cd">隐藏</string>
 
     <!-- Changelog History Dialog -->
     <string name="changelog_history_title">更新历史</string>

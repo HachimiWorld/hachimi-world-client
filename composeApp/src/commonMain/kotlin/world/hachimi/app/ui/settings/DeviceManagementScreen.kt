@@ -39,6 +39,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.AuthModule
 import world.hachimi.app.model.DeviceManagementViewModel
+import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Card
@@ -56,20 +58,18 @@ import world.hachimi.app.util.formatDistance
 fun DeviceManagementScreen(
     vm: DeviceManagementViewModel = koinViewModel()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(Unit) {
         vm.mounted()
         onDispose { }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        // Title
-        Text(
-            modifier = Modifier.padding(AdaptiveScreenMargin),
-            text = stringResource(Res.string.settings_device_management),
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        // Content
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.settings_device_management), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
         InitStatusScaffold(
             initializeStatus = vm.initializeStatus,
             isLoading = vm.loading,

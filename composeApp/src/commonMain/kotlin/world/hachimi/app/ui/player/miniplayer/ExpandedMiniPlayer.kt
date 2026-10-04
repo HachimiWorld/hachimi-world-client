@@ -1,4 +1,4 @@
-package world.hachimi.app.ui.player.footer
+package world.hachimi.app.ui.player.miniplayer
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
@@ -87,20 +87,20 @@ import world.hachimi.app.ui.design.components.HachimiSlider
 import world.hachimi.app.ui.design.components.SliderChangeApplyMode
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
-import world.hachimi.app.ui.player.footer.components.Author
-import world.hachimi.app.ui.player.footer.components.Container
-import world.hachimi.app.ui.player.footer.components.PlayPauseButton
-import world.hachimi.app.ui.player.footer.components.PlayPauseStatus
-import world.hachimi.app.ui.player.footer.components.Title
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueueHeader
+import world.hachimi.app.ui.player.miniplayer.components.Author
+import world.hachimi.app.ui.player.miniplayer.components.Container
+import world.hachimi.app.ui.player.miniplayer.components.PlayPauseButton
+import world.hachimi.app.ui.player.miniplayer.components.PlayPauseStatus
+import world.hachimi.app.ui.player.miniplayer.components.Title
 import kotlin.random.Random
 
 val ExpandedFooterHeight = 104.dp
 
 @Composable
-fun ExpandedFooterPlayer2(
+fun ExpandedMiniPlayer(
     modifier: Modifier = Modifier,
     hazeState: HazeState,
     vm: PlayerViewModel = koinViewModel(),

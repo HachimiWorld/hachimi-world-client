@@ -1,33 +1,71 @@
 package world.hachimi.app.ui.util
 
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.insets.multiplatformNavigationBars
+import world.hachimi.app.ui.insets.multiplatformSafeDrawing
 
 /**
- * Adds padding to the bottom of a list to account for navigation bars and content insets.
+ * Top safe-area spacer for scroll content (edge-to-edge).
+ * Compact AppBar / ScreenScaffold consume system bars → height 0.
  */
 @Composable
-fun Modifier.listTailPadding(): Modifier =
-    this.navigationBarsPadding()
-        .padding(LocalContentInsets.current.asPaddingValues())
+fun ListHeadInsetsSpacer(modifier: Modifier = Modifier) {
+    Spacer(
+        modifier = modifier.windowInsetsTopHeight(WindowInsets.multiplatformSafeDrawing)
+    )
+}
+
+fun LazyListScope.listHeadInsetsSpacerItem() {
+    item(key = "status_bar_insets", contentType = "insets_head") {
+        ListHeadInsetsSpacer()
+    }
+}
+
+fun LazyGridScope.listHeadInsetsSpacerItem() {
+    item(
+        key = "status_bar_insets",
+        contentType = "insets_head",
+        span = { GridItemSpan(maxLineSpan) },
+    ) {
+        ListHeadInsetsSpacer()
+    }
+}
+
+/**
+ * Bottom-only padding for list tails (MiniPlayer / shell [LocalContentInsets]).
+ * Top insets use [listHeadInsetsSpacerItem] so content can draw under chrome.
+ */
+@Composable
+fun Modifier.listTailPadding(): Modifier = this.windowInsetsPadding(
+    WindowInsets.multiplatformNavigationBars
+        .add(LocalContentInsets.current)
+        .only(WindowInsetsSides.Bottom)
+)
 
 /**
  * Adds a spacer to the bottom of a list to account for navigation bars and content insets.
  */
 @Composable
-fun ListTailSpacer() {
+fun ListTailSpacer(modifier: Modifier = Modifier) {
     Spacer(
-        modifier = Modifier
-            .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues())
+        modifier = modifier
+            .windowInsetsBottomHeight(
+                WindowInsets.multiplatformNavigationBars
+                    .add(LocalContentInsets.current)
+            )
     )
 }
 

@@ -1,6 +1,6 @@
 package world.hachimi.app.storage
 
-import kotlinx.browser.localStorage
+import web.storage.localStorage
 import kotlinx.serialization.json.Json
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.SongDetailInfo

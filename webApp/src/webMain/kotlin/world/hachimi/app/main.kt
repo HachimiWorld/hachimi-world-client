@@ -6,8 +6,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import com.github.terrakok.navigation3.browser.HierarchicalBrowserNavigation
-import kotlinx.browser.document
-import kotlinx.browser.window
+import web.dom.document
+import web.events.addEventListener
+import web.history.PopStateEvent
+import web.history.POP_STATE
+import web.window.window
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.koin.core.context.startKoin
@@ -40,12 +43,12 @@ fun main() {
     val webPlayerHelper = koin.koin.get<WebPlayerHelper>()
     val navigator = Navigator(startRoute)
 
-    window.addEventListener("popstate") {
+    window.addEventListener(PopStateEvent.POP_STATE, handler = {
         if (global.playerExpanded) {
             it.preventDefault()
             global.shrinkPlayer()
         }
-    }
+    })
 
     ComposeViewport {
         HierarchicalBrowserNavigation(

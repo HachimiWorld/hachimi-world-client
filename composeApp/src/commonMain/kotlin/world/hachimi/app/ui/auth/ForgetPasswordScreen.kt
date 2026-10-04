@@ -66,7 +66,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
-import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.insets.multiplatformSafeDrawingPadding
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.singleLined
 import world.hachimi.app.util.validatePasswordPattern
@@ -81,9 +81,9 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
 
     HandleNavigationRequests(vm.navigationRequests, navigator)
 
-    Box(Modifier.fillMaxSize().padding(top = currentSafeAreaInsets().top)) {
+    Box(Modifier.fillMaxSize().multiplatformSafeDrawingPadding()) {
         HachimiIconButton(
-            modifier = Modifier.padding(24.dp).align(Alignment.TopStart),
+            modifier = Modifier.padding(16.dp).align(Alignment.TopStart),
             onClick = { navigator.back() },
             touchMode = true
         ) {
@@ -123,7 +123,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
                         value = vm.password,
                         onValueChange = {
                             vm.password = it.singleLined()
-                            showTooShortHelp = validatePasswordPattern(vm.password)
+                            showTooShortHelp = !validatePasswordPattern(vm.password)
                         },
                         leadingIcon = { Icon(Icons.Outlined.Lock, null) },
                         placeholder = { Text(stringResource(Res.string.auth_new_password_placeholder)) },

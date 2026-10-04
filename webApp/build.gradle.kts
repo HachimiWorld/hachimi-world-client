@@ -43,7 +43,7 @@ kotlin {
                 implementation(projects.composeApp)
                 implementation(libs.compose.ui)
 
-                implementation(libs.kotlinx.browser)
+                implementation(libs.kotlinWrappers.browser)
                 implementation(libs.ktor.client.cio)
                 implementation(libs.navigation3.browser)
                 implementation(npm("howler", "2.2.4"))

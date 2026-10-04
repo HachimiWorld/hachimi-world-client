@@ -41,6 +41,7 @@ import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
 import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.YMDHM
 import world.hachimi.app.util.formatTime
@@ -74,10 +75,12 @@ fun RecentPlayScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth)
             ) {
+                listHeadInsetsSpacerItem()
                 item {
                     Text(
                         modifier = Modifier.padding(bottom = 12.dp),
-                        text = stringResource(Res.string.recent_play_title), style = MaterialTheme.typography.titleLarge
+                        text = stringResource(Res.string.recent_play_title),
+                        style = MaterialTheme.typography.titleLarge,
                     )
                 }
                 items(vm.history, key = { item -> item.songInfo.id }) { item ->

@@ -5,11 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,8 +26,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.settings_auto_download_update
+import hachimiworld.composeapp.generated.resources.settings_auto_download_update_wifi
 import hachimiworld.composeapp.generated.resources.settings_changelog
 import hachimiworld.composeapp.generated.resources.settings_check_update
 import hachimiworld.composeapp.generated.resources.settings_check_update_action
@@ -58,6 +59,9 @@ import hachimiworld.composeapp.generated.resources.settings_official_website
 import hachimiworld.composeapp.generated.resources.settings_open_in_browser_cd
 import hachimiworld.composeapp.generated.resources.settings_player_effects
 import hachimiworld.composeapp.generated.resources.settings_title
+import hachimiworld.composeapp.generated.resources.settings_update_downloading
+import hachimiworld.composeapp.generated.resources.settings_update_install
+import hachimiworld.composeapp.generated.resources.settings_update_retry
 import hachimiworld.composeapp.generated.resources.settings_version_code
 import hachimiworld.composeapp.generated.resources.settings_version_name
 import org.jetbrains.compose.resources.stringResource
@@ -66,9 +70,10 @@ import world.hachimi.app.BuildKonfig
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
+import world.hachimi.app.update.UpdateManager
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.Select
 import world.hachimi.app.ui.design.components.Switcher
@@ -76,20 +81,30 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listTailPadding
+import world.hachimi.app.util.formatBytes
 
 @Composable
 fun SettingsScreen(
     globalStore: GlobalStore = koinInject<GlobalStore>()
 ) {
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AdaptiveScreenMargin)
-            .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues())
-            .fillMaxWidthIn(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    val navigator = LocalNavigator.current
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.settings_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
     ) {
-        Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.titleLarge)
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(AdaptiveScreenMargin)
+                .listTailPadding()
+                .fillMaxWidthIn()
+                .testTag(world.hachimi.app.ui.TestTags.SETTINGS_SCREEN),
 
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         Section(title = { Text("显示") }) {
             LanguageSetting(globalStore.settings)
             DarkModeSetting(globalStore)
@@ -113,6 +128,7 @@ fun SettingsScreen(
 
         Section(title = { Text("关于") }) {
             Info(globalStore)
+        }
         }
     }
 }
@@ -229,6 +245,75 @@ private fun KidsModeSetting(globalStore: GlobalStore) {
 }
 
 @Composable
+private fun UpdateItems(updates: UpdateManager) {
+    when (val state = updates.downloadState) {
+        is UpdateManager.DownloadState.Downloading -> PropertyItem(
+            label = { Text(stringResource(Res.string.settings_check_update)) },
+            onClick = null
+        ) {
+            val percent = state.progress?.let { "${(it * 100).toInt()}%" } ?: formatBytes(state.downloaded)
+            Text(stringResource(Res.string.settings_update_downloading, percent))
+        }
+
+        is UpdateManager.DownloadState.Ready -> PropertyItem(
+            label = { Text(stringResource(Res.string.settings_check_update)) },
+            onClick = updates::install
+        ) {
+            TextButton(onClick = updates::install) {
+                Text(stringResource(Res.string.settings_update_install, state.version.versionName))
+            }
+        }
+
+        is UpdateManager.DownloadState.Failed -> PropertyItem(
+            label = { Text(stringResource(Res.string.settings_check_update)) },
+            onClick = updates::download
+        ) {
+            TextButton(onClick = updates::download) {
+                Text(stringResource(Res.string.settings_update_retry))
+            }
+        }
+
+        UpdateManager.DownloadState.Idle -> PropertyItem(
+            label = { Text(stringResource(Res.string.settings_check_update)) },
+            onClick = { updates.checkManually() }
+        ) {
+            TextButton(
+                onClick = { updates.checkManually() },
+                enabled = !updates.checking
+            ) {
+                if (updates.checking) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(Res.string.settings_check_update_checking))
+                } else {
+                    Text(stringResource(Res.string.settings_check_update_action))
+                }
+            }
+        }
+    }
+
+    if (updates.supportsInAppUpdate) {
+        fun onClick() {
+            updates.updateAutoDownload(!updates.autoDownload)
+        }
+        PropertyItem(
+            label = {
+                Text(
+                    stringResource(
+                        // Android waits for an unmetered network before downloading on its own
+                        if (getPlatform().name == "Android") Res.string.settings_auto_download_update_wifi
+                        else Res.string.settings_auto_download_update
+                    )
+                )
+            },
+            onClick = { onClick() }
+        ) {
+            Switcher(updates.autoDownload, { onClick() })
+        }
+    }
+}
+
+@Composable
 private fun Info(globalStore: GlobalStore) {
     val navigator = LocalNavigator.current
 
@@ -250,22 +335,7 @@ private fun Info(globalStore: GlobalStore) {
     ) {
         Text(BuildKonfig.VERSION_CODE.toString())
     }
-    PropertyItem(label = { Text(stringResource(Res.string.settings_check_update)) }, onClick = {
-        globalStore.manualCheckUpdate()
-    }) {
-        TextButton(
-            onClick = { globalStore.manualCheckUpdate() },
-            enabled = !globalStore.checkingUpdate
-        ) {
-            if (globalStore.checkingUpdate) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(Res.string.settings_check_update_checking))
-            } else {
-                Text(stringResource(Res.string.settings_check_update_action))
-            }
-        }
-    }
+    UpdateItems(globalStore.updates)
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_changelog)) },
         onClick = { navigator.push(Route.Root.Changelog) }

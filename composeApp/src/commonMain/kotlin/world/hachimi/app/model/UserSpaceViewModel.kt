@@ -54,6 +54,14 @@ class UserSpaceViewModel(
         private set
     private var uid: Long? = null
 
+    /** Profile-page follow/unfollow action loading. */
+    var followActionLoading by mutableStateOf(false)
+        private set
+
+    /** Non-null while unfollow confirmation dialog is shown. */
+    var unfollowDialogUsername by mutableStateOf<String?>(null)
+        private set
+
     fun mounted(uid: Long?) {
         if (this.uid != uid || initializeStatus == InitializeStatus.INIT) {
             initialize(uid)
@@ -70,6 +78,8 @@ class UserSpaceViewModel(
         songs.clear()
         privateConnections.clear()
         publicPlaylists.clear()
+        unfollowDialogUsername = null
+        followActionLoading = false
 
         // Initialize
         if (uid == null) {
@@ -102,11 +112,58 @@ class UserSpaceViewModel(
         }
     }
 
-    /**
-     * Update follow state on the currently loaded profile after a follow/unfollow action
-     * succeeds. Called from the screen in response to FollowViewModel.lastActionResult.
-     */
-    fun updateFollowState(isFollowing: Boolean, followerCount: Long) {
+    fun follow() = viewModelScope.launch {
+        val targetUid = profile?.uid ?: return@launch
+        if (myself || followActionLoading) return@launch
+        followActionLoading = true
+        try {
+            val resp = api.userModule.follow(UserModule.FollowReq(targetUid = targetUid))
+            if (resp.ok) {
+                val data = resp.ok()
+                applyFollowState(isFollowing = true, followerCount = data.followerCount)
+            } else {
+                global.alert(resp.err().msg)
+            }
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to follow user $targetUid", e)
+            global.alert(e.message)
+        } finally {
+            followActionLoading = false
+        }
+    }
+
+    fun showUnfollowDialog() {
+        val p = profile ?: return
+        if (myself) return
+        unfollowDialogUsername = p.username
+    }
+
+    fun dismissUnfollowDialog() {
+        unfollowDialogUsername = null
+    }
+
+    fun confirmUnfollow() = viewModelScope.launch {
+        val targetUid = profile?.uid ?: return@launch
+        if (unfollowDialogUsername == null || myself || followActionLoading) return@launch
+        followActionLoading = true
+        try {
+            val resp = api.userModule.unfollow(UserModule.FollowReq(targetUid = targetUid))
+            if (resp.ok) {
+                val data = resp.ok()
+                applyFollowState(isFollowing = false, followerCount = data.followerCount)
+                dismissUnfollowDialog()
+            } else {
+                global.alert(resp.err().msg)
+            }
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to unfollow user $targetUid", e)
+            global.alert(e.message)
+        } finally {
+            followActionLoading = false
+        }
+    }
+
+    private fun applyFollowState(isFollowing: Boolean, followerCount: Long) {
         val p = profile ?: return
         profile = p.copy(
             isFollowing = if (isFollowing) true else null,

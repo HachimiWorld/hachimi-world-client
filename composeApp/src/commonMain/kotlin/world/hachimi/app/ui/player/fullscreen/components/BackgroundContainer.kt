@@ -31,7 +31,7 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.isDiffusionBackgroundSupported
 import world.hachimi.app.ui.design.hachimiDarkScheme
 import world.hachimi.app.ui.design.hachimiLightScheme
-import world.hachimi.app.ui.player.footer.components.FooterContainerConerSize
+import world.hachimi.app.ui.player.miniplayer.components.FooterContainerConerSize
 import world.hachimi.app.ui.theme.LocalDarkMode
 
 @Composable

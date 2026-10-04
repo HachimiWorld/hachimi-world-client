@@ -26,6 +26,7 @@ import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.creation.publish.PublishScreen
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
 
@@ -95,12 +96,16 @@ private fun Content(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().fillMaxWidthIn().padding(AdaptiveScreenMargin)
+        modifier = Modifier
+            .fillMaxSize()
+            .fillMaxWidthIn()
+            .multiplatformStatusBarsPadding()
+            .padding(AdaptiveScreenMargin)
     ) {
         Text(
             text = "贡献者中心",
             modifier = Modifier.padding(bottom = 16.dp),
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
         )
 
         Button(

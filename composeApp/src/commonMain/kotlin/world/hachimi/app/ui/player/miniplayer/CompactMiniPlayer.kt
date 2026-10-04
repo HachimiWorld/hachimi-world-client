@@ -1,10 +1,17 @@
-package world.hachimi.app.ui.player.footer
+package world.hachimi.app.ui.player.miniplayer
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateDp
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SkipNext
@@ -17,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -37,17 +45,22 @@ import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.player.footer.components.*
 import world.hachimi.app.ui.player.fullscreen.components.FullScreenCoverCornerRadius
+import world.hachimi.app.ui.player.miniplayer.components.Author
+import world.hachimi.app.ui.player.miniplayer.components.Container
+import world.hachimi.app.ui.player.miniplayer.components.PlayPauseButton
+import world.hachimi.app.ui.player.miniplayer.components.PlayPauseStatus
+import world.hachimi.app.ui.player.miniplayer.components.Title
 import world.hachimi.app.ui.theme.PreviewTheme
 
 
 val CompactFooterHeight = 48.dp + 16.dp
 
 @Composable
-fun CompactFooterPlayer2(
+fun CompactMiniPlayer(
     modifier: Modifier = Modifier,
     hazeState: HazeState,
     vm: PlayerViewModel = koinViewModel(),
@@ -57,7 +70,7 @@ fun CompactFooterPlayer2(
     AnimatedVisibility(visible = !global.playerExpanded) {
         CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedVisibility) {
             Container(
-                modifier = modifier,
+                modifier = modifier.testTag(TestTags.MINI_PLAYER),
                 hazeState = hazeState,
                 onClick = { global.expandPlayer() }
             ) {
@@ -78,7 +91,7 @@ fun CompactFooterPlayer2(
                     }
 
                     PlayPauseButton(
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(48.dp).testTag(TestTags.MINI_PLAYER_PLAY),
                         status = when {
                             uiState.fetchingMetadata -> PlayPauseStatus.Fetching
                             uiState.isPlaying -> PlayPauseStatus.Playing
@@ -90,7 +103,7 @@ fun CompactFooterPlayer2(
                     )
 
                     Button(
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(48.dp).testTag(TestTags.MINI_PLAYER_NEXT),
                         onClick = { global.player.next() },
                         contentPadding = PaddingValues.Zero
                     ) {

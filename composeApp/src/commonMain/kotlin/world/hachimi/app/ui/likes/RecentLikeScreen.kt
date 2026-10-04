@@ -57,6 +57,7 @@ import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
@@ -78,11 +79,11 @@ fun RecentLikeScreen(
 	}
 
 	InitStatusScaffold(
-        initializeStatus = vm.initializeStatus,
-        isLoading = vm.loading,
-        onRetryClick = { vm.retry() },
-        modifier = Modifier.fillMaxSize(),
-    ) {
+		initializeStatus = vm.initializeStatus,
+		isLoading = vm.loading,
+		onRetryClick = { vm.retry() },
+		modifier = Modifier.fillMaxSize(),
+	) {
 		Content(vm)
 	}
 }
@@ -151,7 +152,7 @@ private fun Content(vm: RecentLikeViewModel) {
 @Composable
 private fun Header(vm: RecentLikeViewModel) {
 	Row(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(

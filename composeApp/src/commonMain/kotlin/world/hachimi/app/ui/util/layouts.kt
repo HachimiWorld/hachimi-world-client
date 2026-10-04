@@ -150,12 +150,15 @@ fun calculateGridColumns(maxWidth: Dp): GridCells = when {
  * Use `contentPadding` to limit the max width.
  * This is usually used in LazyColumn, because we need the scrolling detect area to be the full width.
  * If we use `Modifier.widthIn(max = maxWidth)`, the scrolling detect area will be limited to the max width, which is not what we want.
+ *
+ * System top: use [listHeadInsetsSpacerItem] in the list (edge-to-edge).
+ * MiniPlayer bottom: use [listTailSpacerItem].
  */
 @Composable
 fun contentPaddingForMaxWidth(
     padding: PaddingValues,
     currentWidth: Dp,
-    maxWidth: Dp = 1280.dp
+    maxWidth: Dp = 1280.dp,
 ): PaddingValues {
     val layoutDirection = LocalLayoutDirection.current
     return if (currentWidth > maxWidth) {

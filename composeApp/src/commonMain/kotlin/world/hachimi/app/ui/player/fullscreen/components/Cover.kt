@@ -25,7 +25,7 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.LocalAnimatedVisibilityScope
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.SharedTransitionKeys
-import world.hachimi.app.ui.player.footer.FooterPlayerCoverCornerRadius
+import world.hachimi.app.ui.player.miniplayer.FooterPlayerCoverCornerRadius
 
 val FullScreenCoverCornerRadius = 8.dp
 

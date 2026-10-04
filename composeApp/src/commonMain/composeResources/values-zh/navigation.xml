@@ -10,4 +10,11 @@
     <string name="nav_committee_center">委员会中心</string>
     <string name="nav_contributor_center">贡献者中心</string>
     <string name="nav_settings">设置</string>
+
+    <!-- Web: native client promo -->
+    <string name="client_promo_title">下载客户端</string>
+    <string name="client_promo_desc">播放更流畅，支持离线缓存与系统媒体控制</string>
+    <string name="client_promo_banner">使用客户端收听，体验更佳</string>
+    <string name="client_promo_download">下载</string>
+    <string name="client_promo_dismiss_cd">关闭</string>
 </resources>

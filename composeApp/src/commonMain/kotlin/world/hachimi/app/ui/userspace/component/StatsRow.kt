@@ -23,8 +23,6 @@ import hachimiworld.composeapp.generated.resources.follow_followers
 import hachimiworld.composeapp.generated.resources.follow_following
 import hachimiworld.composeapp.generated.resources.follow_following_label
 import org.jetbrains.compose.resources.stringResource
-import world.hachimi.app.api.module.UserModule
-import world.hachimi.app.model.FollowViewModel
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -101,30 +99,6 @@ fun StatsRow(
             }
         }
     }
-}
-
-@Composable
-fun StatsRow(
-    profile: UserModule.PublicUserProfile,
-    myself: Boolean,
-    isCompact: Boolean,
-    followVM: FollowViewModel,
-    onFollowersClick: () -> Unit,
-    onFollowingClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    StatsRow(
-        followerCount = profile.followerCount,
-        followingCount = profile.followingCount,
-        myself = myself,
-        isFollowing = profile.isFollowing,
-        isFollowLoading = followVM.actionLoading && followVM.uid == profile.uid,
-        onFollow = { followVM.followUser(profile.uid) },
-        onUnfollow = { followVM.showUnfollowDialog(profile.uid, profile.username) },
-        onFollowersClick = onFollowersClick,
-        onFollowingClick = onFollowingClick,
-        modifier = modifier
-    )
 }
 
 @Composable

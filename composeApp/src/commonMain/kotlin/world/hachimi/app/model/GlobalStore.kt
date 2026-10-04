@@ -8,15 +8,11 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.navigation3.runtime.NavKey
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_auth_token_invalid
-import hachimiworld.composeapp.generated.resources.global_already_latest_version
-import hachimiworld.composeapp.generated.resources.global_check_update_failed
 import hachimiworld.composeapp.generated.resources.global_error_check_min_api_failed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -26,16 +22,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.jsonPrimitive
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.annotation.Singleton
-import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.AuthError
 import world.hachimi.app.api.AuthenticationListener
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.SongModule
-import world.hachimi.app.api.module.VersionModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.api.parseJwtWithoutVerification
-import world.hachimi.app.getPlatform
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.nav.NavigationRequest
 import world.hachimi.app.nav.Route
@@ -43,11 +36,11 @@ import world.hachimi.app.player.PlayerEngine
 import world.hachimi.app.storage.MyDataStore
 import world.hachimi.app.storage.PreferencesKeys
 import world.hachimi.app.storage.SongCache
+import world.hachimi.app.update.UpdateManager
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -111,20 +104,7 @@ class GlobalStore(
             }
         }
         launch { checkMinApiVersion() }
-        launch { checkUpdate(UpdateCheckMode.AUTO) }
-        startPeriodicUpdateCheck()
-    }
-
-    private var periodicCheckJob: Job? = null
-
-    private fun startPeriodicUpdateCheck() {
-        periodicCheckJob?.cancel()
-        periodicCheckJob = scope.launch {
-            while (true) {
-                delay(24.hours)
-                checkUpdate(UpdateCheckMode.SILENT)
-            }
-        }
+        updates.start()
     }
 
     private suspend fun loadLoginStatus() {
@@ -274,74 +254,12 @@ class GlobalStore(
         }
     }
 
-    var checkingUpdate by mutableStateOf(false)
-        private set
-    var showUpdateDialog by mutableStateOf(false)
-        private set
-    var currentVersion by mutableStateOf(BuildKonfig.VERSION_NAME)
-        private set
-    var newVersionInfo by mutableStateOf<VersionModule.LatestVersionResp?>(null)
-        private set
-    var updateVersions by mutableStateOf<List<VersionModule.LatestVersionResp>>(emptyList())
-        private set
-
-    // Track dismissed version to avoid re-showing on periodic check
-    private var lastDismissedVersionNumber: Int = -1
-
-    private enum class UpdateCheckMode { AUTO, MANUAL, SILENT }
-
-    private suspend fun checkUpdate(mode: UpdateCheckMode = UpdateCheckMode.AUTO) {
-        checkingUpdate = true
-        try {
-            val variant = getPlatform().variant
-            val resp = api.versionModule.page(
-                VersionModule.PageVersionReq(
-                    variant = variant,
-                    pageIndex = 0,
-                    pageSize = 50
-                )
-            )
-            if (resp.ok) {
-                val data = resp.ok()
-                val newerVersions = data.data
-                    .filter { it.versionNumber > BuildKonfig.VERSION_CODE }
-                    .sortedByDescending { it.versionNumber }
-                if (newerVersions.isNotEmpty()) {
-                    val latestVersion = newerVersions.first()
-                    updateVersions = newerVersions
-                    newVersionInfo = latestVersion
-                    // Show dialog unless user dismissed the same latest version (except manual check)
-                    if (mode == UpdateCheckMode.MANUAL || latestVersion.versionNumber != lastDismissedVersionNumber) {
-                        showUpdateDialog = true
-                    }
-                } else if (mode == UpdateCheckMode.MANUAL) {
-                    alert(Res.string.global_already_latest_version)
-                }
-            } else {
-                if (mode != UpdateCheckMode.SILENT) alert(resp.err().msg)
-            }
-        } catch (e: Throwable) {
-            Logger.e("global", "Failed to check update", e)
-            if (mode != UpdateCheckMode.SILENT) alert(Res.string.global_check_update_failed)
-        } finally {
-            checkingUpdate = false
-        }
-    }
-
-    fun manualCheckUpdate() = scope.launch {
-        checkUpdate(UpdateCheckMode.MANUAL)
-    }
-
-    fun dismissUpgrade() {
-        showUpdateDialog = false
-        lastDismissedVersionNumber = newVersionInfo?.versionNumber ?: -1
-    }
-
-    fun confirmUpgrade() {
-        showUpdateDialog = false
-        getPlatform().openUrl(newVersionInfo!!.url)
-    }
-
+    val updates = UpdateManager(
+        api = api,
+        dataStore = dataStore,
+        alert = { alert(it) },
+        alertText = { alert(it) },
+    )
 
     var showKidsDialog by mutableStateOf(false)
         private set

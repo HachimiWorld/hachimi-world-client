@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.autofill.contentType
 import androidx.compose.ui.platform.LocalAutofillManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -73,6 +74,7 @@ import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.AuthViewModel
 import world.hachimi.app.nav.HandleNavigationRequests
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.auth.components.CaptchaDialog
 import world.hachimi.app.ui.auth.components.FormContent
 import world.hachimi.app.ui.auth.components.PasswordToggleButton
@@ -83,7 +85,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
-import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.insets.multiplatformSafeDrawingPadding
 import world.hachimi.app.util.singleLined
 import world.hachimi.app.util.validateEmailPattern
 import world.hachimi.app.util.validatePasswordPattern
@@ -102,9 +104,17 @@ fun AuthScreen(
 
     HandleNavigationRequests(vm.navigationRequests, navigator)
 
-    Box(Modifier.fillMaxSize().padding(top = currentSafeAreaInsets().top)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .testTag(TestTags.AUTH_SCREEN)
+            .multiplatformSafeDrawingPadding()
+    ) {
         HachimiIconButton(
-            modifier = Modifier.padding(24.dp).align(Alignment.TopStart),
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.TopStart)
+                .testTag(TestTags.AUTH_BACK),
             onClick = { navigator.back() },
             touchMode = true
         ) {

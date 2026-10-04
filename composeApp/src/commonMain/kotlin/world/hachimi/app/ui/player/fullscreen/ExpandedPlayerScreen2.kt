@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -75,7 +77,7 @@ import world.hachimi.app.ui.design.components.DropdownMenuItem
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.insets.currentSafeAreaInsets
+import world.hachimi.app.ui.insets.multiplatformSafeDrawing
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
@@ -103,7 +105,9 @@ fun ExpandedPlayerScreen2(
     Box(Modifier.fillMaxSize()) {
         Content(global, navigator, vm)
         ShrinkButton(
-            modifier = Modifier.padding(32.dp).padding(top = currentSafeAreaInsets().top).align(Alignment.TopStart),
+            modifier = Modifier.align(Alignment.TopStart)
+                .padding(32.dp)
+                .padding(top = WindowInsets.multiplatformSafeDrawing.asPaddingValues().calculateTopPadding()),
             onClick = global::shrinkPlayer
         )
     }

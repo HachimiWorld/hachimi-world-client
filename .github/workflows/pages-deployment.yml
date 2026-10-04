@@ -3,23 +3,32 @@ on:
   pull_request:
     types: [ closed ]
     branches: [ main ]
+  push:
+    branches: [ dev ]
 concurrency:
-  group: pages-deployment
+  group: pages-deployment-${{ github.event_name == 'push' && 'dev' || 'main' }}
   cancel-in-progress: true
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Create local properties
+        env:
+          RELEASE_API_BASE_URL: ${{ secrets.CONFIG_API_BASE_URL }}
+          RELEASE_ASSETS_BASE_URL: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
+          DEV_API_BASE_URL: ${{ secrets.CONFIG_DEV_API_BASE_URL || secrets.CONFIG_API_BASE_URL }}
+          DEV_ASSETS_BASE_URL: ${{ secrets.CONFIG_DEV_ASSETS_BASE_URL || secrets.CONFIG_ASSETS_BASE_URL }}
         run: |
-          echo "app.release.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" > local.properties
-          echo "app.dev.apiBaseUrl=${{ secrets.CONFIG_API_BASE_URL }}" >> local.properties
-          echo "app.release.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
-          echo "app.dev.assetsBaseUrl=${{ secrets.CONFIG_ASSETS_BASE_URL }}" >> local.properties
+          {
+            printf 'app.release.apiBaseUrl=%s\n' "$RELEASE_API_BASE_URL"
+            printf 'app.dev.apiBaseUrl=%s\n' "$DEV_API_BASE_URL"
+            printf 'app.release.assetsBaseUrl=%s\n' "$RELEASE_ASSETS_BASE_URL"
+            printf 'app.dev.assetsBaseUrl=%s\n' "$DEV_ASSETS_BASE_URL"
+          } > local.properties
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -28,7 +37,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
-        run: ./gradlew webApp:composeCompatibilityBrowserDistribution -Pbuildkonfig.flavor=release
+        env:
+          BUILD_FLAVOR: ${{ github.event_name == 'push' && 'dev' || 'release' }}
+        run: ./gradlew webApp:composeCompatibilityBrowserDistribution -Pbuildkonfig.flavor="$BUILD_FLAVOR"
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -50,5 +61,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy webApp/build/dist/composeWebCompatibility/productionExecutable --project-name=hachimi-world-client
+          command: pages deploy webApp/build/dist/composeWebCompatibility/productionExecutable --project-name=hachimi-world-client --branch=${{ github.event_name == 'push' && 'dev' || 'main' }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

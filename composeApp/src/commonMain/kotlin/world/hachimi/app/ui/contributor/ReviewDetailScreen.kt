@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -101,11 +99,12 @@ import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewDetailViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -119,9 +118,11 @@ import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
+import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listTailPadding
 import world.hachimi.app.util.formatSongDuration
 import world.hachimi.app.util.formatTime
 import kotlin.time.Duration.Companion.seconds
@@ -132,16 +133,24 @@ fun ReviewDetailScreen(
     source: ReviewScreenSource,
     vm: ReviewDetailViewModel = koinViewModel()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm, reviewId) {
         vm.mounted(reviewId)
         onDispose { vm.dispose() }
     }
 
-    AnimatedContent(vm.initializeStatus) {
-        when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.refresh() })
-            InitializeStatus.LOADED -> Content(vm, source = source)
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.review_detail_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
+        AnimatedContent(vm.initializeStatus) {
+            when (it) {
+                InitializeStatus.INIT -> LoadingPage()
+                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.refresh() })
+                InitializeStatus.LOADED -> Content(vm, source = source)
+            }
         }
     }
 }
@@ -152,13 +161,13 @@ private fun Content(
     source: ReviewScreenSource,
     global: GlobalStore = koinInject()
 ) {
-    val navigator = world.hachimi.app.nav.LocalNavigator.current
+    val navigator = LocalNavigator.current
 
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
             .fillMaxWidthIn()
-            .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues())
+            .multiplatformStatusBarsPadding()
+            .listTailPadding()
             .padding(AdaptiveScreenMargin),
         Arrangement.spacedBy(16.dp)
     ) {
@@ -329,7 +338,7 @@ private fun ReviewMetadataSection(
     data: PublishModule.SongPublishReviewData,
     source: ReviewScreenSource
 ) {
-    val navigator = world.hachimi.app.nav.LocalNavigator.current
+    val navigator = LocalNavigator.current
 
     Text(
         text = stringResource(Res.string.review_detail_title),
@@ -395,7 +404,7 @@ private fun ReviewDiscussionSection(
     vm: ReviewDetailViewModel,
     global: GlobalStore,
 ) {
-    val navigator = world.hachimi.app.nav.LocalNavigator.current
+    val navigator = LocalNavigator.current
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(

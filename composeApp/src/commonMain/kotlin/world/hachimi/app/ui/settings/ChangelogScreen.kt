@@ -26,8 +26,10 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.api.module.VersionModule
 import world.hachimi.app.model.ChangelogViewModel
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.HorizontalDivider
 import world.hachimi.app.ui.component.LoadMoreItem
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.util.InitStatusScaffold
@@ -38,6 +40,8 @@ import world.hachimi.app.ui.util.listTailSpacerItem
 fun ChangelogScreen(
     vm: ChangelogViewModel = koinViewModel()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.dispose() }
@@ -50,36 +54,35 @@ fun ChangelogScreen(
         }
     }
 
-    InitStatusScaffold(
-        initializeStatus = vm.initializeStatus,
-        isLoading = vm.loading,
-        onRetryClick = { vm.retry() },
-        modifier = Modifier.fillMaxSize()
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.changelog_history_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
     ) {
-        if (vm.items.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(Res.string.changelog_history_empty))
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
-                contentPadding = PaddingValues(vertical = 24.dp)
-            ) {
-                item {
-                    Text(
-                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
-                        text = stringResource(Res.string.changelog_history_title),
-                        style = MaterialTheme.typography.titleLarge
-                    )
+        InitStatusScaffold(
+            initializeStatus = vm.initializeStatus,
+            isLoading = vm.loading,
+            onRetryClick = { vm.retry() },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (vm.items.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Text(stringResource(Res.string.changelog_history_empty))
                 }
-                items(vm.items, key = { "${it.variant}-${it.versionNumber}" }) { version ->
-                    ChangelogItem(version)
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize().fillMaxWidthIn(),
+                    contentPadding = PaddingValues(vertical = 24.dp)
+                ) {
+                    items(vm.items, key = { "${it.variant}-${it.versionNumber}" }) { version ->
+                        ChangelogItem(version)
+                    }
+                    item {
+                        LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
+                    }
+                    listTailSpacerItem()
                 }
-                item {
-                    LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
-                }
-                listTailSpacerItem()
             }
         }
     }

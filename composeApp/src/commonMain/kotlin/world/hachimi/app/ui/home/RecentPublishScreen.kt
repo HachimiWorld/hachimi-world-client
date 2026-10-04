@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -44,10 +42,11 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
-import world.hachimi.app.ui.LocalContentInsets
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
@@ -56,9 +55,11 @@ import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.ListTailSpacer
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
+import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
 import world.hachimi.app.util.formatDaysDistance
 import kotlin.time.Clock
 
@@ -67,15 +68,23 @@ fun RecentPublishScreen(
     vm: RecentPublishViewModel = koinViewModel(),
     global: GlobalStore = koinInject()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(vm) {
         vm.mounted()
         onDispose { vm.unmount() }
     }
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
-        when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-            InitializeStatus.LOADED -> Content(vm, global)
+    ScreenScaffold(
+        title = { Text(stringResource(Res.string.home_recent_title), maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back,
+    ) {
+        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+            when (it) {
+                InitializeStatus.INIT -> LoadingPage()
+                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.LOADED -> Content(vm, global)
+            }
         }
     }
 }
@@ -107,11 +116,9 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
+                listHeadInsetsSpacerItem()
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(Res.string.home_recent_title), style = MaterialTheme.typography.titleLarge
-                        )
                         if (constraintMaxWidth >= WindowSize.COMPACT) {
                             HachimiIconButton(
                                 modifier = Modifier.padding(start = 8.dp),
@@ -175,7 +182,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                     LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Spacer(Modifier.navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues()))
+                    ListTailSpacer()
                 }
             }
         }

@@ -137,7 +137,7 @@ private fun PreviewButton() {
 @Composable
 private fun PreviewAccentButton() {
     PreviewTheme(background = true) {
-        Button(onClick = {}) {
+        AccentButton(onClick = {}) {
             Text("Button")
         }
     }

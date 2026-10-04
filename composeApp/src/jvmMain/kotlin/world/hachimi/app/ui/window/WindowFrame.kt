@@ -29,8 +29,7 @@ import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.WinUser
 import io.github.composefluent.gallery.jna.windows.ComposeWindowProcedure
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst
-import world.hachimi.app.ui.insets.LocalSafeAreaInsets
-import world.hachimi.app.ui.insets.SafeAreaInsets
+import world.hachimi.app.ui.insets.LocalMultiplatformCaptionBarHeight
 import world.hachimi.app.ui.theme.LocalWindow
 
 val LocalWindowFrameState: ProvidableCompositionLocal<WindowFrameState?> =
@@ -84,17 +83,9 @@ fun WindowFrame(
     }
     val state = remember(window, initialDarkMode) { WindowFrameStateImpl(initialDarkMode) }
     val windowInsetsPaddings = windowInsets.asPaddingValues()
-    val safeAreaInsets = windowInsetsPaddings.let {
-        SafeAreaInsets(
-            it.calculateTopPadding() + CaptionBarHeight,
-            it.calculateBottomPadding(),
-            it.calculateStartPadding(LocalLayoutDirection.current),
-            it.calculateEndPadding(LocalLayoutDirection.current)
-        )
-    }
     CompositionLocalProvider(
         LocalWindowFrameState provides state,
-        LocalSafeAreaInsets provides safeAreaInsets
+        LocalMultiplatformCaptionBarHeight provides WindowsCaptionBarHeight,
     ) {
         Box(Modifier.fillMaxSize().background(backgroundColor)) {
             content()

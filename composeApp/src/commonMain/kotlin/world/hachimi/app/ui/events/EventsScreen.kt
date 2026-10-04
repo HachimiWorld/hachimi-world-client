@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -55,7 +53,6 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
@@ -66,6 +63,8 @@ import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
+import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Clock
@@ -83,7 +82,7 @@ fun EventsScreen(
         onDispose { vm.dispose() }
     }
 
-    AnimatedContent(vm.initializeStatus) {
+    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
         when (it) {
             InitializeStatus.INIT -> LoadingPage()
             InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
@@ -125,10 +124,7 @@ private fun EventsListCompact(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(24.dp)
         ) {
-            item {
-                Text("活动公告", style = MaterialTheme.typography.titleLarge)
-            }
-
+            listHeadInsetsSpacerItem()
             if (vm.items.isEmpty() && !vm.loading) {
                 item {
                     Box(
@@ -150,13 +146,7 @@ private fun EventsListCompact(
                 }
             }
 
-            item {
-                Spacer(
-                    Modifier
-                        .navigationBarsPadding()
-                        .padding(LocalContentInsets.current.asPaddingValues())
-                )
-            }
+            listTailSpacerItem()
         }
     }
 }
@@ -191,11 +181,8 @@ private fun EventsGridExpanded(
             horizontalArrangement = Arrangement.spacedBy(spacing),
             verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
+            listHeadInsetsSpacerItem()
             val maxLineSpan = if (maxWidth >= 1040.dp) 3 else 2
-
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Text("活动公告", style = MaterialTheme.typography.titleLarge)
-            }
 
             if (vm.items.isEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -236,13 +223,7 @@ private fun EventsGridExpanded(
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     LoadMoreItem(hasMore = !vm.noMoreData, isLoading = vm.loadingMore)
                 }
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Spacer(
-                        Modifier
-                            .navigationBarsPadding()
-                            .padding(LocalContentInsets.current.asPaddingValues())
-                    )
-                }
+                listTailSpacerItem()
             }
         }
     }

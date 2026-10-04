@@ -29,7 +29,17 @@ class VersionModule(
         val changelog: String,
         val variant: String,
         val url: String,
-        val releaseTime : Instant
+        val releaseTime : Instant,
+        /**
+         * Package size in bytes. Null for versions published without it.
+         * @since 261001
+         */
+        val size: Long? = null,
+        /**
+         * Lowercase hex SHA-256 of the package. Null for versions published without it.
+         * @since 261001
+         */
+        val sha256: String? = null,
     )
 
 

@@ -5,11 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -35,11 +33,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.ArtworkDetailViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.creation.publish.components.JmidTextField
 import world.hachimi.app.ui.design.components.AccentButton
@@ -52,6 +51,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
+import world.hachimi.app.ui.util.listTailPadding
 
 private enum class Tab(
     val title: String
@@ -64,37 +64,49 @@ fun ArtworkDetailScreen(
     songId: Long,
     vm: ArtworkDetailViewModel = koinViewModel()
 ) {
+    val navigator = LocalNavigator.current
+
     DisposableEffect(songId, vm) {
         vm.mounted(songId)
         onDispose { vm.dispose() }
     }
 
-    Column(Modifier.fillMaxWidthIn().padding(AdaptiveScreenMargin).navigationBarsPadding().padding(LocalContentInsets.current.asPaddingValues())) {
-        Text("作品详情", style = MaterialTheme.typography.titleLarge)
+    ScreenScaffold(
+        title = { Text("作品详情", maxLines = 1) },
+        showBack = true,
+        onBack = navigator::back
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .fillMaxWidthIn()
+                .padding(AdaptiveScreenMargin)
+                .listTailPadding()
+        ) {
+            val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
+            val scope = rememberCoroutineScope()
 
-        val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
-        val scope = rememberCoroutineScope()
-
-        Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Tab.entries.forEachIndexed { index, tab ->
-            val selected = pagerState.currentPage == index
-                if (selected) AccentButton(onClick = {}) {
-                    Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                } else Button(onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(index)
+            Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Tab.entries.forEachIndexed { index, tab ->
+                    val selected = pagerState.currentPage == index
+                    if (selected) AccentButton(onClick = {}) {
+                        Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    } else Button(onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    }) {
+                        Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                }) {
-                    Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
-        }
 
-        HorizontalPager(pagerState, modifier = Modifier.fillMaxWidth().weight(1f)) {
-            when (it) {
-                0 -> DetailTab()
-                1 -> StatisticsTab()
-                2 -> HistoryTab()
+            HorizontalPager(pagerState, modifier = Modifier.fillMaxWidth().weight(1f)) {
+                when (it) {
+                    0 -> DetailTab()
+                    1 -> StatisticsTab()
+                    2 -> HistoryTab()
+                }
             }
         }
     }
@@ -126,12 +138,11 @@ private fun DetailContent(
     vm: ArtworkDetailViewModel,
     global: GlobalStore = koinInject()
 ) {
-    val navigator = world.hachimi.app.nav.LocalNavigator.current
+    val navigator = LocalNavigator.current
 
     Column(
         Modifier.fillMaxSize()
-            .navigationBarsPadding()
-            .padding(LocalContentInsets.current.asPaddingValues())
+            .listTailPadding()
             .padding(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {

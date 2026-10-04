@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalWasmJsInterop::class)
+@file:JsModule("howler")
 
 package howler
 
@@ -10,7 +11,6 @@ import kotlin.js.JsModule
 import kotlin.js.JsNumber
 import kotlin.js.JsString
 import kotlin.js.definedExternally
-import kotlin.js.js
 
 external interface HowlerGlobal : JsAny {
     val usingWebAudio: JsBoolean
@@ -33,10 +33,8 @@ external interface HowlerGlobal : JsAny {
     fun orientation(x: JsNumber, y: JsNumber, z: JsNumber, xUp: JsNumber, yUp: JsNumber, zUp: JsNumber)
 }
 
-@JsModule("howler")
 external val Howler: JsAny
 
-@JsModule("howler")
 external class Howl(options: HowlOptions) : JsAny {
     /**
      * `String` `Number`
@@ -92,20 +90,6 @@ external class Howl(options: HowlOptions) : JsAny {
     fun pannerAttr(o: JsAny, id: JsNumber? = definedExternally)
 }
 
-@Suppress("UNUSED_PARAMETER")
-fun buildHowl(options: HowlOptions): Howl = js("new Howl(options)")
-
-@Suppress("UNUSED_PARAMETER")
-fun HowlOptions(
-    src: JsArray<JsString>,
-    html5: JsBoolean,
-    format: JsArray<JsString>,
-    onplay: (JsAny?) -> Unit,
-    onpause: (JsAny?) -> Unit,
-    onend: (JsAny?) -> Unit
-): HowlOptions = js("({ src: src, html5: html5, format: format, onplay: onplay, onpause: onpause, onend: onend })")
-
-@JsModule("howler")
 external interface HowlOptions : JsAny {
     /**
      * `Array/String` `[]` *`required`*

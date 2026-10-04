@@ -1,7 +1,6 @@
 package world.hachimi.app.ui.root.component
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,7 +38,7 @@ fun SearchBox(
 ) {
     val focusManager = LocalFocusManager.current
     TextField(
-        modifier = modifier.height(44.dp),
+        modifier = modifier,
         value = searchText,
         onValueChange = { onSearchTextChange(it.singleLined()) },
         shape = RoundedCornerShape(16.dp),

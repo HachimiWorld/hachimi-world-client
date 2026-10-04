@@ -5,4 +5,5 @@
     <string name="home_recommend_subtitle">Not personalized recommendations</string>
     <string name="home_weekly_title">Weekly hot</string>
     <string name="home_weekly_subtitle">Calculated by play counts this week</string>
+    <string name="home_category_title">Genre</string>
 </resources>
