@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-use log::{info, warn};
+use log::info;
 use souvlaki::{MediaMetadata, MediaPlayback, MediaPosition, PlatformConfig, SeekDirection};
 
 #[derive(Debug, thiserror::Error, uniffi::Error)]
@@ -34,6 +34,8 @@ pub enum MediaControlEvent {
 #[uniffi::export(with_foreign)]
 pub trait MediaControlsListener: Send + Sync + Debug {
     fn on_event(&self, event: MediaControlEvent);
+    /// Platform errors while updating the controls, which would otherwise be lost since the updates are asynchronous.
+    fn on_error(&self, message: String);
 }
 
 #[derive(uniffi::Record, Debug)]
@@ -126,9 +128,12 @@ fn run(
             return;
         }
     };
-    let handler = move |event| {
-        if let Some(event) = convert_event(event) {
-            listener.on_event(event);
+    let handler = {
+        let listener = Arc::clone(&listener);
+        move |event| {
+            if let Some(event) = convert_event(event) {
+                listener.on_event(event);
+            }
         }
     };
 
@@ -138,9 +143,10 @@ fn run(
     let controls = {
         let controls = Arc::new(std::sync::Mutex::new(controls));
         let main_controls = Arc::clone(&controls);
+        let main_listener = Arc::clone(&listener);
         dispatch::Queue::main().exec_async(move || {
             if let Err(e) = main_controls.lock().unwrap().attach(handler) {
-                warn!("Failed to attach media controls: {:?}", e);
+                main_listener.on_error(format!("Failed to attach media controls: {:?}", e));
             }
         });
         controls
@@ -176,11 +182,12 @@ fn run(
         #[cfg(target_os = "macos")]
         {
             let controls = Arc::clone(&controls);
-            dispatch::Queue::main().exec_async(move || apply(&mut controls.lock().unwrap(), command));
+            let listener = Arc::clone(&listener);
+            dispatch::Queue::main().exec_async(move || apply(&mut controls.lock().unwrap(), command, listener.as_ref()));
         }
         #[cfg(not(target_os = "macos"))]
         {
-            apply(&mut controls, command);
+            apply(&mut controls, command, listener.as_ref());
         }
     }
 
@@ -190,7 +197,7 @@ fn run(
     info!("Media controls released");
 }
 
-fn apply(controls: &mut souvlaki::MediaControls, command: Command) {
+fn apply(controls: &mut souvlaki::MediaControls, command: Command, listener: &dyn MediaControlsListener) {
     let result = match command {
         Command::SetMetadata(info) => {
             let cover_url = info.as_ref().and_then(|it| it.cover_path.as_deref()).and_then(cover_url);
@@ -217,7 +224,7 @@ fn apply(controls: &mut souvlaki::MediaControls, command: Command) {
         }),
     };
     if let Err(e) = result {
-        warn!("Failed to update media controls: {:?}", e);
+        listener.on_error(format!("Failed to update media controls: {:?}", e));
     }
 }
 

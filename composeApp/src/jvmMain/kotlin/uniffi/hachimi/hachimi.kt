@@ -621,25 +621,31 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 internal interface UniffiCallbackInterfaceMediaControlsListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceMediaControlsListenerMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfacePlayerEventListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-@Structure.FieldOrder("uniffiFree", "uniffiClone", "onEvent")
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "onEvent", "onError")
 internal open class UniffiVTableCallbackInterfaceMediaControlsListener(
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
     @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
     @JvmField internal var `onEvent`: UniffiCallbackInterfaceMediaControlsListenerMethod0? = null,
+    @JvmField internal var `onError`: UniffiCallbackInterfaceMediaControlsListenerMethod1? = null,
 ) : Structure() {
     class UniffiByValue(
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
         `uniffiClone`: UniffiCallbackInterfaceClone? = null,
         `onEvent`: UniffiCallbackInterfaceMediaControlsListenerMethod0? = null,
-    ): UniffiVTableCallbackInterfaceMediaControlsListener(`uniffiFree`,`uniffiClone`,`onEvent`,), Structure.ByValue
+        `onError`: UniffiCallbackInterfaceMediaControlsListenerMethod1? = null,
+    ): UniffiVTableCallbackInterfaceMediaControlsListener(`uniffiFree`,`uniffiClone`,`onEvent`,`onError`,), Structure.ByValue
 
    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceMediaControlsListener) {
         `uniffiFree` = other.`uniffiFree`
         `uniffiClone` = other.`uniffiClone`
         `onEvent` = other.`onEvent`
+        `onError` = other.`onError`
     }
 
 }
@@ -692,6 +698,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_hachimi_checksum_method_mediacontrols_set_playback(
     ): Short
     external fun uniffi_hachimi_checksum_method_mediacontrolslistener_on_event(
+    ): Short
+    external fun uniffi_hachimi_checksum_method_mediacontrolslistener_on_error(
     ): Short
     external fun uniffi_hachimi_checksum_method_player_append_media_item(
     ): Short
@@ -764,6 +772,8 @@ internal object UniffiLib {
     external fun uniffi_hachimi_fn_init_callback_vtable_mediacontrolslistener(`vtable`: UniffiVTableCallbackInterfaceMediaControlsListener,
     ): Unit
     external fun uniffi_hachimi_fn_method_mediacontrolslistener_on_event(`ptr`: Long,`event`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_hachimi_fn_method_mediacontrolslistener_on_error(`ptr`: Long,`message`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_hachimi_fn_clone_player(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
@@ -938,6 +948,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_hachimi_checksum_method_mediacontrolslistener_on_event() != 53271.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_hachimi_checksum_method_mediacontrolslistener_on_error() != 41960.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_hachimi_checksum_method_player_append_media_item() != 50316.toShort()) {
@@ -1770,6 +1783,11 @@ public interface MediaControlsListener {
     
     fun `onEvent`(`event`: MediaControlEvent)
     
+    /**
+     * Platform errors while updating the controls, which would otherwise be lost since the updates are asynchronous.
+     */
+    fun `onError`(`message`: kotlin.String)
+    
     companion object
 }
 
@@ -1882,6 +1900,21 @@ open class MediaControlsListenerImpl: Disposable, AutoCloseable, MediaControlsLi
     
 
     
+    /**
+     * Platform errors while updating the controls, which would otherwise be lost since the updates are asynchronous.
+     */override fun `onError`(`message`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_hachimi_fn_method_mediacontrolslistener_on_error(
+        it,
+        FfiConverterString.lower(`message`),_status)
+}
+    }
+    
+    
+
+    
 
     
 
@@ -1911,6 +1944,18 @@ internal object uniffiCallbackInterfaceMediaControlsListener {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
+    internal object `onError`: UniffiCallbackInterfaceMediaControlsListenerMethod1 {
+        override fun callback(`uniffiHandle`: Long,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeMediaControlsListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onError`(
+                    FfiConverterString.lift(`message`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
 
     internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
@@ -1928,6 +1973,7 @@ internal object uniffiCallbackInterfaceMediaControlsListener {
         uniffiFree,
         uniffiClone,
         `onEvent`,
+        `onError`,
     )
 
     // Registers the foreign callback with the Rust side.

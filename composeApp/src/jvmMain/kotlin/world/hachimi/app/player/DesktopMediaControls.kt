@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 import uniffi.hachimi.MediaControlEvent
 import uniffi.hachimi.MediaControls
 import uniffi.hachimi.MediaControlsListener
@@ -108,12 +110,14 @@ class DesktopMediaControls(
     private suspend fun downloadCover(url: String): String? = withContext(Dispatchers.IO) {
         try {
             val bytes = api.httpClient.get(url).bodyAsBytes()
-            val extension = url.substringBefore('?').substringAfterLast('.', "").takeIf { it.length in 3..4 } ?: "jpg"
-            val file = Files.createTempFile("hachimi-cover-", ".$extension")
+            // Covers are WebP, which Windows and some Linux desktops cannot decode without extra codecs
+            val jpeg = Image.makeFromEncoded(bytes).use { image ->
+                image.encodeToData(EncodedImageFormat.JPEG, 90)?.bytes
+            } ?: error("Failed to encode cover as JPEG")
+            val file = Files.createTempFile("hachimi-cover-", ".jpg")
             file.toFile().deleteOnExit()
-            file.writeBytes(bytes)
-            // The previous file may still be loading on macOS, where the cover is read asynchronously,
-            // so only the one before it is removed
+            file.writeBytes(jpeg)
+            // Keep only the current cover, which the system may read lazily
             coverFile?.deleteIfExists()
             coverFile = file
             file.absolutePathString()
@@ -179,6 +183,10 @@ class DesktopMediaControls(
                 }
                 MediaControlEvent.Raise -> onRaise?.invoke()
             }
+        }
+
+        override fun onError(message: String) {
+            Logger.w(TAG, message)
         }
     }
 }
