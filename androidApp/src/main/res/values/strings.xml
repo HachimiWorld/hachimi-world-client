@@ -2,4 +2,8 @@
     <string name="app_name">@string/app_name_base</string>
     <string name="app_name_base">Hachimi World</string>
     <string name="app_name_dev">Hachimi World Dev</string>
+    <string name="media_like">Like</string>
+    <string name="media_unlike">Unlike</string>
+    <string name="media_shuffle_on">Turn on shuffle</string>
+    <string name="media_shuffle_off">Turn off shuffle</string>
 </resources>

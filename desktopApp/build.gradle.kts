@@ -55,6 +55,7 @@ dependencies {
 
     implementation(libs.jna)
     implementation(libs.jna.platform)
+    implementation(libs.composeNativeTray)
 }
 
 compose.desktop {

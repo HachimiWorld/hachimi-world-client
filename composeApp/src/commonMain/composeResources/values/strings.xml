@@ -19,6 +19,10 @@
 
     <string name="app_menu_show_window">Show window</string>
     <string name="app_menu_quit">Quit</string>
+    <string name="app_menu_play">Play</string>
+    <string name="app_menu_pause">Pause</string>
+    <string name="app_menu_previous">Previous</string>
+    <string name="app_menu_next">Next</string>
 
     <!-- Date/time labels -->
     <string name="date_after_tomorrow">Day after tomorrow</string>

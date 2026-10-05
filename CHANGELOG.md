@@ -1,3 +1,11 @@
+# 1.5.0
+
+## Enhancements 改进
+
+1. Desktop: switched to a native system tray, with playback controls in the tray menu. 桌面端改用原生系统托盘，托盘菜单可控制播放。
+2. Desktop: integrated with system media controls (media keys, Windows media overlay, macOS Now Playing, Linux MPRIS). 桌面端接入系统媒体控制（媒体键、Windows 媒体浮窗、macOS 正在播放、Linux MPRIS）。
+3. Android: media controls now use the system's own previous/next buttons, and support liking and shuffle. Android 端媒体控制改用系统原生的上一曲/下一曲按钮，并支持点赞和随机播放。
+
 # 1.4.1
 
 ## Fixes 修复

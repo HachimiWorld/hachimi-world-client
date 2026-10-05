@@ -993,6 +993,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cacao",
+ "dispatch",
  "jni",
  "log",
  "once_cell",
@@ -1006,6 +1007,7 @@ dependencies = [
  "tracing-subscriber",
  "uniffi",
  "url",
+ "windows 0.44.0",
  "winit",
 ]
 

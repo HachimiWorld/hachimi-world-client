@@ -32,3 +32,8 @@ uniffi = { version = "0.30", features = ["build"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cacao = "0.3.2"
+dispatch = "0.2"
+
+# Same major version as souvlaki uses, for the hidden window SMTC binds to
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.44", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader"] }

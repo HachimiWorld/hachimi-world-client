@@ -66,6 +66,7 @@ class GlobalStore(
     var playerExpanded by mutableStateOf(false)
         private set
     val player = PlayerService(this, dataStore, api, engine, songCache)
+    val like = CurrentSongLike(this, api)
     private val scope = CoroutineScope(Dispatchers.Default)
     val snackbarHostState = SnackbarHostState()
     private val _appNavigationRequests = MutableSharedFlow<NavigationRequest>(
@@ -104,6 +105,7 @@ class GlobalStore(
             }
         }
         launch { checkMinApiVersion() }
+        like.start()
         updates.start()
     }
 

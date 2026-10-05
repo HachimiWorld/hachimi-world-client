@@ -3,6 +3,7 @@ package world.hachimi.app
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,11 +13,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import androidx.compose.ui.window.isTraySupported
-import androidx.compose.ui.window.rememberTrayState
 import androidx.compose.ui.window.rememberWindowState
 import kotlin.system.exitProcess
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -29,9 +27,11 @@ import org.jetbrains.skiko.hostOs
 import org.koin.core.context.startKoin
 import org.koin.plugin.module.dsl.module
 import world.hachimi.app.di.JvmModule
+import world.hachimi.app.i18n.AppEnvironment
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.Settings
+import world.hachimi.app.player.DesktopMediaControls
 import world.hachimi.app.ui.App
 import world.hachimi.app.ui.component.CloseAskDialog
 import world.hachimi.app.ui.design.HachimiPalette
@@ -51,6 +51,8 @@ fun main() {
     }
 
     val global = koin.koin.get<GlobalStore>()
+    val mediaControls = koin.koin.get<DesktopMediaControls>()
+    mediaControls.initialize()
 
     // Return here after the last window closes instead of exiting, so the update installer can start
     application(exitProcessOnExit = false) {
@@ -64,21 +66,30 @@ fun main() {
         }
         val icon = painterResource(ResReexport.icon_vector)
         var showWindow by remember { mutableStateOf(true) }
-        val trayState = rememberTrayState()
         var showCloseAskDialog by remember { mutableStateOf(false) }
         var rememberCloseChoice by remember { mutableStateOf(false) }
 
-        if (isTraySupported) Tray(
-            icon = icon, state = trayState,
-            onAction = { showWindow = true },
-            menu = {
-                Item("Show Window", onClick = { showWindow = true })
-                Separator()
-                Item("Exit", onClick = ::exitApplication)
-            }
-        )
-
         val windowState = rememberWindowState(size = DpSize(1200.dp, 800.dp))
+
+        val restoreWindow = remember {
+            {
+                showWindow = true
+                windowState.isMinimized = false
+            }
+        }
+        DisposableEffect(Unit) {
+            mediaControls.onRaise = restoreWindow
+            onDispose { mediaControls.onRaise = null }
+        }
+
+        if (isNativeTraySupported) AppEnvironment(global.settings.locale) {
+            AppTray(
+                icon = icon,
+                player = global.player,
+                onShowWindow = restoreWindow,
+                onExit = ::exitApplication
+            )
+        }
 
         fun minimizeToTray() {
             showWindow = false
@@ -89,7 +100,7 @@ fun main() {
         }
 
         fun onCloseRequest() {
-            if (isTraySupported) {
+            if (isNativeTraySupported) {
                 when (global.settings.closeBehavior) {
                     Settings.CloseBehavior.EXIT -> exitApplication()
                     Settings.CloseBehavior.MINIMIZE_TO_TRAY -> minimizeToTray()

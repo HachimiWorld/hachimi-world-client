@@ -19,6 +19,8 @@ use url::Url;
 
 uniffi::setup_scaffolding!("hachimi");
 
+mod media_controls;
+
 #[uniffi::export]
 fn init() {
     println!("Rust library initialized");
