@@ -1,0 +1,23 @@
+<resources>
+    <string name="notification_title">Notifications</string>
+    <string name="notification_detail_title">Notification</string>
+    <string name="notification_entry_cd">Notifications</string>
+    <string name="notification_entry_unread_cd">Notifications, %1$s unread</string>
+    <string name="notification_unread_cd">Unread</string>
+    <string name="notification_more_cd">More</string>
+    <string name="notification_mark_all_read">Mark all read</string>
+    <string name="notification_mark_read">Mark as read</string>
+    <string name="notification_empty_title">No notifications</string>
+    <string name="notification_empty_subtitle">System messages about you will appear here</string>
+    <string name="notification_retention_hint">Only notifications from the last 180 days are shown</string>
+    <string name="notification_load_error">Couldn't load notifications. Check your network and try again.</string>
+    <string name="notification_refresh_failed">Refresh failed. Showing earlier notifications.</string>
+    <string name="notification_load_more_failed">Couldn't load more notifications</string>
+    <string name="notification_retry">Retry</string>
+    <string name="notification_unavailable">This notification doesn't exist or has expired</string>
+    <string name="notification_mark_read_failed">Not marked as read yet</string>
+    <string name="notification_select_hint">Select a notification to view it</string>
+    <string name="notification_back_to_inbox">Back to notifications</string>
+    <string name="notification_action_edit_profile">Edit profile</string>
+    <string name="notification_action_view_review">View submission</string>
+</resources>

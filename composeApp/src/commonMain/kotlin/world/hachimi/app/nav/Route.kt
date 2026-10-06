@@ -198,6 +198,16 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/settings/devices")
         data object DeviceManagement : Root
+
+        /** @since 261005 */
+        @Serializable
+        @SerialName("/notifications")
+        data object Notifications : Root
+
+        /** @since 261005 */
+        @Serializable
+        @SerialName("/notifications/detail")
+        data class NotificationDetail(val notificationId: String) : Root
     }
 
     @Serializable
