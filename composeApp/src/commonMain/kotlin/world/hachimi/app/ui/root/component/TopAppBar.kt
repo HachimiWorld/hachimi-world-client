@@ -46,10 +46,14 @@ import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_login
 import hachimiworld.composeapp.generated.resources.auth_register
+import hachimiworld.composeapp.generated.resources.notification_entry_cd
+import hachimiworld.composeapp.generated.resources.notification_entry_unread_cd
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.NotificationStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.TestTags
@@ -61,6 +65,8 @@ import world.hachimi.app.ui.design.components.SubtleButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.multiplatformSafeDrawing
+import world.hachimi.app.ui.notification.components.NotificationBell
+import world.hachimi.app.ui.notification.components.formatBadgeCount
 
 @Composable
 fun CompactTopAppBar(
@@ -91,6 +97,9 @@ fun CompactTopAppBar(
                     navigator.push(Route.Root.Search(searchText))
                 }
             )
+            if (global.isLoggedIn) {
+                NotificationEntryButton(onClick = { navigator.push(Route.Root.Notifications) })
+            }
             if (global.isLoggedIn) {
                 val userInfo = global.userInfo!!
                 AvatarOnly(
@@ -229,5 +238,22 @@ private fun AvatarOnly(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+    }
+}
+
+@Composable
+private fun NotificationEntryButton(onClick: () -> Unit) {
+    val store = koinInject<NotificationStore>()
+    val unread = store.unreadCount
+    val description = if (unread != null && unread > 0) {
+        stringResource(Res.string.notification_entry_unread_cd, formatBadgeCount(unread))
+    } else {
+        stringResource(Res.string.notification_entry_cd)
+    }
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.semantics { contentDescription = description },
+    ) {
+        NotificationBell(unreadCount = unread)
     }
 }

@@ -43,6 +43,8 @@ import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.FollowListType
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.NotificationStore
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.RootShellNavKey
@@ -98,6 +100,8 @@ import world.hachimi.app.ui.root.component.rememberClientPromoState
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.DeviceManagementScreen
+import world.hachimi.app.ui.notification.NotificationDetailScreen
+import world.hachimi.app.ui.notification.NotificationInboxScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
@@ -122,6 +126,11 @@ fun RootScreen() {
     val currentPrimary = navigator.currentPrimary ?: return
     val scope = rememberCoroutineScope()
     val clientPromo = rememberClientPromoState()
+    val notifications = koinInject<NotificationStore>()
+    LifecycleResumeEffect(notifications) {
+        notifications.refreshUnreadCount()
+        onPauseOrDispose {}
+    }
 
     if (LocalWindowSize.current.width < WindowSize.COMPACT) {
         CompactScreen(
@@ -321,6 +330,12 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         Route.Root.Changelog -> NavEntry(key) { ChangelogScreen() }
         Route.Root.DeviceManagement -> NavEntry(key) {
             if (global.isLoggedIn) DeviceManagementScreen() else NeedLoginScreen()
+        }
+        Route.Root.Notifications -> NavEntry(key) {
+            if (global.isLoggedIn) NotificationInboxScreen() else NeedLoginScreen()
+        }
+        is Route.Root.NotificationDetail -> NavEntry(key) {
+            if (global.isLoggedIn) NotificationDetailScreen(key.notificationId) else NeedLoginScreen()
         }
 
         else -> error("Not a secondary destination: $key")

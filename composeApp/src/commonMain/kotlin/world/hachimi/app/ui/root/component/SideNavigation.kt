@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -68,10 +69,12 @@ import hachimiworld.composeapp.generated.resources.nav_my_subscribe
 import hachimiworld.composeapp.generated.resources.nav_recent_like
 import hachimiworld.composeapp.generated.resources.nav_recent_play
 import hachimiworld.composeapp.generated.resources.nav_settings
+import hachimiworld.composeapp.generated.resources.notification_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.NotificationStore
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
@@ -84,6 +87,7 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.SubtleButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.notification.components.UnreadBadge
 import world.hachimi.app.ui.theme.PreviewTheme
 
 /**
@@ -121,6 +125,7 @@ fun ExpandedSideNavigation(
         )
 
         promo()
+        NotificationNavEntry()
         AuthFooter()
     }
 }
@@ -349,6 +354,7 @@ private fun NavItem(
     onSelectedChange: (Boolean) -> Unit,
     density: NavItemDensity,
     modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     // Compact (phone drawer): padding(12.dp) + full icon — previous drawer metrics.
     // Expanded (desktop rail): denser vertical padding + 20dp icon.
@@ -380,7 +386,12 @@ private fun NavItem(
                 tint = LocalContentColor.current.copy(0.72f),
             )
             Spacer(Modifier.width(12.dp))
-            Text(text = label, style = navLabelStyle)
+            if (trailing != null) {
+                Text(text = label, style = navLabelStyle, modifier = Modifier.weight(1f))
+                trailing()
+            } else {
+                Text(text = label, style = navLabelStyle)
+            }
         }
     }
 }
@@ -402,4 +413,26 @@ private fun PreviewCompactSideNavigation() {
     PreviewTheme(background = true) {
         CompactSideNavigation(content = Route.Root.Home.Main)
     }
+}
+
+/** Above the account entry, as notifications belong to the account. */
+@Composable
+private fun NotificationNavEntry() {
+    val global = koinInject<GlobalStore>()
+    if (!global.isLoggedIn) return
+    val navigator = LocalNavigator.current
+    val store = koinInject<NotificationStore>()
+    val unread = store.unreadCount
+    Spacer(Modifier.height(8.dp))
+    NavItem(
+        modifier = Modifier.fillMaxWidth(),
+        icon = Icons.Outlined.Notifications,
+        label = stringResource(Res.string.notification_title),
+        selected = false,
+        onSelectedChange = { navigator.push(Route.Root.Notifications) },
+        density = NavItemDensity.Expanded,
+        trailing = if (unread != null && unread > 0) {
+            { UnreadBadge(unread) }
+        } else null,
+    )
 }
