@@ -69,12 +69,12 @@ import hachimiworld.composeapp.generated.resources.nav_my_subscribe
 import hachimiworld.composeapp.generated.resources.nav_recent_like
 import hachimiworld.composeapp.generated.resources.nav_recent_play
 import hachimiworld.composeapp.generated.resources.nav_settings
-import hachimiworld.composeapp.generated.resources.notification_title
+import hachimiworld.composeapp.generated.resources.message_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.model.NotificationStore
+import world.hachimi.app.model.MessageCenterStore
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
@@ -125,7 +125,7 @@ fun ExpandedSideNavigation(
         )
 
         promo()
-        NotificationNavEntry()
+        MessageNavEntry()
         AuthFooter()
     }
 }
@@ -415,21 +415,21 @@ private fun PreviewCompactSideNavigation() {
     }
 }
 
-/** Above the account entry, as notifications belong to the account. */
+/** Above the account entry, as messages belong to the account. */
 @Composable
-private fun NotificationNavEntry() {
+private fun MessageNavEntry() {
     val global = koinInject<GlobalStore>()
     if (!global.isLoggedIn) return
     val navigator = LocalNavigator.current
-    val store = koinInject<NotificationStore>()
-    val unread = store.unreadCount
+    val store = koinInject<MessageCenterStore>()
+    val unread = store.totalUnread
     Spacer(Modifier.height(8.dp))
     NavItem(
         modifier = Modifier.fillMaxWidth(),
         icon = Icons.Outlined.Notifications,
-        label = stringResource(Res.string.notification_title),
+        label = stringResource(Res.string.message_title),
         selected = false,
-        onSelectedChange = { navigator.push(Route.Root.Notifications) },
+        onSelectedChange = { navigator.push(Route.Root.Messages) },
         density = NavItemDensity.Expanded,
         trailing = if (unread != null && unread > 0) {
             { UnreadBadge(unread) }

@@ -208,6 +208,21 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/notifications/detail")
         data class NotificationDetail(val notificationId: String) : Root
+
+        /** @since 261006 */
+        @Serializable
+        @SerialName("/messages")
+        data object Messages : Root
+
+        /** @since 261006 */
+        @Serializable
+        @SerialName("/messages/likes")
+        data object ReceivedLikes : Root
+
+        /** @since 261006 */
+        @Serializable
+        @SerialName("/messages/followers")
+        data object NewFollowers : Root
     }
 
     @Serializable

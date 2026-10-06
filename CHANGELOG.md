@@ -2,7 +2,7 @@
 
 ## Features 新功能
 
-1. System notifications: a bell in the top bar (a sidebar entry on wide screens) shows the unread count and opens the inbox, where notifications can be read and marked read. 新增系统通知：顶栏铃铛（宽屏为侧栏入口）显示未读数，进入收件箱可查看通知并标为已读。
+1. Message center: a bell in the top bar (a sidebar entry on wide screens) shows the unread count and opens system notifications, received likes and new followers. 新增消息中心：顶栏铃铛（宽屏为侧栏入口）显示未读数，可查看系统通知、收到的赞和新粉丝。
 
 # 1.5.0
 

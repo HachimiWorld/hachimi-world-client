@@ -1,0 +1,15 @@
+<resources>
+    <string name="message_title">Messages</string>
+    <string name="message_entry_cd">Messages</string>
+    <string name="message_entry_unread_cd">Messages, %1$s unread</string>
+    <string name="message_channel_system">Notifications</string>
+    <string name="message_channel_likes">Likes</string>
+    <string name="message_channel_followers">New followers</string>
+    <string name="message_name_separator">, </string>
+    <string name="message_likes_suffix">liked your song</string>
+    <string name="message_likes_suffix_with_count">and %2$s others liked your song</string>
+    <string name="message_likes_empty_title">No likes yet</string>
+    <string name="message_likes_empty_subtitle">Likes on your songs will show up here</string>
+    <string name="message_load_error">Couldn't load. Check your network and try again.</string>
+    <string name="message_load_more_failed">Couldn't load more</string>
+</resources>
