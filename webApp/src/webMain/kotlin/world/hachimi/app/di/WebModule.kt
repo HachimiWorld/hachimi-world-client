@@ -11,6 +11,8 @@ import world.hachimi.app.model.AuthViewModel
 import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.NotificationDetailViewModel
 import world.hachimi.app.model.NotificationStore
+import world.hachimi.app.model.MessageCenterStore
+import world.hachimi.app.model.ReceivedLikesViewModel
 import world.hachimi.app.model.ChangelogViewModel
 import world.hachimi.app.model.ContributorEntryViewModel
 import world.hachimi.app.model.CreatePostViewModel
@@ -85,6 +87,7 @@ val webModule = module {
     single<SongCache> { SongCacheImpl() }
     singleOf(::GlobalStore)
     singleOf(::NotificationStore)
+    singleOf(::MessageCenterStore)
     single { WebPlayerHelper(get<GlobalStore>().player) }
 
     applyViewModels()
@@ -127,6 +130,7 @@ fun org.koin.core.module.Module.applyViewModels() {
         )
     }
     viewModelOf(::DeviceManagementViewModel)
+    viewModelOf(::ReceivedLikesViewModel)
     viewModel { parameters ->
         NotificationDetailViewModel(
             notificationId = parameters[0],

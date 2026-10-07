@@ -1,0 +1,15 @@
+<resources>
+    <string name="message_title">消息</string>
+    <string name="message_entry_cd">消息</string>
+    <string name="message_entry_unread_cd">消息，%1$s 条未读</string>
+    <string name="message_channel_system">系统通知</string>
+    <string name="message_channel_likes">收到的赞</string>
+    <string name="message_channel_followers">新粉丝</string>
+    <string name="message_name_separator">、</string>
+    <string name="message_likes_suffix">赞了你的作品</string>
+    <string name="message_likes_suffix_with_count">等 %1$s 人赞了你的作品</string>
+    <string name="message_likes_empty_title">还没有收到赞</string>
+    <string name="message_likes_empty_subtitle">作品被点赞后会显示在这里</string>
+    <string name="message_load_error">暂时无法加载，请检查网络后重试</string>
+    <string name="message_load_more_failed">更多内容加载失败</string>
+</resources>

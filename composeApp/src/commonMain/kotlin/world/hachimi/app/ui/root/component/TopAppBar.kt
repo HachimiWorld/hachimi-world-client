@@ -46,14 +46,14 @@ import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_login
 import hachimiworld.composeapp.generated.resources.auth_register
-import hachimiworld.composeapp.generated.resources.notification_entry_cd
-import hachimiworld.composeapp.generated.resources.notification_entry_unread_cd
+import hachimiworld.composeapp.generated.resources.message_entry_cd
+import hachimiworld.composeapp.generated.resources.message_entry_unread_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.getPlatform
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.model.NotificationStore
+import world.hachimi.app.model.MessageCenterStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.TestTags
@@ -98,7 +98,7 @@ fun CompactTopAppBar(
                 }
             )
             if (global.isLoggedIn) {
-                NotificationEntryButton(onClick = { navigator.push(Route.Root.Notifications) })
+                MessageEntryButton(onClick = { navigator.push(Route.Root.Messages) })
             }
             if (global.isLoggedIn) {
                 val userInfo = global.userInfo!!
@@ -242,13 +242,13 @@ private fun AvatarOnly(
 }
 
 @Composable
-private fun NotificationEntryButton(onClick: () -> Unit) {
-    val store = koinInject<NotificationStore>()
-    val unread = store.unreadCount
+private fun MessageEntryButton(onClick: () -> Unit) {
+    val store = koinInject<MessageCenterStore>()
+    val unread = store.totalUnread
     val description = if (unread != null && unread > 0) {
-        stringResource(Res.string.notification_entry_unread_cd, formatBadgeCount(unread))
+        stringResource(Res.string.message_entry_unread_cd, formatBadgeCount(unread))
     } else {
-        stringResource(Res.string.notification_entry_cd)
+        stringResource(Res.string.message_entry_cd)
     }
     IconButton(
         onClick = onClick,

@@ -1,19 +1,18 @@
 package world.hachimi.app.ui.notification
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -27,10 +26,8 @@ import hachimiworld.composeapp.generated.resources.notification_refresh_failed
 import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.notification_select_hint
 import hachimiworld.composeapp.generated.resources.notification_title
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.NotificationStore
 import world.hachimi.app.nav.LocalNavigator
@@ -41,7 +38,8 @@ import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
-import world.hachimi.app.ui.notification.components.NotificationDivider
+import world.hachimi.app.ui.message.components.cardItems
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.notification.components.NotificationEmptyState
 import world.hachimi.app.ui.notification.components.NotificationListSkeleton
 import world.hachimi.app.ui.notification.components.NotificationMessageState
@@ -57,62 +55,74 @@ import world.hachimi.app.ui.util.listTailSpacerItem
 @Composable
 fun NotificationInboxScreen(store: NotificationStore = koinInject()) {
     val navigator = LocalNavigator.current
-    val global = koinInject<GlobalStore>()
-    val scope = rememberCoroutineScope()
-    val twoPane = LocalWindowSize.current.width >= WindowSize.EXPANDED
-    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) { store.refresh() }
-
     ScreenScaffold(
         title = { Text(stringResource(Res.string.notification_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
-        actions = {
-            val unread = store.unreadCount ?: 0
-            if (unread > 0 || store.markingAllRead) {
-                TextButton(onClick = { store.markAllRead() }, enabled = !store.markingAllRead) {
-                    Text(stringResource(Res.string.notification_mark_all_read))
-                }
-            }
-        },
+        actions = { MarkAllReadAction(store) },
     ) {
-        val list: @Composable (Modifier) -> Unit = { modifier ->
-            NotificationList(
-                store = store,
-                selectedId = if (twoPane) selectedId else null,
-                onOpen = { id ->
-                    if (twoPane) selectedId = id else navigator.push(Route.Root.NotificationDetail(id))
-                },
-                onMarkRead = { id ->
-                    scope.launch {
-                        store.markRead(id).onFailure { global.alert(it.message) }
-                    }
-                },
-                modifier = modifier,
-            )
-        }
+        NotificationInboxContent(detailPane = LocalWindowSize.current.width >= WindowSize.EXPANDED, store = store)
+    }
+}
 
-        if (twoPane) {
-            Row(Modifier.fillMaxSize()) {
-                list(Modifier.width(360.dp))
-                VerticalDivider()
-                Box(Modifier.weight(1f).fillMaxSize()) {
-                    val id = selectedId
-                    if (id == null) {
-                        NotificationSelectHint(
-                            stringResource(Res.string.notification_select_hint),
-                            Modifier.listTailPadding(),
-                        )
-                    } else {
-                        NotificationDetailContent(notificationId = id, onBackToInbox = { selectedId = null })
-                    }
+/** Shown only while there is something unread. */
+@Composable
+fun MarkAllReadAction(store: NotificationStore = koinInject()) {
+    val unread = store.unreadCount ?: 0
+    if (unread > 0 || store.markingAllRead) {
+        TextButton(onClick = { store.markAllRead() }, enabled = !store.markingAllRead) {
+            Text(stringResource(Res.string.notification_mark_all_read))
+        }
+    }
+}
+
+/**
+ * The inbox without the toolbar, for embedding. With [detailPane], the selected notification shows
+ * beside the list; otherwise opening one pushes its page.
+ */
+@Composable
+fun NotificationInboxContent(
+    detailPane: Boolean,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(start = AdaptiveScreenMargin, top = AdaptiveScreenMargin, end = AdaptiveScreenMargin),
+    store: NotificationStore = koinInject(),
+) {
+    val navigator = LocalNavigator.current
+    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) { store.refresh() }
+
+    val list: @Composable (Modifier) -> Unit = { listModifier ->
+        NotificationList(
+            store = store,
+            selectedId = if (detailPane) selectedId else null,
+            onOpen = { id ->
+                if (detailPane) selectedId = id else navigator.push(Route.Root.NotificationDetail(id))
+            },
+            contentPadding = contentPadding,
+            modifier = listModifier,
+        )
+    }
+
+    if (detailPane) {
+        Row(modifier.fillMaxSize()) {
+            list(Modifier.width(360.dp))
+            VerticalDivider()
+            Box(Modifier.weight(1f).fillMaxSize()) {
+                val id = selectedId
+                if (id == null) {
+                    NotificationSelectHint(
+                        stringResource(Res.string.notification_select_hint),
+                        Modifier.listTailPadding(),
+                    )
+                } else {
+                    NotificationDetailContent(notificationId = id, onBackToInbox = { selectedId = null })
                 }
             }
-        } else {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-                list(Modifier.widthIn(max = 720.dp).fillMaxWidth())
-            }
+        }
+    } else {
+        Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+            list(Modifier.widthIn(max = 720.dp).fillMaxWidth())
         }
     }
 }
@@ -122,7 +132,7 @@ private fun NotificationList(
     store: NotificationStore,
     selectedId: String?,
     onOpen: (String) -> Unit,
-    onMarkRead: (String) -> Unit,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     when (store.initializeStatus) {
@@ -145,19 +155,21 @@ private fun NotificationList(
                     store.loadMore()
                 }
             }
-            LazyColumn(state = listState, modifier = modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
+                modifier = modifier.fillMaxSize(),
+                contentPadding = contentPadding,
+            ) {
                 if (store.refreshFailed) {
                     item(key = "refresh_failed") {
                         RetryLine(stringResource(Res.string.notification_refresh_failed), onRetry = { store.refresh() })
                     }
                 }
-                itemsIndexed(store.items, key = { _, item -> item.notificationId }) { index, item ->
-                    if (index > 0) NotificationDivider()
+                cardItems(items = store.items.toList(), key = { it.notificationId }) { item ->
                     NotificationRow(
                         item = item,
                         selected = item.notificationId == selectedId,
                         onClick = { onOpen(item.notificationId) },
-                        onMarkRead = { onMarkRead(item.notificationId) },
                     )
                 }
                 item(key = "tail") {

@@ -65,9 +65,9 @@ class NotificationStore(
         scope.launch {
             snapshotFlow { global.userInfo?.uid }
                 .distinctUntilChanged()
-                .collect { uid ->
+                .collect {
+                    // The unread count arrives with the message center summary
                     reset()
-                    if (uid != null) refreshUnreadCount()
                 }
         }
     }
@@ -85,6 +85,11 @@ class NotificationStore(
         loadingMore = false
         loadMoreFailed = false
         markingAllRead = false
+    }
+
+    /** Takes the count from the message center summary. */
+    fun updateUnreadCount(count: Long) {
+        unreadCount = count
     }
 
     fun refreshUnreadCount() {

@@ -20,18 +20,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -42,8 +40,6 @@ import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.notification_empty_subtitle
 import hachimiworld.composeapp.generated.resources.notification_empty_title
-import hachimiworld.composeapp.generated.resources.notification_mark_read
-import hachimiworld.composeapp.generated.resources.notification_more_cd
 import hachimiworld.composeapp.generated.resources.notification_retention_hint
 import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.notification_unread_cd
@@ -51,9 +47,7 @@ import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.module.NotificationModule.NotificationItem
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.DropdownMenu
-import world.hachimi.app.ui.design.components.DropdownMenuItem
-import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.message.components.unreadDot
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
@@ -102,7 +96,6 @@ fun NotificationRow(
     item: NotificationItem,
     selected: Boolean,
     onClick: () -> Unit,
-    onMarkRead: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val unread = item.readTime == null
@@ -111,70 +104,40 @@ fun NotificationRow(
         if (selected) HachimiTheme.colorScheme.primaryContainer else Color.Transparent
     )
 
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .background(background)
+            .unreadDot(unread)
             .clickable(onClick = onClick)
             .semantics { if (unread) stateDescription = unreadDescription }
-            .padding(start = 12.dp, end = 4.dp, top = 14.dp, bottom = 14.dp),
-        verticalAlignment = Alignment.Top,
+            .padding(horizontal = 20.dp, vertical = 14.dp),
     ) {
-        Box(Modifier.width(12.dp).height(22.dp), contentAlignment = Alignment.Center) {
-            if (unread) {
-                Box(Modifier.size(6.dp).clip(CircleShape).background(HachimiTheme.colorScheme.primary))
-            }
-        }
-        Column(Modifier.weight(1f).padding(start = 4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = item.title,
-                fontSize = 15.sp,
-                lineHeight = 22.sp,
-                fontWeight = if (unread) FontWeight.SemiBold else FontWeight.Medium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = item.body,
-                modifier = Modifier.padding(top = 2.dp),
-                fontSize = 13.sp,
-                lineHeight = 19.sp,
-                color = HachimiTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = if (unread) FontWeight.SemiBold else FontWeight.Normal,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = formatTime(item.createTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMD),
-                modifier = Modifier.padding(top = 6.dp),
-                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 12.dp),
+                style = MaterialTheme.typography.bodySmall,
                 color = HachimiTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (unread) {
-            var menuExpanded by remember { mutableStateOf(false) }
-            Box {
-                HachimiIconButton(onClick = { menuExpanded = true }, touchMode = true) {
-                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(Res.string.notification_more_cd))
-                }
-                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(Res.string.notification_mark_read)) },
-                        onClick = {
-                            menuExpanded = false
-                            onMarkRead()
-                        },
-                    )
-                }
-            }
-        } else {
-            Spacer(Modifier.width(40.dp))
-        }
+        Text(
+            text = item.body,
+            modifier = Modifier.padding(top = 4.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = HachimiTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
-}
-
-@Composable
-fun NotificationDivider(modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().padding(start = 28.dp).height(1.dp).background(HachimiTheme.colorScheme.outline))
 }
 
 @Composable
@@ -208,6 +171,7 @@ fun NotificationMessageState(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    icon: ImageVector = Icons.Outlined.Notifications,
     action: (@Composable () -> Unit)? = null,
 ) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -223,7 +187,7 @@ fun NotificationMessageState(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    Icons.Outlined.Notifications,
+                    icon,
                     contentDescription = null,
                     tint = HachimiTheme.colorScheme.onSurfaceVariant,
                 )

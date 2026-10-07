@@ -43,7 +43,7 @@ import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.FollowListType
 import world.hachimi.app.model.GlobalStore
-import world.hachimi.app.model.NotificationStore
+import world.hachimi.app.model.MessageCenterStore
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
@@ -102,6 +102,9 @@ import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.DeviceManagementScreen
 import world.hachimi.app.ui.notification.NotificationDetailScreen
 import world.hachimi.app.ui.notification.NotificationInboxScreen
+import world.hachimi.app.ui.message.MessageCenterScreen
+import world.hachimi.app.ui.message.NewFollowersScreen
+import world.hachimi.app.ui.message.ReceivedLikesScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
@@ -126,9 +129,9 @@ fun RootScreen() {
     val currentPrimary = navigator.currentPrimary ?: return
     val scope = rememberCoroutineScope()
     val clientPromo = rememberClientPromoState()
-    val notifications = koinInject<NotificationStore>()
-    LifecycleResumeEffect(notifications) {
-        notifications.refreshUnreadCount()
+    val messageCenter = koinInject<MessageCenterStore>()
+    LifecycleResumeEffect(messageCenter) {
+        messageCenter.refreshSummary()
         onPauseOrDispose {}
     }
 
@@ -336,6 +339,15 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         }
         is Route.Root.NotificationDetail -> NavEntry(key) {
             if (global.isLoggedIn) NotificationDetailScreen(key.notificationId) else NeedLoginScreen()
+        }
+        Route.Root.Messages -> NavEntry(key) {
+            if (global.isLoggedIn) MessageCenterScreen() else NeedLoginScreen()
+        }
+        Route.Root.ReceivedLikes -> NavEntry(key) {
+            if (global.isLoggedIn) ReceivedLikesScreen() else NeedLoginScreen()
+        }
+        Route.Root.NewFollowers -> NavEntry(key) {
+            if (global.isLoggedIn) NewFollowersScreen() else NeedLoginScreen()
         }
 
         else -> error("Not a secondary destination: $key")
