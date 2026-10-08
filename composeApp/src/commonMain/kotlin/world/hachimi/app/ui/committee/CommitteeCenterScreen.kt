@@ -153,7 +153,7 @@ private fun CaseRow(item: CaseItem, onClick: () -> Unit) {
             Text(
                 text = listOfNotNull(
                     targetTypeLabel(item.targetType),
-                    target?.owner?.username?.takeIf { item.targetType != ReportModule.TARGET_USER },
+                    target?.owner?.username?.takeIf { ReportTargetType.of(item.targetType)?.showsOwner == true },
                 ).joinToString(" · "),
                 modifier = Modifier.padding(top = 2.dp),
                 style = MaterialTheme.typography.bodySmall,

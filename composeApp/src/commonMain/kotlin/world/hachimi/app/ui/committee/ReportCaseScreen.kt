@@ -49,8 +49,6 @@ import hachimiworld.composeapp.generated.resources.report_case_title
 import hachimiworld.composeapp.generated.resources.report_ignore_later
 import hachimiworld.composeapp.generated.resources.report_ignore_later_desc
 import hachimiworld.composeapp.generated.resources.report_note_hint
-import hachimiworld.composeapp.generated.resources.report_open_song
-import hachimiworld.composeapp.generated.resources.report_open_target
 import hachimiworld.composeapp.generated.resources.report_resolve_submit
 import hachimiworld.composeapp.generated.resources.report_resolve_title
 import hachimiworld.composeapp.generated.resources.report_target_deleted
@@ -62,7 +60,6 @@ import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.ReportCaseViewModel
 import world.hachimi.app.nav.LocalNavigator
-import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
@@ -150,13 +147,10 @@ fun ReportCaseScreen(
 private fun TargetHeader(case: ReportModule.CaseItem, global: GlobalStore = koinInject()) {
     val navigator = LocalNavigator.current
     val target = case.target
-    val open: (() -> Unit)? = when {
-        target == null -> null
-        case.targetType == ReportModule.TARGET_SONG -> { -> global.player.insertToQueueWithFetch(target.displayId, true, false) }
-        case.targetType == ReportModule.TARGET_PLAYLIST -> { -> navigator.push(Route.Root.PublicPlaylist(case.targetId)) }
-        case.targetType == ReportModule.TARGET_USER -> { -> navigator.push(Route.Root.PublicUserSpace(case.targetId)) }
-        else -> null
-    }
+    val type = ReportTargetType.of(case.targetType)
+    val open: (() -> Unit)? = if (type != null && target != null) {
+        { type.open(case.targetId, target, navigator, global.player) }
+    } else null
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             TargetCover(case.targetType, target?.coverUrl, size = 72.dp)
@@ -172,7 +166,7 @@ private fun TargetHeader(case: ReportModule.CaseItem, global: GlobalStore = koin
                     color = if (target == null) HachimiTheme.colorScheme.onSurfaceVariant else Color.Unspecified,
                 )
                 val owner = target?.owner
-                if (owner != null && case.targetType != ReportModule.TARGET_USER) {
+                if (owner != null && type?.showsOwner == true) {
                     Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Avatar(owner.avatarUrl, 18.dp)
                         Text(
@@ -184,14 +178,9 @@ private fun TargetHeader(case: ReportModule.CaseItem, global: GlobalStore = koin
                     }
                 }
             }
-            if (open != null) {
+            if (type != null && open != null) {
                 SubtleButton(onClick = open, modifier = Modifier.padding(start = 12.dp)) {
-                    Text(
-                        stringResource(
-                            if (case.targetType == ReportModule.TARGET_SONG) Res.string.report_open_song
-                            else Res.string.report_open_target
-                        )
-                    )
+                    Text(stringResource(type.openLabel))
                 }
             }
         }

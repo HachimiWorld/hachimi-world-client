@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -58,19 +56,15 @@ fun ReasonPills(reasons: List<ReportModule.ReasonCount>, modifier: Modifier = Mo
 /** The target's cover, round for users, with a placeholder icon when there is none. */
 @Composable
 fun TargetCover(targetType: String, url: String?, size: Dp = 48.dp) {
-    val isUser = targetType == ReportModule.TARGET_USER
-    val shape = if (isUser) CircleShape else RoundedCornerShape(size / 6)
+    val type = ReportTargetType.of(targetType)
+    val shape = if (type?.roundCover == true) CircleShape else RoundedCornerShape(size / 6)
     Box(
         Modifier.size(size).clip(shape).background(HachimiTheme.colorScheme.onSurface.copy(alpha = 0.07f)),
         contentAlignment = Alignment.Center,
     ) {
         if (url.isNullOrEmpty()) {
             Icon(
-                imageVector = when (targetType) {
-                    ReportModule.TARGET_USER -> Icons.Default.Person
-                    ReportModule.TARGET_PLAYLIST -> Icons.AutoMirrored.Filled.QueueMusic
-                    else -> Icons.Default.MusicNote
-                },
+                imageVector = type?.placeholderIcon ?: Icons.Default.MusicNote,
                 contentDescription = null,
                 modifier = Modifier.size(size * 0.45f),
                 tint = HachimiTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -83,7 +77,7 @@ fun TargetCover(targetType: String, url: String?, size: Dp = 48.dp) {
 
 @Composable
 fun Avatar(url: String?, size: Dp) {
-    TargetCover(ReportModule.TARGET_USER, url, size)
+    TargetCover(ReportTargetType.User.value, url, size)
 }
 
 /** Section title above a card. */
