@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -62,10 +63,13 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
 import hachimiworld.composeapp.generated.resources.player_like
 import hachimiworld.composeapp.generated.resources.player_share
+import hachimiworld.composeapp.generated.resources.report_action
 import hachimiworld.composeapp.generated.resources.player_unlike
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.ReportStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
@@ -120,6 +124,7 @@ private fun Content(
     vm: PlayerViewModel,
 ) {
     val uiState = vm.uiState
+    val reports = koinInject<ReportStore>()
     var currentPage by remember { mutableStateOf(Page.Lyrics) }
     val scrollState = rememberLazyListState() // Keep the scroll state between pages
     var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
@@ -164,7 +169,10 @@ private fun Content(
                     },
                     onShareClick = {
                         showShareDialog = true
-                    }
+                    },
+                    onReportClick = uiState.readySongInfo
+                        ?.takeIf { it.uploaderUid != global.userInfo?.uid }
+                        ?.let { song -> { reports.open(ReportModule.TARGET_SONG, song.id) } },
                 )
             },
             onCoverLayout = { topLeft, size ->
@@ -331,7 +339,8 @@ private fun Footer(
     onNavToUser: (Long) -> Unit,
     modifier: Modifier = Modifier,
     onAddToPlaylistClick: () -> Unit,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    onReportClick: (() -> Unit)?,
 ) {
     val showControl = hideInfo || hovered
     var showDropdownMenu by remember { mutableStateOf(false) }
@@ -385,6 +394,16 @@ private fun Footer(
                     text = { Text(stringResource(Res.string.player_share)) },
                     leadingIcon = { Icon(Icons.Default.Share, "Share") },
                 )
+                if (onReportClick != null) {
+                    DropdownMenuItem(
+                        onClick = {
+                            onReportClick()
+                            showDropdownMenu = false
+                        },
+                        text = { Text(stringResource(Res.string.report_action)) },
+                        leadingIcon = { Icon(Icons.Outlined.Flag, null) },
+                    )
+                }
             }
         }
 

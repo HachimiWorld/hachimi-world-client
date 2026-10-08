@@ -18,4 +18,6 @@
     <string name="notification_back_to_inbox">返回系统通知</string>
     <string name="notification_action_edit_profile">去修改资料</string>
     <string name="notification_action_view_review">查看稿件</string>
+    <string name="notification_action_view_artwork">查看作品</string>
+    <string name="notification_action_view_playlist">查看歌单</string>
 </resources>

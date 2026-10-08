@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_play_failed
+import hachimiworld.composeapp.generated.resources.player_song_unavailable
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -231,6 +232,10 @@ class PlayerService(
                     // It's canceled, do not retry anymore
                     Logger.i(TAG, "Preparing cancelled")
                     return
+                } catch (e: SongUnavailableException) {
+                    Logger.i(TAG, "Song ${e.songId} is no longer available")
+                    skipUnavailable(item)
+                    return
                 } catch (e: Throwable) {
                     lastError = e
                     attempt++
@@ -255,6 +260,27 @@ class PlayerService(
 
         Logger.e(TAG, "Failed to play song", lastError)
         global.alert(Res.string.player_play_failed, lastError?.message ?: "")
+    }
+
+    /** Drops a song that was deleted or hidden from the queue, and plays the one after it. */
+    private suspend fun skipUnavailable(item: MusicQueueItem) {
+        val next = queueMutex.withLock {
+            val order = if (shuffleMode) shuffledQueue else musicQueue
+            val index = order.indexOfFirst { it.id == item.id }
+            musicQueue = musicQueue.filterNot { it.id == item.id }
+            shuffledQueue = shuffledQueue.filterNot { it.id == item.id }
+            val remaining = order.filterNot { it.id == item.id }
+            if (remaining.isEmpty()) null else remaining[index.coerceIn(0, remaining.lastIndex)]
+        }
+        songCache.delete(item.id.toString())
+        songCache.delete(item.displayId)
+        global.alert(Res.string.player_song_unavailable)
+        if (next == null) {
+            engine.stop()
+            playerState.clear()
+        } else {
+            playSongInQueue(next.id)
+        }
     }
 
     private var playPrepareJob: Job? = null
@@ -370,7 +396,7 @@ class PlayerService(
         fetchMetadataJob = scope.launch {
             playerState.fetchingMetadata = true
             try {
-                val resp = api.songModule.detail(songDisplayId)
+                val resp = api.songModule.detail(songDisplayId, auth = global.isLoggedIn)
                 val data = if (resp.ok) {
                     val data = resp.ok<SongModule.PublicSongDetail>()
                     songCache.saveMetadata(data)
@@ -568,8 +594,12 @@ class PlayerService(
 
             onProgress(0f)
             val metadata = songCache.getMetadata(songId.toString()) ?: run {
-                val resp = api.songModule.detailById(songId)
-                if (!resp.ok) error(resp.err().msg)
+                // Send the token so uploaders can still play their own hidden songs
+                val resp = api.songModule.detailById(songId, auth = global.isLoggedIn)
+                if (!resp.ok) {
+                    if (resp.err().code == "not_found") throw SongUnavailableException(songId)
+                    error(resp.err().msg)
+                }
                 resp.ok()
             }
             onMetadata(metadata)
@@ -726,8 +756,13 @@ class PlayerService(
     private fun fetchCacheAsync(songId: Long, cache: SongCache.Item, jmid: String) = scope.launch {
         try {
             Logger.i(TAG, "Fetching cache")
-            val resp = api.songModule.detailById(songId)
+            val resp = api.songModule.detailById(songId, auth = global.isLoggedIn)
             if (!resp.ok) {
+                if (resp.err().code == "not_found") {
+                    // Deleted or hidden: don't keep playing it from the cache
+                    songCache.delete(songId.toString())
+                    songCache.delete(jmid)
+                }
                 Logger.e(TAG, "Failed to refresh song metadata: ${resp.err().msg}")
                 return@launch
             }
@@ -884,3 +919,5 @@ class PlayerService(
         engine.setReplayGainEnabled(enabled)
     }
 }
+/** The server no longer serves the song: it was deleted or hidden. */
+private class SongUnavailableException(val songId: Long) : Exception("Song $songId is no longer available")

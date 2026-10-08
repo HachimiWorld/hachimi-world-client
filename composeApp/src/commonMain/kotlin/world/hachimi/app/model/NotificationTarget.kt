@@ -2,6 +2,8 @@ package world.hachimi.app.model
 
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.notification_action_edit_profile
+import hachimiworld.composeapp.generated.resources.notification_action_view_artwork
+import hachimiworld.composeapp.generated.resources.notification_action_view_playlist
 import hachimiworld.composeapp.generated.resources.notification_action_view_review
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -25,6 +27,12 @@ fun NotificationModule.ContentIntent.toTarget(): NotificationTarget? = when (act
     "profile.edit" -> NotificationTarget(Route.Root.EditProfile, Res.string.notification_action_edit_profile)
     "creation.review.view" -> data.long("review_id")?.let {
         NotificationTarget(Route.Root.CreationCenter.ReviewDetail(it), Res.string.notification_action_view_review)
+    }
+    "creation.artwork.view" -> data.long("song_id")?.let {
+        NotificationTarget(Route.Root.CreationCenter.ArtworkDetail(it), Res.string.notification_action_view_artwork)
+    }
+    "playlist.view" -> data.long("playlist_id")?.let {
+        NotificationTarget(Route.Root.MyPlaylist.Detail(it), Res.string.notification_action_view_playlist)
     }
     else -> null
 }

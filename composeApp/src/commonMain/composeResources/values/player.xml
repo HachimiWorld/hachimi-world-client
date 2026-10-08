@@ -44,4 +44,5 @@
     <string name="info_listen_cd">Listen to this music</string>
     <string name="info_open_in_new_tab_cd">Open in new window</string>
     <string name="info_play_count">Play Count</string>
+    <string name="player_song_unavailable">This song is no longer available and was removed from the queue</string>
 </resources>

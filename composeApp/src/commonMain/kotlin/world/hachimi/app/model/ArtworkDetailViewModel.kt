@@ -23,6 +23,7 @@ import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PublishModule
+import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
@@ -41,6 +42,9 @@ class ArtworkDetailViewModel(
     var songId by mutableStateOf(-1L)
         private set
     var detail by mutableStateOf<SongModule.PublicSongDetail?>(null)
+        private set
+    /** Why the song is hidden, if it is. Null while unknown. */
+    var hiddenReason by mutableStateOf<String?>(null)
         private set
     var loading by mutableStateOf(false)
         private set
@@ -77,9 +81,11 @@ class ArtworkDetailViewModel(
         loading = true
         viewModelScope.launch {
             try {
-                val resp = api.songModule.detailById(songId)
+                val resp = api.songModule.detailById(songId, auth = true)
                 if (resp.ok) {
                     detail = resp.ok()
+                    hiddenReason = null
+                    if (resp.ok().isHidden) loadHiddenReason()
                     if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.LOADED
                 } else {
                     val err = resp.err()
@@ -93,6 +99,17 @@ class ArtworkDetailViewModel(
             } finally {
                 loading = false
             }
+        }
+    }
+
+    private suspend fun loadHiddenReason() {
+        try {
+            val resp = api.reportModule.ownerNotice(ReportModule.OwnerNoticeReq(ReportModule.TARGET_SONG, songId))
+            if (resp.ok) hiddenReason = resp.ok().reason
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            Logger.e(TAG, "Failed to load why the song is hidden", e)
         }
     }
 

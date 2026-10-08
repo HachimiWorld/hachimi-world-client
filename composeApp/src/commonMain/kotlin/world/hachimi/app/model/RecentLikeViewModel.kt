@@ -18,6 +18,7 @@ import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 @KoinViewModel
 class RecentLikeViewModel(
@@ -35,13 +36,32 @@ class RecentLikeViewModel(
     private var unlikingSongIds by mutableStateOf<Set<Long>>(emptySet())
 
     private var flatLikes: List<SongModule.MyLikeItem> = emptyList()
+    /** Likes of songs that were deleted or hidden, shown as unavailable. */
+    private var flatUnavailable: List<SongModule.UnavailableLikeItem> = emptyList()
     private var nextPageIndex = 0L
     private val pageSize = 20L
 
     data class SongGroup(
         val date: LocalDate,
-        val songs: List<SongModule.MyLikeItem>,
+        /** Most recently liked first. */
+        val entries: List<LikeEntry>,
     )
+
+    /** A liked song, or one that's no longer available. */
+    sealed interface LikeEntry {
+        val songId: Long
+        val likedTime: Instant
+
+        data class Song(val item: SongModule.MyLikeItem) : LikeEntry {
+            override val songId: Long get() = item.songData.id
+            override val likedTime: Instant get() = item.likedTime
+        }
+
+        data class Unavailable(val item: SongModule.UnavailableLikeItem) : LikeEntry {
+            override val songId: Long get() = item.songId
+            override val likedTime: Instant get() = item.likedTime
+        }
+    }
 
     fun mounted() {
         refresh()
@@ -90,8 +110,7 @@ class RecentLikeViewModel(
 
     fun isUnliking(songId: Long): Boolean = songId in unlikingSongIds
 
-    fun unlike(item: SongModule.MyLikeItem) {
-        val songId = item.songData.id
+    fun unlike(songId: Long) {
         if (songId in unlikingSongIds) {
             return
         }
@@ -103,6 +122,7 @@ class RecentLikeViewModel(
                 if (resp.ok) {
                     val loadedPageCount = nextPageIndex.coerceAtLeast(1L)
                     flatLikes = flatLikes.filterNot { it.songData.id == songId }
+                    flatUnavailable = flatUnavailable.filterNot { it.songId == songId }
                     rebuildSongs()
                     refreshLoadedPages(loadedPageCount)
                 } else {
@@ -141,10 +161,13 @@ class RecentLikeViewModel(
                 } else {
                     flatLikes + data.data
                 }.sortedByDescending { it.likedTime }
+                val mergedUnavailable = if (clear) data.unavailable else flatUnavailable + data.unavailable
 
                 flatLikes = mergedLikes
+                flatUnavailable = mergedUnavailable
                 nextPageIndex = data.pageIndex + 1
-                hasMore = mergedLikes.size < data.total && data.data.isNotEmpty()
+                val pageCount = data.data.size + data.unavailable.size
+                hasMore = mergedLikes.size + mergedUnavailable.size < data.total && pageCount > 0
                 rebuildSongs()
 
                 if (initializeStatus == InitializeStatus.INIT) {
@@ -171,6 +194,7 @@ class RecentLikeViewModel(
         loading = true
         try {
             val mergedLikes = mutableListOf<SongModule.MyLikeItem>()
+            val mergedUnavailable = mutableListOf<SongModule.UnavailableLikeItem>()
             var latestNextPageIndex = 0L
             var latestHasMore = false
             var refreshSucceeded = true
@@ -190,16 +214,19 @@ class RecentLikeViewModel(
 
                 val data = resp.ok()
                 mergedLikes += data.data
+                mergedUnavailable += data.unavailable
                 latestNextPageIndex = data.pageIndex + 1
-                latestHasMore = mergedLikes.size < data.total && data.data.isNotEmpty()
+                val pageCount = data.data.size + data.unavailable.size
+                latestHasMore = mergedLikes.size + mergedUnavailable.size < data.total && pageCount > 0
 
-                if (data.data.isEmpty() || data.data.size < pageSize) {
+                if (pageCount < pageSize) {
                     break
                 }
             }
 
             if (refreshSucceeded) {
                 flatLikes = mergedLikes.sortedByDescending { it.likedTime }
+                flatUnavailable = mergedUnavailable
                 nextPageIndex = latestNextPageIndex
                 hasMore = latestHasMore
                 rebuildSongs()
@@ -213,7 +240,9 @@ class RecentLikeViewModel(
     }
 
     private fun rebuildSongs() {
-        songs = flatLikes
+        val entries: List<LikeEntry> = flatLikes.map { LikeEntry.Song(it) } + flatUnavailable.map { LikeEntry.Unavailable(it) }
+        songs = entries
+            .sortedByDescending { it.likedTime }
             .groupBy { it.likedTime.toLocalDateTime(TimeZone.currentSystemDefault()).date }
             .entries
             .sortedByDescending { it.key }
