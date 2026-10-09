@@ -124,9 +124,11 @@ class ReportModule(
     /** @since 261008 */
     @Serializable
     data class ContentActionOption(
-        /** One of the `ACTION_*` constants. */
+        /** Declared by the target's kind, such as `hide` or `reset_bio`. */
         val action: String,
         val verdict: String,
+        /** Acts against the content, so the owner must be told why. */
+        val penalty: Boolean = false,
     )
 
     /** @since 261008 */
@@ -234,11 +236,5 @@ class ReportModule(
         const val VERDICT_AGREE = "agree"
         const val VERDICT_DISAGREE = "disagree"
         const val VERDICT_IGNORE = "ignore"
-
-        const val ACTION_HIDE = "hide"
-        const val ACTION_RESTORE = "restore"
-        const val ACTION_RESET_AVATAR = "reset_avatar"
-        const val ACTION_RESET_BIO = "reset_bio"
-        const val ACTION_RESET_USERNAME = "reset_username"
     }
 }

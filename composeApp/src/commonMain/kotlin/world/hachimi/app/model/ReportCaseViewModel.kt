@@ -50,8 +50,9 @@ class ReportCaseViewModel(
     val actionsForVerdict: List<String>
         get() = case?.contentActions.orEmpty().filter { it.verdict == verdict }.map { it.action }
 
+    /** A penalty is chosen, so the owner must be told why. */
     val needsAuthorReason: Boolean
-        get() = contentActions.any { it != ReportModule.ACTION_RESTORE }
+        get() = case?.contentActions.orEmpty().any { it.penalty && it.verdict == verdict && it.action in contentActions }
 
     val canSubmit: Boolean
         get() {

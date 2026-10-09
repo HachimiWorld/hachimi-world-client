@@ -234,7 +234,7 @@ private fun LazyListScope.historySection(case: ReportModule.CaseResp) {
             time = action.createTime,
             tags = {
                 Pill(verdictLabel(action.verdict), accent = action.verdict == ReportModule.VERDICT_AGREE)
-                action.contentActions.forEach { Pill(contentActionLabel(it)) }
+                action.contentActions.forEach { Pill(contentActionLabel(it, case.case.targetType)) }
                 if (action.ignoreReports) Pill(stringResource(Res.string.report_case_ignored_later))
             },
             body = listOfNotNull(
@@ -315,7 +315,7 @@ private fun DecisionPanel(vm: ReportCaseViewModel, verdicts: List<String>, targe
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     actions.forEach { action ->
                         ActionToggle(
-                            title = contentActionLabel(action),
+                            title = contentActionLabel(action, targetType),
                             description = contentActionDescription(action, targetType),
                             checked = action in vm.contentActions,
                             enabled = !vm.resolving,

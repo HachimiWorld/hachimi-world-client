@@ -6,8 +6,14 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.report_action_hide
 import hachimiworld.composeapp.generated.resources.report_action_hide_playlist_desc
 import hachimiworld.composeapp.generated.resources.report_action_hide_song_desc
+import hachimiworld.composeapp.generated.resources.report_action_reset_avatar
+import hachimiworld.composeapp.generated.resources.report_action_reset_bio
+import hachimiworld.composeapp.generated.resources.report_action_reset_username
+import hachimiworld.composeapp.generated.resources.report_action_reset_username_desc
+import hachimiworld.composeapp.generated.resources.report_action_restore
 import hachimiworld.composeapp.generated.resources.report_open_song
 import hachimiworld.composeapp.generated.resources.report_open_target
 import hachimiworld.composeapp.generated.resources.report_type_playlist
@@ -33,8 +39,8 @@ enum class ReportTargetType(
     /** Whether it has an owner other than itself worth showing. */
     val showsOwner: Boolean,
     val openLabel: StringResource,
-    /** What hiding does, for kinds that can be hidden. */
-    val hideDescription: StringResource?,
+    /** How to show the content actions this kind declares, by id. */
+    val actions: Map<String, ActionText>,
 ) {
     Song(
         value = ReportModule.TARGET_SONG,
@@ -43,7 +49,10 @@ enum class ReportTargetType(
         roundCover = false,
         showsOwner = true,
         openLabel = Res.string.report_open_song,
-        hideDescription = Res.string.report_action_hide_song_desc,
+        actions = mapOf(
+            "hide" to ActionText(Res.string.report_action_hide, Res.string.report_action_hide_song_desc),
+            "restore" to ActionText(Res.string.report_action_restore),
+        ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
             player.insertToQueueWithFetch(target.displayId, instantPlay = true, append = false)
@@ -56,7 +65,10 @@ enum class ReportTargetType(
         roundCover = false,
         showsOwner = true,
         openLabel = Res.string.report_open_target,
-        hideDescription = Res.string.report_action_hide_playlist_desc,
+        actions = mapOf(
+            "hide" to ActionText(Res.string.report_action_hide, Res.string.report_action_hide_playlist_desc),
+            "restore" to ActionText(Res.string.report_action_restore),
+        ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
             navigator.push(Route.Root.PublicPlaylist(targetId))
@@ -69,7 +81,11 @@ enum class ReportTargetType(
         roundCover = true,
         showsOwner = false,
         openLabel = Res.string.report_open_target,
-        hideDescription = null,
+        actions = mapOf(
+            "reset_avatar" to ActionText(Res.string.report_action_reset_avatar),
+            "reset_bio" to ActionText(Res.string.report_action_reset_bio),
+            "reset_username" to ActionText(Res.string.report_action_reset_username, Res.string.report_action_reset_username_desc),
+        ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
             navigator.push(Route.Root.PublicUserSpace(targetId))
@@ -78,6 +94,9 @@ enum class ReportTargetType(
 
     /** Opens the target: plays a song, or goes to its page. */
     abstract fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService)
+
+    /** How a content action is shown. */
+    data class ActionText(val label: StringResource, val description: StringResource? = null)
 
     companion object {
         /** Null for kinds this version doesn't know. */

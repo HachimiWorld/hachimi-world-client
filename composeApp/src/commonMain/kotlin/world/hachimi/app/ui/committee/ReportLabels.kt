@@ -2,12 +2,6 @@ package world.hachimi.app.ui.committee
 
 import androidx.compose.runtime.Composable
 import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.report_action_hide
-import hachimiworld.composeapp.generated.resources.report_action_reset_avatar
-import hachimiworld.composeapp.generated.resources.report_action_reset_bio
-import hachimiworld.composeapp.generated.resources.report_action_reset_username
-import hachimiworld.composeapp.generated.resources.report_action_reset_username_desc
-import hachimiworld.composeapp.generated.resources.report_action_restore
 import hachimiworld.composeapp.generated.resources.report_verdict_agree_desc
 import hachimiworld.composeapp.generated.resources.report_verdict_agree
 import hachimiworld.composeapp.generated.resources.report_verdict_disagree
@@ -29,22 +23,14 @@ fun verdictLabel(verdict: String): String = when (verdict) {
     else -> verdict
 }
 
+/** The label of a content action declared by [targetType]; its id if this version doesn't know it. */
 @Composable
-fun contentActionLabel(action: String): String = when (action) {
-    ReportModule.ACTION_HIDE -> stringResource(Res.string.report_action_hide)
-    ReportModule.ACTION_RESTORE -> stringResource(Res.string.report_action_restore)
-    ReportModule.ACTION_RESET_AVATAR -> stringResource(Res.string.report_action_reset_avatar)
-    ReportModule.ACTION_RESET_BIO -> stringResource(Res.string.report_action_reset_bio)
-    ReportModule.ACTION_RESET_USERNAME -> stringResource(Res.string.report_action_reset_username)
-    else -> action
-}
+fun contentActionLabel(action: String, targetType: String): String =
+    ReportTargetType.of(targetType)?.actions?.get(action)?.let { stringResource(it.label) } ?: action
 
 @Composable
-fun contentActionDescription(action: String, targetType: String): String? = when (action) {
-    ReportModule.ACTION_HIDE -> ReportTargetType.of(targetType)?.hideDescription?.let { stringResource(it) }
-    ReportModule.ACTION_RESET_USERNAME -> stringResource(Res.string.report_action_reset_username_desc)
-    else -> null
-}
+fun contentActionDescription(action: String, targetType: String): String? =
+    ReportTargetType.of(targetType)?.actions?.get(action)?.description?.let { stringResource(it) }
 
 @Composable
 fun verdictDescription(verdict: String): String? = when (verdict) {
