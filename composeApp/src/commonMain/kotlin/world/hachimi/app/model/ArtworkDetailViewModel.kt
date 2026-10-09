@@ -104,7 +104,7 @@ class ArtworkDetailViewModel(
 
     private suspend fun loadHiddenReason() {
         try {
-            val resp = api.reportModule.ownerNotice(ReportModule.OwnerNoticeReq(ReportModule.TARGET_SONG, songId))
+            val resp = api.reportModule.hiddenReason(ReportModule.HiddenReasonReq(ReportModule.TARGET_SONG, songId))
             if (resp.ok) hiddenReason = resp.ok().reason
         } catch (e: CancellationException) {
             throw e

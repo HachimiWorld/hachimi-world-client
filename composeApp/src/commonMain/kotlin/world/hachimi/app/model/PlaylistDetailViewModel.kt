@@ -147,7 +147,7 @@ class PlaylistDetailViewModel(
                 songs = data.songs
                 unavailableSongs = data.unavailableSongs
                 hiddenReason = if (data.playlistInfo.isHidden) {
-                    api.reportModule.ownerNotice(ReportModule.OwnerNoticeReq(ReportModule.TARGET_PLAYLIST, data.playlistInfo.id))
+                    api.reportModule.hiddenReason(ReportModule.HiddenReasonReq(ReportModule.TARGET_PLAYLIST, data.playlistInfo.id))
                         .takeIf { it.ok }?.ok()?.reason
                 } else null
                 if (initStatus == InitializeStatus.INIT) {

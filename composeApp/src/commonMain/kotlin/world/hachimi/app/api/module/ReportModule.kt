@@ -188,14 +188,14 @@ class ReportModule(
 
     /** @since 261008 */
     @Serializable
-    data class OwnerNoticeReq(
+    data class HiddenReasonReq(
         val targetType: String,
         val targetId: Long,
     )
 
     /** @since 261008 */
     @Serializable
-    data class OwnerNoticeResp(
+    data class HiddenReasonResp(
         /** Whether the user's song or playlist is hidden. */
         val hidden: Boolean,
         val reason: String?,
@@ -219,8 +219,8 @@ class ReportModule(
         client.post("/report/resolve", req)
 
     /** For the owner: whether their song or playlist is hidden, and why. @since 261008 */
-    suspend fun ownerNotice(req: OwnerNoticeReq): WebResult<OwnerNoticeResp> =
-        client.get("/report/owner_notice", req)
+    suspend fun hiddenReason(req: HiddenReasonReq): WebResult<HiddenReasonResp> =
+        client.get("/report/hidden_reason", req)
 
     companion object {
         const val TARGET_SONG = "song"
