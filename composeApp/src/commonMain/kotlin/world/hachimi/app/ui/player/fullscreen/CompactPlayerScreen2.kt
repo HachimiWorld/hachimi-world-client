@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -61,13 +62,16 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
 import hachimiworld.composeapp.generated.resources.player_like
 import hachimiworld.composeapp.generated.resources.player_share
+import hachimiworld.composeapp.generated.resources.report_action
 import hachimiworld.composeapp.generated.resources.player_unlike
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.api.CoilHeaders
+import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.ReportStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
@@ -110,6 +114,10 @@ fun CompactPlayerScreen2(
     val scrollState = rememberLazyListState()
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
     var showShareDialog by remember { mutableStateOf(false) }
+    val reports = koinInject<ReportStore>()
+    val reportSong: (() -> Unit)? = uiState.readySongInfo
+        ?.takeIf { it.uploaderUid != global.userInfo?.uid }
+        ?.let { song -> { reports.open(ReportModule.TARGET_SONG, song.id) } }
 
     Column(
         Modifier
@@ -151,6 +159,7 @@ fun CompactPlayerScreen2(
                         tobeAddedSong = uiState.readySongInfo?.id?.let { it to Random.nextLong() }
                     },
                     onShareClick = { showShareDialog = true },
+                    onReportClick = reportSong,
                 )
             } else {
                 Column {
@@ -178,6 +187,7 @@ fun CompactPlayerScreen2(
                         onShareClick = {
                             showShareDialog = true
                         },
+                        onReportClick = reportSong,
                     )
                     AnimatedContent(
                         targetState = currentPage,
@@ -266,7 +276,8 @@ private fun PlayerTab(
     onLikeClick: () -> Unit,
     onNavToUser: (Long) -> Unit,
     onAddToPlaylistClick: () -> Unit,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    onReportClick: (() -> Unit)?,
 ) {
     Column(Modifier.padding(top = 32.dp).padding(horizontal = 32.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
@@ -338,6 +349,7 @@ private fun PlayerTab(
                     onDismissRequest = { expanded = false },
                     onAddToPlaylistClick = onAddToPlaylistClick,
                     onShareClick = onShareClick,
+                    onReportClick = onReportClick,
                 )
             }
         }
@@ -349,7 +361,8 @@ private fun MoreDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onAddToPlaylistClick: () -> Unit,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    onReportClick: (() -> Unit)?,
 ) {
     DropdownMenu(expanded, onDismissRequest = onDismissRequest) {
         DropdownMenuItem(
@@ -368,6 +381,16 @@ private fun MoreDropdownMenu(
             text = { Text(stringResource(Res.string.player_share)) },
             leadingIcon = { Icon(Icons.Default.Share, "Share") },
         )
+        if (onReportClick != null) {
+            DropdownMenuItem(
+                onClick = {
+                    onReportClick()
+                    onDismissRequest()
+                },
+                text = { Text(stringResource(Res.string.report_action)) },
+                leadingIcon = { Icon(Icons.Outlined.Flag, null) },
+            )
+        }
     }
 }
 
@@ -474,7 +497,8 @@ private fun Header(
     pvPlatform: String?,
     onUserClick: () -> Unit,
     onAddToPlaylistClick: () -> Unit,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    onReportClick: (() -> Unit)?,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         AsyncImage(
@@ -535,6 +559,7 @@ private fun Header(
                 onDismissRequest = { expanded = false },
                 onAddToPlaylistClick = onAddToPlaylistClick,
                 onShareClick = onShareClick,
+                onReportClick = onReportClick,
             )
         }
     }

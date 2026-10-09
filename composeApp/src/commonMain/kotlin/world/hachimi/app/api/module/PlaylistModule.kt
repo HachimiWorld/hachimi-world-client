@@ -26,6 +26,12 @@ class PlaylistModule(
         val updateTime: Instant,
         val isPublic: Boolean,
         val songsCount: Int,
+        /**
+         * Hidden by the platform; only its owner sees it.
+         *
+         * @since 261008
+         */
+        val isHidden: Boolean = false,
     )
 
     @Serializable
@@ -61,7 +67,21 @@ class PlaylistModule(
         /**
          * @since 260121
          */
-        val creatorProfile: UserModule.PublicUserProfile
+        val creatorProfile: UserModule.PublicUserProfile,
+        /**
+         * Songs that were deleted or hidden, to show as unavailable in their place.
+         *
+         * @since 261008
+         */
+        val unavailableSongs: List<UnavailableSongItem> = emptyList(),
+    )
+
+    /** @since 261008 */
+    @Serializable
+    data class UnavailableSongItem(
+        val songId: Long,
+        val orderIndex: Int,
+        val addTime: Instant,
     )
 
     @Serializable

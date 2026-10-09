@@ -48,6 +48,10 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.LocalTextStyle
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.report.ModerationNotice
+import hachimiworld.composeapp.generated.resources.moderation_song_hidden_body
+import hachimiworld.composeapp.generated.resources.moderation_song_hidden_title
+import hachimiworld.composeapp.generated.resources.moderation_submit_modification
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
@@ -85,6 +89,20 @@ fun ArtworkDetailScreen(
         ) {
             val pagerState = rememberPagerState(pageCount = { Tab.entries.size })
             val scope = rememberCoroutineScope()
+
+            if (vm.detail?.isHidden == true) {
+                ModerationNotice(
+                    title = stringResource(Res.string.moderation_song_hidden_title),
+                    body = stringResource(Res.string.moderation_song_hidden_body),
+                    reason = vm.hiddenReason,
+                    modifier = Modifier.padding(top = 8.dp),
+                    action = {
+                        AccentButton(onClick = { navigator.push(Route.Root.CreationCenter.Modify(songId)) }) {
+                            Text(stringResource(Res.string.moderation_submit_modification))
+                        }
+                    },
+                )
+            }
 
             Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Tab.entries.forEachIndexed { index, tab ->

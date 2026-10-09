@@ -53,7 +53,11 @@ import world.hachimi.app.nav.isSideNavDestination
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.committee.CommitteeCenterScreen
+import world.hachimi.app.ui.committee.CommitteeMembersScreen
+import world.hachimi.app.ui.committee.ReportCaseScreen
 import world.hachimi.app.ui.component.DevelopingPage
+import world.hachimi.app.ui.report.ReportDialogHost
 import world.hachimi.app.ui.component.LocalOpenNavigationDrawer
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.component.NeedLoginScreen
@@ -173,6 +177,7 @@ fun RootScreen() {
             navigator = navigator,
         )
     }
+    ReportDialogHost()
 }
 
 // region Nested NavDisplays
@@ -246,7 +251,7 @@ private fun primaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Rout
             if (global.isLoggedIn) MyArtworkScreen() else NeedLoginScreen()
         }
         Route.Root.CommitteeCenter -> NavEntry(key) {
-            if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
+            if (global.isLoggedIn) CommitteeCenterScreen() else NeedLoginScreen()
         }
         Route.Root.ContributorCenter.Entry -> NavEntry(key) {
             if (global.isLoggedIn) ContributorEntryScreen() else NeedLoginScreen()
@@ -348,6 +353,12 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         }
         Route.Root.NewFollowers -> NavEntry(key) {
             if (global.isLoggedIn) NewFollowersScreen() else NeedLoginScreen()
+        }
+        is Route.Root.ReportCase -> NavEntry(key) {
+            if (global.isLoggedIn) ReportCaseScreen(key.targetType, key.targetId) else NeedLoginScreen()
+        }
+        Route.Root.CommitteeMembers -> NavEntry(key) {
+            if (global.isLoggedIn) CommitteeMembersScreen() else NeedLoginScreen()
         }
 
         else -> error("Not a secondary destination: $key")

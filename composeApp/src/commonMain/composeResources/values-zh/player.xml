@@ -44,4 +44,5 @@
     <string name="info_listen_cd">收听此音乐</string>
     <string name="info_open_in_new_tab_cd">在新窗口打开</string>
     <string name="info_play_count">播放量</string>
+    <string name="player_song_unavailable">该作品已失效，已从播放队列移除</string>
 </resources>

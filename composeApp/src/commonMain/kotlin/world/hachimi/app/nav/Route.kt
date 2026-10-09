@@ -120,6 +120,16 @@ sealed interface Route : NavKey {
         @SerialName("/committee_center")
         data object CommitteeCenter : Root
 
+        /** One report case, by its target. @since 261008 */
+        @Serializable
+        @SerialName("/committee_center/case")
+        data class ReportCase(val targetType: String, val targetId: Long) : Root
+
+        /** @since 261008 */
+        @Serializable
+        @SerialName("/committee_center/members")
+        data object CommitteeMembers : Root
+
         @Serializable
         sealed interface ContributorCenter : Root {
             companion object {

@@ -37,6 +37,8 @@ class PublicPlaylistViewModel(
     var creatorProfile by mutableStateOf<UserModule.PublicUserProfile?>(null)
         private set
     var songs by mutableStateOf<List<PlaylistModule.SongItem>>(emptyList())
+    /** Songs that were deleted or hidden, shown as unavailable in their place. */
+    var unavailableSongs by mutableStateOf<List<PlaylistModule.UnavailableSongItem>>(emptyList())
         private set
     var isFavorite by mutableStateOf<Boolean?>(null)
         private set
@@ -116,6 +118,7 @@ class PublicPlaylistViewModel(
                 playlistInfo = data.playlistInfo
                 creatorProfile = data.creatorProfile
                 songs = data.songs
+                unavailableSongs = data.unavailableSongs
             } else {
                 val err = resp.err()
                 global.alert(err.msg)

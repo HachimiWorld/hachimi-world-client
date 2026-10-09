@@ -19,8 +19,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MusicOff
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -44,6 +46,8 @@ import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.nav_recent_like
 import hachimiworld.composeapp.generated.resources.play_all
 import hachimiworld.composeapp.generated.resources.player_unlike
+import hachimiworld.composeapp.generated.resources.unavailable_song
+import hachimiworld.composeapp.generated.resources.unavailable_unlike
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
@@ -128,15 +132,21 @@ private fun Content(vm: RecentLikeViewModel) {
 					)
 				}
 				items(
-					items = group.songs,
-					key = { item -> "${item.songData.id}-${item.likedTime}" },
-				) { item ->
-					RecentLikeItem(
-						item = item,
-						onClick = { vm.play(item) },
-						onUnlikeClick = { vm.unlike(item) },
-						unlikeEnabled = !vm.isUnliking(item.songData.id),
-					)
+					items = group.entries,
+					key = { entry -> "${entry.songId}-${entry.likedTime}" },
+				) { entry ->
+					when (entry) {
+						is RecentLikeViewModel.LikeEntry.Song -> RecentLikeItem(
+							item = entry.item,
+							onClick = { vm.play(entry.item) },
+							onUnlikeClick = { vm.unlike(entry.songId) },
+							unlikeEnabled = !vm.isUnliking(entry.songId),
+						)
+						is RecentLikeViewModel.LikeEntry.Unavailable -> UnavailableLikeItem(
+							onUnlikeClick = { vm.unlike(entry.songId) },
+							unlikeEnabled = !vm.isUnliking(entry.songId),
+						)
+					}
 				}
 			}
 
@@ -231,6 +241,48 @@ private fun RecentLikeItem(
 				Icon(
 					imageVector = Icons.Default.Favorite,
 					contentDescription = stringResource(Res.string.player_unlike),
+					tint = HachimiTheme.colorScheme.primary,
+				)
+			}
+		}
+	}
+}
+
+/** In place of a liked song that was deleted or hidden. */
+@Composable
+private fun UnavailableLikeItem(
+	onUnlikeClick: () -> Unit,
+	unlikeEnabled: Boolean,
+	modifier: Modifier = Modifier,
+) {
+	Surface(
+		modifier = modifier.fillMaxWidth(),
+		shape = RoundedCornerShape(16.dp),
+	) {
+		Row(
+			modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.spacedBy(12.dp),
+		) {
+			Box(
+				Modifier
+					.size(48.dp)
+					.clip(RoundedCornerShape(8.dp))
+					.background(MaterialTheme.colorScheme.onSurface.copy(0.06f)),
+				contentAlignment = Alignment.Center,
+			) {
+				Icon(Icons.Default.MusicOff, contentDescription = null, tint = LocalContentColor.current.copy(0.4f))
+			}
+			Text(
+				text = stringResource(Res.string.unavailable_song),
+				modifier = Modifier.weight(1f),
+				style = MaterialTheme.typography.bodyMedium,
+				color = LocalContentColor.current.copy(0.5f),
+			)
+			HachimiIconButton(onClick = onUnlikeClick, enabled = unlikeEnabled) {
+				Icon(
+					imageVector = Icons.Default.Favorite,
+					contentDescription = stringResource(Res.string.unavailable_unlike),
 					tint = HachimiTheme.colorScheme.primary,
 				)
 			}

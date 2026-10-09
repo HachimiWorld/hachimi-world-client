@@ -28,7 +28,6 @@ import hachimiworld.composeapp.generated.resources.playlist_private_badge
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PlaylistDetailViewModel
@@ -46,6 +45,13 @@ import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.EditDialog
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.ui.playlist.components.UnavailableSongItem
+import world.hachimi.app.ui.playlist.components.PlaylistEntry
+import world.hachimi.app.ui.playlist.components.playlistEntries
+import world.hachimi.app.ui.report.ModerationNotice
+import world.hachimi.app.api.module.PlaylistModule
+import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_body
+import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_title
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
@@ -97,7 +103,25 @@ fun PlaylistDetailScreen(
                             Header(global, info, vm)
                         }
 
-                        itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
+                        if (info.isHidden) {
+                            item(key = "hidden_notice") {
+                                ModerationNotice(
+                                    title = stringResource(Res.string.moderation_playlist_hidden_title),
+                                    body = stringResource(Res.string.moderation_playlist_hidden_body),
+                                    reason = vm.hiddenReason,
+                                )
+                            }
+                        }
+
+                        itemsIndexed(playlistEntries(vm.songs, vm.unavailableSongs), key = { _, entry -> entry.key }) { index, entry ->
+                            if (entry is PlaylistEntry.Unavailable) {
+                                UnavailableSongItem(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onRemoveClick = { vm.removeFromPlaylist(entry.song.songId) },
+                                )
+                                return@itemsIndexed
+                            }
+                            val song = (entry as PlaylistEntry.Song).song
                             SongItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 orderIndex = index,
