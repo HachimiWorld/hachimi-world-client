@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.creation.artwork
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_all_submissions
+import hachimiworld.composeapp.generated.resources.artwork_submissions_empty
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,14 +64,14 @@ fun PRTabContent(
                 ) {
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = "全部提交 (${vm.total})",
+                        text = stringResource(Res.string.artwork_all_submissions, vm.total),
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
 
                 if (vm.items.isEmpty()) {
                     Box(Modifier.weight(1f).fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("什么都没有，快发布你的第一个作品吧！")
+                        Text(stringResource(Res.string.artwork_submissions_empty))
                     }
                 } else LazyColumn(
                     state = scrollState,

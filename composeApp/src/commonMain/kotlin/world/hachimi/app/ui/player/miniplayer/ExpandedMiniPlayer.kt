@@ -1,5 +1,20 @@
 package world.hachimi.app.ui.player.miniplayer
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
+import hachimiworld.composeapp.generated.resources.player_cover_cd
+import hachimiworld.composeapp.generated.resources.player_expand_cd
+import hachimiworld.composeapp.generated.resources.player_like
+import hachimiworld.composeapp.generated.resources.player_next_song
+import hachimiworld.composeapp.generated.resources.player_not_playing
+import hachimiworld.composeapp.generated.resources.player_previous_cd
+import hachimiworld.composeapp.generated.resources.player_queue_cd
+import hachimiworld.composeapp.generated.resources.player_repeat_off_cd
+import hachimiworld.composeapp.generated.resources.player_repeat_on_cd
+import hachimiworld.composeapp.generated.resources.player_shuffle_off_cd
+import hachimiworld.composeapp.generated.resources.player_shuffle_on_cd
+import hachimiworld.composeapp.generated.resources.player_unlike
+import hachimiworld.composeapp.generated.resources.player_volume_cd
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.MutableTransitionState
@@ -60,11 +75,6 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_like
-import hachimiworld.composeapp.generated.resources.player_next_song
-import hachimiworld.composeapp.generated.resources.player_not_playing
-import hachimiworld.composeapp.generated.resources.player_unlike
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -336,13 +346,13 @@ private fun Cover(
                     .placeholderMemoryCacheKey(url)
                     .memoryCacheKey(url)
                     .build(),
-                contentDescription = "Cover",
+                contentDescription = stringResource(Res.string.player_cover_cd),
                 contentScale = ContentScale.Crop
             )
             if (hovered) Box(Modifier.fillMaxSize().background(Color.Black.copy(0.25f))) {
                 Icon(
                     modifier = Modifier.align(Alignment.Center),
-                    imageVector = Icons.Default.OpenInFull, contentDescription = "Expand",
+                    imageVector = Icons.Default.OpenInFull, contentDescription = stringResource(Res.string.player_expand_cd),
                     tint = Color.White.copy(0.87f)
                 )
             }
@@ -393,7 +403,7 @@ private fun PreviousButton(
         Icon(
             modifier = Modifier.size(24.dp),
             imageVector = Icons.Default.SkipPrevious,
-            contentDescription = "Skip Previous"
+            contentDescription = stringResource(Res.string.player_previous_cd)
         )
     }
 }
@@ -432,7 +442,7 @@ private fun VolumeControl(
                 volume > 0.5f -> Icons.AutoMirrored.Filled.VolumeUp
                 else -> error("unreachable")
             },
-            contentDescription = "Volume Control"
+            contentDescription = stringResource(Res.string.player_volume_cd)
         )
 
         HachimiSlider(
@@ -472,19 +482,19 @@ private fun FunctionButtons(
             )
         }
         HachimiIconToggleButton(shuffleOn, onShuffleChange) {
-            Icon(Icons.Default.Shuffle, if (shuffleOn) "Shuffle On" else "Shuffle Off")
+            Icon(Icons.Default.Shuffle, stringResource(if (shuffleOn) Res.string.player_shuffle_on_cd else Res.string.player_shuffle_off_cd))
         }
         HachimiIconToggleButton(repeatOn, onRepeatChange) {
-            Icon(Icons.Default.Repeat, if (repeatOn) "Repeat On" else "Repeat Off")
+            Icon(Icons.Default.Repeat, stringResource(if (repeatOn) Res.string.player_repeat_on_cd else Res.string.player_repeat_off_cd))
         }
         HachimiIconButton(onClick = onAddToPlaylistClick) {
-            Icon(Icons.Default.Add, "Add to playlist")
+            Icon(Icons.Default.Add, stringResource(Res.string.player_add_to_playlist_title))
         }
         HachimiIconButton(onClick = onMusicQueueClick) {
-            Icon(Icons.AutoMirrored.Filled.List, "Music Queue")
+            Icon(Icons.AutoMirrored.Filled.List, stringResource(Res.string.player_queue_cd))
         }
         /*HachimiIconButton(onClick = onOpenInFullClick) {
-            Icon(Icons.Default.OpenInFull, "Open In Full")
+            Icon(Icons.Default.OpenInFull, stringResource(Res.string.player_expand_cd))
         }*/
     }
 }

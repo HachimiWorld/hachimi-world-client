@@ -1,5 +1,7 @@
 package world.hachimi.app.model
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.home_fetch_tags_failed
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -84,7 +86,7 @@ class HomeViewModel(
 
             recommendTags = resp.ok().result.map { it.name }
         } catch (e: Throwable) {
-            global.alert("Failed to get recommend tags: ${e.message}")
+            global.alert(Res.string.home_fetch_tags_failed, e.message.orEmpty())
             Logger.e("home", "Failed to get recommend tags", e)
         }
     }

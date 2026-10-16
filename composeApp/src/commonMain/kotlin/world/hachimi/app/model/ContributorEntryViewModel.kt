@@ -1,5 +1,7 @@
 package world.hachimi.app.model
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.contributor_check_failed
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -60,7 +62,7 @@ class ContributorEntryViewModel(
             }
         } catch (e: Throwable) {
             Logger.e(TAG, "checkContributor failed", e)
-            global.alert("检查贡献者身份失败: ${e.message}")
+            global.alert(Res.string.contributor_check_failed, e.message.orEmpty())
             initStat = InitializeStatus.FAILED
         }
     }

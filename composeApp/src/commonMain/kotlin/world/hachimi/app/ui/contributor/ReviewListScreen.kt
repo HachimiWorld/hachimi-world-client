@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.contributor
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.contributor_not_contributor
+import hachimiworld.composeapp.generated.resources.review_list_title
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,7 +51,7 @@ fun ReviewListScreen(
     }
 
     ScreenScaffold(
-        title = { Text("审核作品 (${vm.total})", maxLines = 1) },
+        title = { Text(stringResource(Res.string.review_list_title, vm.total), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
     ) {
@@ -72,7 +76,7 @@ fun ReviewListScreen(
 private fun NotContributor() {
     Text(
         modifier = Modifier.fillMaxSize().wrapContentSize(),
-        text = "你还不是贡献者，为社区作出贡献，解锁更多功能吧"
+        text = stringResource(Res.string.contributor_not_contributor)
     )
 }
 

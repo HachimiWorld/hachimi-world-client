@@ -54,4 +54,10 @@
     <string name="settings_device_logout_confirm_message">Are you sure you want to log out from %1$s?</string>
     <string name="settings_device_logout_confirm">Log out</string>
     <string name="settings_device_logout_cancel">Cancel</string>
+
+    <string name="settings_section_display">Display</string>
+    <string name="settings_section_playback">Playback</string>
+    <string name="settings_section_system">System</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_section_about">About</string>
 </resources>

@@ -33,6 +33,23 @@
     <string name="time_seconds_format">%1$d 秒</string>
     <string name="time_minutes_seconds_format">%1$d 分 %2$d 秒</string>
 
+    <!-- Relative time -->
+    <plurals name="time_ago_seconds">
+        <item quantity="other">%1$d 秒前</item>
+    </plurals>
+    <plurals name="time_ago_minutes">
+        <item quantity="other">%1$d 分钟前</item>
+    </plurals>
+    <plurals name="time_ago_hours">
+        <item quantity="other">%1$d 小时前</item>
+    </plurals>
+    <plurals name="time_ago_days">
+        <item quantity="other">%1$d 天前</item>
+    </plurals>
+    <string name="time_ago_minutes_seconds">%1$d 分钟 %2$d 秒前</string>
+    <string name="time_ago_hours_minutes">%1$d 小时 %2$d 分钟前</string>
+    <string name="time_ago_days_hours">%1$d 天 %2$d 小时前</string>
+
     <!-- Developing page -->
     <string name="developing_page_title">绝赞开发中</string>
 
@@ -47,4 +64,42 @@
     <string name="publish_modify_comment_supporting">填写这次修改的说明，方便审核者了解变更原因（可留空）。</string>
 
     <string name="song_cover_cd">歌曲封面</string>
+
+    <string name="common_add">添加</string>
+    <string name="common_add_cd">添加</string>
+    <string name="common_remove_cd">移除</string>
+    <string name="common_back_cd">返回</string>
+    <string name="common_menu_cd">菜单</string>
+    <string name="common_edit_cd">编辑</string>
+    <string name="common_confirm">确认</string>
+    <string name="common_back">返回</string>
+    <string name="common_no_results">无结果</string>
+    <string name="common_create">创建</string>
+    <string name="common_unknown_error">未知错误</string>
+    <string name="common_cover_cd">封面</string>
+    <string name="common_avatar_cd">头像</string>
+    <string name="common_available_cd">可用</string>
+    <string name="common_error_cd">错误</string>
+    <string name="common_explicit_cd">露骨内容</string>
+    <string name="common_play_count_cd">播放量</string>
+    <string name="common_duration_cd">时长</string>
+    <string name="common_off">关闭</string>
+    <string name="common_on">开启</string>
+    <string name="common_follow_system">跟随系统</string>
+    <string name="platform_bilibili">哔哩哔哩</string>
+    <string name="platform_douyin">抖音</string>
+    <string name="platform_youtube">YouTube</string>
+
+    <string name="common_load_more_failed">加载更多失败</string>
+    <string name="common_selected_cd">已选择</string>
+    <string name="common_pause_cd">暂停</string>
+    <string name="common_sort_cd">排序</string>
+    <string name="app_name_cd">基米天堂</string>
+    <string name="app_icon_cd">基米天堂图标</string>
+
+    <string name="common_like_count_cd">点赞数</string>
+    <string name="common_warning_cd">警告</string>
+    <string name="common_search_cd">搜索</string>
+
+    <string name="font_load_failed">加载字体失败</string>
 </resources>

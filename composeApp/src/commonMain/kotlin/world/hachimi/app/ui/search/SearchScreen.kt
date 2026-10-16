@@ -1,5 +1,12 @@
 package world.hachimi.app.ui.search
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_sort_cd
+import hachimiworld.composeapp.generated.resources.search_no_results
+import hachimiworld.composeapp.generated.resources.search_result_title
+import hachimiworld.composeapp.generated.resources.search_tab_playlists
+import hachimiworld.composeapp.generated.resources.search_tab_songs
+import hachimiworld.composeapp.generated.resources.search_tab_users
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,12 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.search_no_results
-import hachimiworld.composeapp.generated.resources.search_result_title
-import hachimiworld.composeapp.generated.resources.search_tab_playlists
-import hachimiworld.composeapp.generated.resources.search_tab_songs
-import hachimiworld.composeapp.generated.resources.search_tab_users
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -221,7 +222,7 @@ private fun Tab(
 
             Box(Modifier.weight(1f).wrapContentWidth(align = Alignment.End)) {
                 Button(onClick = { expanded = true }) {
-                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
+                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = stringResource(Res.string.common_sort_cd))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(sortMethod.labelRes))
                 }

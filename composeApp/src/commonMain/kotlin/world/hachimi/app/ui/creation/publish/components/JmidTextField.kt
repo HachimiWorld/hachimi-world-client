@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.creation.publish.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_available_cd
+import hachimiworld.composeapp.generated.resources.common_error_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -35,8 +39,8 @@ fun JmidTextField(
         },
         trailingIcon = {
             when(valid) {
-                true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = HachimiTheme.colorScheme.secondary)
-                false -> Icon(Icons.Default.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
+                true -> Icon(Icons.Default.CheckCircle, contentDescription = stringResource(Res.string.common_available_cd), tint = HachimiTheme.colorScheme.secondary)
+                false -> Icon(Icons.Default.Error, contentDescription = stringResource(Res.string.common_error_cd), tint = MaterialTheme.colorScheme.error)
                 null -> if (jmidNumber != null) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.dp)
             }
         },

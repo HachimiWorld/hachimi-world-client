@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.search.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.playlist_cover_cd
+import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -99,7 +103,7 @@ private fun Cover(
             model = ImageRequest.Builder(LocalPlatformContext.current).data(coverUrl)
                 .httpHeaders(CoilHeaders)
                 .crossfade(true).build(),
-            contentDescription = "Playlist Cover",
+            contentDescription = stringResource(Res.string.playlist_cover_cd),
             contentScale = ContentScale.Crop
         )
     }
@@ -116,7 +120,7 @@ private fun Avatar(url: String?) {
             model = ImageRequest.Builder(LocalPlatformContext.current).data(url)
                 .httpHeaders(CoilHeaders)
                 .crossfade(true).build(),
-            contentDescription = "User Avatar",
+            contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
             contentScale = ContentScale.Crop
         )
     }

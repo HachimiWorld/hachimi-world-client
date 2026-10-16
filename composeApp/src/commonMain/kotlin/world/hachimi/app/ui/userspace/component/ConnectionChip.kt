@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.userspace.component
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.platform_bilibili
+import hachimiworld.composeapp.generated.resources.user_connections_open_bilibili
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -12,8 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.user_connections_open_bilibili
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.module.UserModule
@@ -63,7 +64,7 @@ private fun PlatformIcon(type: String) {
 @Stable
 private fun platformLabel(type: String): String {
     return when (type) {
-        UserModule.CONNECTION_TYPE_BILIBILI -> "哔哩哔哩"
+        UserModule.CONNECTION_TYPE_BILIBILI -> stringResource(Res.string.platform_bilibili)
         else -> type
     }
 }

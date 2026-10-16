@@ -1,5 +1,11 @@
 package world.hachimi.app.ui.contributor
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.contributor_create_post
+import hachimiworld.composeapp.generated.resources.contributor_not_contributor
+import hachimiworld.composeapp.generated.resources.contributor_review_list
+import hachimiworld.composeapp.generated.resources.nav_contributor_center
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -90,7 +96,7 @@ private fun Content(
 
     if (!vm.isContributor) {
         Box(Modifier.fillMaxSize(), Alignment.Center) {
-            Text("你还不是贡献者，为社区作出贡献，解锁更多功能吧")
+            Text(stringResource(Res.string.contributor_not_contributor))
         }
         return
     }
@@ -103,7 +109,7 @@ private fun Content(
             .padding(AdaptiveScreenMargin)
     ) {
         Text(
-            text = "贡献者中心",
+            text = stringResource(Res.string.nav_contributor_center),
             modifier = Modifier.padding(bottom = 16.dp),
             style = MaterialTheme.typography.titleLarge,
         )
@@ -111,7 +117,7 @@ private fun Content(
         Button(
             onClick = { navigator.push(Route.Root.ContributorCenter.ReviewList) },
         ) {
-            Text("审核列表")
+            Text(stringResource(Res.string.contributor_review_list))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -119,7 +125,7 @@ private fun Content(
         Button(
             onClick = { navigator.push(Route.Root.ContributorCenter.CreatePost) },
         ) {
-            Text("创建帖子")
+            Text(stringResource(Res.string.contributor_create_post))
         }
     }
 }

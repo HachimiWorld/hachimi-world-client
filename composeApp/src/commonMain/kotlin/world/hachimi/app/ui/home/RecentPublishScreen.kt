@@ -146,12 +146,12 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                         span = { GridItemSpan(maxLineSpan) },
                         contentType = "separator"
                     ) {
+                        val daysOffset = remember(it.date) {
+                            val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+                            (today.toEpochDays() - it.date.toEpochDays()).toInt()
+                        }
                         Text(
-                            text = remember(it.date) {
-                                val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-                                val daysOffset = today.toEpochDays() - it.date.toEpochDays()
-                                formatDaysDistance(daysOffset.toInt()) ?: it.date.toString()
-                            },
+                            text = formatDaysDistance(daysOffset) ?: it.date.toString(),
                             style = MaterialTheme.typography.titleMedium)
                     }
                     items(items = it.songs, key = { it.id }) { item ->

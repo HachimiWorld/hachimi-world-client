@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_info
+import hachimiworld.composeapp.generated.resources.player_lyrics_cd
+import hachimiworld.composeapp.generated.resources.player_queue_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -29,19 +34,19 @@ fun PagerButtons(
             currentPage == Page.Info,
             { onPageSelect(Page.Info) },
             icon = Icons.Outlined.Info,
-            "Info"
+            stringResource(Res.string.common_info)
         )
         HollowIconToggleButton(
             currentPage == Page.Queue,
             { onPageSelect(Page.Queue) },
             icon = Icons.AutoMirrored.Outlined.List,
-            "Music Queue"
+            stringResource(Res.string.player_queue_cd)
         )
         HollowIconToggleButton(
             currentPage == Page.Lyrics,
             { onPageSelect(Page.Lyrics) },
             icon = Icons.AutoMirrored.Outlined.Chat,
-            "Lyrics"
+            stringResource(Res.string.player_lyrics_cd)
         )
     }
 }
@@ -57,19 +62,19 @@ fun PagerButtons2(
             currentPage == Page.Info,
             { onPageSelect(Page.Info) },
         ) {
-            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.Outlined.Info, contentDescription = "Info")
+            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.Outlined.Info, contentDescription = stringResource(Res.string.common_info))
         }
         ToggleButton(
             currentPage == Page.Queue,
             { onPageSelect(Page.Queue) },
         ) {
-            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.AutoMirrored.Outlined.List, contentDescription = "Info")
+            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.AutoMirrored.Outlined.List, contentDescription = stringResource(Res.string.player_queue_cd))
         }
         ToggleButton(
             currentPage == Page.Lyrics,
             { onPageSelect(Page.Lyrics) },
         ) {
-            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.AutoMirrored.Outlined.Chat, contentDescription = "Info")
+            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.AutoMirrored.Outlined.Chat, contentDescription = stringResource(Res.string.player_lyrics_cd))
         }
     }
 }

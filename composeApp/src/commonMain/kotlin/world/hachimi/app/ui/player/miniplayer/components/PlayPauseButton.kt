@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.player.miniplayer.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_pause_cd
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,13 +42,13 @@ fun PlayPauseButton(
             when (status) {
                 PlayPauseStatus.Playing -> Icon(
                     Icons.Default.Pause,
-                    contentDescription = "Pause",
+                    contentDescription = stringResource(Res.string.common_pause_cd),
                     modifier = Modifier.size(24.dp),
                 )
 
                 PlayPauseStatus.Paused -> Icon(
                     Icons.Default.PlayArrow,
-                    contentDescription = "Play",
+                    contentDescription = stringResource(Res.string.common_play_cd),
                     modifier = Modifier.size(24.dp),
                 )
 

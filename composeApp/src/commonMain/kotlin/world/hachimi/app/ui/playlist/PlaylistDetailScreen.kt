@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.playlist
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_edit_cd
+import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_body
+import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_title
+import hachimiworld.composeapp.generated.resources.playlist_private_badge
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.playlist_private_badge
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,8 +53,6 @@ import world.hachimi.app.ui.playlist.components.PlaylistEntry
 import world.hachimi.app.ui.playlist.components.playlistEntries
 import world.hachimi.app.ui.report.ModerationNotice
 import world.hachimi.app.api.module.PlaylistModule
-import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_body
-import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_title
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
@@ -211,7 +212,7 @@ private fun Header(
                         onClick = { vm.edit() },
                         contentPadding = PaddingValues(8.dp)
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = "Edit")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(Res.string.common_edit_cd))
                     }
                 }
             )
@@ -237,7 +238,7 @@ private fun Header(
                         onClick = { vm.edit() },
                         contentPadding = PaddingValues(8.dp)
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = "Edit")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(Res.string.common_edit_cd))
                     }
                 }
             )

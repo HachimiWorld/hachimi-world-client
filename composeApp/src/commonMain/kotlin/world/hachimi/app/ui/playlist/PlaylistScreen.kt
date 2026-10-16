@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.playlist
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.playlist_empty
+import hachimiworld.composeapp.generated.resources.playlist_favorites_title
+import hachimiworld.composeapp.generated.resources.playlist_my_playlists_title
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -14,9 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.playlist_empty
-import hachimiworld.composeapp.generated.resources.playlist_my_playlists_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.PlaylistViewModel
@@ -93,7 +94,7 @@ private fun Content(vm: PlaylistViewModel, navigator: Navigator) {
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "favorite-header") {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "收藏的歌单",
+                    text = stringResource(Res.string.playlist_favorites_title),
                     style = MaterialTheme.typography.titleLarge
                 )
             }

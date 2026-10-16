@@ -1,5 +1,7 @@
 package world.hachimi.app.model
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_load_more_failed
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -108,7 +110,7 @@ class FollowViewModel(
                 load(reset = false)
             } catch (e: Throwable) {
                 Logger.e(TAG, "Failed to load more ${listType.name}", e)
-                global.alert(e.message ?: "加载更多失败")
+                e.message?.let { global.alert(it) } ?: global.alert(Res.string.common_load_more_failed)
             } finally {
                 loadingMore = false
             }

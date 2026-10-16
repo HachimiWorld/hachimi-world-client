@@ -1,33 +1,5 @@
 package world.hachimi.app.ui.settings
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.settings_auto_download_update
 import hachimiworld.composeapp.generated.resources.settings_auto_download_update_wifi
@@ -58,12 +30,45 @@ import hachimiworld.composeapp.generated.resources.settings_official_site_text
 import hachimiworld.composeapp.generated.resources.settings_official_website
 import hachimiworld.composeapp.generated.resources.settings_open_in_browser_cd
 import hachimiworld.composeapp.generated.resources.settings_player_effects
+import hachimiworld.composeapp.generated.resources.settings_section_about
+import hachimiworld.composeapp.generated.resources.settings_section_account
+import hachimiworld.composeapp.generated.resources.settings_section_display
+import hachimiworld.composeapp.generated.resources.settings_section_playback
+import hachimiworld.composeapp.generated.resources.settings_section_system
 import hachimiworld.composeapp.generated.resources.settings_title
 import hachimiworld.composeapp.generated.resources.settings_update_downloading
 import hachimiworld.composeapp.generated.resources.settings_update_install
 import hachimiworld.composeapp.generated.resources.settings_update_retry
 import hachimiworld.composeapp.generated.resources.settings_version_code
 import hachimiworld.composeapp.generated.resources.settings_version_name
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.BuildKonfig
@@ -105,28 +110,28 @@ fun SettingsScreen(
 
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        Section(title = { Text("显示") }) {
+        Section(title = { Text(stringResource(Res.string.settings_section_display)) }) {
             LanguageSetting(globalStore.settings)
             DarkModeSetting(globalStore)
             DiffusionBackgroundSetting(globalStore)
         }
 
-        Section(title = { Text("播放") }) {
+        Section(title = { Text(stringResource(Res.string.settings_section_playback)) }) {
             LoudnessNormalizationSetting(globalStore)
             KidsModeSetting(globalStore)
         }
 
         if (getPlatform().name == "JVM") {
-            Section(title = { Text("系统") }) {
+            Section(title = { Text(stringResource(Res.string.settings_section_system)) }) {
                 CloseBehaviorSetting(globalStore.settings)
             }
         }
 
-        Section(title = { Text("账户") }) {
+        Section(title = { Text(stringResource(Res.string.settings_section_account)) }) {
             DeviceManagementEntry()
         }
 
-        Section(title = { Text("关于") }) {
+        Section(title = { Text(stringResource(Res.string.settings_section_about)) }) {
             Info(globalStore)
         }
         }

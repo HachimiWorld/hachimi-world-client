@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.playlist.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.playlist_cover_cd
+import hachimiworld.composeapp.generated.resources.playlist_song_count
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,7 +71,7 @@ fun PlaylistItem(
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Playlist Cover Image",
+                    contentDescription = stringResource(Res.string.playlist_cover_cd),
                     contentScale = ContentScale.Crop
                 )
                 Row(
@@ -87,7 +91,7 @@ fun PlaylistItem(
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            text = "$songCount 首",
+                            text = stringResource(Res.string.playlist_song_count, songCount),
                             style = TextStyle(fontSize = 12.sp),
                             color = HachimiTheme.colorScheme.onSurface,
                         )

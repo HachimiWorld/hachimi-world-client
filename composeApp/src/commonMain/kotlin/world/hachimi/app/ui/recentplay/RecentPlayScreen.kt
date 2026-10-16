@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.recentplay
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.recent_play_title
+import hachimiworld.composeapp.generated.resources.song_cover_cd
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -27,8 +30,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.recent_play_title
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -130,7 +131,7 @@ private fun RecentPlayItem(
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Cover Image",
+                    contentDescription = stringResource(Res.string.song_cover_cd),
                     contentScale = ContentScale.Crop
                 )
             }

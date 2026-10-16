@@ -122,12 +122,12 @@ private fun Content(vm: RecentLikeViewModel) {
 
 			vm.songs.forEach { group ->
 				item(key = group.date.toString(), contentType = "separator") {
+					val daysOffset = remember(group.date) {
+						val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+						(today.toEpochDays() - group.date.toEpochDays()).toInt()
+					}
 					Text(
-						text = remember(group.date) {
-							val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-							val daysOffset = today.toEpochDays() - group.date.toEpochDays()
-							formatDaysDistance(daysOffset.toInt()) ?: group.date.toString()
-						},
+						text = formatDaysDistance(daysOffset) ?: group.date.toString(),
 						style = MaterialTheme.typography.titleSmall,
 					)
 				}

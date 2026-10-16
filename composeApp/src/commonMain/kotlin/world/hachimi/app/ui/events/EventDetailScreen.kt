@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.events
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.events_content_empty
+import hachimiworld.composeapp.generated.resources.events_content_unsupported
+import hachimiworld.composeapp.generated.resources.events_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,14 +101,14 @@ private fun EventDetailContent(
 ) {
     if (data == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("内容为空")
+            Text(stringResource(Res.string.events_content_empty))
         }
         return
     }
 
     if (data.contentType != "markdown") {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("当前客户端不支持展示该文章内容，请升级版本")
+            Text(stringResource(Res.string.events_content_unsupported))
         }
         return
     }
@@ -158,7 +163,7 @@ private fun EventDetailContent(
                             .data(data.coverUrl)
                             .crossfade(true)
                             .build(),
-                        contentDescription = "Event cover",
+                        contentDescription = stringResource(Res.string.events_cover_cd),
                         modifier = Modifier
                             .fillMaxWidth()
                             .widthIn(max = 1040.dp),
