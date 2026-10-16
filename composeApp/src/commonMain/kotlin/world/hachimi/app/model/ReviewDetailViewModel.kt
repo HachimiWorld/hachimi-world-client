@@ -57,6 +57,12 @@ class ReviewDetailViewModel(
     var commentTotal by mutableStateOf(0L)
         private set
 
+    /**
+     * Changes against the live song. Only set for a pending review whose song is already published and visible.
+     */
+    var diff by mutableStateOf<ReviewDiff?>(null)
+        private set
+
     fun mounted(reviewId: Long) {
         if (
             initializeStatus == InitializeStatus.INIT ||
@@ -101,7 +107,12 @@ class ReviewDetailViewModel(
         try {
             val resp = api.publishModule.reviewDetail(PublishModule.DetailReq(reviewId))
             if (resp.ok) {
-                data = resp.ok()
+                val detail = resp.ok()
+                data = detail
+                diff = null
+                if (detail.status == PublishModule.SongPublishReviewBrief.STATUS_PENDING) {
+                    loadDiff(detail)
+                }
                 loadComments(pageIndex = commentPageIndex, pageSize = commentPageSize, showAlert = true)
                 initializeStatus = InitializeStatus.LOADED
             } else {
@@ -114,6 +125,18 @@ class ReviewDetailViewModel(
             initializeStatus = InitializeStatus.FAILED
         } finally {
             loading = false
+        }
+    }
+
+    // A new submission has no published song yet, so a missing song simply means there is nothing to compare.
+    private fun loadDiff(detail: PublishModule.SongPublishReviewData) = viewModelScope.launch {
+        try {
+            val resp = api.songModule.detail(detail.displayId)
+            if (resp.ok && data == detail) {
+                diff = computeReviewDiff(resp.ok(), detail)
+            }
+        } catch (e: Throwable) {
+            Logger.w("review_detail", "Failed to load the live song for diff", e)
         }
     }
 

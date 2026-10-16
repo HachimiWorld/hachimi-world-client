@@ -61,6 +61,13 @@
     <string name="review_history_snapshot_subtitle">快照副标题</string>
     <string name="review_history_snapshot_description">快照简介</string>
     <string name="review_history_snapshot_comment">快照备注</string>
+    <string name="review_diff_title">本次修改</string>
+    <string name="review_diff_baseline">以当前线上版本为基准</string>
+    <string name="review_diff_no_change">与线上版本一致</string>
+    <string name="review_diff_audio_replaced">音频文件已替换</string>
+    <string name="review_diff_collapsed">%1$d 行未改动</string>
+    <string name="review_diff_live">线上</string>
+    <string name="review_diff_proposed">本次</string>
 
     <!-- Contributor center -->
     <string name="contributor_not_contributor">你还不是贡献者，为社区作出贡献，解锁更多功能吧</string>

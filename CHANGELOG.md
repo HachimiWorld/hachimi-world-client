@@ -8,6 +8,7 @@
 ## Enhancements 改进
 
 1. The publish page, creation center, contributor center, events, settings sections and relative times ("3 minutes ago") are now translated into English, along with screen reader labels for buttons and covers. 发布页、创作中心、贡献者中心、活动、设置分组与相对时间（如「3 分钟前」）补全英文翻译，按钮与封面的读屏标签也一并补齐。
+2. Pending edit reviews now show what changed compared with the live version. 待审核的作品修改稿会列出与线上版本的差异。
 
 # 1.5.0
 

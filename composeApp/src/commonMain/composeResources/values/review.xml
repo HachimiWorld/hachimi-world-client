@@ -61,6 +61,13 @@
     <string name="review_history_snapshot_subtitle">Snapshot subtitle</string>
     <string name="review_history_snapshot_description">Snapshot description</string>
     <string name="review_history_snapshot_comment">Snapshot note</string>
+    <string name="review_diff_title">Changes</string>
+    <string name="review_diff_baseline">Compared with the live version</string>
+    <string name="review_diff_no_change">Same as the live version</string>
+    <string name="review_diff_audio_replaced">Audio file replaced</string>
+    <string name="review_diff_collapsed">%1$d unchanged lines</string>
+    <string name="review_diff_live">Live</string>
+    <string name="review_diff_proposed">Proposed</string>
 
     <!-- Contributor center -->
     <string name="contributor_not_contributor">You're not a contributor yet. Contribute to the community to unlock more features.</string>
