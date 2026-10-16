@@ -61,4 +61,23 @@
     <string name="review_history_snapshot_subtitle">快照副标题</string>
     <string name="review_history_snapshot_description">快照简介</string>
     <string name="review_history_snapshot_comment">快照备注</string>
+
+    <!-- Contributor center -->
+    <string name="contributor_not_contributor">你还不是贡献者，为社区作出贡献，解锁更多功能吧</string>
+    <string name="contributor_review_list">审核列表</string>
+    <string name="contributor_create_post">创建帖子</string>
+    <string name="contributor_check_failed">检查贡献者身份失败: %1$s</string>
+    <string name="review_list_title">审核作品 (%1$d)</string>
+    <string name="review_type_creation">发布</string>
+    <string name="review_type_modification">编辑</string>
+    <string name="review_history_no_note">无备注</string>
+    <string name="post_create_title">发布文章</string>
+    <string name="post_cover_subtitle">支持 jpg, png, webp 格式，大小不超过 10MB</string>
+    <string name="post_content_header">内容*</string>
+    <string name="post_content_subtitle">Markdown 格式</string>
+    <string name="post_content_required">请输入内容</string>
+    <string name="post_publish">发布</string>
+    <string name="post_published_title">发布成功</string>
+    <string name="post_published_text">文章已发布</string>
+    <string name="post_published_text_with_id">文章已发布（ID: %1$s）</string>
 </resources>

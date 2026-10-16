@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.events
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.events_cover_cd
+import hachimiworld.composeapp.generated.resources.events_empty
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -131,7 +135,7 @@ private fun EventsListCompact(
                         Modifier.fillMaxWidth().padding(vertical = 48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("暂无活动")
+                        Text(stringResource(Res.string.events_empty))
                     }
                 }
             } else {
@@ -190,7 +194,7 @@ private fun EventsGridExpanded(
                         Modifier.fillMaxWidth().padding(vertical = 48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("暂无活动")
+                        Text(stringResource(Res.string.events_empty))
                     }
                 }
             } else {
@@ -263,7 +267,7 @@ private fun EventCardFeatured(
                             .data(item.coverUrl)
                             .crossfade(true)
                             .build(),
-                        contentDescription = "Event cover",
+                        contentDescription = stringResource(Res.string.events_cover_cd),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -331,7 +335,7 @@ private fun EventCardVertical(
                             .data(item.coverUrl)
                             .crossfade(true)
                             .build(),
-                        contentDescription = "Event cover",
+                        contentDescription = stringResource(Res.string.events_cover_cd),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )

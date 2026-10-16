@@ -52,4 +52,7 @@
     <string name="auth_back">Back</string>
     <string name="auth_reset_success_title">Success</string>
     <string name="auth_reset_success_text">Your password has been reset successfully</string>
+
+    <string name="auth_show_password_cd">Show password</string>
+    <string name="auth_hide_password_cd">Hide password</string>
 </resources>

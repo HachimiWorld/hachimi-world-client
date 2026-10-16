@@ -1,5 +1,13 @@
 package world.hachimi.app.ui.root.component
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_login
+import hachimiworld.composeapp.generated.resources.auth_register
+import hachimiworld.composeapp.generated.resources.common_back_cd
+import hachimiworld.composeapp.generated.resources.common_menu_cd
+import hachimiworld.composeapp.generated.resources.message_entry_cd
+import hachimiworld.composeapp.generated.resources.message_entry_unread_cd
+import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,11 +51,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_login
-import hachimiworld.composeapp.generated.resources.auth_register
-import hachimiworld.composeapp.generated.resources.message_entry_cd
-import hachimiworld.composeapp.generated.resources.message_entry_unread_cd
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.api.CoilHeaders
@@ -86,7 +89,7 @@ fun CompactTopAppBar(
                 onClick = onExpandNavClick,
                 modifier = Modifier.testTag(TestTags.NAV_MENU),
             ) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                Icon(Icons.Default.Menu, contentDescription = stringResource(Res.string.common_menu_cd))
             }
             var searchText by remember { mutableStateOf("") }
             SearchBox(
@@ -134,7 +137,7 @@ fun ExpandedTopAppBar(
             if (getPlatform().name == "JVM") IconButton(onClick = {
                 navigator.back()
             }, enabled = navigator.canGoBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back_cd))
             }
             Logo()
 
@@ -202,7 +205,7 @@ private fun NameAvatar(
                     .data(avatarUrl)
                     .crossfade(true)
                     .build(),
-                contentDescription = "User Avatar",
+                contentDescription = stringResource(Res.string.user_space_user_avatar_cd),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -216,6 +219,7 @@ private fun AvatarOnly(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val avatarCd = stringResource(Res.string.user_space_user_avatar_cd)
     Box(
         modifier = modifier
             .padding(start = 8.dp)
@@ -224,7 +228,7 @@ private fun AvatarOnly(
             .background(LocalContentColor.current.copy(0.12f))
             // testTag + contentDescription on the clickable node so UI Automator can find it
             // even when AsyncImage has no bitmap (guest blank avatar).
-            .semantics { contentDescription = "User Avatar" }
+            .semantics { contentDescription = avatarCd }
             .testTag(TestTags.PROFILE_AVATAR)
             .clickable(onClick = onClick)
     ) {

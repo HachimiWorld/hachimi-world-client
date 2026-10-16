@@ -1,5 +1,16 @@
 package world.hachimi.app.ui.player.fullscreen
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_pause_cd
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
+import hachimiworld.composeapp.generated.resources.player_collapse_cd
+import hachimiworld.composeapp.generated.resources.player_like
+import hachimiworld.composeapp.generated.resources.player_next_cd
+import hachimiworld.composeapp.generated.resources.player_previous_cd
+import hachimiworld.composeapp.generated.resources.player_share
+import hachimiworld.composeapp.generated.resources.player_unlike
+import hachimiworld.composeapp.generated.resources.report_action
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -59,12 +70,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
-import hachimiworld.composeapp.generated.resources.player_like
-import hachimiworld.composeapp.generated.resources.player_share
-import hachimiworld.composeapp.generated.resources.report_action
-import hachimiworld.composeapp.generated.resources.player_unlike
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import world.hachimi.app.api.module.ReportModule
@@ -276,7 +281,7 @@ private fun TabContent(
 @Composable
 private fun ShrinkButton(modifier: Modifier, onClick: () -> Unit) {
     HachimiIconButton(modifier = modifier, onClick = onClick) {
-        Icon(Icons.Default.CloseFullscreen, "Close")
+        Icon(Icons.Default.CloseFullscreen, stringResource(Res.string.player_collapse_cd))
     }
 }
 
@@ -384,7 +389,7 @@ private fun Footer(
                         showDropdownMenu = false
                     },
                     text = { Text(stringResource(Res.string.player_add_to_playlist_title)) },
-                    leadingIcon = { Icon(Icons.Default.Add, "Add to playlist") },
+                    leadingIcon = { Icon(Icons.Default.Add, stringResource(Res.string.player_add_to_playlist_title)) },
                 )
                 DropdownMenuItem(
                     onClick = {
@@ -392,7 +397,7 @@ private fun Footer(
                         showDropdownMenu = false
                     },
                     text = { Text(stringResource(Res.string.player_share)) },
-                    leadingIcon = { Icon(Icons.Default.Share, "Share") },
+                    leadingIcon = { Icon(Icons.Default.Share, stringResource(Res.string.player_share)) },
                 )
                 if (onReportClick != null) {
                     DropdownMenuItem(
@@ -454,14 +459,14 @@ private fun Controls(
             )
         }
         ControlButton(onClick = onPreviousClick) {
-            Icon(Icons.Default.SkipPrevious, "Skip Previous")
+            Icon(Icons.Default.SkipPrevious, stringResource(Res.string.player_previous_cd))
         }
         ControlButton(onClick = onPlayOrPauseClick) {
-            if (playing) Icon(Icons.Default.Pause, "Pause")
-            else Icon(Icons.Default.PlayArrow, "Play")
+            if (playing) Icon(Icons.Default.Pause, stringResource(Res.string.common_pause_cd))
+            else Icon(Icons.Default.PlayArrow, stringResource(Res.string.common_play_cd))
         }
         ControlButton(onClick = onNextClick) {
-            Icon(Icons.Default.SkipNext, "Skip Next")
+            Icon(Icons.Default.SkipNext, stringResource(Res.string.player_next_cd))
         }
         ControlButton(onClick = onMoreClick) {
             Icon(Icons.Default.MoreVert, "More", tint = LocalContentColor.current.copy(0.6f))

@@ -3,125 +3,88 @@ package world.hachimi.app.util
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.date_after_tomorrow
+import hachimiworld.composeapp.generated.resources.date_before_yesterday
+import hachimiworld.composeapp.generated.resources.date_today
+import hachimiworld.composeapp.generated.resources.date_tomorrow
+import hachimiworld.composeapp.generated.resources.date_yesterday
+import hachimiworld.composeapp.generated.resources.time_ago_days
+import hachimiworld.composeapp.generated.resources.time_ago_days_hours
+import hachimiworld.composeapp.generated.resources.time_ago_hours
+import hachimiworld.composeapp.generated.resources.time_ago_hours_minutes
+import hachimiworld.composeapp.generated.resources.time_ago_minutes
+import hachimiworld.composeapp.generated.resources.time_ago_minutes_seconds
+import hachimiworld.composeapp.generated.resources.time_ago_seconds
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
 import kotlin.time.Instant
 
 @Composable
 fun formatTime(instant: Instant, distance: Boolean = false, thresholdDay: Int = 7, precise: Boolean = true, fullFormat: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO): String {
-    return remember(instant, distance, thresholdDay, precise, fullFormat) {
-        val now = Clock.System.now()
-        if (distance) {
-            formatDistance(time = instant, thresholdDay = thresholdDay, precise = precise, now = now, fullFormat = fullFormat)
-        } else {
+    return if (distance) {
+        formatDistance(time = instant, thresholdDay = thresholdDay, precise = precise, fullFormat = fullFormat)
+    } else {
+        remember(instant, fullFormat) {
             fullFormat.format(instant.toLocalDateTime(TimeZone.currentSystemDefault()))
         }
     }
 }
 
-@Stable
+@Composable
 fun formatDaysDistance(days: Int): String? {
-    return when (days) {
-        -2 -> "后天"
-        -1 -> "明天"
-        0 -> "今天"
-        1 -> "昨天"
-        2 -> "前天"
+    val res = when (days) {
+        -2 -> Res.string.date_after_tomorrow
+        -1 -> Res.string.date_tomorrow
+        0 -> Res.string.date_today
+        1 -> Res.string.date_yesterday
+        2 -> Res.string.date_before_yesterday
         else -> null
     }
-}
-
-@Stable
-fun formatDuration(duration: Duration, precise: Boolean, minUnit: DurationUnit = DurationUnit.SECONDS, maxUnit: DurationUnit = DurationUnit.DAYS): String {
-    val secsAbs = abs(duration.inWholeSeconds)
-    val minsAbs = abs(duration.inWholeMinutes)
-    val hoursAbs = abs(duration.inWholeHours)
-    val daysAbs = abs(duration.inWholeDays)
-
-    if (secsAbs == 0L) return "0 秒"
-
-    val unit = if (secsAbs < 1) {
-        DurationUnit.MILLISECONDS
-    } else if (secsAbs < 60) {
-        DurationUnit.SECONDS
-    } else if (minsAbs < 60) {
-        DurationUnit.MINUTES
-    } else if (hoursAbs < 24) {
-        DurationUnit.HOURS
-    } else {
-        DurationUnit.DAYS
-    }
-
-    val actualUnit = unit.coerceIn(minUnit, maxUnit)
-
-    return when (actualUnit) {
-        DurationUnit.NANOSECONDS, DurationUnit.MICROSECONDS, DurationUnit.MILLISECONDS, DurationUnit.SECONDS -> "$secsAbs 秒"
-        DurationUnit.MINUTES -> if (precise) {
-            val remainSecs = secsAbs % 60
-            "$minsAbs 分 $remainSecs 秒种"
-        } else {
-            "$minsAbs 分钟"
-        }
-        DurationUnit.HOURS -> if (precise) {
-            val remainMinutes = minsAbs % 60
-            "$hoursAbs 小时 $remainMinutes 分钟"
-        } else {
-            "$hoursAbs 小时"
-        }
-        DurationUnit.DAYS -> if (precise) {
-            val remainHours = hoursAbs % 24
-            "$daysAbs 天 $remainHours 小时"
-        } else {
-            "$daysAbs 天"
-        }
-
-        else -> error("unreachable")
-    }
+    return res?.let { stringResource(it) }
 }
 
 /**
  * Convert duration to format like: 10 分钟 20 秒前
  */
-@Stable
+@Composable
 fun formatDistance(distance: Duration, precise: Boolean): String {
     if (distance.isNegative()) {
-        val secsAbs = abs(distance.inWholeSeconds)
-        val minsAbs = abs(distance.inWholeMinutes)
-        val hoursAbs = abs(distance.inWholeHours)
-        val daysAbs = abs(distance.inWholeDays)
+        val secsAbs = abs(distance.inWholeSeconds).toInt()
+        val minsAbs = abs(distance.inWholeMinutes).toInt()
+        val hoursAbs = abs(distance.inWholeHours).toInt()
+        val daysAbs = abs(distance.inWholeDays).toInt()
 
         if (secsAbs < 60) {
-            return "$secsAbs 秒前"
+            return pluralStringResource(Res.plurals.time_ago_seconds, secsAbs, secsAbs)
         }
         if (minsAbs < 60) {
             return if (precise) {
-                val remainSecs = secsAbs % 60
-                "$minsAbs 分钟 $remainSecs 秒前"
+                stringResource(Res.string.time_ago_minutes_seconds, minsAbs, secsAbs % 60)
             } else {
-                "$minsAbs 分钟前"
+                pluralStringResource(Res.plurals.time_ago_minutes, minsAbs, minsAbs)
             }
         }
         if (hoursAbs < 24) {
             return if (precise) {
-                val remainMinutes = minsAbs % 60
-                "$hoursAbs 小时 $remainMinutes 分钟前"
+                stringResource(Res.string.time_ago_hours_minutes, hoursAbs, minsAbs % 60)
             } else {
-                "$hoursAbs 小时前"
+                pluralStringResource(Res.plurals.time_ago_hours, hoursAbs, hoursAbs)
             }
         }
         return if (precise) {
-            val remainHours = hoursAbs % 24
-            "$daysAbs 天 $remainHours 小时前"
+            stringResource(Res.string.time_ago_days_hours, daysAbs, hoursAbs % 24)
         } else {
-            "$daysAbs 天前"
+            pluralStringResource(Res.plurals.time_ago_days, daysAbs, daysAbs)
         }
     } else {
         // TODO: 完善往后数
@@ -132,12 +95,12 @@ fun formatDistance(distance: Duration, precise: Boolean): String {
     }
 }
 
-@Stable
+@Composable
 fun formatDistance(
     time: Instant,
     precise: Boolean,
     thresholdDay: Int = 7,
-    now: Instant = Clock.System.now(),
+    now: Instant = remember(time) { Clock.System.now() },
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
     fullFormat: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO
 ): String {
@@ -145,8 +108,7 @@ fun formatDistance(
     return if (abs(distance.inWholeDays) <= thresholdDay) {
         formatDistance(distance, precise)
     } else {
-        val local = time.toLocalDateTime(timeZone)
-        local.format(fullFormat)
+        remember(time, timeZone, fullFormat) { time.toLocalDateTime(timeZone).format(fullFormat) }
     }
 }
 

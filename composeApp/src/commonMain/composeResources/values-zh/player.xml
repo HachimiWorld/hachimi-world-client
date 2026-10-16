@@ -45,4 +45,24 @@
     <string name="info_open_in_new_tab_cd">在新窗口打开</string>
     <string name="info_play_count">播放量</string>
     <string name="player_song_unavailable">该作品已失效，已从播放队列移除</string>
+
+    <string name="player_load_failed">播放器载入失败</string>
+    <string name="player_and_others">等人</string>
+    <string name="player_share_text">分享哈基米音乐《%1$s》by %2$s - 基米天堂（复制到浏览器访问）\n%3$s</string>
+    <string name="player_previous_cd">上一首</string>
+    <string name="player_next_cd">下一首</string>
+    <string name="player_expand_cd">展开</string>
+    <string name="player_collapse_cd">收起</string>
+    <string name="player_volume_cd">音量</string>
+    <string name="player_shuffle_on_cd">随机播放已开启</string>
+    <string name="player_shuffle_off_cd">随机播放已关闭</string>
+    <string name="player_repeat_on_cd">循环播放已开启</string>
+    <string name="player_repeat_off_cd">循环播放已关闭</string>
+    <string name="player_queue_cd">播放队列</string>
+    <string name="player_lyrics_cd">歌词</string>
+    <string name="player_lyrics_loading_cd">歌词加载中</string>
+    <string name="player_no_lyrics_cd">暂无歌词</string>
+    <string name="player_interlude_cd">间奏</string>
+
+    <string name="player_playing_cd">正在播放</string>
 </resources>

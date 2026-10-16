@@ -9,7 +9,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.*
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_warning_cd
+import hachimiworld.composeapp.generated.resources.player_client_api_version_client_label
+import hachimiworld.composeapp.generated.resources.player_client_api_version_message
+import hachimiworld.composeapp.generated.resources.player_client_api_version_server_label
+import hachimiworld.composeapp.generated.resources.player_client_api_version_server_min_label
+import hachimiworld.composeapp.generated.resources.player_client_api_version_title
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -39,7 +45,7 @@ fun ClientApiVersionIncompatibleDialog(global: GlobalStore) {
                 }
             },
             icon = {
-                Icon(Icons.Default.Warning, "Warning")
+                Icon(Icons.Default.Warning, stringResource(Res.string.common_warning_cd))
             },
             onDismissRequest = {
                 // Do nothing

@@ -1,5 +1,11 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_cover_cd
+import hachimiworld.composeapp.generated.resources.player_playing_cd
+import hachimiworld.composeapp.generated.resources.player_queue_clear
+import hachimiworld.composeapp.generated.resources.player_queue_title
+import hachimiworld.composeapp.generated.resources.player_remove_from_playlist_cd
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -42,11 +48,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_cover_cd
-import hachimiworld.composeapp.generated.resources.player_queue_clear
-import hachimiworld.composeapp.generated.resources.player_queue_title
-import hachimiworld.composeapp.generated.resources.player_remove_from_playlist_cd
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
@@ -163,7 +164,7 @@ private fun Item(
             )
             androidx.compose.animation.AnimatedVisibility(visible = isPlaying, enter = fadeIn(), exit = fadeOut()) {
                 Box(Modifier.fillMaxSize().background(Color.Black.copy(0.12f)), Alignment.Center) {
-                    Icon(Icons.Default.Headphones, "Playing", tint = Color.White)
+                    Icon(Icons.Default.Headphones, stringResource(Res.string.player_playing_cd), tint = Color.White)
                 }
             }
         }

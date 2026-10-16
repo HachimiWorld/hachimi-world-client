@@ -8,4 +8,7 @@
     <string name="search_sort_relevance">Most relevant</string>
     <string name="search_sort_newest">Newest</string>
     <string name="search_sort_oldest">Oldest</string>
+
+    <string name="search_matched_origin_title">Original: %1$s</string>
+    <string name="search_matched_origin_artist">Original artist: %1$s</string>
 </resources>

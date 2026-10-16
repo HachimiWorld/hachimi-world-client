@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.creation.artwork
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_tab_published
+import hachimiworld.composeapp.generated.resources.artwork_tab_submissions
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import org.jetbrains.compose.resources.StringResource
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -17,9 +22,9 @@ import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
 
 private enum class Tab(
-    val title: String
+    val title: StringResource
 ) {
-    Published("已发布"), PR("我的提交")
+    Published(Res.string.artwork_tab_published), PR(Res.string.artwork_tab_submissions)
 }
 
 @Composable
@@ -30,7 +35,7 @@ fun MyArtworkScreen() {
         val scope = rememberCoroutineScope()
 
         TabBar(
-            tabs = Tab.entries.map { it.title },
+            tabs = Tab.entries.map { stringResource(it.title) },
             selectedIndex = pagerState.currentPage,
             onTabSelected = { index ->
                 scope.launch {

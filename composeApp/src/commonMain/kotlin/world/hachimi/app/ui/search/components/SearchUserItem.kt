@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.search.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_avatar_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,7 +51,7 @@ fun SearchUserItem(
                         .data(avatarUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Avatar",
+                    contentDescription = stringResource(Res.string.common_avatar_cd),
                     contentScale = ContentScale.Crop
                 )
             }

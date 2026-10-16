@@ -27,4 +27,97 @@
 
     <string name="artwork_jmid_prefix_not_set">Jmid prefix not set</string>
     <string name="artwork_jmid_already_used">This Jmid is already used</string>
+
+    <!-- Publish screen -->
+    <string name="publish_screen_title_create">Publish a song</string>
+    <string name="publish_screen_title_edit">Edit song</string>
+    <string name="publish_notice">Before you submit:\nWe respect the work of every creator, so we don't accept reposts of other people's works.\nIf this is your first submission, you can link your Bilibili account on your profile page, which helps us confirm that you are the author.\nFor now we don't accept:\n1. Very short works (we suggest at least one full section);\n2. Works unrelated to Hachimi music;\n3. Works unsuitable for the site (such as politically sensitive content).</string>
+    <string name="publish_audio_header">Audio*</string>
+    <string name="publish_audio_subtitle">FLAC or MP3, up to 20MB</string>
+    <string name="publish_audio_download">Download audio</string>
+    <string name="publish_audio_change">Change audio</string>
+    <string name="publish_audio_choose">Choose file</string>
+    <string name="publish_cover_header">Cover*</string>
+    <string name="publish_cover_subtitle">JPG, PNG or WebP. Use a square image.</string>
+    <string name="publish_jmid_header">Jmid*</string>
+    <string name="publish_jmid_set_prefix">Set prefix</string>
+    <string name="publish_title_header">Title*</string>
+    <string name="publish_title_subtitle">Use plain text. Don't put tags, emoji or symbols in the title, e.g. 钢铁雄基, 哈基哈基天使</string>
+    <string name="publish_subtitle_header">Subtitle</string>
+    <string name="publish_subtitle_subtitle">Optional. Usually a short description, or where an OST comes from, such as an anime OP or a game soundtrack.</string>
+    <string name="publish_tags_header">Tags</string>
+    <string name="publish_tags_subtitle">Describe the genre (e.g. Classical, Pop, J-Pop, ACG, R&amp;B) and the kind of creation (e.g. 纯净哈基米, 原曲不使用).\nAvoid adding too many tags. For English tags, capitalize each word and separate words with spaces, or use the standard spelling. Don't use symbols or emoji.</string>
+    <string name="publish_description_header">Description</string>
+    <string name="publish_description_subtitle">Introduce your song, tell a story, or describe how you made it</string>
+    <string name="publish_lyrics_header">Lyrics</string>
+    <string name="publish_lyrics_subtitle">Synced lyrics in LRC format are recommended</string>
+    <string name="publish_lyrics_tool">LRC maker</string>
+    <string name="publish_lyrics_type_lrc">LRC lyrics</string>
+    <string name="publish_lyrics_type_text">Plain lyrics</string>
+    <string name="publish_lyrics_type_none">None</string>
+    <string name="publish_lyrics_none_warning">Plain lyrics at least are strongly recommended</string>
+    <string name="publish_creation_type_header">Creation type*</string>
+    <string name="publish_creation_type_subtitle">If your song reworks an existing work (such as an arrangement of Canon in D), choose Derivative and fill in the original. If it reworks a Hachimi song (such as a cover), choose Tertiary derivative.</string>
+    <string name="publish_origin_title_header">Original title*</string>
+    <string name="publish_origin_title_supporting">e.g. Canon in D</string>
+    <string name="publish_origin_artist_header">Original artist</string>
+    <string name="publish_origin_artist_supporting">If there are several artists, the main one is enough for now</string>
+    <string name="publish_origin_link_header">Original link</string>
+    <string name="publish_origin_link_supporting">Recommended. Use an https:// link</string>
+    <string name="publish_derive_id_header">Derivative Jmid</string>
+    <string name="publish_derive_id_supporting">If the derivative is on this site, the ID is enough and no title or link is needed</string>
+    <string name="publish_derive_title_header">Derivative title*</string>
+    <string name="publish_derive_artist_header">Derivative artist</string>
+    <string name="publish_derive_link_header">Derivative link</string>
+    <string name="publish_staff_subtitle">If more than one person made this song, add them here with their role (such as mixing or arrangement). You can pick a user on this site or just enter a name.</string>
+    <string name="publish_links_subtitle">If your song is also published on other platforms, add the links here</string>
+    <string name="publish_explicit_header">Explicit content*</string>
+    <string name="publish_explicit_subtitle">If the song contains profanity, vulgar or violent content, especially anything unsuitable for children, be sure to mark it</string>
+    <string name="publish_explicit_no">All ages</string>
+    <string name="publish_explicit_yes">Not for all ages</string>
+    <string name="publish_submit_create">Submit song</string>
+    <string name="publish_submit_edit">Submit changes</string>
+    <string name="publish_success_title_create">Song submitted</string>
+    <string name="publish_success_title_edit">Changes submitted</string>
+    <string name="publish_success_text_create">Your song ID is %1$s. For a first submission we need to confirm that you are the author, so keep an eye on private messages on the related video platforms. Reviews are done by hand by the original contributors and may take a while. Please be patient or contact us. Thank you for understanding.</string>
+    <string name="publish_success_text_edit">Changes submitted. Please wait for the review, or contact us.</string>
+    <string name="publish_add_staff_title">Add member</string>
+    <string name="publish_add_staff_role">Role</string>
+    <string name="publish_add_staff_role_supporting">e.g. arrangement, lyrics, mixing, guitar</string>
+    <string name="publish_add_staff_internal">User on this site</string>
+    <string name="publish_add_staff_external">Artist outside this site</string>
+    <string name="publish_add_staff_name">Name</string>
+    <string name="publish_add_link_title">Add external link</string>
+    <string name="publish_link_choose_platform">Choose platform</string>
+    <string name="publish_link_bv_placeholder">BV ID</string>
+    <string name="publish_link_sm_placeholder">sm ID</string>
+    <string name="publish_link_url_placeholder">Link</string>
+    <string name="publish_link_platform_required">Please choose a platform</string>
+    <string name="publish_link_invalid_bv">Please enter a valid BV ID</string>
+    <string name="publish_link_invalid_sm">Please enter a valid sm ID</string>
+    <string name="publish_link_https_required">Please use an https:// link</string>
+
+    <!-- Jmid prefix dialogs -->
+    <string name="publish_init_jmid_title">Set your Jmid prefix</string>
+    <string name="publish_init_jmid_desc_format">A Jmid identifies a song, in the form JM-ABCD-001</string>
+    <string name="publish_init_jmid_desc_exclusive">Each creator owns their prefix, and it can't be changed once set</string>
+    <string name="publish_init_jmid_prefix_placeholder">Prefix</string>
+    <string name="publish_prefix_inactive_title">First submission under review</string>
+    <string name="publish_prefix_inactive_text">Your first song is still under review. Please wait until it has been reviewed before publishing more.</string>
+
+    <!-- My artworks and artwork detail -->
+    <string name="artwork_tab_published">Published</string>
+    <string name="artwork_tab_submissions">My submissions</string>
+    <string name="artwork_my_songs">My songs (%1$d)</string>
+    <string name="artwork_publish_time">Published</string>
+    <string name="artwork_all_submissions">All submissions (%1$d)</string>
+    <string name="artwork_submissions_empty">Nothing here yet. Publish your first song.</string>
+    <string name="artwork_tab_detail">Details</string>
+    <string name="artwork_tab_statistics">Statistics</string>
+    <string name="artwork_tab_history">Edit history</string>
+    <string name="artwork_edit">Edit song</string>
+    <string name="artwork_change_jmid_title">Change Jmid</string>
+    <string name="artwork_new_jmid">New Jmid</string>
+    <string name="artwork_change_jmid_unavailable_title">Can't change it now</string>
+    <string name="artwork_change_jmid_unavailable_text">You don't have a Jmid prefix of your own yet, so it can't be changed for now</string>
 </resources>

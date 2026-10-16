@@ -1,5 +1,11 @@
 package world.hachimi.app.ui.creation.artwork
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_my_songs
+import hachimiworld.composeapp.generated.resources.artwork_publish_time
+import hachimiworld.composeapp.generated.resources.publish_screen_title_create
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,14 +91,14 @@ fun PublishedTabContent(
                         ) {
                             Text(
                                 modifier = Modifier.weight(1f),
-                                text = "我的作品 (${vm.total})",
+                                text = stringResource(Res.string.artwork_my_songs, vm.total),
                                 style = MaterialTheme.typography.titleLarge
                             )
 
                             Button(onClick = {
                                 navigator.push(Route.Root.CreationCenter.Publish)
                             }) {
-                                Text("发布作品")
+                                Text(stringResource(Res.string.publish_screen_title_create))
                             }
                         }
                     }
@@ -155,7 +161,7 @@ private fun ArtworkItem(
                             .data(coverUrl)
                             .crossfade(true)
                             .build(),
-                        contentDescription = "Cover Image",
+                        contentDescription = stringResource(Res.string.song_cover_cd),
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -168,7 +174,7 @@ private fun ArtworkItem(
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "发布时间", style = MaterialTheme.typography.bodySmall)
+            Text(text = stringResource(Res.string.artwork_publish_time), style = MaterialTheme.typography.bodySmall)
             Text(
                 text = formatTime(
                     createTime,

@@ -1,5 +1,10 @@
 package world.hachimi.app.model
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.post_content_required
+import hachimiworld.composeapp.generated.resources.publish_cover_required
+import hachimiworld.composeapp.generated.resources.publish_image_too_large
+import hachimiworld.composeapp.generated.resources.publish_title_required
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -72,7 +77,7 @@ class CreatePostViewModel(
                 val size = image.size()
 
                 if (size > 10 * 1024 * 1024) {
-                    global.alert("Image too large")
+                    global.alert(Res.string.publish_image_too_large)
                     return@launch
                 }
 
@@ -115,15 +120,15 @@ class CreatePostViewModel(
             val t = title.trim()
             val c = content.trim()
             if (t.isBlank()) {
-                global.alert("Please enter a title")
+                global.alert(Res.string.publish_title_required)
                 return@launch
             }
             if (c.isBlank()) {
-                global.alert("Please enter content")
+                global.alert(Res.string.post_content_required)
                 return@launch
             }
             if (coverFileId.isNullOrBlank()) {
-                global.alert("Please upload cover")
+                global.alert(Res.string.publish_cover_required)
                 return@launch
             }
 

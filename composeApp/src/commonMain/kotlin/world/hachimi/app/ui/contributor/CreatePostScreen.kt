@@ -1,5 +1,19 @@
 package world.hachimi.app.ui.contributor
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_cover_cd
+import hachimiworld.composeapp.generated.resources.common_done
+import hachimiworld.composeapp.generated.resources.post_content_header
+import hachimiworld.composeapp.generated.resources.post_content_subtitle
+import hachimiworld.composeapp.generated.resources.post_cover_subtitle
+import hachimiworld.composeapp.generated.resources.post_create_title
+import hachimiworld.composeapp.generated.resources.post_publish
+import hachimiworld.composeapp.generated.resources.post_published_text
+import hachimiworld.composeapp.generated.resources.post_published_text_with_id
+import hachimiworld.composeapp.generated.resources.post_published_title
+import hachimiworld.composeapp.generated.resources.publish_cover_header
+import hachimiworld.composeapp.generated.resources.publish_title_header
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,7 +68,7 @@ fun CreatePostScreen(global: GlobalStore = koinInject(), vm: CreatePostViewModel
     }
 
     ScreenScaffold(
-        title = { Text("发布文章", maxLines = 1) },
+        title = { Text(stringResource(Res.string.post_create_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back
     ) {
@@ -87,8 +101,8 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     FormItem(
-                        header = { Text("设置封面*") },
-                        subtitle = { Text("支持 jpg, png, webp 格式，大小不超过 10MB") }
+                        header = { Text(stringResource(Res.string.publish_cover_header)) },
+                        subtitle = { Text(stringResource(Res.string.post_cover_subtitle)) }
                     ) {
                         Surface(
                             Modifier.height(200.dp).aspectRatio(16f / 9f),
@@ -102,7 +116,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                             ) {
                                 AsyncImage(
                                     model = vm.coverImage,
-                                    contentDescription = "Cover Image",
+                                    contentDescription = stringResource(Res.string.common_cover_cd),
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
@@ -117,7 +131,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                         }
                     }
 
-                    FormItem(header = { Text("标题*") }) {
+                    FormItem(header = { Text(stringResource(Res.string.publish_title_header)) }) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = vm.title,
@@ -127,8 +141,8 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                     }
 
                     FormItem(
-                        header = { Text("内容*") },
-                        subtitle = { Text("Markdown 格式") }
+                        header = { Text(stringResource(Res.string.post_content_header)) },
+                        subtitle = { Text(stringResource(Res.string.post_content_subtitle)) }
                     ) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -151,7 +165,7 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
                         enabled = !vm.isOperating && !vm.coverImageUploading,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("发布")
+                        Text(stringResource(Res.string.post_publish))
                     }
                 }
             }
@@ -159,17 +173,18 @@ private fun Content(vm: CreatePostViewModel, global: GlobalStore) {
 
         if (vm.showSuccessDialog) {
             AlertDialog(
-                title = { Text("发布成功") },
+                title = { Text(stringResource(Res.string.post_published_title)) },
                 text = {
                     Text(
-                        if (vm.publishedPostId != null) "文章已发布（ID: ${vm.publishedPostId}）" else "文章已发布"
+                        vm.publishedPostId?.let { stringResource(Res.string.post_published_text_with_id, it.toString()) }
+                            ?: stringResource(Res.string.post_published_text)
                     )
                 },
                 confirmButton = {
                     Button(onClick = {
                         vm.closeSuccessDialog()
                         navigator.back()
-                    }) { Text("完成") }
+                    }) { Text(stringResource(Res.string.common_done)) }
                 },
                 onDismissRequest = {
                     vm.closeSuccessDialog()

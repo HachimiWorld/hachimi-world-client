@@ -12,4 +12,6 @@
     <string name="playlist_unfavorite">已收藏</string>
     <string name="playlist_update_time">%1$s</string>
     <string name="playlist_login_required">歌单功能登录后可用</string>
+
+    <string name="playlist_favorites_title">收藏的歌单</string>
 </resources>

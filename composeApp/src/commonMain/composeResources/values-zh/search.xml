@@ -8,4 +8,7 @@
     <string name="search_sort_relevance">最相关</string>
     <string name="search_sort_newest">最新发布</string>
     <string name="search_sort_oldest">最早发布</string>
+
+    <string name="search_matched_origin_title">原曲：%1$s</string>
+    <string name="search_matched_origin_artist">原作者：%1$s</string>
 </resources>

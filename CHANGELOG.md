@@ -5,6 +5,10 @@
 1. Message center: a bell in the top bar (a sidebar entry on wide screens) shows the unread count and opens system notifications, received likes and new followers. 新增消息中心：顶栏铃铛（宽屏为侧栏入口）显示未读数，可查看系统通知、收到的赞和新粉丝。
 2. Reports: songs, playlists and users can be reported from their "more" menu, and the result arrives as a system notification. The committee center lists reports; contributors decide on them, can hide a song or playlist or reset a profile, and appoint members. Owners of hidden content see why, and songs that are no longer available stay in playlists and likes as placeholders. 新增举报：可在作品、歌单和用户页的「更多」菜单中举报，处理结果以系统通知告知；委员会中心可查看举报队列，贡献者可处理举报（隐藏作品或歌单、重置资料）并任命委员；内容被隐藏时作者可看到原因，失效的作品在歌单和点赞列表中以占位显示。
 
+## Enhancements 改进
+
+1. The publish page, creation center, contributor center, events, settings sections and relative times ("3 minutes ago") are now translated into English, along with screen reader labels for buttons and covers. 发布页、创作中心、贡献者中心、活动、设置分组与相对时间（如「3 分钟前」）补全英文翻译，按钮与封面的读屏标签也一并补齐。
+
 # 1.5.0
 
 ## Enhancements 改进

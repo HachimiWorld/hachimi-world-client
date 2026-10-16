@@ -1,5 +1,14 @@
 package world.hachimi.app.ui.component
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.review_status_approved
+import hachimiworld.composeapp.generated.resources.review_status_pending
+import hachimiworld.composeapp.generated.resources.review_status_rejected
+import hachimiworld.composeapp.generated.resources.review_type_creation
+import hachimiworld.composeapp.generated.resources.review_type_modification
+import hachimiworld.composeapp.generated.resources.review_unknown
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,16 +67,16 @@ fun ReviewItem(
         else -> Icons.Outlined.Schedule
     }
     val statusText = when (status) {
-        PublishModule.SongPublishReviewBrief.STATUS_PENDING -> "待审核"
-        PublishModule.SongPublishReviewBrief.STATUS_APPROVED -> "通过"
-        PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> "退回"
-        else -> "未知"
-    }
+        PublishModule.SongPublishReviewBrief.STATUS_PENDING -> Res.string.review_status_pending
+        PublishModule.SongPublishReviewBrief.STATUS_APPROVED -> Res.string.review_status_approved
+        PublishModule.SongPublishReviewBrief.STATUS_REJECTED -> Res.string.review_status_rejected
+        else -> Res.string.review_unknown
+    }.let { stringResource(it) }
     val typeText = when (type) {
-        PublishModule.SongPublishReviewBrief.TYPE_CREATION -> "发布"
-        PublishModule.SongPublishReviewBrief.TYPE_MODIFICATION -> "编辑"
-        else -> "未知"
-    }
+        PublishModule.SongPublishReviewBrief.TYPE_CREATION -> Res.string.review_type_creation
+        PublishModule.SongPublishReviewBrief.TYPE_MODIFICATION -> Res.string.review_type_modification
+        else -> Res.string.review_unknown
+    }.let { stringResource(it) }
 
     Column(
         modifier
@@ -127,7 +136,7 @@ fun ReviewItem(
                         .data(coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Cover Image",
+                    contentDescription = stringResource(Res.string.song_cover_cd),
                     contentScale = ContentScale.Crop
                 )
             }

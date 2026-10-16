@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_and_others
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -49,7 +52,7 @@ fun AuthorAndPV(
         if (hasMultipleArtists) {
             Text(
                 modifier = Modifier.padding(start = 4.dp),
-                text = "等人",
+                text = stringResource(Res.string.player_and_others),
                 style = subtitleStyle,
                 color = LocalContentColor.current.copy(0.6f)
             )

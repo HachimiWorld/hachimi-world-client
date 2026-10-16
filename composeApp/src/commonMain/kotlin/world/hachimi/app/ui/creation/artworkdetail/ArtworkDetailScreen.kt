@@ -1,5 +1,24 @@
 package world.hachimi.app.ui.creation.artworkdetail
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.artwork_change_jmid_title
+import hachimiworld.composeapp.generated.resources.artwork_change_jmid_unavailable_text
+import hachimiworld.composeapp.generated.resources.artwork_change_jmid_unavailable_title
+import hachimiworld.composeapp.generated.resources.artwork_details_title
+import hachimiworld.composeapp.generated.resources.artwork_edit
+import hachimiworld.composeapp.generated.resources.artwork_new_jmid
+import hachimiworld.composeapp.generated.resources.artwork_tab_detail
+import hachimiworld.composeapp.generated.resources.artwork_tab_history
+import hachimiworld.composeapp.generated.resources.artwork_tab_statistics
+import hachimiworld.composeapp.generated.resources.common_cancel
+import hachimiworld.composeapp.generated.resources.common_change
+import hachimiworld.composeapp.generated.resources.common_close
+import hachimiworld.composeapp.generated.resources.moderation_song_hidden_body
+import hachimiworld.composeapp.generated.resources.moderation_song_hidden_title
+import hachimiworld.composeapp.generated.resources.moderation_submit_modification
+import hachimiworld.composeapp.generated.resources.review_id_label
+import hachimiworld.composeapp.generated.resources.review_subtitle_label
+import hachimiworld.composeapp.generated.resources.review_title_label
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,9 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.common_close
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -49,18 +67,17 @@ import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.LocalTextStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.report.ModerationNotice
-import hachimiworld.composeapp.generated.resources.moderation_song_hidden_body
-import hachimiworld.composeapp.generated.resources.moderation_song_hidden_title
-import hachimiworld.composeapp.generated.resources.moderation_submit_modification
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.ui.util.listTailPadding
 
 private enum class Tab(
-    val title: String
+    val title: StringResource
 ) {
-    Detail("详情"), Statistics("统计数据"), ChangeHistory("编辑历史")
+    Detail(Res.string.artwork_tab_detail),
+    Statistics(Res.string.artwork_tab_statistics),
+    ChangeHistory(Res.string.artwork_tab_history)
 }
 
 @Composable
@@ -76,7 +93,7 @@ fun ArtworkDetailScreen(
     }
 
     ScreenScaffold(
-        title = { Text("作品详情", maxLines = 1) },
+        title = { Text(stringResource(Res.string.artwork_details_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back
     ) {
@@ -108,13 +125,13 @@ fun ArtworkDetailScreen(
                 Tab.entries.forEachIndexed { index, tab ->
                     val selected = pagerState.currentPage == index
                     if (selected) AccentButton(onClick = {}) {
-                        Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(text = stringResource(tab.title), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     } else Button(onClick = {
                         scope.launch {
                             pagerState.animateScrollToPage(index)
                         }
                     }) {
-                        Text(text = tab.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(text = stringResource(tab.title), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
@@ -170,21 +187,21 @@ private fun DetailContent(
                 Button(onClick = {
                     navigator.push(Route.Root.CreationCenter.Modify(songId = vm.detail?.id ?: 0L))
                 }) {
-                    Text("编辑作品")
+                    Text(stringResource(Res.string.artwork_edit))
                 }
             }
 
-            PropertyItem(label = { Text("标题") }) {
+            PropertyItem(label = { Text(stringResource(Res.string.review_title_label)) }) {
                 Text(detail.title)
             }
-            PropertyItem(label = { Text("副标题") }) {
+            PropertyItem(label = { Text(stringResource(Res.string.review_subtitle_label)) }) {
                 Text(detail.subtitle)
             }
             PropertyItem(
                 label = {
-                    Text("基米ID")
+                    Text(stringResource(Res.string.review_id_label))
                     IconButton(onClick = { vm.startChangeJmid() }, enabled = !vm.changeOperating) {
-                        Icon(Icons.Default.Edit, contentDescription = "Change")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(Res.string.common_change))
                     }
                 }
             ) {
@@ -236,23 +253,23 @@ private fun ChangeJmidDialogHost(
         if (vm.changeJmidAvailable) {
             AlertDialog(
                 modifier = Modifier.width(300.dp),
-                title = { Text("更改基米 ID") },
+                title = { Text(stringResource(Res.string.artwork_change_jmid_title)) },
                 onDismissRequest = { vm.cancelChangeJmid() },
                 confirmButton = {
                     Button(
                         onClick = { vm.confirmChangeJmid() },
                         enabled = vm.jmidValid == true && !vm.changeOperating
                     ) {
-                        Text("更改")
+                        Text(stringResource(Res.string.common_change))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { vm.cancelChangeJmid() }) {
-                        Text("取消")
+                        Text(stringResource(Res.string.common_cancel))
                     }
                 },
                 text = {
-                    FormItem(header = { Text("新的基米 ID") }) {
+                    FormItem(header = { Text(stringResource(Res.string.artwork_new_jmid)) }) {
                         JmidTextField(
                             vm.jmidNumber,
                             vm.jmidPrefix!!,
@@ -265,8 +282,8 @@ private fun ChangeJmidDialogHost(
             )
         } else {
             AlertDialog(
-                title = { Text("当前不可更改") },
-                text = { Text("你还没有一个独占的基米ID前缀，当前不可更改") },
+                title = { Text(stringResource(Res.string.artwork_change_jmid_unavailable_title)) },
+                text = { Text(stringResource(Res.string.artwork_change_jmid_unavailable_text)) },
                 onDismissRequest = { vm.cancelChangeJmid() },
                 confirmButton = {
                     TextButton(onClick = { vm.cancelChangeJmid() }) {

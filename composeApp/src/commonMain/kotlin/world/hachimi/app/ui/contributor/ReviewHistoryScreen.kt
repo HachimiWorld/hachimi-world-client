@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.contributor
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.review_history_empty
+import hachimiworld.composeapp.generated.resources.review_history_no_note
+import hachimiworld.composeapp.generated.resources.review_history_title
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,9 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.review_history_empty
-import hachimiworld.composeapp.generated.resources.review_history_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -141,7 +142,7 @@ private fun ReviewHistoryItemCard(
             ) {
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = item.note ?: "无备注",
+                    text = item.note ?: stringResource(Res.string.review_history_no_note),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(

@@ -6,4 +6,6 @@
     <string name="home_weekly_title">Weekly hot</string>
     <string name="home_weekly_subtitle">Calculated by play counts this week</string>
     <string name="home_category_title">Genre</string>
+
+    <string name="home_fetch_tags_failed">Failed to load tags: %1$s</string>
 </resources>

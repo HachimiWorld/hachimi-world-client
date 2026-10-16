@@ -6,4 +6,6 @@
     <string name="home_weekly_title">本周热门</string>
     <string name="home_weekly_subtitle">根据本周的播放量计算</string>
     <string name="home_category_title">风格专区</string>
+
+    <string name="home_fetch_tags_failed">获取推荐标签失败: %1$s</string>
 </resources>

@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.window
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.closeask_minimize
+import hachimiworld.composeapp.generated.resources.common_close
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,7 +66,7 @@ fun CaptionBar(
                 modifier = Modifier.onGloballyPositioned { onMinBounds(it.boundsInWindow()) },
                 onClick = onMinClick,
                 glyph = MinimizeGlyph,
-                contentDescription = "Minimize"
+                contentDescription = stringResource(Res.string.closeask_minimize)
             )
             CaptionButton(
                 modifier = Modifier.onGloballyPositioned { onMaxBounds(it.boundsInWindow()) },
@@ -74,7 +78,7 @@ fun CaptionBar(
                 modifier = Modifier.onGloballyPositioned { onCloseBounds(it.boundsInWindow()) },
                 onClick = onCloseClick,
                 glyph = CloseGlyph,
-                contentDescription = "Close",
+                contentDescription = stringResource(Res.string.common_close),
                 hoverColor = Color(0xFFC42B1C),
                 activeColor = Color(0xFFB32B1C)
             )

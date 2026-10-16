@@ -1,5 +1,18 @@
 package world.hachimi.app.ui.player.fullscreen
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_more
+import hachimiworld.composeapp.generated.resources.common_pause_cd
+import hachimiworld.composeapp.generated.resources.common_play_cd
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
+import hachimiworld.composeapp.generated.resources.player_collapse_cd
+import hachimiworld.composeapp.generated.resources.player_cover_cd
+import hachimiworld.composeapp.generated.resources.player_like
+import hachimiworld.composeapp.generated.resources.player_next_cd
+import hachimiworld.composeapp.generated.resources.player_previous_cd
+import hachimiworld.composeapp.generated.resources.player_share
+import hachimiworld.composeapp.generated.resources.player_unlike
+import hachimiworld.composeapp.generated.resources.report_action
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -58,12 +71,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
-import hachimiworld.composeapp.generated.resources.player_like
-import hachimiworld.composeapp.generated.resources.player_share
-import hachimiworld.composeapp.generated.resources.report_action
-import hachimiworld.composeapp.generated.resources.player_unlike
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
@@ -133,7 +140,7 @@ fun CompactPlayerScreen2(
             onClick = { global.shrinkPlayer() },
             touchMode = true
         ) {
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Shrink")
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(Res.string.player_collapse_cd))
         }
 
         val slideDistance = rememberSlideDistance()
@@ -342,7 +349,7 @@ private fun PlayerTab(
                 HachimiIconButton(
                     onClick = { expanded = true }
                 ) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(Res.string.common_more))
                 }
                 MoreDropdownMenu(
                     expanded = expanded,
@@ -371,7 +378,7 @@ private fun MoreDropdownMenu(
                 onDismissRequest()
             },
             text = { Text(stringResource(Res.string.player_add_to_playlist_title)) },
-            leadingIcon = { Icon(Icons.Default.Add, "Add to playlist") },
+            leadingIcon = { Icon(Icons.Default.Add, stringResource(Res.string.player_add_to_playlist_title)) },
         )
         DropdownMenuItem(
             onClick = {
@@ -379,7 +386,7 @@ private fun MoreDropdownMenu(
                 onDismissRequest()
             },
             text = { Text(stringResource(Res.string.player_share)) },
-            leadingIcon = { Icon(Icons.Default.Share, "Share") },
+            leadingIcon = { Icon(Icons.Default.Share, stringResource(Res.string.player_share)) },
         )
         if (onReportClick != null) {
             DropdownMenuItem(
@@ -507,7 +514,7 @@ private fun Header(
                 .data(cover)
                 .crossfade(true)
                 .build(),
-            contentDescription = "Cover",
+            contentDescription = stringResource(Res.string.player_cover_cd),
             modifier = Modifier.size(64.dp)
                 .dropShadow(
                     RoundedCornerShape(8.dp), Shadow(
@@ -552,7 +559,7 @@ private fun Header(
         Box {
             var expanded by remember { mutableStateOf(false) }
             HachimiIconButton(onClick = { expanded = true }, touchMode = true) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More")
+                Icon(Icons.Default.MoreVert, contentDescription = stringResource(Res.string.common_more))
             }
             MoreDropdownMenu(
                 expanded = expanded,
@@ -604,7 +611,7 @@ private fun PreviousButton(
             modifier = Modifier.clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.SkipPrevious, contentDescription = "Previous")
+            Icon(Icons.Default.SkipPrevious, contentDescription = stringResource(Res.string.player_previous_cd))
         }
     }
 }
@@ -625,8 +632,8 @@ private fun PlayPauseButton(
             modifier = Modifier.clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
-            if (playing) Icon(Icons.Default.Pause, contentDescription = "Pause")
-            else Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+            if (playing) Icon(Icons.Default.Pause, contentDescription = stringResource(Res.string.common_pause_cd))
+            else Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
         }
     }
 }
@@ -645,7 +652,7 @@ private fun NextButton(
             modifier = Modifier.clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.SkipNext, contentDescription = "Next")
+            Icon(Icons.Default.SkipNext, contentDescription = stringResource(Res.string.player_next_cd))
         }
     }
 }
