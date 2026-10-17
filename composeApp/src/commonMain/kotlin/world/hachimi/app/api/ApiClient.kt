@@ -320,7 +320,6 @@ class ApiClient(
         if (accessToken != null) {
             header("Authorization", "Bearer $accessToken")
         }
-        header("X-Real-IP", "127.0.0.1")
         header(HttpHeaders.Referrer, "https://hachimi.world/")
     }
 
