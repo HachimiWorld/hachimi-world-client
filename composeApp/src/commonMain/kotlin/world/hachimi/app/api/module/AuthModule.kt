@@ -77,7 +77,6 @@ class AuthModule(
         return client.httpClient.post(client.buildUrl("/auth/refresh_token")) {
             contentType(ContentType.Application.Json)
             setBody(req)
-            header("X-Real-IP", "127.0.0.1")
         }.body<HttpResponse>()
     }
 
