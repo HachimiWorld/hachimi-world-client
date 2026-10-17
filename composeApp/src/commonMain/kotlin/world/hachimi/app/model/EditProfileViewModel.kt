@@ -145,7 +145,9 @@ class EditProfileViewModel(
                     refreshProfile()
                     global.alert(Res.string.user_profile_saved)
                 } else {
-                    global.alert(resp.err().msg)
+                    val err = resp.err()
+                    val message = profileUpdateErrorMessage(err.code)
+                    if (message != null) global.alert(message) else global.alert(err.msg)
                 }
             } catch (e: Throwable) {
                 Logger.e("edit_profile", "Failed to save profile", e)
