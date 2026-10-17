@@ -6,6 +6,8 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
+      - reopened
     branches:
       - dev
 concurrency:
@@ -128,3 +130,36 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
         run: ./gradlew :desktopApp:compileKotlin
+
+  # One message per run. Skipped when the run was cancelled or every job was skipped.
+  notify-discord:
+    needs: [ compile-macos, build-windows, build-linux ]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    runs-on: ubuntu-latest
+    steps:
+      # Expressions cannot slice strings, so shorten the SHA here
+      - name: Short SHA
+        env:
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: echo "SHORT_SHA=${SHA:0:7}" >> "$GITHUB_ENV"
+      # Two steps, one per result, like the server's Woodpecker pipelines.
+      - name: Notify success
+        if: ${{ !contains(needs.*.result, 'failure') }}
+        uses: appleboy/discord-action@v1.2.0
+        # A Discord outage should not mark the workflow as failed
+        continue-on-error: true
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Notify failure
+        if: ${{ contains(needs.*.result, 'failure') }}
+        uses: appleboy/discord-action@v1.2.0
+        # A Discord outage should not mark the workflow as failed
+        continue-on-error: true
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
