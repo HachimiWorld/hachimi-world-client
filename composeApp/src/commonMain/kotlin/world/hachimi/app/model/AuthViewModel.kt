@@ -160,7 +160,9 @@ class AuthViewModel(
                     global.setLoginUser(uid.toLong(), name, null, false)
                     navigate(NavigationRequest.Replace(listOf(Route.Root.Home.Main)))
                 } else {
-                    global.alert(resp.err().msg)
+                    val err = resp.err()
+                    val message = profileUpdateErrorMessage(err.code)
+                    if (message != null) global.alert(message) else global.alert(err.msg)
                 }
             } catch (e: Throwable) {
                 global.alert(e.message)

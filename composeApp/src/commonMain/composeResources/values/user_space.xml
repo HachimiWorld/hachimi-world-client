@@ -13,6 +13,8 @@
     <string name="user_edit_profile">Edit Profile</string>
     <string name="user_profile_save">Save</string>
     <string name="user_profile_saved">Saved</string>
+    <string name="user_profile_username_rejected">This nickname contains inappropriate content. Change it and try again.</string>
+    <string name="user_profile_bio_rejected">This bio contains inappropriate content. Change it and try again.</string>
     <string name="user_gender">Gender</string>
     <string name="user_gender_unspecified">Not specified</string>
     <string name="user_gender_male">Male</string>

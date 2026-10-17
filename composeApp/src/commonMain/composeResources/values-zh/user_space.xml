@@ -13,6 +13,8 @@
     <string name="user_edit_profile">编辑资料</string>
     <string name="user_profile_save">保存</string>
     <string name="user_profile_saved">已保存</string>
+    <string name="user_profile_username_rejected">昵称包含不适宜的内容，请修改后再试</string>
+    <string name="user_profile_bio_rejected">简介包含不适宜的内容，请修改后再试</string>
     <string name="user_gender">性别</string>
     <string name="user_gender_unspecified">未指定</string>
     <string name="user_gender_male">男</string>
