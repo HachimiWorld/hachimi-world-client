@@ -1,0 +1,39 @@
+name: Notify Discord
+description: Posts a success or failure message for this workflow run to a Discord webhook
+
+inputs:
+  webhook_url:
+    description: 'Discord webhook URL; nothing is sent when empty'
+    required: true
+  results:
+    description: 'JSON of the needed jobs results, e.g. toJSON(needs.*.result)'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Send message
+      shell: bash
+      # A Discord outage should not mark the workflow as failed
+      continue-on-error: true
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook_url }}
+        RESULTS: ${{ inputs.results }}
+        REPO_NAME: ${{ github.event.repository.name }}
+        WORKFLOW: ${{ github.workflow }}
+        BRANCH: ${{ github.head_ref || github.ref_name }}
+        SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        if [ -z "$WEBHOOK_URL" ]; then
+          echo "DISCORD_WEBHOOK_URL is not set, skipping"
+          exit 0
+        fi
+        if echo "$RESULTS" | jq -e 'any(. == "failure")' >/dev/null; then
+          HEAD="❌ Failed"
+        else
+          HEAD="✅ Succeeded"
+        fi
+        CONTENT=$(printf '%s: %s · %s · %s @ %s\n%s' "$HEAD" "$REPO_NAME" "$WORKFLOW" "$BRANCH" "${SHA:0:7}" "$RUN_URL")
+        jq -n --arg content "$CONTENT" '{content: $content}' \
+          | curl -fsS -X POST -H 'Content-Type: application/json' --data @- "$WEBHOOK_URL"

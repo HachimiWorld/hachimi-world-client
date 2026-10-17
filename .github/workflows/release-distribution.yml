@@ -285,3 +285,16 @@ jobs:
           publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
+  # One message per run. Skipped when the run was cancelled or every job was skipped.
+  notify-discord:
+    needs: [ build-ios, build-macos, build-windows, build-linux, build-android ]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/notify-discord
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          results: ${{ toJSON(needs.*.result) }}

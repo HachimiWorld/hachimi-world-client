@@ -128,3 +128,17 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
         run: ./gradlew :desktopApp:compileKotlin
+
+  # One message per run. Skipped when the run was cancelled or every job was skipped.
+  notify-discord:
+    needs: [ compile-macos, build-windows, build-linux ]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/notify-discord
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          results: ${{ toJSON(needs.*.result) }}

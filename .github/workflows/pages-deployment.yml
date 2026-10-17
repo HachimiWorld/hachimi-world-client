@@ -63,3 +63,17 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy webApp/build/dist/composeWebCompatibility/productionExecutable --project-name=hachimi-world-client --branch=${{ github.event_name == 'push' && 'dev' || 'main' }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+  # One message per run. Skipped when the run was cancelled or every job was skipped.
+  notify-discord:
+    needs: [ deploy ]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/notify-discord
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          results: ${{ toJSON(needs.*.result) }}
