@@ -104,7 +104,8 @@ class PlaylistDetailViewModel(
                         refresh()
                     } else {
                         val data = resp.err()
-                        global.alert(data.msg)
+                        val message = playlistUpdateErrorMessage(data.code)
+                        if (message != null) global.alert(message) else global.alert(data.msg)
                     }
                 } catch (e: Throwable) {
                     Logger.e("playlist", "Failed to edit playlist", e)
@@ -195,7 +196,8 @@ class PlaylistDetailViewModel(
                         refresh()
                     } else {
                         val error = resp.err()
-                        global.alert(error.msg)
+                        val message = playlistCoverErrorMessage(error.code)
+                        if (message != null) global.alert(message) else global.alert(error.msg)
                         return@launch
                     }
                 } catch (e: Throwable) {

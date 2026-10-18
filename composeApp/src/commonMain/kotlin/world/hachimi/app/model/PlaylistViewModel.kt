@@ -202,7 +202,9 @@ class PlaylistViewModel(
                     showCreatePlaylistDialog = false
                     refreshPlaylist()
                 } else {
-                    global.alert(resp.err().msg)
+                    val err = resp.err()
+                    val message = playlistUpdateErrorMessage(err.code)
+                    if (message != null) global.alert(message) else global.alert(err.msg)
                 }
             } catch (e: Throwable) {
                 Logger.e("player", "Failed to create playlist", e)
