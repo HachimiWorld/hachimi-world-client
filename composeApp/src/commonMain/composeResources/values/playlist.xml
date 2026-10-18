@@ -14,4 +14,8 @@
     <string name="playlist_login_required">Playlist features require login</string>
 
     <string name="playlist_favorites_title">Saved playlists</string>
+    <string name="playlist_name_rejected">This playlist name contains inappropriate content. Change it and try again.</string>
+    <string name="playlist_description_rejected">This description contains inappropriate content. Change it and try again.</string>
+    <string name="playlist_cover_rejected">This cover contains inappropriate content. Pick another image and try again.</string>
+    <string name="playlist_cover_rate_limited">Too many cover uploads. Try again later</string>
 </resources>
