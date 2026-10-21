@@ -72,9 +72,12 @@ class MessageTest {
                   "target": {
                     "target_type": "song",
                     "target_id": 7,
-                    "title": "Song",
-                    "cover_url": "https://example.com/cover.webp",
-                    "display_id": "JM-ABCD-001"
+                    "preview": {
+                      "type": "song",
+                      "title": "Song",
+                      "cover_url": "https://example.com/cover.webp",
+                      "display_id": "JM-ABCD-001"
+                    }
                   },
                   "replied_content": "Love it"
                 }
@@ -86,7 +89,8 @@ class MessageTest {
         val item = resp.items.single()
         assertEquals("B", item.comment.author?.username)
         assertEquals("A", item.comment.replyToUser?.username)
-        assertEquals("JM-ABCD-001", item.target.displayId)
+        assertEquals("JM-ABCD-001", item.target.preview.songDisplayId)
+        assertEquals("Song", item.target.preview.headline)
         assertEquals("Love it", item.repliedContent)
     }
 

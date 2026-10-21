@@ -58,7 +58,7 @@ enum class ReportTargetType(
         ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
-            player.insertToQueueWithFetch(target.displayId, instantPlay = true, append = false)
+            target.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
         }
     },
     Playlist(
@@ -94,7 +94,7 @@ enum class ReportTargetType(
             navigator.push(Route.Root.PublicUserSpace(targetId))
         }
     },
-    /** The title is the comment's text; the cover and display id are the song's, which opening plays. @since 261021 */
+    /** Shows the comment's text over the song's cover; opening plays the song. @since 261021 */
     Comment(
         value = ReportModule.TARGET_COMMENT,
         label = Res.string.report_type_comment,
@@ -108,7 +108,7 @@ enum class ReportTargetType(
         ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
-            player.insertToQueueWithFetch(target.displayId, instantPlay = true, append = false)
+            target.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
         }
     };
 

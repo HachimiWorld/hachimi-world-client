@@ -122,7 +122,7 @@ fun ReceivedRepliesContent(
                     ReceivedReplyRow(
                         item = item,
                         isNew = vm.isNew(item),
-                        onClick = { comments.openSongComments(item.target.displayId) },
+                        onClick = { item.target.preview.songDisplayId?.let { comments.openSongComments(it) } },
                     )
                 }
                 item(key = "tail") {
@@ -186,7 +186,7 @@ private fun ReceivedReplyRow(item: ReceivedReplyItem, isNew: Boolean, onClick: (
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = item.repliedContent ?: "《${item.target.title}》",
+                text = item.repliedContent ?: "《${item.target.preview.headline}》",
                 modifier = Modifier.padding(top = 4.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = variant,
@@ -194,6 +194,6 @@ private fun ReceivedReplyRow(item: ReceivedReplyItem, isNew: Boolean, onClick: (
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        RemoteImage(item.target.coverUrl, Modifier.size(44.dp).clip(RoundedCornerShape(8.dp)))
+        RemoteImage(item.target.preview.imageUrl, Modifier.size(44.dp).clip(RoundedCornerShape(8.dp)))
     }
 }

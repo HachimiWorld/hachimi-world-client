@@ -73,13 +73,23 @@ class ReportModule(
     /** @since 261008 */
     @Serializable
     data class TargetInfo(
-        /** Song title, playlist name or username. */
-        val title: String,
-        val coverUrl: String?,
-        /** Song display id; empty for other kinds. */
-        val displayId: String,
+        /** What it looks like, in its kind's shape. Null from servers older than 261021. @since 261021 */
+        val preview: UgcPreview? = null,
+        /** Read [preview] instead; kept for servers older than 261021. */
+        val title: String = "",
+        /** Read [preview] instead; kept for servers older than 261021. */
+        val coverUrl: String? = null,
+        /** Read [preview] instead; kept for servers older than 261021. */
+        val displayId: String = "",
         val owner: UserBrief?,
-    )
+    ) {
+        /** @since 261021 */
+        val headline: String get() = preview?.headline ?: title
+        /** @since 261021 */
+        val imageUrl: String? get() = if (preview != null) preview.imageUrl else coverUrl
+        /** The song it is or is on, to play; null when there's none. @since 261021 */
+        val songDisplayId: String? get() = if (preview != null) preview.songDisplayId else displayId.ifEmpty { null }
+    }
 
     /** @since 261008 */
     @Serializable

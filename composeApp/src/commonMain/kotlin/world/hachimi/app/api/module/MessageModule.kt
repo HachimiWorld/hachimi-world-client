@@ -129,11 +129,7 @@ class MessageModule(
         /** [CommentModule.TARGET_SONG] */
         val targetType: String,
         val targetId: Long,
-        /** The song's title. */
-        val title: String,
-        val coverUrl: String?,
-        /** The song's display id. */
-        val displayId: String,
+        val preview: UgcPreview,
     )
 
     /** @since 261006 */
