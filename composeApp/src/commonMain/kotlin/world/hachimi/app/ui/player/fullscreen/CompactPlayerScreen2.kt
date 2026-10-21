@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,6 +83,7 @@ import world.hachimi.app.model.ReportStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
+import world.hachimi.app.model.SongCommentsStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
@@ -97,6 +99,7 @@ import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.AuthorAndPV
+import world.hachimi.app.ui.player.fullscreen.components.CommentsTabContent
 import world.hachimi.app.ui.player.fullscreen.components.Cover
 import world.hachimi.app.ui.player.fullscreen.components.InfoTabContent
 import world.hachimi.app.ui.player.fullscreen.components.JmidLabel
@@ -122,6 +125,14 @@ fun CompactPlayerScreen2(
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
     var showShareDialog by remember { mutableStateOf(false) }
     val reports = koinInject<ReportStore>()
+    val comments = koinInject<SongCommentsStore>()
+    LaunchedEffect(comments.pendingOpen) {
+        if (comments.pendingOpen) {
+            comments.pendingOpen = false
+            currentPage = Page.Comments
+            showTab = true
+        }
+    }
     val reportSong: (() -> Unit)? = uiState.readySongInfo
         ?.takeIf { it.uploaderUid != global.userInfo?.uid }
         ?.let { song -> { reports.open(ReportModule.TARGET_SONG, song.id) } }
@@ -215,6 +226,13 @@ fun CompactPlayerScreen2(
 
                             Page.Queue -> QueueTab(global)
                             Page.Lyrics -> LyricsTab(uiState, scrollState)
+                            Page.Comments -> CommentsTab(
+                                uiState,
+                                onNavToUser = {
+                                    navigator.push(Route.Root.PublicUserSpace(it))
+                                    global.shrinkPlayer()
+                                },
+                            )
                             else -> {}
                         }
                     }
@@ -431,6 +449,17 @@ private fun LyricsTab(
             contentPadding = PaddingValues(vertical = 42.dp)
         )
     }
+}
+
+@Composable
+private fun CommentsTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
+    val song = uiState.readySongInfo
+    CommentsTabContent(
+        songId = song?.id,
+        uploaderUid = song?.uploaderUid,
+        onUserClick = onNavToUser,
+        modifier = Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 32.dp),
+    )
 }
 
 @Composable

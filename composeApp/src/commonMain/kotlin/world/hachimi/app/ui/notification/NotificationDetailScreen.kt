@@ -26,10 +26,12 @@ import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.notification_unavailable
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.NotificationDetailViewModel
+import world.hachimi.app.model.SongCommentsStore
 import world.hachimi.app.model.toTarget
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
@@ -75,6 +77,7 @@ fun NotificationDetailContent(
     },
 ) {
     val navigator = LocalNavigator.current
+    val comments = koinInject<SongCommentsStore>()
     LaunchedEffect(vm) { vm.mounted() }
 
     when (vm.initializeStatus) {
@@ -139,7 +142,10 @@ fun NotificationDetailContent(
                     val target = item.contentIntent?.toTarget()
                     if (target != null) {
                         AccentButton(
-                            onClick = { navigator.push(target.route) },
+                            onClick = {
+                                target.commentsOfSong?.let { comments.openSongComments(it) }
+                                target.route?.let { navigator.push(it) }
+                            },
                             modifier = Modifier
                                 .padding(top = 28.dp)
                                 .then(if (isCompact) Modifier.fillMaxWidth() else Modifier),
