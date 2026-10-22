@@ -11,7 +11,7 @@ path = "uniffi-bindgen.rs"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-rodio = "0.22.2"
+rodio = "0.23.0"
 uniffi = { version = "0.30", features = ["cli"] }
 log = "0.4.29"
 souvlaki = "0.8.3"
