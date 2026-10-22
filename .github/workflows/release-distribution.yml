@@ -73,14 +73,6 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build rust library
-        working-directory: ./rustLib
-        run: |
-          cargo build -r --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/release/libhachimi.dylib \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -128,15 +120,6 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build rust library
-        working-directory: ./rustLib
-        shell: bash
-        run: |
-          cargo build -r --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/release/hachimi.dll \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -188,14 +171,6 @@ jobs:
         run: |
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev
-      - name: Build rust library
-        working-directory: ./rustLib
-        run: |
-          cargo build -r --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/release/libhachimi.so \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
