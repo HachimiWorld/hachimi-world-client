@@ -34,14 +34,6 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build rust library
-        working-directory: ./rustLib
-        run: |
-          cargo build --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/libhachimi.dylib ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/debug/libhachimi.dylib \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -50,7 +42,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
-        run: ./gradlew :desktopApp:compileKotlin
+        run: ./gradlew :desktopApp:compileKotlin -P rust.debug=true
   build-windows:
     runs-on: windows-latest
     steps:
@@ -71,15 +63,6 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build rust library
-        working-directory: ./rustLib
-        shell: bash
-        run: |
-          cargo build --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/hachimi.dll ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/debug/hachimi.dll \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -88,7 +71,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
-        run: ./gradlew :desktopApp:compileKotlin
+        run: ./gradlew :desktopApp:compileKotlin -P rust.debug=true
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -113,14 +96,6 @@ jobs:
         run: |
           sudo apt install libasound2-dev # This is essential for build `rodio` dependency.
           sudo apt install libdbus-1-dev
-      - name: Build rust library
-        working-directory: ./rustLib
-        run: |
-          cargo build --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/debug/libhachimi.so ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/debug/libhachimi.so \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -129,7 +104,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Compile
-        run: ./gradlew :desktopApp:compileKotlin
+        run: ./gradlew :desktopApp:compileKotlin -P rust.debug=true
 
   # One message per run. Skipped when the run was cancelled or every job was skipped.
   notify-discord:

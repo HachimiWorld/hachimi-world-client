@@ -15,6 +15,49 @@ plugins {
     alias(libs.plugins.koinCompiler)
 }
 
+// The desktop player lives in `rustLib`. Build it with cargo, generate the UniFFI Kotlin bindings
+// from the built library, and put the library on the jvmMain classpath (JniLoader loads it from there).
+// Pass `-Prust.debug=true` for a faster debug build of the library.
+val rustLibDir = rootProject.layout.projectDirectory.dir("rustLib")
+val rustProfile = if (providers.gradleProperty("rust.debug").orNull == "true") "debug" else "release"
+val rustProfileArgs = if (rustProfile == "release") listOf("--release") else emptyList()
+val rustLibFile = rustLibDir.file("target/$rustProfile/${System.mapLibraryName("hachimi")}")
+
+val cargoBuildRustLib by tasks.registering(Exec::class) {
+    group = "rust"
+    description = "Builds rustLib with cargo."
+    workingDir(rustLibDir)
+    commandLine(listOf("cargo", "build", "--lib") + rustProfileArgs)
+    outputs.file(rustLibFile)
+    // cargo tracks its own inputs, so always let it decide whether anything needs rebuilding
+    outputs.upToDateWhen { false }
+}
+
+val generateUniffiBindings by tasks.registering(Exec::class) {
+    group = "rust"
+    description = "Generates the UniFFI Kotlin bindings for rustLib."
+    val outDir = layout.buildDirectory.dir("generated/uniffi/kotlin").get().asFile
+    inputs.files(cargoBuildRustLib)
+    outputs.dir(outDir)
+    workingDir(rustLibDir)
+    commandLine(
+        listOf("cargo", "run") + rustProfileArgs + listOf(
+            "--bin", "uniffi-bindgen", "generate",
+            "--library", rustLibFile.asFile.absolutePath,
+            "--language", "kotlin",
+            "--out-dir", outDir.absolutePath,
+        )
+    )
+    doFirst { outDir.deleteRecursively() }
+}
+
+val copyRustLib by tasks.registering(Sync::class) {
+    group = "rust"
+    description = "Copies the rustLib library into the jvmMain resources."
+    from(cargoBuildRustLib)
+    into(layout.buildDirectory.dir("generated/rustLib/resources"))
+}
+
 kotlin {
     jvmToolchain(21)
 
@@ -141,6 +184,8 @@ kotlin {
         jvmMain {
             dependsOn(nonAndroidMain)
             dependsOn(jvmAndAndroidMain)
+            kotlin.srcDir(generateUniffiBindings)
+            resources.srcDir(copyRustLib)
             dependencies {
                 implementation(compose.desktop.currentOs) {
                     exclude("org.jetbrains.compose.material")
