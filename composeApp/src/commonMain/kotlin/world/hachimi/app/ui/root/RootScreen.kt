@@ -109,6 +109,7 @@ import world.hachimi.app.ui.notification.NotificationInboxScreen
 import world.hachimi.app.ui.message.MessageCenterScreen
 import world.hachimi.app.ui.message.NewFollowersScreen
 import world.hachimi.app.ui.message.ReceivedLikesScreen
+import world.hachimi.app.ui.message.ReceivedRepliesScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
@@ -353,6 +354,9 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         }
         Route.Root.NewFollowers -> NavEntry(key) {
             if (global.isLoggedIn) NewFollowersScreen() else NeedLoginScreen()
+        }
+        Route.Root.ReceivedReplies -> NavEntry(key) {
+            if (global.isLoggedIn) ReceivedRepliesScreen() else NeedLoginScreen()
         }
         is Route.Root.ReportCase -> NavEntry(key) {
             if (global.isLoggedIn) ReportCaseScreen(key.targetType, key.targetId) else NeedLoginScreen()

@@ -52,6 +52,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -78,6 +79,7 @@ import world.hachimi.app.model.ReportStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
+import world.hachimi.app.model.SongCommentsStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
@@ -91,6 +93,7 @@ import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
 import world.hachimi.app.ui.player.fullscreen.components.AuthorAndPV
+import world.hachimi.app.ui.player.fullscreen.components.CommentsTabContent
 import world.hachimi.app.ui.player.fullscreen.components.Cover
 import world.hachimi.app.ui.player.fullscreen.components.InfoTabContent
 import world.hachimi.app.ui.player.fullscreen.components.JmidLabel
@@ -131,6 +134,13 @@ private fun Content(
     val uiState = vm.uiState
     val reports = koinInject<ReportStore>()
     var currentPage by remember { mutableStateOf(Page.Lyrics) }
+    val comments = koinInject<SongCommentsStore>()
+    LaunchedEffect(comments.pendingOpen) {
+        if (comments.pendingOpen) {
+            comments.pendingOpen = false
+            currentPage = Page.Comments
+        }
+    }
     val scrollState = rememberLazyListState() // Keep the scroll state between pages
     var coverTopLeft by remember { mutableStateOf(IntOffset.Zero) }
     var coverSize by remember { mutableStateOf(IntSize.Zero) }
@@ -273,6 +283,19 @@ private fun TabContent(
                 loading = uiState.fetchingMetadata,
             )
 
+            Page.Comments -> CommentsTabContent(
+                songId = uiState.readySongInfo?.id,
+                uploaderUid = uiState.readySongInfo?.uploaderUid,
+                onUserClick = { uid ->
+                    navigator.push(Route.Root.PublicUserSpace(uid))
+                    global.shrinkPlayer()
+                },
+                // Leaves room for the pager buttons below
+                modifier = Modifier.fillMaxSize()
+                    .wrapContentWidth()
+                    .widthIn(max = 480.dp)
+                    .padding(top = 64.dp, bottom = 112.dp),
+            )
             else -> {}
         }
     }

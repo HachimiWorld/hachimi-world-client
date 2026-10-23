@@ -233,6 +233,11 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/messages/followers")
         data object NewFollowers : Root
+
+        /** @since 261021 */
+        @Serializable
+        @SerialName("/messages/replies")
+        data object ReceivedReplies : Root
     }
 
     @Serializable

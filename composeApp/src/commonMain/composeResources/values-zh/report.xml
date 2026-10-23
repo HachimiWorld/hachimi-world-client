@@ -20,6 +20,7 @@
     <string name="report_type_song">作品</string>
     <string name="report_type_playlist">歌单</string>
     <string name="report_type_user">用户</string>
+    <string name="report_type_comment">评论</string>
     <string name="report_target_deleted">已删除</string>
     <string name="report_pending_count">%1$s 条待处理</string>
     <string name="report_case_title">举报详情</string>
@@ -45,6 +46,7 @@
     <string name="report_action_hide">隐藏</string>
     <string name="report_action_hide_song_desc">仅作者本人可见；作者修改并通过审核后恢复</string>
     <string name="report_action_hide_playlist_desc">仅作者本人可见；只能由贡献者恢复</string>
+    <string name="report_action_hide_comment_desc">仅评论者本人可见</string>
     <string name="report_action_restore">恢复显示</string>
     <string name="report_action_reset_avatar">重置头像</string>
     <string name="report_action_reset_bio">清空简介</string>

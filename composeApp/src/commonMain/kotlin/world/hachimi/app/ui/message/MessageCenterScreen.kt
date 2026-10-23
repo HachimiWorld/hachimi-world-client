@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PersonAdd
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.message_channel_followers
 import hachimiworld.composeapp.generated.resources.message_channel_likes
+import hachimiworld.composeapp.generated.resources.message_channel_replies
 import hachimiworld.composeapp.generated.resources.message_channel_system
 import hachimiworld.composeapp.generated.resources.message_title
 import org.jetbrains.compose.resources.StringResource
@@ -57,6 +59,7 @@ import world.hachimi.app.ui.util.WindowSize
 
 private enum class MessageChannel(val label: StringResource, val icon: ImageVector, val route: Route) {
     System(Res.string.message_channel_system, Icons.Outlined.Notifications, Route.Root.Notifications),
+    Replies(Res.string.message_channel_replies, Icons.AutoMirrored.Outlined.Comment, Route.Root.ReceivedReplies),
     Likes(Res.string.message_channel_likes, Icons.Default.FavoriteBorder, Route.Root.ReceivedLikes),
     Followers(Res.string.message_channel_followers, Icons.Default.PersonAdd, Route.Root.NewFollowers),
 }
@@ -80,6 +83,7 @@ fun MessageCenterScreen(
 
     fun unreadOf(channel: MessageChannel): Long? = when (channel) {
         MessageChannel.System -> notifications.unreadCount
+        MessageChannel.Replies -> center.replyUnread
         MessageChannel.Likes -> center.likeUnread
         MessageChannel.Followers -> center.followUnread
     }
@@ -108,6 +112,7 @@ fun MessageCenterScreen(
                             detailPane = width >= WindowSize.LARGE,
                             contentPadding = PaddingValues(top = margin),
                         )
+                        MessageChannel.Replies -> ReceivedRepliesContent(contentPadding = PaddingValues(top = margin))
                         MessageChannel.Likes -> ReceivedLikesContent(contentPadding = PaddingValues(top = margin))
                         MessageChannel.Followers -> NewFollowersContent(contentPadding = PaddingValues(top = margin))
                     }

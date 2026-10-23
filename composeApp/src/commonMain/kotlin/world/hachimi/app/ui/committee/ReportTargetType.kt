@@ -2,11 +2,13 @@ package world.hachimi.app.ui.committee
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.report_action_hide
+import hachimiworld.composeapp.generated.resources.report_action_hide_comment_desc
 import hachimiworld.composeapp.generated.resources.report_action_hide_playlist_desc
 import hachimiworld.composeapp.generated.resources.report_action_hide_song_desc
 import hachimiworld.composeapp.generated.resources.report_action_reset_avatar
@@ -16,6 +18,7 @@ import hachimiworld.composeapp.generated.resources.report_action_reset_username_
 import hachimiworld.composeapp.generated.resources.report_action_restore
 import hachimiworld.composeapp.generated.resources.report_open_song
 import hachimiworld.composeapp.generated.resources.report_open_target
+import hachimiworld.composeapp.generated.resources.report_type_comment
 import hachimiworld.composeapp.generated.resources.report_type_playlist
 import hachimiworld.composeapp.generated.resources.report_type_song
 import hachimiworld.composeapp.generated.resources.report_type_user
@@ -55,7 +58,7 @@ enum class ReportTargetType(
         ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
-            player.insertToQueueWithFetch(target.displayId, instantPlay = true, append = false)
+            target.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
         }
     },
     Playlist(
@@ -89,6 +92,23 @@ enum class ReportTargetType(
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
             navigator.push(Route.Root.PublicUserSpace(targetId))
+        }
+    },
+    /** Shows the comment's text over the song's cover; opening plays the song. @since 261021 */
+    Comment(
+        value = ReportModule.TARGET_COMMENT,
+        label = Res.string.report_type_comment,
+        placeholderIcon = Icons.AutoMirrored.Outlined.Comment,
+        roundCover = false,
+        showsOwner = true,
+        openLabel = Res.string.report_open_song,
+        actions = mapOf(
+            "hide" to ActionText(Res.string.report_action_hide, Res.string.report_action_hide_comment_desc),
+            "restore" to ActionText(Res.string.report_action_restore),
+        ),
+    ) {
+        override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
+            target.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
         }
     };
 

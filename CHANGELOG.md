@@ -4,6 +4,7 @@
 
 1. Message center: a bell in the top bar (a sidebar entry on wide screens) shows the unread count and opens system notifications, received likes and new followers. 新增消息中心：顶栏铃铛（宽屏为侧栏入口）显示未读数，可查看系统通知、收到的赞和新粉丝。
 2. Reports: songs, playlists and users can be reported from their "more" menu, and the result arrives as a system notification. The committee center lists reports; contributors decide on them, can hide a song or playlist or reset a profile, and appoint members. Owners of hidden content see why, and songs that are no longer available stay in playlists and likes as placeholders. 新增举报：可在作品、歌单和用户页的「更多」菜单中举报，处理结果以系统通知告知；委员会中心可查看举报队列，贡献者可处理举报（隐藏作品或歌单、重置资料）并任命委员；内容被隐藏时作者可看到原因，失效的作品在歌单和点赞列表中以占位显示。
+3. Song comments: the player has a new Comments tab to read, post, reply to, like, delete and report comments, sorted by top or newest. Your own comments that are still under review or weren't approved are marked. Uploaders can delete comments under their songs. Replies to your comments and comments on your songs show up under "Replies" in the message center. 新增歌曲评论：播放器新增「评论」页签，可按最热或最新查看，发表、回复、点赞、删除和举报评论；自己审核中或未通过的评论会有标记；上传者可删除自己作品下的评论。别人回复你的评论或评论你的作品时，会显示在消息中心的「回复我的」里。
 
 ## Enhancements 改进
 

@@ -60,6 +60,7 @@
     <string name="player_repeat_off_cd">循环播放已关闭</string>
     <string name="player_queue_cd">播放队列</string>
     <string name="player_lyrics_cd">歌词</string>
+    <string name="player_comments_cd">评论</string>
     <string name="player_lyrics_loading_cd">歌词加载中</string>
     <string name="player_no_lyrics_cd">暂无歌词</string>
     <string name="player_interlude_cd">间奏</string>

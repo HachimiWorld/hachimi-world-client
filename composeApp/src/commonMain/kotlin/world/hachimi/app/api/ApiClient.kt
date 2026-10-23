@@ -45,6 +45,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import world.hachimi.app.api.module.AuthModule
+import world.hachimi.app.api.module.CommentModule
 import world.hachimi.app.api.module.CommitteeModule
 import world.hachimi.app.api.module.ContributorModule
 import world.hachimi.app.api.module.MessageModule
@@ -336,6 +337,7 @@ class ApiClient(
     val messageModule by lazy { MessageModule(this) }
     val reportModule by lazy { ReportModule(this) }
     val committeeModule by lazy { CommitteeModule(this) }
+    val commentModule by lazy { CommentModule(this) }
 }
 
 interface AuthenticationListener {

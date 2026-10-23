@@ -6,8 +6,9 @@ import world.hachimi.app.api.WebResult
 import kotlin.time.Instant
 
 /**
- * The message center: unread counts of every kind of message, and received likes. Received likes
- * and new followers are read as a whole; system notifications are in [NotificationModule].
+ * The message center: unread counts of every kind of message, received likes and received replies.
+ * Received likes, new followers and replies are read as a whole; system notifications are in
+ * [NotificationModule].
  *
  * @since 261006
  */
@@ -26,12 +27,16 @@ class MessageModule(
         val likeReadTime: Instant,
         /** Followers who followed after this are new. */
         val followReadTime: Instant,
+        /** @since 261021 */
+        val replyUnread: Long = 0,
+        /** Replies after this are unread. Null from servers before 261021. @since 261021 */
+        val replyReadTime: Instant? = null,
     )
 
     /** @since 261006 */
     @Serializable
     data class MarkReadReq(
-        /** [CHANNEL_LIKE] or [CHANNEL_FOLLOW] */
+        /** [CHANNEL_LIKE], [CHANNEL_FOLLOW] or [CHANNEL_REPLY] */
         val channel: String,
     )
 
@@ -86,6 +91,47 @@ class MessageModule(
         val avatarUrl: String?,
     )
 
+    /** @since 261021 */
+    @Serializable
+    data class ReceivedRepliesReq(
+        /** [CommentModule.CommentItem.createTime] of the previous page's last comment. */
+        val beforeTime: Instant? = null,
+        /** [CommentModule.CommentItem.id] of the previous page's last comment. */
+        val beforeCommentId: Long? = null,
+        /** 1..=50, defaults to 20. */
+        val limit: Int? = null,
+    )
+
+    /** @since 261021 */
+    @Serializable
+    data class ReceivedRepliesResp(
+        /** Newest first. */
+        val items: List<ReceivedReplyItem>,
+        val hasMore: Boolean,
+    )
+
+    /**
+     * A comment replying to the user, or on their song.
+     *
+     * @since 261021
+     */
+    @Serializable
+    data class ReceivedReplyItem(
+        val comment: CommentModule.CommentItem,
+        val target: ReplyTarget,
+        /** The user's comment it replies to; null for a comment on their song, or if it was deleted. */
+        val repliedContent: String?,
+    )
+
+    /** What a received reply is on. @since 261021 */
+    @Serializable
+    data class ReplyTarget(
+        /** [CommentModule.TARGET_SONG] */
+        val targetType: String,
+        val targetId: Long,
+        val preview: UgcPreview,
+    )
+
     /** @since 261006 */
     suspend fun summary(): WebResult<SummaryResp> =
         client.get("/message/summary")
@@ -98,8 +144,14 @@ class MessageModule(
     suspend fun receivedLikes(req: ReceivedLikesReq): WebResult<ReceivedLikesResp> =
         client.get("/message/received_likes", req)
 
+    /** @since 261021 */
+    suspend fun receivedReplies(req: ReceivedRepliesReq): WebResult<ReceivedRepliesResp> =
+        client.get("/message/received_replies", req)
+
     companion object {
         const val CHANNEL_LIKE = "like"
         const val CHANNEL_FOLLOW = "follow"
+        /** @since 261021 */
+        const val CHANNEL_REPLY = "reply"
     }
 }

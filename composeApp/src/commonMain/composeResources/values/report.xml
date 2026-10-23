@@ -20,6 +20,7 @@
     <string name="report_type_song">Song</string>
     <string name="report_type_playlist">Playlist</string>
     <string name="report_type_user">User</string>
+    <string name="report_type_comment">Comment</string>
     <string name="report_target_deleted">Deleted</string>
     <string name="report_pending_count">%1$s pending</string>
     <string name="report_case_title">Report case</string>
@@ -45,6 +46,7 @@
     <string name="report_action_hide">Hide</string>
     <string name="report_action_hide_song_desc">Only the uploader can see it; shown again once a modification passes review</string>
     <string name="report_action_hide_playlist_desc">Only the owner can see it; only contributors can restore it</string>
+    <string name="report_action_hide_comment_desc">Only its author can see it</string>
     <string name="report_action_restore">Show again</string>
     <string name="report_action_reset_avatar">Reset avatar</string>
     <string name="report_action_reset_bio">Clear bio</string>
