@@ -136,7 +136,8 @@ class EditProfileViewModel(
             try {
                 val resp = api.userModule.updateProfile(
                     UserModule.UpdateProfileReq(
-                        username = editUsernameValue,
+                        // The server rejects names that start or end with a space
+                        username = editUsernameValue.trim(),
                         bio = editBioValue.takeIf { it.isNotBlank() },
                         gender = editGenderValue,
                     )
