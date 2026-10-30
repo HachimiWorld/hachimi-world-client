@@ -58,7 +58,7 @@ enum class ReportTargetType(
         ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
-            target.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
+            target.preview.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
         }
     },
     Playlist(
@@ -108,7 +108,7 @@ enum class ReportTargetType(
         ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
-            target.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
+            target.preview.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
         }
     };
 

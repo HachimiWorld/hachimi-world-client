@@ -153,11 +153,11 @@ private fun TargetHeader(case: ReportModule.CaseItem, global: GlobalStore = koin
     } else null
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            TargetCover(case.targetType, target?.imageUrl, size = 72.dp)
+            TargetCover(case.targetType, target?.preview?.imageUrl, size = 72.dp)
             Column(Modifier.weight(1f).padding(start = 16.dp)) {
                 Pill(targetTypeLabel(case.targetType))
                 Text(
-                    text = target?.headline ?: stringResource(Res.string.report_target_deleted),
+                    text = target?.preview?.headline ?: stringResource(Res.string.report_target_deleted),
                     modifier = Modifier.padding(top = 8.dp),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -170,7 +170,7 @@ private fun TargetHeader(case: ReportModule.CaseItem, global: GlobalStore = koin
                     Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Avatar(owner.avatarUrl, 18.dp)
                         Text(
-                            text = listOfNotNull(owner.username, target.songDisplayId).filter { it.isNotEmpty() }.joinToString(" · "),
+                            text = listOfNotNull(owner.username, target.preview.songDisplayId).filter { it.isNotEmpty() }.joinToString(" · "),
                             modifier = Modifier.padding(start = 6.dp),
                             style = MaterialTheme.typography.bodySmall,
                             color = HachimiTheme.colorScheme.onSurfaceVariant,

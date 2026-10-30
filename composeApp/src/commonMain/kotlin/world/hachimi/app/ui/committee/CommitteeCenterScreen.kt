@@ -140,10 +140,10 @@ private fun CaseRow(item: CaseItem, onClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        TargetCover(item.targetType, target?.imageUrl)
+        TargetCover(item.targetType, target?.preview?.imageUrl)
         Column(Modifier.weight(1f).padding(start = 14.dp)) {
             Text(
-                text = target?.headline ?: stringResource(Res.string.report_target_deleted),
+                text = target?.preview?.headline ?: stringResource(Res.string.report_target_deleted),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,

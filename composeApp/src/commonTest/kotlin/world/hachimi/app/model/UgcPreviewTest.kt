@@ -1,11 +1,9 @@
 package world.hachimi.app.model
 
 import world.hachimi.app.api.WebResp
-import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.api.module.UgcPreview
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class UgcPreviewTest {
     @Test
@@ -28,25 +26,5 @@ class UgcPreviewTest {
         assertEquals("https://example.com/s.webp", comment.imageUrl)
         assertEquals("JM-ABCD-001", comment.songDisplayId)
         assertEquals(UgcPreview.Unknown, previews[4])
-    }
-
-    @Test
-    fun reportTargetFallsBackToLegacyFields() {
-        val old = WebResp.json.decodeFromString<ReportModule.TargetInfo>(
-            """{ "title": "Song", "cover_url": null, "display_id": "JM-ABCD-001", "owner": null }"""
-        )
-        assertEquals("Song", old.headline)
-        assertEquals("JM-ABCD-001", old.songDisplayId)
-
-        val new = WebResp.json.decodeFromString<ReportModule.TargetInfo>(
-            """
-            {
-              "preview": { "type": "comment", "content": "Ad", "on": null },
-              "title": "Ad", "cover_url": null, "display_id": "", "owner": null
-            }
-            """.trimIndent()
-        )
-        assertEquals("Ad", new.headline)
-        assertNull(new.songDisplayId)
     }
 }
