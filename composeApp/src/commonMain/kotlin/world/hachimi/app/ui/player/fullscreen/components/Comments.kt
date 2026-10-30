@@ -69,9 +69,6 @@ import hachimiworld.composeapp.generated.resources.comment_replying_to
 import hachimiworld.composeapp.generated.resources.comment_send_cd
 import hachimiworld.composeapp.generated.resources.comment_sort_hot
 import hachimiworld.composeapp.generated.resources.comment_sort_new
-import hachimiworld.composeapp.generated.resources.comment_status_hidden
-import hachimiworld.composeapp.generated.resources.comment_status_pending
-import hachimiworld.composeapp.generated.resources.comment_status_rejected
 import hachimiworld.composeapp.generated.resources.comment_unlike_cd
 import hachimiworld.composeapp.generated.resources.comment_view_all_replies
 import hachimiworld.composeapp.generated.resources.notification_retry
@@ -387,7 +384,6 @@ private fun CommentRow(item: CommentItem, actions: CommentActions, avatarSize: I
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                StatusLabel(item)
             }
             val replyTo = item.replyToUser
             val prefix = replyTo?.let { stringResource(Res.string.comment_reply_to_inline, it.username) }
@@ -406,45 +402,22 @@ private fun CommentRow(item: CommentItem, actions: CommentActions, avatarSize: I
                     fontSize = 12.sp,
                     color = variant,
                 )
-                val published = item.status == CommentModule.STATUS_PUBLISHED && !item.isHidden
-                if (published) {
-                    Text(
-                        text = stringResource(Res.string.comment_reply),
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable { actions.onReply(item) }
-                            .padding(horizontal = 4.dp, vertical = 2.dp),
-                        fontSize = 12.sp,
-                        color = variant,
-                    )
-                }
+                Text(
+                    text = stringResource(Res.string.comment_reply),
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { actions.onReply(item) }
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    fontSize = 12.sp,
+                    color = variant,
+                )
                 Spacer(Modifier.weight(1f))
-                if (published) LikeButton(item, onClick = { actions.onLike(item) })
+                LikeButton(item, onClick = { actions.onLike(item) })
                 MoreButton(item, actions)
             }
         }
     }
-}
-
-@Composable
-private fun StatusLabel(item: CommentItem) {
-    val label = when {
-        item.isHidden -> Res.string.comment_status_hidden
-        item.status == CommentModule.STATUS_PENDING -> Res.string.comment_status_pending
-        item.status == CommentModule.STATUS_REJECTED -> Res.string.comment_status_rejected
-        else -> return
-    }
-    Text(
-        text = stringResource(label),
-        modifier = Modifier
-            .padding(start = 6.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(HachimiTheme.colorScheme.onSurface.copy(0.08f))
-            .padding(horizontal = 6.dp, vertical = 1.dp),
-        fontSize = 11.sp,
-        color = HachimiTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
 @Composable

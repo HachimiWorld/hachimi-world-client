@@ -41,10 +41,6 @@ class CommentModule(
         val author: CommentUser?,
         /** Empty when [removed]. */
         val content: String,
-        /** [STATUS_PUBLISHED]; [STATUS_PENDING] or [STATUS_REJECTED] only for the user's own. */
-        val status: String,
-        /** Hidden by a report decision; only shown on the user's own comments. */
-        val isHidden: Boolean,
         /** Deleted or hidden, kept only so its replies have a place. */
         val removed: Boolean,
         val likeCount: Int,
@@ -78,7 +74,7 @@ class CommentModule(
     /** @since 261021 */
     @Serializable
     data class ListResp(
-        /** Published comments and replies. */
+        /** Visible comments and replies. */
         val total: Long,
         val threads: List<CommentThread>,
     )
@@ -113,11 +109,18 @@ class CommentModule(
 
     /** @since 261021 */
     @Serializable
+    data class CreateResp(
+        /** Null if it couldn't be checked now and waits to be checked again, seen by no one until it passes. */
+        val comment: CommentItem?,
+    )
+
+    /** @since 261021 */
+    @Serializable
     data class CommentIdReq(
         val commentId: Long,
     )
 
-    /** Pass [auth] when logged in, to see the user's own pending comments and likes. @since 261021 */
+    /** Pass [auth] when logged in, to see which comments the user liked. @since 261021 */
     suspend fun list(req: ListReq, auth: Boolean = false): WebResult<ListResp> =
         client.get("/comment/list", req, auth = auth)
 
@@ -125,11 +128,8 @@ class CommentModule(
     suspend fun replies(req: RepliesReq, auth: Boolean = false): WebResult<RepliesResp> =
         client.get("/comment/replies", req, auth = auth)
 
-    /**
-     * Returns the new comment; its status is [STATUS_PENDING] when it waits to be checked again.
-     * @since 261021
-     */
-    suspend fun create(req: CreateReq): WebResult<CommentItem> =
+    /** @since 261021 */
+    suspend fun create(req: CreateReq): WebResult<CreateResp> =
         client.post("/comment/create", req)
 
     /** For the author, or the owner of what it's on. @since 261021 */
@@ -149,10 +149,6 @@ class CommentModule(
 
         const val SORT_HOT = "hot"
         const val SORT_NEW = "new"
-
-        const val STATUS_PUBLISHED = "published"
-        const val STATUS_PENDING = "pending"
-        const val STATUS_REJECTED = "rejected"
 
         const val CONTENT_MAX_CHARS = 500
     }

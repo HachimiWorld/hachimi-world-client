@@ -24,8 +24,6 @@ class CommentTest {
                     "reply_to_user": null,
                     "author": null,
                     "content": "",
-                    "status": "published",
-                    "is_hidden": false,
                     "removed": true,
                     "like_count": 3,
                     "liked": false,
@@ -41,8 +39,6 @@ class CommentTest {
                       "reply_to_user": null,
                       "author": { "uid": 100001, "username": "A", "avatar_url": null },
                       "content": "Mine",
-                      "status": "pending",
-                      "is_hidden": false,
                       "removed": false,
                       "like_count": 0,
                       "liked": false,
@@ -58,7 +54,7 @@ class CommentTest {
         val thread = resp.threads.single()
         assertTrue(thread.comment.removed)
         assertNull(thread.comment.author)
-        assertEquals(CommentModule.STATUS_PENDING, thread.replies.single().status)
+        assertEquals("Mine", thread.replies.single().content)
         assertEquals(1, thread.replyCount)
     }
 

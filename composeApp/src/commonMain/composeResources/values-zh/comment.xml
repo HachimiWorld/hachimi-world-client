@@ -15,15 +15,12 @@
     <string name="comment_reply">回复</string>
     <string name="comment_reply_to_inline">回复 %1$s：</string>
     <string name="comment_view_all_replies">查看全部 %1$s 条回复</string>
-    <string name="comment_status_pending">审核中</string>
-    <string name="comment_status_rejected">未通过审核</string>
-    <string name="comment_status_hidden">已被隐藏</string>
     <string name="comment_removed">该评论已删除</string>
     <string name="comment_like_cd">点赞</string>
     <string name="comment_unlike_cd">取消点赞</string>
     <string name="comment_delete_confirm_title">删除这条评论？</string>
     <string name="comment_delete_confirm_text">删除后无法恢复</string>
-    <string name="comment_sent_pending">已发送，审核通过后其他人才能看到</string>
+    <string name="comment_sent_pending">已发送，审核通过后才会显示</string>
     <string name="comment_send_failed">发送失败，请稍后再试</string>
     <string name="comment_like_failed">点赞失败，请稍后再试</string>
     <string name="comment_delete_failed">删除失败，请稍后再试</string>

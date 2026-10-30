@@ -15,15 +15,12 @@
     <string name="comment_reply">Reply</string>
     <string name="comment_reply_to_inline">Reply to %1$s: </string>
     <string name="comment_view_all_replies">View all %1$s replies</string>
-    <string name="comment_status_pending">Under review</string>
-    <string name="comment_status_rejected">Not approved</string>
-    <string name="comment_status_hidden">Hidden</string>
     <string name="comment_removed">This comment was removed</string>
     <string name="comment_like_cd">Like</string>
     <string name="comment_unlike_cd">Unlike</string>
     <string name="comment_delete_confirm_title">Delete this comment?</string>
     <string name="comment_delete_confirm_text">This can't be undone.</string>
-    <string name="comment_sent_pending">Sent. Others will see it once it's reviewed</string>
+    <string name="comment_sent_pending">Sent. It will show once it's reviewed</string>
     <string name="comment_send_failed">Couldn't send. Try again later.</string>
     <string name="comment_like_failed">Couldn't like. Try again later.</string>
     <string name="comment_delete_failed">Couldn't delete. Try again later.</string>

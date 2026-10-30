@@ -261,12 +261,11 @@ class SongCommentsStore(
                     alertError(resp.err(), Res.string.comment_send_failed)
                     return@launch
                 }
-                val item = resp.ok()
+                val item = resp.ok().comment
                 if (this@SongCommentsStore.songId != songId) return@launch
                 input = ""
                 this@SongCommentsStore.replyTo = null
-                added(item)
-                if (item.status == CommentModule.STATUS_PENDING) global.alert(Res.string.comment_sent_pending)
+                if (item != null) added(item) else global.alert(Res.string.comment_sent_pending)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -281,7 +280,7 @@ class SongCommentsStore(
     /** Puts a comment the user just sent where they'll see it. */
     private fun added(item: CommentItem) {
         val rootId = item.rootId
-        if (item.status == CommentModule.STATUS_PUBLISHED) total++
+        total++
         if (rootId == null) {
             threads.add(0, CommentThread(item, emptyList(), 0))
             return
@@ -301,7 +300,7 @@ class SongCommentsStore(
     }
 
     fun toggleLike(item: CommentItem) {
-        if (item.removed || item.status != CommentModule.STATUS_PUBLISHED || !requireLogin()) return
+        if (item.removed || !requireLogin()) return
         val liked = !item.liked
         update(item.id) { it.copy(liked = liked, likeCount = (it.likeCount + if (liked) 1 else -1).coerceAtLeast(0)) }
         scope.launch {
@@ -351,7 +350,7 @@ class SongCommentsStore(
 
     /** Takes a deleted comment out of the list; a top-level one with replies stays as removed. */
     private fun removed(item: CommentItem) {
-        if (item.status == CommentModule.STATUS_PUBLISHED && !item.isHidden) total = (total - 1).coerceAtLeast(0)
+        total = (total - 1).coerceAtLeast(0)
         if (replyTo?.id == item.id) replyTo = null
         val rootId = item.rootId
         if (rootId == null) {
