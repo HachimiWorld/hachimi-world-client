@@ -35,6 +35,7 @@ import hachimiworld.composeapp.generated.resources.settings_section_account
 import hachimiworld.composeapp.generated.resources.settings_section_display
 import hachimiworld.composeapp.generated.resources.settings_section_playback
 import hachimiworld.composeapp.generated.resources.settings_section_system
+import hachimiworld.composeapp.generated.resources.settings_star_on_github
 import hachimiworld.composeapp.generated.resources.settings_title
 import hachimiworld.composeapp.generated.resources.settings_update_downloading
 import hachimiworld.composeapp.generated.resources.settings_update_install
@@ -355,6 +356,20 @@ private fun Info(globalStore: GlobalStore) {
             stringResource(Res.string.settings_github_text),
             "https://github.com/HachimiWorld/hachimi-world-client/discussions"
         )
+    }
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_star_on_github)) },
+        onClick = globalStore.starPrompt::openRepo
+    ) {
+        TextButton(onClick = globalStore.starPrompt::openRepo) {
+            Text(stringResource(Res.string.settings_github_text))
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                modifier = Modifier.size(14.dp),
+                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                contentDescription = stringResource(Res.string.settings_open_in_browser_cd)
+            )
+        }
     }
     PropertyItem(
         label = { Text(stringResource(Res.string.settings_official_website)) },

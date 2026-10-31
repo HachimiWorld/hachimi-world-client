@@ -158,6 +158,7 @@ class PlaylistViewModel(
                 )
                 if (resp.ok) {
                     showPlaylistDialog = false
+                    global.starPrompt.onPositiveAction()
                 } else {
                     global.alert(resp.err().msg)
                 }

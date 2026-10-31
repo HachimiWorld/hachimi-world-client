@@ -102,4 +102,11 @@
     <string name="common_search_cd">搜索</string>
 
     <string name="font_load_failed">加载字体失败</string>
+
+    <!-- GitHub star prompt -->
+    <string name="star_prompt_title">支持基米天堂</string>
+    <string name="star_prompt_message">感谢您使用基米天堂。基米天堂是一个由社区驱动的开源项目，目前尚未上架应用商店。如果您喜欢这款应用，欢迎前往 GitHub 为项目点亮 Star，您的支持将帮助更多人发现我们。</string>
+    <string name="star_prompt_star">前往 GitHub</string>
+    <string name="star_prompt_later">以后再说</string>
+    <string name="star_prompt_never">不再提醒</string>
 </resources>

@@ -30,6 +30,7 @@
     <string name="settings_official_website">Official site</string>
     <string name="settings_github_text">GitHub</string>
     <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_star_on_github">Star us on GitHub</string>
     <string name="settings_open_in_browser_cd">Open in browser</string>
 
     <!-- Language selection -->

@@ -89,6 +89,7 @@ class PublicPlaylistViewModel(
                 val resp = api.playlistModule.addFavorite(PlaylistModule.AddFavoriteReq(playlistId))
                 if (resp.ok) {
                     isFavorite = true
+                    global.starPrompt.onPositiveAction()
                 } else {
                     global.alert(resp.err().msg)
                 }

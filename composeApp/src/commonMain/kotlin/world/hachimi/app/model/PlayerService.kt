@@ -92,6 +92,7 @@ class PlayerService(
                 when (event) {
                     PlayEvent.End -> {
                         playerState.isPlaying = false
+                        global.starPrompt.onSongCompleted()
                         autoNext()
                     }
 
