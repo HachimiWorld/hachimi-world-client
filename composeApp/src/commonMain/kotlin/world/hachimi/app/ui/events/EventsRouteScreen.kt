@@ -6,7 +6,7 @@ import world.hachimi.app.nav.Route
 @Composable
 fun EventsRouteScreen(routeContent: Route.Root.Events) {
     when (routeContent) {
-        is Route.Root.Events.Detail -> EventDetailScreen(routeContent.postId)
+        is Route.Root.Events.Detail -> EventDetailScreen(routeContent.postId, routeContent.atComments)
         Route.Root.Events.Feed -> EventsScreen()
     }
 }

@@ -60,6 +60,7 @@
     <string name="player_repeat_off_cd">Repeat off</string>
     <string name="player_queue_cd">Queue</string>
     <string name="player_lyrics_cd">Lyrics</string>
+    <string name="player_comments_cd">Comments</string>
     <string name="player_lyrics_loading_cd">Loading lyrics</string>
     <string name="player_no_lyrics_cd">No lyrics</string>
     <string name="player_interlude_cd">Interlude</string>

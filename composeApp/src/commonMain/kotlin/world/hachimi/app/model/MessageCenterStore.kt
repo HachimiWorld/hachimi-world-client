@@ -20,7 +20,7 @@ import kotlin.time.Instant
 
 /**
  * Unread counts of every kind of message for the entry badge and the message center, and the
- * read times of the kinds read as a whole (received likes, new followers). System notifications
+ * read times of the kinds read as a whole (received likes, new followers, replies). System notifications
  * keep their own count in [NotificationStore], which this fills from the summary.
  */
 @Singleton
@@ -35,8 +35,11 @@ class MessageCenterStore(
         private set
     var followUnread by mutableStateOf<Long?>(null)
         private set
+    var replyUnread by mutableStateOf<Long?>(null)
+        private set
     private var likeReadTime: Instant? = null
     private var followReadTime: Instant? = null
+    private var replyReadTime: Instant? = null
 
     /** Null until the summary has loaded for the current account. */
     val totalUnread: Long?
@@ -44,7 +47,8 @@ class MessageCenterStore(
             val system = notifications.unreadCount ?: return null
             val like = likeUnread ?: return null
             val follow = followUnread ?: return null
-            return system + like + follow
+            val reply = replyUnread ?: return null
+            return system + like + follow + reply
         }
 
     /** Bumped on account change, so responses for the previous account are dropped. */
@@ -65,8 +69,10 @@ class MessageCenterStore(
         generation++
         likeUnread = null
         followUnread = null
+        replyUnread = null
         likeReadTime = null
         followReadTime = null
+        replyReadTime = null
     }
 
     fun refreshSummary() {
@@ -91,12 +97,14 @@ class MessageCenterStore(
             followUnread = data.followUnread
             likeReadTime = data.likeReadTime
             followReadTime = data.followReadTime
+            replyUnread = data.replyUnread
+            replyReadTime = data.replyReadTime
             notifications.updateUnreadCount(data.systemUnread)
         }
     }
 
     /**
-     * Called when the user opens received likes or new followers: marks everything up to now
+     * Called when the user opens received likes, new followers or replies: marks everything up to now
      * read and returns the read time from before, so the page can tell which items are new.
      * Returns null if the previous read time couldn't be loaded.
      */
@@ -124,6 +132,10 @@ class MessageCenterStore(
                             followReadTime = readTime
                             followUnread = 0
                         }
+                        MessageModule.CHANNEL_REPLY -> {
+                            replyReadTime = readTime
+                            replyUnread = 0
+                        }
                     }
                 }
             }
@@ -136,6 +148,7 @@ class MessageCenterStore(
     private fun readTimeOf(channel: String): Instant? = when (channel) {
         MessageModule.CHANNEL_LIKE -> likeReadTime
         MessageModule.CHANNEL_FOLLOW -> followReadTime
+        MessageModule.CHANNEL_REPLY -> replyReadTime
         else -> null
     }
 

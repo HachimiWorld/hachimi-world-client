@@ -43,6 +43,10 @@ class RoutePathDecoderTest {
             Route.Root.Events.Detail(42),
             decodeFromBrowserPathString("/events/detail?postId=42")
         )
+        assertEquals(
+            Route.Root.Events.Detail(42, atComments = true),
+            decodeFromBrowserPathString("/events/detail?postId=42&atComments=true")
+        )
     }
 
     @Test

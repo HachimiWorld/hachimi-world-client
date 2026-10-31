@@ -15,9 +15,11 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.design.components.HollowIconToggleButton
 import world.hachimi.app.ui.design.components.ToggleButton
+import world.hachimi.app.ui.theme.PreviewTheme
 
 enum class Page {
     Info, Queue, Lyrics
@@ -79,3 +81,18 @@ fun PagerButtons2(
     }
 }
 
+@Preview(name = "Expanded player")
+@Composable
+private fun PagerButtonsPreview() {
+    PreviewTheme(background = true) {
+        PagerButtons(currentPage = Page.Lyrics, onPageSelect = {})
+    }
+}
+
+@Preview(widthDp = 360, name = "Compact player")
+@Composable
+private fun PagerButtons2Preview() {
+    PreviewTheme(background = true) {
+        PagerButtons2(currentPage = Page.Lyrics, onPageSelect = {})
+    }
+}

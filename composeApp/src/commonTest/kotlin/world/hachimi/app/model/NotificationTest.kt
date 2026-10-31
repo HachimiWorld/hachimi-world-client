@@ -42,10 +42,35 @@ class NotificationTest {
     @Test
     fun unknownActionHasNoTarget() {
         val intent = NotificationModule.ContentIntent(
-            "song.comment.view",
-            JsonObject(mapOf("song_id" to JsonPrimitive(1))),
+            "playlist.comment.view",
+            JsonObject(mapOf("playlist_id" to JsonPrimitive(1))),
         )
         assertNull(intent.toTarget())
+    }
+
+    @Test
+    fun commentActionOpensPostAtComments() {
+        val intent = NotificationModule.ContentIntent(
+            "post.comment.view",
+            JsonObject(mapOf("post_id" to JsonPrimitive(12), "comment_id" to JsonPrimitive(7))),
+        )
+        assertEquals(Route.Root.Events.Detail(12, atComments = true), intent.toTarget()?.route)
+        val missing = NotificationModule.ContentIntent("post.comment.view", JsonObject(emptyMap()))
+        assertNull(missing.toTarget())
+    }
+
+    @Test
+    fun commentActionOpensSongComments() {
+        val intent = NotificationModule.ContentIntent(
+            "song.comment.view",
+            JsonObject(mapOf("song_display_id" to JsonPrimitive("JM-ABCD-001"), "comment_id" to JsonPrimitive(7))),
+        )
+        assertEquals(Route.Root.SongComments("JM-ABCD-001"), intent.toTarget()?.route)
+        val missing = NotificationModule.ContentIntent(
+            "song.comment.view",
+            JsonObject(mapOf("song_display_id" to JsonPrimitive(""))),
+        )
+        assertNull(missing.toTarget())
     }
 
     @Test
