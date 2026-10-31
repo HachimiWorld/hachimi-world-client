@@ -112,5 +112,5 @@
     <string name="star_prompt_message">Thank you for using Hachimi World. Hachimi World is a community-driven open-source project and is not yet available in app stores. If you enjoy the app, please consider starring the project on GitHub. Your support helps more people discover us.</string>
     <string name="star_prompt_star">Star on GitHub</string>
     <string name="star_prompt_later">Later</string>
-    <string name="star_prompt_never">Don\'t ask again</string>
+    <string name="star_prompt_never">Don't ask again</string>
 </resources>
