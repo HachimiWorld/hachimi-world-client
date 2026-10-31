@@ -21,7 +21,11 @@ sealed interface Route : NavKey {
 
             @Serializable
             @SerialName("/events/detail")
-            data class Detail(val postId: Long) : Events
+            data class Detail(
+                val postId: Long,
+                /** Opens scrolled to the comments. @since 261031 */
+                val atComments: Boolean = false,
+            ) : Events
         }
 
         @Serializable
@@ -238,6 +242,11 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/messages/replies")
         data object ReceivedReplies : Root
+
+        /** @since 261031 */
+        @Serializable
+        @SerialName("/song/comments")
+        data class SongComments(val songDisplayId: String) : Root
     }
 
     @Serializable

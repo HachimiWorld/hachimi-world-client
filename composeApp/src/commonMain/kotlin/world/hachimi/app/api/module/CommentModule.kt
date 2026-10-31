@@ -6,7 +6,7 @@ import world.hachimi.app.api.WebResult
 import kotlin.time.Instant
 
 /**
- * Comments on songs, two levels deep: comments on the song, and replies under them.
+ * Comments on songs and posts, two levels deep: comments on the target, and replies under them.
  *
  * @since 261021
  */
@@ -60,9 +60,9 @@ class CommentModule(
     /** @since 261021 */
     @Serializable
     data class ListReq(
-        /** [TARGET_SONG] */
+        /** [TARGET_SONG] or [TARGET_POST] */
         val targetType: String,
-        /** The song id, not its display id. */
+        /** The song id, not its display id, or the post id. */
         val targetId: Long,
         /** [ORDER_NEWEST] (default) or [ORDER_OLDEST] */
         val order: String? = null,
@@ -86,9 +86,9 @@ class CommentModule(
     /** @since 261021 */
     @Serializable
     data class HotReq(
-        /** [TARGET_SONG] */
+        /** [TARGET_SONG] or [TARGET_POST] */
         val targetType: String,
-        /** The song id, not its display id. */
+        /** The song id, not its display id, or the post id. */
         val targetId: Long,
     )
 
@@ -170,6 +170,8 @@ class CommentModule(
 
     companion object {
         const val TARGET_SONG = "song"
+        /** @since 261031 */
+        const val TARGET_POST = "post"
 
         const val ORDER_NEWEST = "newest"
         const val ORDER_OLDEST = "oldest"

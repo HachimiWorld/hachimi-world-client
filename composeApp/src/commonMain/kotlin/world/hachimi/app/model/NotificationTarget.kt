@@ -15,11 +15,8 @@ import world.hachimi.app.nav.Route
 
 /** Where a notification's follow-up button goes, and what it says. */
 data class NotificationTarget(
-    /** The page to open; null when [commentsOfSong] is set. */
-    val route: Route?,
+    val route: Route,
     val label: StringResource,
-    /** The display id of a song to play with its comments open, instead of opening a page. */
-    val commentsOfSong: String? = null,
 )
 
 /**
@@ -39,7 +36,10 @@ fun NotificationModule.ContentIntent.toTarget(): NotificationTarget? = when (act
         NotificationTarget(Route.Root.MyPlaylist.Detail(it), Res.string.notification_action_view_playlist)
     }
     "song.comment.view" -> data.string("song_display_id")?.let {
-        NotificationTarget(route = null, label = Res.string.notification_action_view_comment, commentsOfSong = it)
+        NotificationTarget(Route.Root.SongComments(it), Res.string.notification_action_view_comment)
+    }
+    "post.comment.view" -> data.long("post_id")?.let {
+        NotificationTarget(Route.Root.Events.Detail(it, atComments = true), Res.string.notification_action_view_comment)
     }
     else -> null
 }

@@ -106,6 +106,7 @@ import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.DeviceManagementScreen
 import world.hachimi.app.ui.notification.NotificationDetailScreen
 import world.hachimi.app.ui.notification.NotificationInboxScreen
+import world.hachimi.app.ui.comment.SongCommentsScreen
 import world.hachimi.app.ui.message.MessageCenterScreen
 import world.hachimi.app.ui.message.NewFollowersScreen
 import world.hachimi.app.ui.message.ReceivedLikesScreen
@@ -268,7 +269,7 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         Route.Root.Home.HiddenGem -> NavEntry(key) { DevelopingPage() }
         is Route.Root.Home.Category -> NavEntry(key) { CategorySongsScreen(key.category) }
 
-        is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId) }
+        is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId, key.atComments) }
 
         is Route.Root.Search -> NavEntry(key) { SearchScreen(key.query, key.type) }
 
@@ -358,6 +359,7 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         Route.Root.ReceivedReplies -> NavEntry(key) {
             if (global.isLoggedIn) ReceivedRepliesScreen() else NeedLoginScreen()
         }
+        is Route.Root.SongComments -> NavEntry(key) { SongCommentsScreen(key.songDisplayId) }
         is Route.Root.ReportCase -> NavEntry(key) {
             if (global.isLoggedIn) ReportCaseScreen(key.targetType, key.targetId) else NeedLoginScreen()
         }

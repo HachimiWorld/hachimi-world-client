@@ -33,19 +33,24 @@ import hachimiworld.composeapp.generated.resources.message_channel_replies
 import hachimiworld.composeapp.generated.resources.message_replies_empty_subtitle
 import hachimiworld.composeapp.generated.resources.message_replies_empty_title
 import hachimiworld.composeapp.generated.resources.message_reply_commented
+import hachimiworld.composeapp.generated.resources.message_reply_commented_post
 import hachimiworld.composeapp.generated.resources.message_reply_replied
 import hachimiworld.composeapp.generated.resources.message_load_error
 import hachimiworld.composeapp.generated.resources.message_load_more_failed
 import hachimiworld.composeapp.generated.resources.notification_retry
 import kotlinx.datetime.LocalDateTime
+import androidx.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import world.hachimi.app.api.module.CommentModule
+import world.hachimi.app.api.module.MessageModule
 import world.hachimi.app.api.module.MessageModule.ReceivedReplyItem
+import world.hachimi.app.api.module.UgcPreview
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReceivedRepliesViewModel
-import world.hachimi.app.model.SongCommentsStore
+import world.hachimi.app.model.commentsRoute
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.HachimiTheme
@@ -62,7 +67,9 @@ import world.hachimi.app.ui.notification.components.RetryLine
 import world.hachimi.app.ui.util.listTailPadding
 import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.YMD
+import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.formatTime
+import kotlin.time.Instant
 
 @Composable
 fun ReceivedRepliesScreen() {
@@ -79,16 +86,16 @@ fun ReceivedRepliesScreen() {
 }
 
 /**
- * Replies to the user's comments and comments on their songs, without the toolbar, for embedding.
- * Opening it marks replies read; tapping one plays the song and opens its comments.
+ * Replies to the user's comments and comments on their songs and posts, without the toolbar, for
+ * embedding. Opening it marks replies read; tapping one opens the comments it's among.
  */
 @Composable
 fun ReceivedRepliesContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(start = AdaptiveScreenMargin, top = AdaptiveScreenMargin, end = AdaptiveScreenMargin),
     vm: ReceivedRepliesViewModel = koinViewModel(),
-    comments: SongCommentsStore = koinInject(),
 ) {
+    val navigator = LocalNavigator.current
     LaunchedEffect(vm) { vm.mounted() }
 
     when (vm.initializeStatus) {
@@ -122,7 +129,7 @@ fun ReceivedRepliesContent(
                     ReceivedReplyRow(
                         item = item,
                         isNew = vm.isNew(item),
-                        onClick = { item.target.preview.songDisplayId?.let { comments.openSongComments(it) } },
+                        onClick = { item.target.preview.commentsRoute()?.let { navigator.push(it) } },
                     )
                 }
                 item(key = "tail") {
@@ -159,7 +166,15 @@ private fun ReceivedReplyRow(item: ReceivedReplyItem, isNew: Boolean, onClick: (
                         withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(comment.author?.username.orEmpty()) }
                         append(" ")
                         withStyle(SpanStyle(color = variant)) {
-                            append(stringResource(if (comment.rootId == null) Res.string.message_reply_commented else Res.string.message_reply_replied))
+                            append(
+                                stringResource(
+                                    when {
+                                        comment.rootId != null -> Res.string.message_reply_replied
+                                        item.target.targetType == CommentModule.TARGET_POST -> Res.string.message_reply_commented_post
+                                        else -> Res.string.message_reply_commented
+                                    }
+                                )
+                            )
                         }
                     },
                     modifier = Modifier.weight(1f),
@@ -195,5 +210,66 @@ private fun ReceivedReplyRow(item: ReceivedReplyItem, isNew: Boolean, onClick: (
             )
         }
         RemoteImage(item.target.preview.imageUrl, Modifier.size(44.dp).clip(RoundedCornerShape(8.dp)))
+    }
+}
+
+private fun previewReply(replyTo: CommentModule.CommentUser?, repliedContent: String?) = ReceivedReplyItem(
+    comment = CommentModule.CommentItem(
+        id = 7,
+        targetType = CommentModule.TARGET_SONG,
+        targetId = 144,
+        rootId = if (replyTo != null) 1 else null,
+        replyToId = if (replyTo != null) 1 else null,
+        replyToUser = replyTo,
+        author = CommentModule.CommentUser(2, "循环一下午", null),
+        content = "半拍那里确实，第一次听差点以为是卡了。",
+        removed = false,
+        likeCount = 0,
+        liked = false,
+        createTime = Instant.parse("2026-10-31T03:01:34Z"),
+    ),
+    target = MessageModule.ReplyTarget(
+        targetType = CommentModule.TARGET_SONG,
+        targetId = 144,
+        preview = UgcPreview.Song("曼波小队", "", "JM-CBRN-506"),
+    ),
+    repliedContent = repliedContent,
+)
+
+@Preview(widthDp = 360, name = "Reply to a comment · New")
+@Composable
+private fun ReceivedReplyPreview() {
+    PreviewTheme(background = true) {
+        ReceivedReplyRow(
+            previewReply(CommentModule.CommentUser(1, "基米观察员", null), "同感，尤其是鼓进来之前那半拍。"),
+            isNew = true,
+            onClick = {},
+        )
+    }
+}
+
+@Preview(widthDp = 360, name = "Comment on a song")
+@Composable
+private fun ReceivedSongCommentPreview() {
+    PreviewTheme(background = true) {
+        ReceivedReplyRow(previewReply(null, null), isNew = false, onClick = {})
+    }
+}
+
+@Preview(widthDp = 360, name = "Comment on a post")
+@Composable
+private fun ReceivedPostCommentPreview() {
+    PreviewTheme(background = true) {
+        ReceivedReplyRow(
+            previewReply(null, null).copy(
+                target = MessageModule.ReplyTarget(
+                    targetType = CommentModule.TARGET_POST,
+                    targetId = 12,
+                    preview = UgcPreview.Post(12, "十月活动公告", null),
+                ),
+            ),
+            isNew = false,
+            onClick = {},
+        )
     }
 }

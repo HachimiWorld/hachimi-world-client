@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.component.AmbientChip
 import world.hachimi.app.ui.component.Chip
@@ -66,7 +67,7 @@ private fun UserChipContent(avatar: Painter?, name: String) {
         }
         Spacer(Modifier.width(4.dp))
     }
-    Text(text = name)
+    Text(text = name, maxLines = 1, overflow = TextOverflow.Ellipsis)
 }
 
 @Composable

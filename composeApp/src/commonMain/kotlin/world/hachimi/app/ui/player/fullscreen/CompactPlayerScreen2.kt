@@ -7,11 +7,9 @@ import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
 import hachimiworld.composeapp.generated.resources.player_collapse_cd
 import hachimiworld.composeapp.generated.resources.player_cover_cd
-import hachimiworld.composeapp.generated.resources.player_like
 import hachimiworld.composeapp.generated.resources.player_next_cd
 import hachimiworld.composeapp.generated.resources.player_previous_cd
 import hachimiworld.composeapp.generated.resources.player_share
-import hachimiworld.composeapp.generated.resources.player_unlike
 import hachimiworld.composeapp.generated.resources.report_action
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
@@ -33,8 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Flag
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
@@ -63,6 +59,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -83,7 +80,6 @@ import world.hachimi.app.model.ReportStore
 import world.hachimi.app.model.PlayerUIState
 import world.hachimi.app.model.PlayerViewModel
 import world.hachimi.app.model.SearchViewModel
-import world.hachimi.app.model.SongCommentsStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.design.HachimiTheme
@@ -98,11 +94,12 @@ import world.hachimi.app.ui.insets.multiplatformSafeDrawingPadding
 import world.hachimi.app.ui.player.components.AddToPlaylistDialog
 import world.hachimi.app.ui.player.components.PlayerProgress
 import world.hachimi.app.ui.player.components.ShareDialog
+import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.player.fullscreen.components.AuthorAndPV
-import world.hachimi.app.ui.player.fullscreen.components.CommentsTabContent
 import world.hachimi.app.ui.player.fullscreen.components.Cover
 import world.hachimi.app.ui.player.fullscreen.components.InfoTabContent
 import world.hachimi.app.ui.player.fullscreen.components.JmidLabel
+import world.hachimi.app.ui.player.fullscreen.components.LikeAndCommentButtons
 import world.hachimi.app.ui.player.fullscreen.components.Lyrics2
 import world.hachimi.app.ui.player.fullscreen.components.MusicQueue
 import world.hachimi.app.ui.player.fullscreen.components.Page
@@ -111,6 +108,7 @@ import world.hachimi.app.ui.player.fullscreen.components.Titles
 import world.hachimi.app.ui.player.fullscreen.components.rememberTabTransitionSpec
 import world.hachimi.app.ui.util.fadingEdges
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun CompactPlayerScreen2(
@@ -124,15 +122,18 @@ fun CompactPlayerScreen2(
     val scrollState = rememberLazyListState()
     var tobeAddedSong by remember { mutableStateOf<Pair<Long, Long>?>(null) }
     var showShareDialog by remember { mutableStateOf(false) }
-    val reports = koinInject<ReportStore>()
-    val comments = koinInject<SongCommentsStore>()
-    LaunchedEffect(comments.pendingOpen) {
-        if (comments.pendingOpen) {
-            comments.pendingOpen = false
-            currentPage = Page.Comments
-            showTab = true
-        }
+    val songId = uiState.readySongInfo?.id
+    LaunchedEffect(songId, global.playerExpanded) {
+        if (songId != null && global.playerExpanded) vm.loadCommentCount(songId)
     }
+    val openComments = {
+        uiState.readySongInfo?.let {
+            navigator.push(Route.Root.SongComments(it.displayId))
+            global.shrinkPlayer()
+        }
+        Unit
+    }
+    val reports = koinInject<ReportStore>()
     val reportSong: (() -> Unit)? = uiState.readySongInfo
         ?.takeIf { it.uploaderUid != global.userInfo?.uid }
         ?.let { song -> { reports.open(ReportModule.TARGET_SONG, song.id) } }
@@ -168,7 +169,10 @@ fun CompactPlayerScreen2(
                     uiState = uiState,
                     liked = vm.liked,
                     likeEnabled = vm.likeEnabled,
+                    likeCount = vm.likeCount,
+                    commentCount = vm.commentCount,
                     onLikeClick = vm::toggleLike,
+                    onCommentsClick = openComments,
                     onNavToUser = {
                         navigator.push(Route.Root.PublicUserSpace(it))
                         global.shrinkPlayer()
@@ -188,7 +192,11 @@ fun CompactPlayerScreen2(
                         author = uiState.displayedAuthor,
                         liked = vm.liked,
                         likeEnabled = vm.likeEnabled,
+                        likeCount = vm.likeCount,
+                        commentCount = vm.commentCount,
+                        commentsEnabled = songId != null,
                         onLikeClick = vm::toggleLike,
+                        onCommentsClick = openComments,
                         hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
                         pvLink = externalLink?.url,
                         pvPlatform = externalLink?.platform,
@@ -226,13 +234,6 @@ fun CompactPlayerScreen2(
 
                             Page.Queue -> QueueTab(global)
                             Page.Lyrics -> LyricsTab(uiState, scrollState)
-                            Page.Comments -> CommentsTab(
-                                uiState,
-                                onNavToUser = {
-                                    navigator.push(Route.Root.PublicUserSpace(it))
-                                    global.shrinkPlayer()
-                                },
-                            )
                             else -> {}
                         }
                     }
@@ -298,7 +299,10 @@ private fun PlayerTab(
     uiState: PlayerUIState,
     liked: Boolean,
     likeEnabled: Boolean,
+    likeCount: Long,
+    commentCount: Long?,
     onLikeClick: () -> Unit,
+    onCommentsClick: () -> Unit,
     onNavToUser: (Long) -> Unit,
     onAddToPlaylistClick: () -> Unit,
     onShareClick: () -> Unit,
@@ -325,43 +329,74 @@ private fun PlayerTab(
             )
         }
 
-        Row(
+        SongInfo(
             modifier = Modifier.padding(top = 24.dp).fillMaxWidth(),
+            uiState = uiState,
+            liked = liked,
+            likeEnabled = likeEnabled,
+            likeCount = likeCount,
+            commentCount = commentCount,
+            onLikeClick = onLikeClick,
+            onCommentsClick = onCommentsClick,
+            onNavToUser = onNavToUser,
+            onAddToPlaylistClick = onAddToPlaylistClick,
+            onShareClick = onShareClick,
+            onReportClick = onReportClick,
+        )
+    }
+}
+
+/** The title on its own line, for all the room it can get, then the author with the song's actions. */
+@Composable
+private fun SongInfo(
+    modifier: Modifier,
+    uiState: PlayerUIState,
+    liked: Boolean,
+    likeEnabled: Boolean,
+    likeCount: Long,
+    commentCount: Long?,
+    onLikeClick: () -> Unit,
+    onCommentsClick: () -> Unit,
+    onNavToUser: (Long) -> Unit,
+    onAddToPlaylistClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onReportClick: (() -> Unit)?,
+) {
+    Column(modifier) {
+        Titles(
+            modifier = Modifier.fillMaxWidth(),
+            title = uiState.displayedTitle,
+            subtitle = uiState.readySongInfo?.subtitle,
+        )
+        Row(
+            modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(Modifier.weight(1f)) {
-                Titles(
-                    modifier = Modifier.fillMaxWidth(),
-                    title = uiState.displayedTitle,
-                    subtitle = uiState.readySongInfo?.subtitle,
-                )
-
-                val link = uiState.readySongInfo?.externalLinks?.firstOrNull()
-                AuthorAndPV(
-                    modifier = Modifier.padding(top = 8.dp),
-                    authorName = uiState.displayedAuthor,
-                    hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
-                    pvLink = link?.url,
-                    pvPlatform = link?.platform,
-                    pvAlignToEnd = false,
-                    avatar = uiState.userProfile?.avatarUrl,
-                    onUserClick = {
-                        uiState.readySongInfo?.uploaderUid?.let {
-                            onNavToUser(it)
-                        }
-                    },
-                )
-            }
-            HachimiIconButton(onClick = onLikeClick, enabled = likeEnabled) {
-                Icon(
-                    imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = stringResource(
-                        if (liked) Res.string.player_unlike else Res.string.player_like
-                    ),
-                    tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current,
-                )
-            }
+            val link = uiState.readySongInfo?.externalLinks?.firstOrNull()
+            AuthorAndPV(
+                modifier = Modifier.weight(1f),
+                authorName = uiState.displayedAuthor,
+                hasMultipleArtists = uiState.songInfo?.productionCrew?.isNotEmpty() == true,
+                pvLink = link?.url,
+                pvPlatform = link?.platform,
+                pvAlignToEnd = false,
+                avatar = uiState.userProfile?.avatarUrl,
+                onUserClick = {
+                    uiState.readySongInfo?.uploaderUid?.let {
+                        onNavToUser(it)
+                    }
+                },
+            )
+            LikeAndCommentButtons(
+                liked = liked,
+                likeEnabled = likeEnabled,
+                likeCount = likeCount,
+                commentCount = commentCount,
+                onLikeClick = onLikeClick,
+                onCommentsClick = onCommentsClick,
+                commentsEnabled = uiState.readySongInfo != null,
+            )
             Box {
                 var expanded by remember { mutableStateOf(false) }
                 HachimiIconButton(
@@ -404,7 +439,8 @@ private fun MoreDropdownMenu(
                 onDismissRequest()
             },
             text = { Text(stringResource(Res.string.player_share)) },
-            leadingIcon = { Icon(Icons.Default.Share, stringResource(Res.string.player_share)) },
+            // Fills more of its box than the other menu icons, so it's drawn a little smaller
+            leadingIcon = { Icon(Icons.Default.Share, stringResource(Res.string.player_share), Modifier.padding(2.dp).size(20.dp)) },
         )
         if (onReportClick != null) {
             DropdownMenuItem(
@@ -449,17 +485,6 @@ private fun LyricsTab(
             contentPadding = PaddingValues(vertical = 42.dp)
         )
     }
-}
-
-@Composable
-private fun CommentsTab(uiState: PlayerUIState, onNavToUser: (Long) -> Unit) {
-    val song = uiState.readySongInfo
-    CommentsTabContent(
-        songId = song?.id,
-        uploaderUid = song?.uploaderUid,
-        onUserClick = onNavToUser,
-        modifier = Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 32.dp),
-    )
 }
 
 @Composable
@@ -527,7 +552,11 @@ private fun Header(
     avatar: String?,
     liked: Boolean,
     likeEnabled: Boolean,
+    likeCount: Long,
+    commentCount: Long?,
+    commentsEnabled: Boolean,
     onLikeClick: () -> Unit,
+    onCommentsClick: () -> Unit,
     hasMultipleArtists: Boolean,
     pvLink: String?,
     pvPlatform: String?,
@@ -555,7 +584,7 @@ private fun Header(
                 .background(LocalContentColor.current.copy(alpha = 0.12f)),
             contentScale = ContentScale.Crop,
         )
-        Column(Modifier.weight(1f).padding(start = 16.dp, end = 16.dp)) {
+        Column(Modifier.weight(1f).padding(start = 16.dp)) {
             Text(
                 modifier = Modifier.basicMarquee(
                     iterations = Int.MAX_VALUE,
@@ -565,38 +594,41 @@ private fun Header(
                 style = titleStyle,
                 maxLines = 1
             )
-            AuthorAndPV(
-                modifier = Modifier.padding(top = 8.dp),
-                authorName = author,
-                hasMultipleArtists = hasMultipleArtists,
-                pvLink = pvLink,
-                pvAlignToEnd = false,
-                avatar = avatar,
-                onUserClick = onUserClick,
-                pvPlatform = pvPlatform
-            )
-        }
-        HachimiIconButton(onClick = onLikeClick, touchMode = true, enabled = likeEnabled) {
-            Icon(
-                imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                contentDescription = stringResource(
-                    if (liked) Res.string.player_unlike else Res.string.player_like
-                ),
-                tint = if (liked) HachimiTheme.colorScheme.primary else LocalContentColor.current,
-            )
-        }
-        Box {
-            var expanded by remember { mutableStateOf(false) }
-            HachimiIconButton(onClick = { expanded = true }, touchMode = true) {
-                Icon(Icons.Default.MoreVert, contentDescription = stringResource(Res.string.common_more))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AuthorAndPV(
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    authorName = author,
+                    hasMultipleArtists = hasMultipleArtists,
+                    pvLink = pvLink,
+                    pvAlignToEnd = false,
+                    avatar = avatar,
+                    onUserClick = onUserClick,
+                    pvPlatform = pvPlatform
+                )
+                LikeAndCommentButtons(
+                    liked = liked,
+                    likeEnabled = likeEnabled,
+                    likeCount = likeCount,
+                    commentCount = commentCount,
+                    onLikeClick = onLikeClick,
+                    onCommentsClick = onCommentsClick,
+                    commentsEnabled = commentsEnabled,
+                    touchMode = true,
+                )
+                Box {
+                    var expanded by remember { mutableStateOf(false) }
+                    HachimiIconButton(onClick = { expanded = true }, touchMode = true) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(Res.string.common_more))
+                    }
+                    MoreDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        onAddToPlaylistClick = onAddToPlaylistClick,
+                        onShareClick = onShareClick,
+                        onReportClick = onReportClick,
+                    )
+                }
             }
-            MoreDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                onAddToPlaylistClick = onAddToPlaylistClick,
-                onShareClick = onShareClick,
-                onReportClick = onReportClick,
-            )
         }
     }
 }
@@ -691,3 +723,112 @@ private val titleStyle = TextStyle(
     fontSize = 16.sp,
     lineHeight = 24.sp
 )
+
+private fun previewSongState(title: String, author: String) = PlayerUIState().apply {
+    fetchingMetadata = true
+    updatePreviewMetadata(PlayerUIState.PreviewMetadata(
+        id = 144,
+        displayId = "JM-CBRN-506",
+        title = title,
+        author = author,
+        coverUrl = "",
+        duration = 200.seconds,
+        explicit = false,
+    ))
+}
+
+@Composable
+private fun PreviewSongInfo(title: String, author: String, likeCount: Long, commentCount: Long) {
+    PreviewTheme(background = true) {
+        SongInfo(
+            modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp).fillMaxWidth(),
+            uiState = previewSongState(title, author),
+            liked = true,
+            likeEnabled = true,
+            likeCount = likeCount,
+            commentCount = commentCount,
+            onLikeClick = {},
+            onCommentsClick = {},
+            onNavToUser = {},
+            onAddToPlaylistClick = {},
+            onShareClick = {},
+            onReportClick = {},
+        )
+    }
+}
+
+@Preview(widthDp = 360, name = "Song info")
+@Composable
+private fun SongInfoPreview() {
+    PreviewSongInfo("曼波小队", "基米观察员", 128, 16)
+}
+
+@Preview(widthDp = 360, name = "Song info · Long text, large counts")
+@Composable
+private fun SongInfoLongPreview() {
+    PreviewSongInfo("【叮咚鸡】最后一叮·哈基米交响乐团十周年纪念版", "一个名字特别特别特别长的基米观察员", 12_345, 1_203)
+}
+
+@Preview(widthDp = 240, name = "More menu items")
+@Composable
+private fun MoreMenuItemsPreview() {
+    PreviewTheme(background = true) {
+        Column {
+            DropdownMenuItem(
+                onClick = {},
+                text = { Text(stringResource(Res.string.player_add_to_playlist_title)) },
+                leadingIcon = { Icon(Icons.Default.Add, null) },
+            )
+            DropdownMenuItem(
+                onClick = {},
+                text = { Text(stringResource(Res.string.player_share)) },
+                leadingIcon = { Icon(Icons.Default.Share, null, Modifier.padding(2.dp).size(20.dp)) },
+            )
+            DropdownMenuItem(
+                onClick = {},
+                text = { Text(stringResource(Res.string.report_action)) },
+                leadingIcon = { Icon(Icons.Outlined.Flag, null) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun PreviewHeader(title: String, author: String, likeCount: Long, commentCount: Long) {
+    PreviewTheme(background = true) {
+        Header(
+            // As the player places it
+            modifier = Modifier.padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 16.dp),
+            cover = "",
+            title = title,
+            author = author,
+            liked = false,
+            likeEnabled = true,
+            likeCount = likeCount,
+            commentCount = commentCount,
+            commentsEnabled = true,
+            onLikeClick = {},
+            onCommentsClick = {},
+            hasMultipleArtists = false,
+            pvLink = null,
+            pvPlatform = null,
+            avatar = null,
+            onUserClick = {},
+            onAddToPlaylistClick = {},
+            onShareClick = {},
+            onReportClick = {},
+        )
+    }
+}
+
+@Preview(widthDp = 360, name = "Header")
+@Composable
+private fun HeaderPreview() {
+    PreviewHeader("曼波小队", "基米观察员", 128, 16)
+}
+
+@Preview(widthDp = 360, name = "Header · Long text, large counts")
+@Composable
+private fun HeaderLongPreview() {
+    PreviewHeader("【叮咚鸡】最后一叮·哈基米交响乐团十周年纪念版", "一个名字特别特别特别长的基米观察员", 12_345, 1_203)
+}

@@ -4,13 +4,15 @@
 
 1. Message center: a bell in the top bar (a sidebar entry on wide screens) shows the unread count and opens system notifications, received likes and new followers. 新增消息中心：顶栏铃铛（宽屏为侧栏入口）显示未读数，可查看系统通知、收到的赞和新粉丝。
 2. Reports: songs, playlists and users can be reported from their "more" menu, and the result arrives as a system notification. The committee center lists reports; contributors decide on them, can hide a song or playlist or reset a profile, and appoint members. Owners of hidden content see why, and songs that are no longer available stay in playlists and likes as placeholders. 新增举报：可在作品、歌单和用户页的「更多」菜单中举报，处理结果以系统通知告知；委员会中心可查看举报队列，贡献者可处理举报（隐藏作品或歌单、重置资料）并任命委员；内容被隐藏时作者可看到原因，失效的作品在歌单和点赞列表中以占位显示。
-3. Song comments: the player has a new Comments tab to read, post, reply to, like, delete and report comments, sorted by top or newest. Your own comments that are still under review or weren't approved are marked. Uploaders can delete comments under their songs. Replies to your comments and comments on your songs show up under "Replies" in the message center. 新增歌曲评论：播放器新增「评论」页签，可按最热或最新查看，发表、回复、点赞、删除和举报评论；自己审核中或未通过的评论会有标记；上传者可删除自己作品下的评论。别人回复你的评论或评论你的作品时，会显示在消息中心的「回复我的」里。
+3. Song comments: songs have a comments page, opened from the button next to Like in the full player, to read, post, reply to, like, delete and report comments, with the most liked at the top and the rest newest or oldest first. A comment held for review shows once it's reviewed. Uploaders can delete comments under their songs. Replies to your comments and comments on your songs show up under "Replies" in the message center. 新增歌曲评论：歌曲新增评论页，从全屏播放器点赞旁的按钮进入，热门评论置顶，其余可按最新或最早查看，可发表、回复、点赞、删除和举报评论；待审核的评论通过后才会显示；上传者可删除自己作品下的评论。别人回复你的评论或评论你的作品时，会显示在消息中心的「回复我的」里。
+4. Post comments: comments now sit below the article on event posts, where you can post, reply, like, delete and report them as on songs. Authors can delete comments under their posts, and comments on your posts show up under "Replies" in the message center. 新增文章评论：活动文章正文下方可以查看和发表评论，回复、点赞、删除和举报与歌曲评论相同；作者可删除自己文章下的评论；别人评论你的文章时，会显示在消息中心的「回复我的」里。
 
 ## Enhancements 改进
 
 1. The publish page, creation center, contributor center, events, settings sections and relative times ("3 minutes ago") are now translated into English, along with screen reader labels for buttons and covers. 发布页、创作中心、贡献者中心、活动、设置分组与相对时间（如「3 分钟前」）补全英文翻译，按钮与封面的读屏标签也一并补齐。
 2. Pending edit reviews now show what changed compared with the live version. 待审核的作品修改稿会列出与线上版本的差异。
 3. When a nickname or bio isn't allowed, saving the profile says which of the two to change. 保存资料时，如果昵称或简介不合规，会提示是哪一项需要修改。
+4. Full player on wide screens: like and comments now sit in the author row and stay visible, and add to playlist takes the like button's place among the controls that appear on hover. 宽屏全屏播放器的点赞和评论移到作者一行并改为常驻，鼠标移上去时显示的控制按钮里，点赞换成了添加到歌单。
 
 # 1.5.0
 

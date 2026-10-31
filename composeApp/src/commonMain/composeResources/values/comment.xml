@@ -1,11 +1,11 @@
 <resources>
+    <string name="comment_page_title">Comments</string>
     <string name="comment_header">Comments %1$s</string>
     <string name="comment_replies_header">Replies %1$s</string>
     <string name="comment_order_newest">Newest</string>
     <string name="comment_order_oldest">Oldest</string>
     <string name="comment_section_hot">Top comments</string>
     <string name="comment_section_all">All comments</string>
-    <string name="comment_back_cd">Back to comments</string>
     <string name="comment_empty_title">No comments yet</string>
     <string name="comment_empty_subtitle">Be the first to say something</string>
     <string name="comment_load_error">Couldn't load comments. Check your network and try again.</string>

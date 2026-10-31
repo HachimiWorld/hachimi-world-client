@@ -111,7 +111,7 @@ class MessageModule(
     )
 
     /**
-     * A comment replying to the user, or on their song.
+     * A comment replying to the user, or on their song or post.
      *
      * @since 261021
      */
@@ -119,14 +119,14 @@ class MessageModule(
     data class ReceivedReplyItem(
         val comment: CommentModule.CommentItem,
         val target: ReplyTarget,
-        /** The user's comment it replies to; null for a comment on their song, or if it was deleted. */
+        /** The user's comment it replies to; null for a comment on their song or post, or if it was deleted. */
         val repliedContent: String?,
     )
 
     /** What a received reply is on. @since 261021 */
     @Serializable
     data class ReplyTarget(
-        /** [CommentModule.TARGET_SONG] */
+        /** [CommentModule.TARGET_SONG] or [CommentModule.TARGET_POST] */
         val targetType: String,
         val targetId: Long,
         val preview: UgcPreview,

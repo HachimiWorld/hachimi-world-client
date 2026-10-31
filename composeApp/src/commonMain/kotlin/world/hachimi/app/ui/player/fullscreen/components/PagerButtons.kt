@@ -2,7 +2,6 @@ package world.hachimi.app.ui.player.fullscreen.components
 
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_info
-import hachimiworld.composeapp.generated.resources.player_comments_cd
 import hachimiworld.composeapp.generated.resources.player_lyrics_cd
 import hachimiworld.composeapp.generated.resources.player_queue_cd
 import org.jetbrains.compose.resources.stringResource
@@ -11,18 +10,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.design.components.HollowIconToggleButton
 import world.hachimi.app.ui.design.components.ToggleButton
+import world.hachimi.app.ui.theme.PreviewTheme
 
 enum class Page {
-    Info, Queue, Lyrics, Comments
+    Info, Queue, Lyrics
 }
 
 @Composable
@@ -49,12 +49,6 @@ fun PagerButtons(
             { onPageSelect(Page.Lyrics) },
             icon = Icons.AutoMirrored.Outlined.Chat,
             stringResource(Res.string.player_lyrics_cd)
-        )
-        HollowIconToggleButton(
-            currentPage == Page.Comments,
-            { onPageSelect(Page.Comments) },
-            icon = Icons.AutoMirrored.Outlined.Comment,
-            stringResource(Res.string.player_comments_cd)
         )
     }
 }
@@ -84,12 +78,21 @@ fun PagerButtons2(
         ) {
             Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.AutoMirrored.Outlined.Chat, contentDescription = stringResource(Res.string.player_lyrics_cd))
         }
-        ToggleButton(
-            currentPage == Page.Comments,
-            { onPageSelect(Page.Comments) },
-        ) {
-            Icon(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), imageVector = Icons.AutoMirrored.Outlined.Comment, contentDescription = stringResource(Res.string.player_comments_cd))
-        }
     }
 }
 
+@Preview(name = "Expanded player")
+@Composable
+private fun PagerButtonsPreview() {
+    PreviewTheme(background = true) {
+        PagerButtons(currentPage = Page.Lyrics, onPageSelect = {})
+    }
+}
+
+@Preview(widthDp = 360, name = "Compact player")
+@Composable
+private fun PagerButtons2Preview() {
+    PreviewTheme(background = true) {
+        PagerButtons2(currentPage = Page.Lyrics, onPageSelect = {})
+    }
+}

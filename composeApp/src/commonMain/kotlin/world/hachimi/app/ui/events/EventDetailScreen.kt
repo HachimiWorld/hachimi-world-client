@@ -6,6 +6,7 @@ import hachimiworld.composeapp.generated.resources.events_content_unsupported
 import hachimiworld.composeapp.generated.resources.events_cover_cd
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,12 +14,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -39,26 +39,27 @@ import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.CoilHeaders
+import world.hachimi.app.api.module.CommentModule
 import world.hachimi.app.api.module.PostModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.getPlatform
+import world.hachimi.app.model.CommentTarget
 import world.hachimi.app.model.EventDetailViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.comment.CommentsPage
+import world.hachimi.app.ui.comment.PreviewCommentsPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.MarkdownText
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.player.fullscreen.components.AmbientUserChip
 import world.hachimi.app.ui.theme.PreviewTheme
-import world.hachimi.app.ui.util.ListTailSpacer
-import world.hachimi.app.ui.util.WindowSize
-import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import world.hachimi.app.util.isValidHttpsUrl
@@ -67,6 +68,7 @@ import kotlin.time.Clock
 @Composable
 fun EventDetailScreen(
     eventId: Long,
+    atComments: Boolean = false,
     global: GlobalStore = koinInject(),
     vm: EventDetailViewModel = koinViewModel(),
 ) {
@@ -77,37 +79,54 @@ fun EventDetailScreen(
         onDispose { vm.dispose() }
     }
 
-    ScreenScaffold(
-        title = { Text(if (vm.initStat == InitializeStatus.LOADED) vm.data?.title.orEmpty() else "", maxLines = 1) },
-        showBack = true,
-        onBack = navigator::back,
-    ) {
-        AnimatedContent(vm.initStat, modifier = Modifier.fillMaxSize()) { st ->
-            when (st) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
-                InitializeStatus.LOADED -> EventDetailContent(data = vm.data) {
-                    navigator.push(Route.Root.PublicUserSpace(it))
+    AnimatedContent(vm.initStat, modifier = Modifier.fillMaxSize()) { st ->
+        when (st) {
+            InitializeStatus.INIT -> EventDetailPlaceholder(navigator::back) { LoadingPage() }
+            InitializeStatus.FAILED -> EventDetailPlaceholder(navigator::back) { ReloadPage(onReloadClick = { vm.retry() }) }
+            InitializeStatus.LOADED -> {
+                val post = vm.data
+                if (post == null) {
+                    EventDetailPlaceholder(navigator::back) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(stringResource(Res.string.events_content_empty))
+                        }
+                    }
+                } else {
+                    CommentsPage(
+                        target = CommentTarget(CommentModule.TARGET_POST, post.id, post.author.uid),
+                        title = { post.title },
+                        onBack = navigator::back,
+                        header = {
+                            PostArticle(post, onNavToUser = { navigator.push(Route.Root.PublicUserSpace(it)) })
+                        },
+                        startAtComments = atComments,
+                    )
                 }
             }
         }
     }
 }
 
+/** The page before there's a post to show. */
 @Composable
-private fun EventDetailContent(
-    data: PostModule.PostDetail?,
+private fun EventDetailPlaceholder(onBack: () -> Unit, content: @Composable () -> Unit) {
+    ScreenScaffold(
+        title = { Text("", maxLines = 1) },
+        showBack = true,
+        onBack = onBack,
+    ) {
+        content()
+    }
+}
+
+/** The post, above its comments; those scroll together, so this doesn't scroll on its own. */
+@Composable
+private fun PostArticle(
+    data: PostModule.PostDetail,
     onNavToUser: (Long) -> Unit,
 ) {
-    if (data == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(Res.string.events_content_empty))
-        }
-        return
-    }
-
     if (data.contentType != "markdown") {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
             Text(stringResource(Res.string.events_content_unsupported))
         }
         return
@@ -117,12 +136,7 @@ private fun EventDetailContent(
 
     SelectionContainer {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .multiplatformStatusBarsPadding()
-                .padding(24.dp)
-                .fillMaxWidthIn(maxWidth = WindowSize.COMPACT),
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -182,7 +196,7 @@ private fun EventDetailContent(
                 }
             )
 
-            ListTailSpacer()
+            Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
         }
     }
 }
@@ -224,13 +238,43 @@ private val previewPost
         updateTime = Clock.System.now()
     )
 
-@Preview(heightDp = 1600)
+@Preview(heightDp = 1600, name = "Article")
 @Composable
 private fun Preview() {
     PreviewTheme(background = true) {
-        EventDetailContent(
+        PostArticle(
             data = previewPost,
             onNavToUser = {}
         )
     }
+}
+
+@Preview(widthDp = 360, heightDp = 800, name = "Page · Compact")
+@Composable
+private fun EventDetailCompactPreview() {
+    PreviewCommentsPage(title = previewPost.title) { PostArticle(previewPost, onNavToUser = {}) }
+}
+
+@Preview(widthDp = 360, heightDp = 800, name = "Page · Compact · Dark")
+@Composable
+private fun EventDetailCompactDarkPreview() {
+    PreviewCommentsPage(title = previewPost.title, darkTheme = true) { PostArticle(previewPost, onNavToUser = {}) }
+}
+
+@Preview(widthDp = 360, heightDp = 800, name = "Page · At comments")
+@Composable
+private fun EventDetailAtCommentsPreview() {
+    PreviewCommentsPage(title = previewPost.title, startAtComments = true) { PostArticle(previewPost, onNavToUser = {}) }
+}
+
+@Preview(widthDp = 360, heightDp = 2000, name = "Page · No comments, whole article")
+@Composable
+private fun EventDetailEmptyPreview() {
+    PreviewCommentsPage(title = previewPost.title, empty = true) { PostArticle(previewPost, onNavToUser = {}) }
+}
+
+@Preview(widthDp = 1280, heightDp = 800, name = "Page · Expanded")
+@Composable
+private fun EventDetailExpandedPreview() {
+    PreviewCommentsPage(title = previewPost.title, width = 1280.dp) { PostArticle(previewPost, onNavToUser = {}) }
 }

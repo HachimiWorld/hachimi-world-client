@@ -25,6 +25,7 @@ import hachimiworld.composeapp.generated.resources.report_type_user
 import org.jetbrains.compose.resources.StringResource
 import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.model.PlayerService
+import world.hachimi.app.model.commentsRoute
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
 
@@ -94,21 +95,23 @@ enum class ReportTargetType(
             navigator.push(Route.Root.PublicUserSpace(targetId))
         }
     },
-    /** Shows the comment's text over the song's cover; opening plays the song. @since 261021 */
+    /** Shows the comment's text over the cover of what it's on; opening plays the song or goes to the post. @since 261021 */
     Comment(
         value = ReportModule.TARGET_COMMENT,
         label = Res.string.report_type_comment,
         placeholderIcon = Icons.AutoMirrored.Outlined.Comment,
         roundCover = false,
         showsOwner = true,
-        openLabel = Res.string.report_open_song,
+        openLabel = Res.string.report_open_target,
         actions = mapOf(
             "hide" to ActionText(Res.string.report_action_hide, Res.string.report_action_hide_comment_desc),
             "restore" to ActionText(Res.string.report_action_restore),
         ),
     ) {
         override fun open(targetId: Long, target: ReportModule.TargetInfo, navigator: Navigator, player: PlayerService) {
-            target.preview.songDisplayId?.let { player.insertToQueueWithFetch(it, instantPlay = true, append = false) }
+            val songDisplayId = target.preview.songDisplayId
+            if (songDisplayId != null) player.insertToQueueWithFetch(songDisplayId, instantPlay = true, append = false)
+            else target.preview.commentsRoute()?.let { navigator.push(it) }
         }
     };
 

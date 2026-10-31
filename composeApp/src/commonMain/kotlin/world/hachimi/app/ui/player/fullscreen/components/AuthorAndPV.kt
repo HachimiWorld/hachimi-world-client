@@ -38,6 +38,8 @@ fun AuthorAndPV(
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         AmbientUserChip(
+            // Long names give way, to keep the PV chip in the row
+            modifier = Modifier.weight(1f, fill = false),
             onClick = onUserClick,
             avatar = rememberAsyncImagePainter(
                 ImageRequest.Builder(LocalPlatformContext.current)

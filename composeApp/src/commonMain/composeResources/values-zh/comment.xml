@@ -1,16 +1,16 @@
 <resources>
+    <string name="comment_page_title">评论</string>
     <string name="comment_header">评论 %1$s</string>
     <string name="comment_replies_header">回复 %1$s</string>
     <string name="comment_order_newest">最新</string>
     <string name="comment_order_oldest">最早</string>
     <string name="comment_section_hot">热门评论</string>
     <string name="comment_section_all">全部评论</string>
-    <string name="comment_back_cd">返回评论</string>
     <string name="comment_empty_title">还没有评论</string>
     <string name="comment_empty_subtitle">来说点什么吧</string>
     <string name="comment_load_error">评论加载失败，请检查网络后重试</string>
     <string name="comment_load_more_failed">更多评论加载失败</string>
-    <string name="comment_input_placeholder">说点什么…</string>
+    <string name="comment_input_placeholder">哈一些基米</string>
     <string name="comment_replying_to">回复 %1$s</string>
     <string name="comment_cancel_reply_cd">取消回复</string>
     <string name="comment_send_cd">发送</string>

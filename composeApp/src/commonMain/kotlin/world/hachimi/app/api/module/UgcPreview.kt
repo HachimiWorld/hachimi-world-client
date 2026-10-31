@@ -16,7 +16,7 @@ import kotlinx.serialization.json.jsonPrimitive
  */
 @Serializable(with = UgcPreview.Serializer::class)
 sealed interface UgcPreview {
-    /** The main line: a song's title, a playlist's name, a username, or a comment's text. */
+    /** The main line: a song's or post's title, a playlist's name, a username, or a comment's text. */
     val headline: String
 
     /** A cover or avatar; a comment shows the picture of what it's on. */
@@ -44,6 +44,13 @@ sealed interface UgcPreview {
         override val imageUrl get() = avatarUrl
     }
 
+    /** @since 261031 */
+    @Serializable
+    data class Post(val id: Long, val title: String, val coverUrl: String?) : UgcPreview {
+        override val headline get() = title
+        override val imageUrl get() = coverUrl
+    }
+
     @Serializable
     data class Comment(
         val content: String,
@@ -67,6 +74,7 @@ sealed interface UgcPreview {
                 "song" -> Song.serializer()
                 "playlist" -> Playlist.serializer()
                 "user" -> User.serializer()
+                "post" -> Post.serializer()
                 "comment" -> Comment.serializer()
                 else -> Unknown.serializer()
             }
