@@ -1,8 +1,10 @@
 <resources>
     <string name="comment_header">评论 %1$s</string>
     <string name="comment_replies_header">回复 %1$s</string>
-    <string name="comment_sort_hot">最热</string>
-    <string name="comment_sort_new">最新</string>
+    <string name="comment_order_newest">最新</string>
+    <string name="comment_order_oldest">最早</string>
+    <string name="comment_section_hot">热门评论</string>
+    <string name="comment_section_all">全部评论</string>
     <string name="comment_back_cd">返回评论</string>
     <string name="comment_empty_title">还没有评论</string>
     <string name="comment_empty_subtitle">来说点什么吧</string>

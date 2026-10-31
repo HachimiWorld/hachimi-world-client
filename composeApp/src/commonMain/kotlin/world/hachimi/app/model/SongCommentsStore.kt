@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.annotation.Singleton
@@ -43,9 +45,12 @@ class SongCommentsStore(
     /** The song's uploader, who can delete any comment under it. */
     private var uploaderUid: Long? = null
 
-    /** [CommentModule.SORT_HOT] or [CommentModule.SORT_NEW]. */
-    var sort by mutableStateOf(CommentModule.SORT_HOT)
+    /** [CommentModule.ORDER_NEWEST] or [CommentModule.ORDER_OLDEST], for [threads]. */
+    var order by mutableStateOf(CommentModule.ORDER_NEWEST)
         private set
+    /** The most liked comments, shown above [threads]; each is in [threads] too. */
+    val hotThreads = mutableStateListOf<CommentThread>()
+    /** All comments by time, in [order]. */
     val threads = mutableStateListOf<CommentThread>()
     /** Published comments and replies. */
     var total by mutableStateOf(0L)
@@ -58,7 +63,6 @@ class SongCommentsStore(
         private set
     var loadMoreFailed by mutableStateOf(false)
         private set
-    private var pageIndex = 0
     private var loadJob: Job? = null
 
     /** The thread whose replies are open, or null for the comment list. */
@@ -99,9 +103,9 @@ class SongCommentsStore(
         load()
     }
 
-    fun changeSort(sort: String) {
-        if (this.sort == sort) return
-        this.sort = sort
+    fun changeOrder(order: String) {
+        if (this.order == order) return
+        this.order = order
         if (songId != null) load()
     }
 
@@ -112,6 +116,7 @@ class SongCommentsStore(
     private fun load() {
         val songId = songId ?: return
         loadJob?.cancel()
+        hotThreads.clear()
         threads.clear()
         total = 0
         hasMore = false
@@ -120,11 +125,16 @@ class SongCommentsStore(
         initializeStatus = InitializeStatus.INIT
         loadJob = scope.launch {
             try {
-                val data = fetch(songId, 0)
+                // Both at once; a failure of either fails the load, rethrown here
+                val (hot, data) = coroutineScope {
+                    val hot = async { fetchHot(songId) }
+                    val data = fetch(songId, after = null)
+                    hot.await() to data
+                }
+                hotThreads.addAll(hot.threads)
                 threads.addAll(data.threads)
                 total = data.total
-                pageIndex = 0
-                hasMore = data.threads.size >= PAGE_SIZE
+                hasMore = data.hasMore
                 initializeStatus = InitializeStatus.LOADED
             } catch (e: CancellationException) {
                 throw e
@@ -142,12 +152,10 @@ class SongCommentsStore(
         loadMoreFailed = false
         loadJob = scope.launch {
             try {
-                val data = fetch(songId, pageIndex + 1)
-                val known = threads.mapTo(HashSet()) { it.comment.id }
-                threads.addAll(data.threads.filter { it.comment.id !in known })
+                val data = fetch(songId, after = threads.lastOrNull()?.comment)
+                threads.addAll(data.threads)
                 total = data.total
-                pageIndex++
-                hasMore = data.threads.size >= PAGE_SIZE
+                hasMore = data.hasMore
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -159,11 +167,18 @@ class SongCommentsStore(
         }
     }
 
-    private suspend fun fetch(songId: Long, page: Int): CommentModule.ListResp {
+    /** A page of [threads], after the thread [after]. */
+    private suspend fun fetch(songId: Long, after: CommentItem?): CommentModule.ListResp {
         val resp = api.commentModule.list(
-            CommentModule.ListReq(CommentModule.TARGET_SONG, songId, sort, page, PAGE_SIZE),
+            CommentModule.ListReq(CommentModule.TARGET_SONG, songId, order, after?.createTime, after?.id, PAGE_SIZE),
             auth = global.isLoggedIn,
         )
+        if (!resp.ok) error(resp.err().msg)
+        return resp.ok()
+    }
+
+    private suspend fun fetchHot(songId: Long): CommentModule.HotResp {
+        val resp = api.commentModule.hot(CommentModule.HotReq(CommentModule.TARGET_SONG, songId), auth = global.isLoggedIn)
         if (!resp.ok) error(resp.err().msg)
         return resp.ok()
     }
@@ -282,15 +297,16 @@ class SongCommentsStore(
         val rootId = item.rootId
         total++
         if (rootId == null) {
-            threads.add(0, CommentThread(item, emptyList(), 0))
+            val thread = CommentThread(item, emptyList(), 0)
+            // Oldest first, it belongs at the end, shown once the pages before it are loaded
+            if (order == CommentModule.ORDER_NEWEST) threads.add(0, thread)
+            else if (!hasMore) threads.add(thread)
             return
         }
-        val index = threads.indexOfFirst { it.comment.id == rootId }
-        if (index >= 0) {
-            val thread = threads[index]
-            threads[index] = thread.copy(
-                replies = if (thread.replies.size < FIRST_REPLIES) thread.replies + item else thread.replies,
-                replyCount = thread.replyCount + 1,
+        updateThread(rootId) {
+            it.copy(
+                replies = if (it.replies.size < FIRST_REPLIES) it.replies + item else it.replies,
+                replyCount = it.replyCount + 1,
             )
         }
         if (openThread?.comment?.id == rootId) {
@@ -354,6 +370,8 @@ class SongCommentsStore(
         if (replyTo?.id == item.id) replyTo = null
         val rootId = item.rootId
         if (rootId == null) {
+            // Not hot anymore; in the list, one with replies stays as removed
+            hotThreads.removeAll { it.comment.id == item.id }
             val index = threads.indexOfFirst { it.comment.id == item.id }
             if (index >= 0) {
                 val thread = threads[index]
@@ -363,12 +381,10 @@ class SongCommentsStore(
             if (openThread?.comment?.id == item.id) openThread = openThread?.copy(comment = item.asRemoved())
             return
         }
-        val index = threads.indexOfFirst { it.comment.id == rootId }
-        if (index >= 0) {
-            val thread = threads[index]
-            threads[index] = thread.copy(
-                replies = thread.replies.filter { it.id != item.id },
-                replyCount = (thread.replyCount - 1).coerceAtLeast(0),
+        updateThread(rootId) {
+            it.copy(
+                replies = it.replies.filter { reply -> reply.id != item.id },
+                replyCount = (it.replyCount - 1).coerceAtLeast(0),
             )
         }
         if (replies.removeAll { it.id == item.id }) repliesTotal = (repliesTotal - 1).coerceAtLeast(0)
@@ -376,13 +392,23 @@ class SongCommentsStore(
 
     private fun CommentItem.asRemoved() = copy(removed = true, author = null, content = "")
 
+    /** Applies [change] to the thread of [rootId] in both lists. */
+    private fun updateThread(rootId: Long, change: (CommentThread) -> CommentThread) {
+        for (list in listOf(hotThreads, threads)) {
+            val index = list.indexOfFirst { it.comment.id == rootId }
+            if (index >= 0) list[index] = change(list[index])
+        }
+    }
+
     /** Applies [change] to the comment wherever it's shown. */
     private fun update(id: Long, change: (CommentItem) -> CommentItem) {
-        threads.forEachIndexed { index, thread ->
-            if (thread.comment.id == id) {
-                threads[index] = thread.copy(comment = change(thread.comment))
-            } else if (thread.replies.any { it.id == id }) {
-                threads[index] = thread.copy(replies = thread.replies.map { if (it.id == id) change(it) else it })
+        for (list in listOf(hotThreads, threads)) {
+            list.forEachIndexed { index, thread ->
+                if (thread.comment.id == id) {
+                    list[index] = thread.copy(comment = change(thread.comment))
+                } else if (thread.replies.any { it.id == id }) {
+                    list[index] = thread.copy(replies = thread.replies.map { if (it.id == id) change(it) else it })
+                }
             }
         }
         openThread?.let { if (it.comment.id == id) openThread = it.copy(comment = change(it.comment)) }

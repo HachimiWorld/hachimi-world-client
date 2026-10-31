@@ -64,11 +64,14 @@ class CommentModule(
         val targetType: String,
         /** The song id, not its display id. */
         val targetId: Long,
-        /** [SORT_HOT] (default) or [SORT_NEW] */
-        val sort: String? = null,
-        val pageIndex: Int? = null,
+        /** [ORDER_NEWEST] (default) or [ORDER_OLDEST] */
+        val order: String? = null,
+        /** [CommentItem.createTime] of the previous page's last thread. */
+        val afterTime: Instant? = null,
+        /** [CommentItem.id] of the previous page's last thread. */
+        val afterCommentId: Long? = null,
         /** 1..=50, defaults to 20. */
-        val pageSize: Int? = null,
+        val limit: Int? = null,
     )
 
     /** @since 261021 */
@@ -76,6 +79,23 @@ class CommentModule(
     data class ListResp(
         /** Visible comments and replies. */
         val total: Long,
+        val threads: List<CommentThread>,
+        val hasMore: Boolean,
+    )
+
+    /** @since 261021 */
+    @Serializable
+    data class HotReq(
+        /** [TARGET_SONG] */
+        val targetType: String,
+        /** The song id, not its display id. */
+        val targetId: Long,
+    )
+
+    /** @since 261021 */
+    @Serializable
+    data class HotResp(
+        /** Most liked first, up to 10 with at least 3 likes each. They're in [list] too. */
         val threads: List<CommentThread>,
     )
 
@@ -124,6 +144,10 @@ class CommentModule(
     suspend fun list(req: ListReq, auth: Boolean = false): WebResult<ListResp> =
         client.get("/comment/list", req, auth = auth)
 
+    /** Pass [auth] when logged in, to see which comments the user liked. @since 261021 */
+    suspend fun hot(req: HotReq, auth: Boolean = false): WebResult<HotResp> =
+        client.get("/comment/hot", req, auth = auth)
+
     /** @since 261021 */
     suspend fun replies(req: RepliesReq, auth: Boolean = false): WebResult<RepliesResp> =
         client.get("/comment/replies", req, auth = auth)
@@ -147,8 +171,8 @@ class CommentModule(
     companion object {
         const val TARGET_SONG = "song"
 
-        const val SORT_HOT = "hot"
-        const val SORT_NEW = "new"
+        const val ORDER_NEWEST = "newest"
+        const val ORDER_OLDEST = "oldest"
 
         const val CONTENT_MAX_CHARS = 500
     }

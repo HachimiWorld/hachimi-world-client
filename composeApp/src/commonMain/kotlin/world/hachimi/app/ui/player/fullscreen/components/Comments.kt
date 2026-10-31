@@ -67,8 +67,10 @@ import hachimiworld.composeapp.generated.resources.comment_reply
 import hachimiworld.composeapp.generated.resources.comment_reply_to_inline
 import hachimiworld.composeapp.generated.resources.comment_replying_to
 import hachimiworld.composeapp.generated.resources.comment_send_cd
-import hachimiworld.composeapp.generated.resources.comment_sort_hot
-import hachimiworld.composeapp.generated.resources.comment_sort_new
+import hachimiworld.composeapp.generated.resources.comment_order_newest
+import hachimiworld.composeapp.generated.resources.comment_order_oldest
+import hachimiworld.composeapp.generated.resources.comment_section_all
+import hachimiworld.composeapp.generated.resources.comment_section_hot
 import hachimiworld.composeapp.generated.resources.comment_unlike_cd
 import hachimiworld.composeapp.generated.resources.comment_view_all_replies
 import hachimiworld.composeapp.generated.resources.notification_retry
@@ -139,8 +141,8 @@ fun CommentsTabContent(
         if (thread == null) {
             ListHeader(
                 total = store.total,
-                sort = store.sort,
-                onSortChange = store::changeSort,
+                order = store.order,
+                onOrderChange = store::changeOrder,
             )
         } else {
             RepliesHeader(total = store.repliesTotal, onBack = store::closeThread)
@@ -193,7 +195,7 @@ private class CommentActions(
 )
 
 @Composable
-private fun ListHeader(total: Long, sort: String, onSortChange: (String) -> Unit) {
+private fun ListHeader(total: Long, order: String, onOrderChange: (String) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = stringResource(Res.string.comment_header, total.toString()),
@@ -201,17 +203,28 @@ private fun ListHeader(total: Long, sort: String, onSortChange: (String) -> Unit
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
         )
-        SortButton(sort == CommentModule.SORT_HOT, { onSortChange(CommentModule.SORT_HOT) }, stringResource(Res.string.comment_sort_hot))
+        OrderButton(order == CommentModule.ORDER_NEWEST, { onOrderChange(CommentModule.ORDER_NEWEST) }, stringResource(Res.string.comment_order_newest))
         Spacer(Modifier.width(4.dp))
-        SortButton(sort == CommentModule.SORT_NEW, { onSortChange(CommentModule.SORT_NEW) }, stringResource(Res.string.comment_sort_new))
+        OrderButton(order == CommentModule.ORDER_OLDEST, { onOrderChange(CommentModule.ORDER_OLDEST) }, stringResource(Res.string.comment_order_oldest))
     }
 }
 
 @Composable
-private fun SortButton(selected: Boolean, onClick: () -> Unit, label: String) {
+private fun OrderButton(selected: Boolean, onClick: () -> Unit, label: String) {
     ToggleButton(selected = selected, onClick = onClick) {
         Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontSize = 13.sp)
     }
+}
+
+@Composable
+private fun SectionHeader(label: String) {
+    Text(
+        text = label,
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
+        fontSize = 13.sp,
+        fontWeight = FontWeight.Medium,
+        color = HachimiTheme.colorScheme.onSurface.copy(0.6f),
+    )
 }
 
 @Composable
@@ -267,6 +280,14 @@ private fun CommentList(store: SongCommentsStore, actions: CommentActions, conte
                 modifier = Modifier.fillMaxSize().fadingEdges(16.dp, 16.dp),
                 contentPadding = contentPadding,
             ) {
+                if (store.hotThreads.isNotEmpty()) {
+                    item(key = "hot-header") { SectionHeader(stringResource(Res.string.comment_section_hot)) }
+                    // The same comment can be in both lists, so the keys differ
+                    items(store.hotThreads, key = { "hot-${it.comment.id}" }) { thread ->
+                        ThreadItem(thread, actions, onOpenReplies = { store.openReplies(thread) })
+                    }
+                    item(key = "all-header") { SectionHeader(stringResource(Res.string.comment_section_all)) }
+                }
                 items(store.threads, key = { it.comment.id }) { thread ->
                     ThreadItem(thread, actions, onOpenReplies = { store.openReplies(thread) })
                 }

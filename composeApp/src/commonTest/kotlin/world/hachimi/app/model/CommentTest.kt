@@ -47,10 +47,12 @@ class CommentTest {
                   ],
                   "reply_count": 1
                 }
-              ]
+              ],
+              "has_more": true
             }
         """.trimIndent()
         val resp = WebResp.json.decodeFromString<CommentModule.ListResp>(json)
+        assertTrue(resp.hasMore)
         val thread = resp.threads.single()
         assertTrue(thread.comment.removed)
         assertNull(thread.comment.author)
