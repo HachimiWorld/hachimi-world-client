@@ -9,15 +9,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.star_prompt_later
@@ -47,7 +46,8 @@ fun StarPromptDialog(prompt: StarPrompt) {
 
 /**
  * Three actions don't fit side by side on a phone, so the main action gets a full-width button
- * and the two ways out are stacked under it.
+ * and the two ways out are stacked under it. Text sizes follow the Material 3 dialog spec
+ * (headlineSmall title, bodyMedium supporting text).
  */
 @Composable
 private fun StarPromptDialogContent(
@@ -67,22 +67,19 @@ private fun StarPromptDialogContent(
                 Icon(
                     Icons.Default.Star,
                     contentDescription = null,
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(24.dp),
                     tint = HachimiTheme.colorScheme.primary,
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
                 Text(
                     stringResource(Res.string.star_prompt_title),
-                    fontSize = 18.sp,
-                    lineHeight = 26.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
                 Text(
                     stringResource(Res.string.star_prompt_message),
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = HachimiTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(24.dp))
