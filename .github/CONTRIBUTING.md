@@ -8,7 +8,7 @@
 
 See https://rustup.rs/
 
-### 3. Build rust library
+### 3. Rust library
 
 Install dependencies for linux
 
@@ -17,36 +17,12 @@ Install dependencies for linux
 sudo apt install libasound2-dev libdbus-1-dev 
 ```
 
-Build the library
+Gradle builds the library with cargo and generates the Kotlin bindings automatically
+when compiling the JVM target, so there is nothing else to run by hand.
+It builds in release mode by default; pass `-P rust.debug=true` for a faster debug build.
 
-```shell
-cd ./rustLib
-cargo build -r --lib
-
-# Linux
-cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources 
-# macOS
-cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
-# Windows
-cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
-```
-
-Generate bindings for kotlin
-
-```shell
-# Linux
-cargo run --bin uniffi-bindgen generate \
-  --library target/release/libhachimi.so \
-  --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
-# macOS
-cargo run --bin uniffi-bindgen generate \
-  --library target/release/libhachimi.dylib \
-  --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
-# Windows
-cargo run --bin uniffi-bindgen generate \
-  --library target/release/hachimi.dll \
-  --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
-```
+If you have old `libhachimi.*` / `hachimi.dll` files in `composeApp/src/jvmMain/resources`
+from the previous manual setup, delete them.
 
 ### 4. Add properties in `./local.properties`
 
