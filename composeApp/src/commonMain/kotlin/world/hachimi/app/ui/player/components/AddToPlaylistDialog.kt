@@ -1,5 +1,12 @@
 package world.hachimi.app.ui.player.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_selected_cd
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_cancel
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_confirm
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_create
+import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
+import hachimiworld.composeapp.generated.resources.playlist_cover_cd
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -27,11 +34,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_add_to_playlist_cancel
-import hachimiworld.composeapp.generated.resources.player_add_to_playlist_confirm
-import hachimiworld.composeapp.generated.resources.player_add_to_playlist_create
-import hachimiworld.composeapp.generated.resources.player_add_to_playlist_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.CoilHeaders
@@ -152,7 +154,7 @@ private fun Item(
                         .data(item.coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Playlist Cover",
+                    contentDescription = stringResource(Res.string.playlist_cover_cd),
                     contentScale = ContentScale.Crop,
                 )
             }
@@ -166,7 +168,7 @@ private fun Item(
                 Icon(
                     modifier = Modifier.padding(end = 12.dp),
                     imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Selected"
+                    contentDescription = stringResource(Res.string.common_selected_cd)
                 )
             }
         }

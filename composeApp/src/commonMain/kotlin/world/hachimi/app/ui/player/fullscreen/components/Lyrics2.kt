@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_interlude_cd
+import hachimiworld.composeapp.generated.resources.player_lyrics_loading_cd
+import hachimiworld.composeapp.generated.resources.player_no_lyrics_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.*
@@ -60,14 +65,14 @@ fun Lyrics2(
             Icon(
                 modifier = Modifier.size(36.dp).align(Alignment.CenterStart),
                 imageVector = Icons.Default.MusicNote,
-                contentDescription = "Loading",
+                contentDescription = stringResource(Res.string.player_lyrics_loading_cd),
                 tint = LocalContentColor.current.copy(0.48f)
             )
         } else if (lines.isEmpty()) {
             Icon(
                 modifier = Modifier.size(36.dp).align(Alignment.CenterStart),
                 imageVector = Icons.Default.MusicNote,
-                contentDescription = "No Lyrics",
+                contentDescription = stringResource(Res.string.player_no_lyrics_cd),
                 tint = LocalContentColor.current.copy(0.48f)
             )
         } else if (lines.isNotEmpty()) {
@@ -117,7 +122,7 @@ private fun LyricsLine(
     }
     if (line.isBlank()) Icon(
         imageVector = Icons.Default.MusicNote,
-        contentDescription = "Interlude",
+        contentDescription = stringResource(Res.string.player_interlude_cd),
         tint = LocalContentColor.current.copy(alpha = alpha),
         modifier = Modifier.size(36.dp)
     ) else Text(

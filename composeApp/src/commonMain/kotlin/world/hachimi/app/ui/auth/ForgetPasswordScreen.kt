@@ -1,5 +1,21 @@
 package world.hachimi.app.ui.auth
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_back
+import hachimiworld.composeapp.generated.resources.auth_confirm_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_email_placeholder
+import hachimiworld.composeapp.generated.resources.auth_forget_subtitle
+import hachimiworld.composeapp.generated.resources.auth_forget_title
+import hachimiworld.composeapp.generated.resources.auth_new_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_password_too_short
+import hachimiworld.composeapp.generated.resources.auth_passwords_not_match
+import hachimiworld.composeapp.generated.resources.auth_resend_seconds
+import hachimiworld.composeapp.generated.resources.auth_reset_success_text
+import hachimiworld.composeapp.generated.resources.auth_reset_success_title
+import hachimiworld.composeapp.generated.resources.auth_send
+import hachimiworld.composeapp.generated.resources.auth_verify_code_placeholder
+import hachimiworld.composeapp.generated.resources.common_back_cd
+import hachimiworld.composeapp.generated.resources.common_ok
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,21 +51,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_back
-import hachimiworld.composeapp.generated.resources.auth_confirm_password_placeholder
-import hachimiworld.composeapp.generated.resources.auth_email_placeholder
-import hachimiworld.composeapp.generated.resources.auth_forget_subtitle
-import hachimiworld.composeapp.generated.resources.auth_forget_title
-import hachimiworld.composeapp.generated.resources.auth_new_password_placeholder
-import hachimiworld.composeapp.generated.resources.auth_password_too_short
-import hachimiworld.composeapp.generated.resources.auth_passwords_not_match
-import hachimiworld.composeapp.generated.resources.auth_resend_seconds
-import hachimiworld.composeapp.generated.resources.auth_reset_success_text
-import hachimiworld.composeapp.generated.resources.auth_reset_success_title
-import hachimiworld.composeapp.generated.resources.auth_send
-import hachimiworld.composeapp.generated.resources.auth_verify_code_placeholder
-import hachimiworld.composeapp.generated.resources.common_ok
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.ForgetPasswordViewModel
@@ -87,7 +88,7 @@ fun ForgetPasswordScreen(vm: ForgetPasswordViewModel = koinViewModel()) {
             onClick = { navigator.back() },
             touchMode = true
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back_cd))
         }
 
         FormCard(

@@ -31,6 +31,9 @@ class CurrentSongLike(
 
     var liked by mutableStateOf(false)
         private set
+    /** The song's likes as it loaded, with the user's own changes since. @since 261031 */
+    var likeCount by mutableStateOf(0L)
+        private set
     var likeLoading by mutableStateOf(false)
         private set
     var likeOperating by mutableStateOf(false)
@@ -81,7 +84,9 @@ class CurrentSongLike(
                 if (resp.ok) {
                     if (currentSongId == songId) {
                         liked = targetLiked
+                        likeCount = (likeCount + if (targetLiked) 1 else -1).coerceAtLeast(0)
                     }
+                    if (targetLiked) global.events.send(AppEvent.SongLiked(songId))
                 } else {
                     global.alert(resp.err().msg)
                 }
@@ -104,6 +109,7 @@ class CurrentSongLike(
                 .distinctUntilChanged()
                 .collectLatest { (loggedIn, songId) ->
                     currentSongId = songId
+                    likeCount = uiState.readySongInfo?.likeCount ?: 0
                     likeOperating = false
 
                     if (!loggedIn || songId == null) {

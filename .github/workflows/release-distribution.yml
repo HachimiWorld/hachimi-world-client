@@ -73,14 +73,6 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build rust library
-        working-directory: ./rustLib
-        run: |
-          cargo build -r --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/libhachimi.dylib ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/release/libhachimi.dylib \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -128,15 +120,6 @@ jobs:
             ~/.cargo/git
             rustLib/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build rust library
-        working-directory: ./rustLib
-        shell: bash
-        run: |
-          cargo build -r --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/hachimi.dll ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/release/hachimi.dll \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -188,14 +171,6 @@ jobs:
         run: |
           sudo apt install libasound2-dev
           sudo apt install libdbus-1-dev
-      - name: Build rust library
-        working-directory: ./rustLib
-        run: |
-          cargo build -r --lib
-          mkdir -p ../composeApp/src/jvmMain/resources && cp target/release/libhachimi.so ../composeApp/src/jvmMain/resources
-          cargo run --bin uniffi-bindgen generate \
-            --library target/release/libhachimi.so \
-            --language kotlin --out-dir ../composeApp/src/jvmMain/kotlin
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -285,3 +260,35 @@ jobs:
           publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
+  # One message per run. Skipped when the run was cancelled or every job was skipped.
+  notify-discord:
+    needs: [ build-ios, build-macos, build-windows, build-linux, build-android ]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    runs-on: ubuntu-latest
+    steps:
+      # Expressions cannot slice strings, so shorten the SHA here
+      - name: Short SHA
+        env:
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: echo "SHORT_SHA=${SHA:0:7}" >> "$GITHUB_ENV"
+      # Two steps, one per result, like the server's Woodpecker pipelines.
+      - name: Notify success
+        if: ${{ !contains(needs.*.result, 'failure') }}
+        uses: appleboy/discord-action@v1.2.0
+        # A Discord outage should not mark the workflow as failed
+        continue-on-error: true
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Notify failure
+        if: ${{ contains(needs.*.result, 'failure') }}
+        uses: appleboy/discord-action@v1.2.0
+        # A Discord outage should not mark the workflow as failed
+        continue-on-error: true
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

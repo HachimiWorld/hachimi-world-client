@@ -39,6 +39,7 @@ import world.hachimi.app.ui.auth.AuthScreen
 import world.hachimi.app.ui.auth.ForgetPasswordScreen
 import world.hachimi.app.ui.component.ClientApiVersionIncompatibleDialog
 import world.hachimi.app.ui.component.KidsModeDialog
+import world.hachimi.app.ui.component.StarPromptDialog
 import world.hachimi.app.ui.component.UpgradeDialog
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.player.PlayerScreen2
@@ -149,6 +150,7 @@ private fun GlobalDialogs(global: GlobalStore) {
         onDismissRequest = { global.confirmKidsPlay(false) },
         onConfirm = { global.confirmKidsPlay(true) }
     )
+    StarPromptDialog(global.starPrompt)
 }
 
 @Composable

@@ -12,6 +12,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
+import world.hachimi.app.api.module.ReportModule
+import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.ReportStore
+import world.hachimi.app.ui.report.ReportMenuButton
 import world.hachimi.app.model.PublicPlaylistViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
@@ -22,6 +27,9 @@ import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
+import world.hachimi.app.ui.playlist.components.UnavailableSongItem
+import world.hachimi.app.ui.playlist.components.PlaylistEntry
+import world.hachimi.app.ui.playlist.components.playlistEntries
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
 import world.hachimi.app.ui.util.WindowSize
@@ -33,7 +41,9 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun PublicPlaylistScreen(
     playlistId: Long,
-    vm: PublicPlaylistViewModel = koinViewModel()
+    vm: PublicPlaylistViewModel = koinViewModel(),
+    global: GlobalStore = koinInject(),
+    reports: ReportStore = koinInject(),
 ) {
     val navigator = LocalNavigator.current
 
@@ -48,6 +58,12 @@ fun PublicPlaylistScreen(
         title = { Text(vm.playlistInfo?.name.orEmpty(), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
+        actions = {
+            val owner = vm.creatorProfile?.uid
+            if (owner != null && owner != global.userInfo?.uid) {
+                ReportMenuButton { reports.open(ReportModule.TARGET_PLAYLIST, playlistId) }
+            }
+        },
     ) {
         InitStatusScaffold(
             initializeStatus = vm.initStatus,
@@ -67,7 +83,12 @@ fun PublicPlaylistScreen(
                         Header(vm)
                     }
 
-                    itemsIndexed(vm.songs, key = { _, item -> item.songId }) { index, song ->
+                    itemsIndexed(playlistEntries(vm.songs, vm.unavailableSongs), key = { _, entry -> entry.key }) { index, entry ->
+                        if (entry is PlaylistEntry.Unavailable) {
+                            UnavailableSongItem(onRemoveClick = null, modifier = Modifier.fillMaxWidthIn())
+                            return@itemsIndexed
+                        }
+                        val song = (entry as PlaylistEntry.Song).song
                         SongItem(
                             modifier = Modifier.fillMaxWidthIn(),
                             orderIndex = index,

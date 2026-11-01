@@ -43,6 +43,8 @@ import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
 import world.hachimi.app.model.FollowListType
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.MessageCenterStore
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.RootShellNavKey
@@ -51,7 +53,11 @@ import world.hachimi.app.nav.isSideNavDestination
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.committee.CommitteeCenterScreen
+import world.hachimi.app.ui.committee.CommitteeMembersScreen
+import world.hachimi.app.ui.committee.ReportCaseScreen
 import world.hachimi.app.ui.component.DevelopingPage
+import world.hachimi.app.ui.report.ReportDialogHost
 import world.hachimi.app.ui.component.LocalOpenNavigationDrawer
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.component.NeedLoginScreen
@@ -98,6 +104,13 @@ import world.hachimi.app.ui.root.component.rememberClientPromoState
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
 import world.hachimi.app.ui.settings.DeviceManagementScreen
+import world.hachimi.app.ui.notification.NotificationDetailScreen
+import world.hachimi.app.ui.notification.NotificationInboxScreen
+import world.hachimi.app.ui.comment.SongCommentsScreen
+import world.hachimi.app.ui.message.MessageCenterScreen
+import world.hachimi.app.ui.message.NewFollowersScreen
+import world.hachimi.app.ui.message.ReceivedLikesScreen
+import world.hachimi.app.ui.message.ReceivedRepliesScreen
 import world.hachimi.app.ui.settings.SettingsScreen
 import world.hachimi.app.ui.userspace.EditProfileScreen
 import world.hachimi.app.ui.userspace.UserSpaceScreen
@@ -122,6 +135,11 @@ fun RootScreen() {
     val currentPrimary = navigator.currentPrimary ?: return
     val scope = rememberCoroutineScope()
     val clientPromo = rememberClientPromoState()
+    val messageCenter = koinInject<MessageCenterStore>()
+    LifecycleResumeEffect(messageCenter) {
+        messageCenter.refreshSummary()
+        onPauseOrDispose {}
+    }
 
     if (LocalWindowSize.current.width < WindowSize.COMPACT) {
         CompactScreen(
@@ -161,6 +179,7 @@ fun RootScreen() {
             navigator = navigator,
         )
     }
+    ReportDialogHost()
 }
 
 // region Nested NavDisplays
@@ -234,7 +253,7 @@ private fun primaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Rout
             if (global.isLoggedIn) MyArtworkScreen() else NeedLoginScreen()
         }
         Route.Root.CommitteeCenter -> NavEntry(key) {
-            if (global.isLoggedIn) DevelopingPage() else NeedLoginScreen()
+            if (global.isLoggedIn) CommitteeCenterScreen() else NeedLoginScreen()
         }
         Route.Root.ContributorCenter.Entry -> NavEntry(key) {
             if (global.isLoggedIn) ContributorEntryScreen() else NeedLoginScreen()
@@ -250,7 +269,7 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         Route.Root.Home.HiddenGem -> NavEntry(key) { DevelopingPage() }
         is Route.Root.Home.Category -> NavEntry(key) { CategorySongsScreen(key.category) }
 
-        is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId) }
+        is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId, key.atComments) }
 
         is Route.Root.Search -> NavEntry(key) { SearchScreen(key.query, key.type) }
 
@@ -321,6 +340,31 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         Route.Root.Changelog -> NavEntry(key) { ChangelogScreen() }
         Route.Root.DeviceManagement -> NavEntry(key) {
             if (global.isLoggedIn) DeviceManagementScreen() else NeedLoginScreen()
+        }
+        Route.Root.Notifications -> NavEntry(key) {
+            if (global.isLoggedIn) NotificationInboxScreen() else NeedLoginScreen()
+        }
+        is Route.Root.NotificationDetail -> NavEntry(key) {
+            if (global.isLoggedIn) NotificationDetailScreen(key.notificationId) else NeedLoginScreen()
+        }
+        Route.Root.Messages -> NavEntry(key) {
+            if (global.isLoggedIn) MessageCenterScreen() else NeedLoginScreen()
+        }
+        Route.Root.ReceivedLikes -> NavEntry(key) {
+            if (global.isLoggedIn) ReceivedLikesScreen() else NeedLoginScreen()
+        }
+        Route.Root.NewFollowers -> NavEntry(key) {
+            if (global.isLoggedIn) NewFollowersScreen() else NeedLoginScreen()
+        }
+        Route.Root.ReceivedReplies -> NavEntry(key) {
+            if (global.isLoggedIn) ReceivedRepliesScreen() else NeedLoginScreen()
+        }
+        is Route.Root.SongComments -> NavEntry(key) { SongCommentsScreen(key.songDisplayId) }
+        is Route.Root.ReportCase -> NavEntry(key) {
+            if (global.isLoggedIn) ReportCaseScreen(key.targetType, key.targetId) else NeedLoginScreen()
+        }
+        Route.Root.CommitteeMembers -> NavEntry(key) {
+            if (global.isLoggedIn) CommitteeMembersScreen() else NeedLoginScreen()
         }
 
         else -> error("Not a secondary destination: $key")

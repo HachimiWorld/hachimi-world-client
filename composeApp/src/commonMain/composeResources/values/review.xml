@@ -61,4 +61,30 @@
     <string name="review_history_snapshot_subtitle">Snapshot subtitle</string>
     <string name="review_history_snapshot_description">Snapshot description</string>
     <string name="review_history_snapshot_comment">Snapshot note</string>
+    <string name="review_diff_title">Changes</string>
+    <string name="review_diff_baseline">Compared with the live version</string>
+    <string name="review_diff_no_change">Same as the live version</string>
+    <string name="review_diff_audio_replaced">Audio file replaced</string>
+    <string name="review_diff_collapsed">%1$d unchanged lines</string>
+    <string name="review_diff_live">Live</string>
+    <string name="review_diff_proposed">Proposed</string>
+
+    <!-- Contributor center -->
+    <string name="contributor_not_contributor">You're not a contributor yet. Contribute to the community to unlock more features.</string>
+    <string name="contributor_review_list">Review queue</string>
+    <string name="contributor_create_post">Create post</string>
+    <string name="contributor_check_failed">Failed to check contributor status: %1$s</string>
+    <string name="review_list_title">Review songs (%1$d)</string>
+    <string name="review_type_creation">Publish</string>
+    <string name="review_type_modification">Edit</string>
+    <string name="review_history_no_note">No note</string>
+    <string name="post_create_title">New post</string>
+    <string name="post_cover_subtitle">JPG, PNG or WebP, up to 10MB</string>
+    <string name="post_content_header">Content*</string>
+    <string name="post_content_subtitle">Markdown</string>
+    <string name="post_content_required">Please enter content</string>
+    <string name="post_publish">Publish</string>
+    <string name="post_published_title">Published</string>
+    <string name="post_published_text">Post published</string>
+    <string name="post_published_text_with_id">Post published (ID: %1$s)</string>
 </resources>

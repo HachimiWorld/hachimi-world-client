@@ -1,5 +1,11 @@
 package world.hachimi.app.ui.component
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.app_icon_cd
+import hachimiworld.composeapp.generated.resources.app_name_cd
+import hachimiworld.composeapp.generated.resources.icon_3d_512x
+import hachimiworld.composeapp.generated.resources.logo_text
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -23,9 +29,6 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.icon_3d_512x
-import hachimiworld.composeapp.generated.resources.logo_text
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
@@ -75,7 +78,7 @@ fun BrandLogo(
                     rotationZ = rotation.value
                 },
             bitmap = imageResource(Res.drawable.icon_3d_512x),
-            contentDescription = "基米天堂 Icon",
+            contentDescription = stringResource(Res.string.app_icon_cd),
             filterQuality = FilterQuality.High,
         )
         if (showText) {
@@ -84,7 +87,7 @@ fun BrandLogo(
                     .padding(start = 6.dp)
                     .height(20.dp),
                 imageVector = vectorResource(Res.drawable.logo_text),
-                contentDescription = "基米天堂",
+                contentDescription = stringResource(Res.string.app_name_cd),
                 colorFilter = ColorFilter.tint(
                     if (LocalDarkMode.current) Color(0xFFE8E0D4)
                     else Color(0xFF4F432F)
@@ -130,13 +133,13 @@ fun Logo(
                 rotationZ = rotation.value
             },
             bitmap = imageResource(Res.drawable.icon_3d_512x),
-            contentDescription = "基米天堂 Icon",
+            contentDescription = stringResource(Res.string.app_icon_cd),
             filterQuality = FilterQuality.High,
         )
         AnimatedVisibility(visible = showText) {
             Image(
                 imageVector = vectorResource(Res.drawable.logo_text),
-                contentDescription = "基米天堂",
+                contentDescription = stringResource(Res.string.app_name_cd),
                 colorFilter = ColorFilter.tint(
                     if (LocalDarkMode.current) Color(0xFFE8E0D4)
                     else Color(0xFF4F432F)

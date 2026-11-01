@@ -45,9 +45,6 @@ import hachimiworld.composeapp.generated.resources.review_approve
 import hachimiworld.composeapp.generated.resources.review_audio
 import hachimiworld.composeapp.generated.resources.review_cover
 import hachimiworld.composeapp.generated.resources.review_creation_type
-import hachimiworld.composeapp.generated.resources.review_creation_type_derivation
-import hachimiworld.composeapp.generated.resources.review_creation_type_derivation_of_derivation
-import hachimiworld.composeapp.generated.resources.review_creation_type_original
 import hachimiworld.composeapp.generated.resources.review_decision_comment
 import hachimiworld.composeapp.generated.resources.review_description_label
 import hachimiworld.composeapp.generated.resources.review_detail_title
@@ -63,9 +60,6 @@ import hachimiworld.composeapp.generated.resources.review_download_audio
 import hachimiworld.composeapp.generated.resources.review_duration
 import hachimiworld.composeapp.generated.resources.review_empty_value
 import hachimiworld.composeapp.generated.resources.review_explicit
-import hachimiworld.composeapp.generated.resources.review_explicit_no
-import hachimiworld.composeapp.generated.resources.review_explicit_unmarked
-import hachimiworld.composeapp.generated.resources.review_explicit_yes
 import hachimiworld.composeapp.generated.resources.review_external_links
 import hachimiworld.composeapp.generated.resources.review_id_label
 import hachimiworld.composeapp.generated.resources.review_lyrics
@@ -74,8 +68,6 @@ import hachimiworld.composeapp.generated.resources.review_origin_artist
 import hachimiworld.composeapp.generated.resources.review_origin_link
 import hachimiworld.composeapp.generated.resources.review_origin_title
 import hachimiworld.composeapp.generated.resources.review_origin_type
-import hachimiworld.composeapp.generated.resources.review_origin_type_derivation
-import hachimiworld.composeapp.generated.resources.review_origin_type_original
 import hachimiworld.composeapp.generated.resources.review_production_crew
 import hachimiworld.composeapp.generated.resources.review_reject
 import hachimiworld.composeapp.generated.resources.review_status
@@ -87,7 +79,6 @@ import hachimiworld.composeapp.generated.resources.review_subtitle_label
 import hachimiworld.composeapp.generated.resources.review_tags
 import hachimiworld.composeapp.generated.resources.review_time
 import hachimiworld.composeapp.generated.resources.review_title_label
-import hachimiworld.composeapp.generated.resources.review_unknown
 import hachimiworld.composeapp.generated.resources.review_view_history
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -206,6 +197,8 @@ private fun Content(
                 }
             }
 
+            vm.diff?.let { ReviewDiffSection(it) }
+
             // Artwork Details
             ArtworkDetailSection(data, vm)
 
@@ -251,32 +244,10 @@ private fun ArtworkDetailSection(
         stringResource(Res.string.review_duration),
         formatSongDuration(data.durationSeconds.seconds)
     )
-    PropertyItem(
-        stringResource(Res.string.review_creation_type), when (data.creationType) {
-            PublishModule.SongPublishReviewData.CREATION_TYPE_ORIGINAL -> stringResource(Res.string.review_creation_type_original)
-            PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION -> stringResource(Res.string.review_creation_type_derivation)
-            PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION_OF_DERIVATION -> stringResource(
-                Res.string.review_creation_type_derivation_of_derivation
-            )
-
-            else -> stringResource(Res.string.review_unknown)
-        }
-    )
-    PropertyItem(
-        stringResource(Res.string.review_explicit), when (data.explicit) {
-            true -> stringResource(Res.string.review_explicit_yes)
-            false -> stringResource(Res.string.review_explicit_no)
-            null -> stringResource(Res.string.review_explicit_unmarked)
-        }
-    )
+    PropertyItem(stringResource(Res.string.review_creation_type), creationTypeText(data.creationType))
+    PropertyItem(stringResource(Res.string.review_explicit), explicitText(data.explicit))
     data.originInfos.fastForEach {
-        PropertyItem(
-            stringResource(Res.string.review_origin_type), when (it.originType) {
-                PublishModule.SongPublishReviewData.CREATION_TYPE_ORIGINAL -> stringResource(Res.string.review_origin_type_original)
-                PublishModule.SongPublishReviewData.CREATION_TYPE_DERIVATION -> stringResource(Res.string.review_origin_type_derivation)
-                else -> stringResource(Res.string.review_unknown)
-            }
-        )
+        PropertyItem(stringResource(Res.string.review_origin_type), originTypeText(it.originType))
         PropertyItem(
             stringResource(Res.string.review_origin_title),
             it.title ?: stringResource(Res.string.review_empty_value)

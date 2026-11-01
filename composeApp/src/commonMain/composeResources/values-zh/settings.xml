@@ -30,6 +30,7 @@
     <string name="settings_official_website">官方网站</string>
     <string name="settings_github_text">GitHub</string>
     <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_star_on_github">在 GitHub 上为我们点亮 Star</string>
     <string name="settings_open_in_browser_cd">在浏览器中打开</string>
 
     <!-- Language selection -->
@@ -52,4 +53,10 @@
     <string name="settings_device_logout_confirm_message">确定要从 %1$s 退出登录吗？</string>
     <string name="settings_device_logout_confirm">退出</string>
     <string name="settings_device_logout_cancel">取消</string>
+
+    <string name="settings_section_display">显示</string>
+    <string name="settings_section_playback">播放</string>
+    <string name="settings_section_system">系统</string>
+    <string name="settings_section_account">账户</string>
+    <string name="settings_section_about">关于</string>
 </resources>

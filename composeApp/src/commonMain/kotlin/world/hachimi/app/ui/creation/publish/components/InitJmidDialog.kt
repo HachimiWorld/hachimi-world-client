@@ -1,5 +1,14 @@
 package world.hachimi.app.ui.creation.publish.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_available_cd
+import hachimiworld.composeapp.generated.resources.common_close
+import hachimiworld.composeapp.generated.resources.common_confirm
+import hachimiworld.composeapp.generated.resources.common_error_cd
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_desc_exclusive
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_desc_format
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_prefix_placeholder
+import hachimiworld.composeapp.generated.resources.publish_init_jmid_title
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -14,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.common_close
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
@@ -42,7 +49,7 @@ fun InitJmidDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(onClick = onConfirm, enabled = valid == true) {
-                Text("确认")
+                Text(stringResource(Res.string.common_confirm))
             }
         },
         dismissButton = {
@@ -51,21 +58,21 @@ fun InitJmidDialog(
             }
         },
         title = {
-            Text("首次设置基米 ID 前缀")
+            Text(stringResource(Res.string.publish_init_jmid_title))
         },
         text = {
             Column {
-                Text("基米 ID 是作品的唯一标识，格式为 JM-ABCD-001")
-                Text("前缀由每位创作者独占，一旦设定则不可更改")
+                Text(stringResource(Res.string.publish_init_jmid_desc_format))
+                Text(stringResource(Res.string.publish_init_jmid_desc_exclusive))
                 Spacer(Modifier.height(24.dp))
                 TextField(
                     value = value,
                     onValueChange = onValueChange,
-                    placeholder = { Text("前缀")},
+                    placeholder = { Text(stringResource(Res.string.publish_init_jmid_prefix_placeholder)) },
                     trailingIcon = {
                         when(valid) {
-                            true -> Icon(Icons.Default.CheckCircle, contentDescription = "Available", tint = MaterialTheme.colorScheme.primary)
-                            false -> Icon(Icons.Default.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
+                            true -> Icon(Icons.Default.CheckCircle, contentDescription = stringResource(Res.string.common_available_cd), tint = MaterialTheme.colorScheme.primary)
+                            false -> Icon(Icons.Default.Error, contentDescription = stringResource(Res.string.common_error_cd), tint = MaterialTheme.colorScheme.error)
                             null -> if (value.isNotBlank()) { CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.dp) }
                         }
                     },

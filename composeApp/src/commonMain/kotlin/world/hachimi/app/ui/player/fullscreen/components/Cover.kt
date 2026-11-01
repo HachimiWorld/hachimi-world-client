@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateDp
@@ -73,7 +76,7 @@ fun Cover(
                         .placeholderMemoryCacheKey(model)
                         .memoryCacheKey(model)
                         .build(),
-                    contentDescription = "Cover",
+                    contentDescription = stringResource(Res.string.player_cover_cd),
                     contentScale = ContentScale.Crop
                 )
             }

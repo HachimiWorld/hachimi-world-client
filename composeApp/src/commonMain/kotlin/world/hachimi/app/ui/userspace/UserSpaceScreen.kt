@@ -55,7 +55,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.api.module.UserModule
+import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.model.GlobalStore
+import world.hachimi.app.model.ReportStore
+import world.hachimi.app.ui.report.ReportMenuButton
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
@@ -94,7 +97,8 @@ fun UserSpaceScreen(
     uid: Long?,
     showToolbar: Boolean = true,
     vm: UserSpaceViewModel = koinViewModel(),
-    global: GlobalStore = koinInject()
+    global: GlobalStore = koinInject(),
+    reports: ReportStore = koinInject(),
 ) {
     DisposableEffect(vm, uid) {
         vm.mounted(uid)
@@ -172,6 +176,10 @@ fun UserSpaceScreen(
                     }
                     TextButton(onClick = { global.logout() }) {
                         Text(stringResource(Res.string.auth_logout))
+                    }
+                } else {
+                    vm.profile?.uid?.let { target ->
+                        ReportMenuButton { reports.open(ReportModule.TARGET_USER, target) }
                     }
                 }
             },

@@ -33,6 +33,27 @@
     <string name="time_seconds_format">%1$d s</string>
     <string name="time_minutes_seconds_format">%1$d m %2$d s</string>
 
+    <!-- Relative time -->
+    <plurals name="time_ago_seconds">
+        <item quantity="one">%1$d second ago</item>
+        <item quantity="other">%1$d seconds ago</item>
+    </plurals>
+    <plurals name="time_ago_minutes">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="time_ago_hours">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="time_ago_days">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <string name="time_ago_minutes_seconds">%1$d min %2$d s ago</string>
+    <string name="time_ago_hours_minutes">%1$d h %2$d min ago</string>
+    <string name="time_ago_days_hours">%1$d d %2$d h ago</string>
+
     <!-- Developing page -->
     <string name="developing_page_title">Under development</string>
 
@@ -47,4 +68,49 @@
     <string name="publish_modify_comment_supporting">Add a short note explaining this change (optional).</string>
 
     <string name="song_cover_cd">Song cover</string>
+
+    <string name="common_add">Add</string>
+    <string name="common_add_cd">Add</string>
+    <string name="common_remove_cd">Remove</string>
+    <string name="common_back_cd">Back</string>
+    <string name="common_menu_cd">Menu</string>
+    <string name="common_edit_cd">Edit</string>
+    <string name="common_confirm">Confirm</string>
+    <string name="common_back">Back</string>
+    <string name="common_no_results">No results</string>
+    <string name="common_create">Create</string>
+    <string name="common_unknown_error">Unknown error</string>
+    <string name="common_cover_cd">Cover</string>
+    <string name="common_avatar_cd">Avatar</string>
+    <string name="common_available_cd">Available</string>
+    <string name="common_error_cd">Error</string>
+    <string name="common_explicit_cd">Explicit</string>
+    <string name="common_play_count_cd">Play count</string>
+    <string name="common_duration_cd">Duration</string>
+    <string name="common_off">Off</string>
+    <string name="common_on">On</string>
+    <string name="common_follow_system">Follow system</string>
+    <string name="platform_bilibili">Bilibili</string>
+    <string name="platform_douyin">Douyin</string>
+    <string name="platform_youtube">YouTube</string>
+
+    <string name="common_load_more_failed">Couldn't load more</string>
+    <string name="common_selected_cd">Selected</string>
+    <string name="common_pause_cd">Pause</string>
+    <string name="common_sort_cd">Sort</string>
+    <string name="app_name_cd">Hachimi World</string>
+    <string name="app_icon_cd">Hachimi World icon</string>
+
+    <string name="common_like_count_cd">Likes</string>
+    <string name="common_warning_cd">Warning</string>
+    <string name="common_search_cd">Search</string>
+
+    <string name="font_load_failed">Failed to load fonts</string>
+
+    <!-- GitHub star prompt -->
+    <string name="star_prompt_title">Give us a star</string>
+    <string name="star_prompt_message">Thank you for using Hachimi World. Hachimi World is a community-driven open-source project and is not yet available in app stores. If you enjoy the app, please consider starring the project on GitHub. Your support helps more people discover us.</string>
+    <string name="star_prompt_star">Star on GitHub</string>
+    <string name="star_prompt_later">Later</string>
+    <string name="star_prompt_never">Don't ask again</string>
 </resources>

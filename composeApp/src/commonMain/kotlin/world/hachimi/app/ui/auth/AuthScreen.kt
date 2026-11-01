@@ -1,5 +1,34 @@
 package world.hachimi.app.ui.auth
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_almost_there
+import hachimiworld.composeapp.generated.resources.auth_become_god
+import hachimiworld.composeapp.generated.resources.auth_code_placeholder
+import hachimiworld.composeapp.generated.resources.auth_complete_profile_subtitle
+import hachimiworld.composeapp.generated.resources.auth_confirm_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_email_placeholder
+import hachimiworld.composeapp.generated.resources.auth_finish
+import hachimiworld.composeapp.generated.resources.auth_forget_password
+import hachimiworld.composeapp.generated.resources.auth_gender_female
+import hachimiworld.composeapp.generated.resources.auth_gender_male
+import hachimiworld.composeapp.generated.resources.auth_gender_none
+import hachimiworld.composeapp.generated.resources.auth_intro_placeholder
+import hachimiworld.composeapp.generated.resources.auth_invalid_email
+import hachimiworld.composeapp.generated.resources.auth_login
+import hachimiworld.composeapp.generated.resources.auth_next_step
+import hachimiworld.composeapp.generated.resources.auth_nickname_placeholder
+import hachimiworld.composeapp.generated.resources.auth_one_more_step
+import hachimiworld.composeapp.generated.resources.auth_password_placeholder
+import hachimiworld.composeapp.generated.resources.auth_password_too_short
+import hachimiworld.composeapp.generated.resources.auth_passwords_not_match
+import hachimiworld.composeapp.generated.resources.auth_previous
+import hachimiworld.composeapp.generated.resources.auth_register
+import hachimiworld.composeapp.generated.resources.auth_resend
+import hachimiworld.composeapp.generated.resources.auth_resend_with_seconds
+import hachimiworld.composeapp.generated.resources.auth_skip
+import hachimiworld.composeapp.generated.resources.auth_verification_sent_subtitle
+import hachimiworld.composeapp.generated.resources.auth_welcome_home
+import hachimiworld.composeapp.generated.resources.common_back_cd
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,34 +68,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_almost_there
-import hachimiworld.composeapp.generated.resources.auth_become_god
-import hachimiworld.composeapp.generated.resources.auth_code_placeholder
-import hachimiworld.composeapp.generated.resources.auth_complete_profile_subtitle
-import hachimiworld.composeapp.generated.resources.auth_confirm_password_placeholder
-import hachimiworld.composeapp.generated.resources.auth_email_placeholder
-import hachimiworld.composeapp.generated.resources.auth_finish
-import hachimiworld.composeapp.generated.resources.auth_forget_password
-import hachimiworld.composeapp.generated.resources.auth_gender_female
-import hachimiworld.composeapp.generated.resources.auth_gender_male
-import hachimiworld.composeapp.generated.resources.auth_gender_none
-import hachimiworld.composeapp.generated.resources.auth_intro_placeholder
-import hachimiworld.composeapp.generated.resources.auth_invalid_email
-import hachimiworld.composeapp.generated.resources.auth_login
-import hachimiworld.composeapp.generated.resources.auth_next_step
-import hachimiworld.composeapp.generated.resources.auth_nickname_placeholder
-import hachimiworld.composeapp.generated.resources.auth_one_more_step
-import hachimiworld.composeapp.generated.resources.auth_password_placeholder
-import hachimiworld.composeapp.generated.resources.auth_password_too_short
-import hachimiworld.composeapp.generated.resources.auth_passwords_not_match
-import hachimiworld.composeapp.generated.resources.auth_previous
-import hachimiworld.composeapp.generated.resources.auth_register
-import hachimiworld.composeapp.generated.resources.auth_resend
-import hachimiworld.composeapp.generated.resources.auth_resend_with_seconds
-import hachimiworld.composeapp.generated.resources.auth_skip
-import hachimiworld.composeapp.generated.resources.auth_verification_sent_subtitle
-import hachimiworld.composeapp.generated.resources.auth_welcome_home
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import soup.compose.material.motion.animation.materialSharedAxisX
@@ -118,7 +119,7 @@ fun AuthScreen(
             onClick = { navigator.back() },
             touchMode = true
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back_cd))
         }
         ElevatedCard(
             Modifier

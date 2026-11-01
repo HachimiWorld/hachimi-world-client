@@ -1,5 +1,11 @@
 package world.hachimi.app.ui.home.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_explicit_cd
+import hachimiworld.composeapp.generated.resources.common_like_count_cd
+import hachimiworld.composeapp.generated.resources.common_play_count_cd
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -99,7 +105,7 @@ fun SongCard(
                         .placeholderMemoryCacheKey(coverUrl)
                         .memoryCacheKey(coverUrl)
                         .build(),
-                    contentDescription = "Song Cover Image",
+                    contentDescription = stringResource(Res.string.song_cover_cd),
                     contentScale = ContentScale.Crop
                 )
                 FlowRow(
@@ -119,7 +125,7 @@ fun SongCard(
                         Row(modifier = Modifier.padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Headphones,
-                                contentDescription = "Play Count",
+                                contentDescription = stringResource(Res.string.common_play_count_cd),
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(Modifier.width(4.dp))
@@ -132,7 +138,7 @@ fun SongCard(
 
                             Icon(
                                 Icons.Default.Favorite,
-                                "Play Count",
+                                stringResource(Res.string.common_like_count_cd),
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(Modifier.width(4.dp))
@@ -157,7 +163,7 @@ fun SongCard(
                     // Explicit mark
                     if (explicit == true) Icon(
                         imageVector = Icons.Default.Explicit,
-                        contentDescription = "Explicit",
+                        contentDescription = stringResource(Res.string.common_explicit_cd),
                         modifier = Modifier.padding(start = 4.dp).requiredSize(16.dp)
                     )
                 }

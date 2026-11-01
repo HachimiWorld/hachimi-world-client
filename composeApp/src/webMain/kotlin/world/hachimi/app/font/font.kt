@@ -39,10 +39,13 @@ import io.ktor.utils.io.core.remaining
 import io.ktor.utils.io.exhausted
 import io.ktor.utils.io.readRemaining
 import web.prompts.alert
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.font_load_failed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.readByteArray
+import org.jetbrains.compose.resources.getString
 import world.hachimi.app.BuildKonfig
 import world.hachimi.app.logging.Logger
 import world.hachimi.app.model.GlobalStore
@@ -223,7 +226,7 @@ class FontState(
         } catch (e: Throwable) {
             error = FontLoadError.NotSupported
             Logger.e(TAG, "Failed to load min font from web", e)
-            alert("加载字体失败")
+            alert(runCatching { getString(Res.string.font_load_failed) }.getOrDefault("Failed to load fonts"))
             return@withContext
         } finally {
             loadingMinFont = false

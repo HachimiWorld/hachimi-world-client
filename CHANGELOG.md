@@ -1,3 +1,10 @@
+# 1.6.0
+
+## Features 新功能
+
+1. Added a message center. 新增消息中心。
+2. Added song comments. 新增歌曲评论区。
+
 # 1.5.0
 
 ## Enhancements 改进

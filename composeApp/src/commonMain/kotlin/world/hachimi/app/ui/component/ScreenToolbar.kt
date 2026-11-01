@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.component
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_back_cd
+import hachimiworld.composeapp.generated.resources.common_menu_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,14 +96,14 @@ fun ScreenToolbar(
             when {
                 showBack && onBack != null -> {
                     ToolbarIconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back_cd))
                     }
                     Spacer(Modifier.width(8.dp))
                 }
 
                 showMenu && menuHandler != null -> {
                     ToolbarIconButton(onClick = menuHandler) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(Res.string.common_menu_cd))
                     }
                 }
             }

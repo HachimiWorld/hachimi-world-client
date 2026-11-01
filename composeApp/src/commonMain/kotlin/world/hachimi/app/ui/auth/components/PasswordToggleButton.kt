@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.auth.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_hide_password_cd
+import hachimiworld.composeapp.generated.resources.auth_show_password_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -16,7 +20,7 @@ fun PasswordToggleButton(showPassword: Boolean, onValueChange: (Boolean) -> Unit
         modifier = Modifier.size(28.dp),
         onClick = { onValueChange(!showPassword) }
     ) {
-        if (showPassword) Icon(Icons.Default.Visibility, "Password Visibility On")
-        else Icon(Icons.Default.VisibilityOff, "Password Visibility Off")
+        if (showPassword) Icon(Icons.Default.Visibility, stringResource(Res.string.auth_hide_password_cd))
+        else Icon(Icons.Default.VisibilityOff, stringResource(Res.string.auth_show_password_cd))
     }
 }

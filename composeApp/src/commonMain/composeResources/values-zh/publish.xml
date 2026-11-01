@@ -27,4 +27,97 @@
 
     <string name="artwork_jmid_prefix_not_set">未设置基米ID前缀</string>
     <string name="artwork_jmid_already_used">该基米ID已被使用</string>
+
+    <!-- Publish screen -->
+    <string name="publish_screen_title_create">发布作品</string>
+    <string name="publish_screen_title_edit">编辑作品</string>
+    <string name="publish_notice">温馨提示：\n本站尊重每一位创作者的劳动成果，因此我们不会收录搬运的作品。\n若您是首次投稿，您可以前往个人资料页绑定您的 BiliBili 账号便于审核确认您是作者。\n此外，暂不收录下类作品：\n1. 时长过短的作品（建议至少包含一整个段落）；\n2. 与“哈基米音乐”无关的作品；\n3. 不适宜收录的作品（如政治敏感等）</string>
+    <string name="publish_audio_header">上传音频*</string>
+    <string name="publish_audio_subtitle">支持 flac 和 mp3 格式，大小不超过 20MB</string>
+    <string name="publish_audio_download">下载音频</string>
+    <string name="publish_audio_change">更改音频</string>
+    <string name="publish_audio_choose">选择文件</string>
+    <string name="publish_cover_header">设置封面*</string>
+    <string name="publish_cover_subtitle">支持 jpg, png, webp 格式。请使用正方形图片作为封面。</string>
+    <string name="publish_jmid_header">基米ID*</string>
+    <string name="publish_jmid_set_prefix">设置前缀</string>
+    <string name="publish_title_header">标题*</string>
+    <string name="publish_title_subtitle">请使用纯文字标题。请不要在标题中添加标签、Emoji、符号等内容。如 钢铁雄基、哈基哈基天使</string>
+    <string name="publish_subtitle_header">副标题</string>
+    <string name="publish_subtitle_subtitle">可选。通常是一句简短的描述，或 OST 的出处，如《XXX》OP、《XXX》游戏原声带。</string>
+    <string name="publish_tags_header">标签</string>
+    <string name="publish_tags_subtitle">描述你的曲风类型（如古典、流行、J-Pop、ACG、R&amp;B）、创作类型（如纯净哈基米、原曲不使用）。\n不建议添加过多的标签。若只有英文请按照每单词首字母大写空格隔开，或使用行业标准写法。请勿使用符号和 Emoji</string>
+    <string name="publish_description_header">简介</string>
+    <string name="publish_description_subtitle">介绍一下你的作品，编写一段故事，或是描述一下你的创作历程吧</string>
+    <string name="publish_lyrics_header">歌词</string>
+    <string name="publish_lyrics_subtitle">建议使用LRC格式的滚动歌词</string>
+    <string name="publish_lyrics_tool">制作工具</string>
+    <string name="publish_lyrics_type_lrc">LRC歌词</string>
+    <string name="publish_lyrics_type_text">文本歌词</string>
+    <string name="publish_lyrics_type_none">不填写</string>
+    <string name="publish_lyrics_none_warning">强烈建议至少使用文本歌词</string>
+    <string name="publish_creation_type_header">创作类型*</string>
+    <string name="publish_creation_type_subtitle">如果你的作品是对现有作品的再创作（如对《D大调卡农》的改编），请选择二创并填写原作信息。如果你的作品是对哈基米音乐的再创作（如翻唱），请选择三创</string>
+    <string name="publish_origin_title_header">原作标题*</string>
+    <string name="publish_origin_title_supporting">如 D 大调卡农</string>
+    <string name="publish_origin_artist_header">原作艺术家</string>
+    <string name="publish_origin_artist_supporting">涉及到多位艺术家的，暂时填写主要的一位歌手即可</string>
+    <string name="publish_origin_link_header">原作链接</string>
+    <string name="publish_origin_link_supporting">建议填写，请使用 https:// 格式的链接</string>
+    <string name="publish_derive_id_header">二作基米ID</string>
+    <string name="publish_derive_id_supporting">如果二作是站内作品，填写 ID 即可，则无需再填写标题与链接</string>
+    <string name="publish_derive_title_header">二作标题*</string>
+    <string name="publish_derive_artist_header">二作艺术家</string>
+    <string name="publish_derive_link_header">二作链接</string>
+    <string name="publish_staff_subtitle">如果该作品的制作者不止一人，请在此添加并选择角色（如混音、编曲）。你可以选择站内用户，也可以仅填写他的名字</string>
+    <string name="publish_links_subtitle">如果你的作品已发表在其他平台上，请在此添加链接</string>
+    <string name="publish_explicit_header">是否含有露骨内容*</string>
+    <string name="publish_explicit_subtitle">如果作品含有脏话、低俗、暴力等内容，尤其是儿童不宜内容，请务必正确标记</string>
+    <string name="publish_explicit_no">全年龄</string>
+    <string name="publish_explicit_yes">非全年龄</string>
+    <string name="publish_submit_create">提交作品</string>
+    <string name="publish_submit_edit">提交修改</string>
+    <string name="publish_success_title_create">作品提交成功</string>
+    <string name="publish_success_title_edit">编辑提交成功</string>
+    <string name="publish_success_text_create">你的作品编号为：%1$s。首次发布需要确认您是该作品的作者，请留意相关视频平台的私信。目前由原始贡献者人工审核，可能会很慢，请耐心等待或主动联系我们，感谢您的理解！</string>
+    <string name="publish_success_text_edit">更改提交成功，请等待审核或主动联系</string>
+    <string name="publish_add_staff_title">添加成员</string>
+    <string name="publish_add_staff_role">角色</string>
+    <string name="publish_add_staff_role_supporting">如：编曲、作词、混音、吉他等</string>
+    <string name="publish_add_staff_internal">站内用户</string>
+    <string name="publish_add_staff_external">站外艺术家</string>
+    <string name="publish_add_staff_name">名称</string>
+    <string name="publish_add_link_title">添加外部链接</string>
+    <string name="publish_link_choose_platform">选择平台</string>
+    <string name="publish_link_bv_placeholder">BV号</string>
+    <string name="publish_link_sm_placeholder">sm号</string>
+    <string name="publish_link_url_placeholder">链接</string>
+    <string name="publish_link_platform_required">请选择平台</string>
+    <string name="publish_link_invalid_bv">请输入正确的 BV 号</string>
+    <string name="publish_link_invalid_sm">请输入正确的 sm 号</string>
+    <string name="publish_link_https_required">请使用 https:// 格式的链接</string>
+
+    <!-- Jmid prefix dialogs -->
+    <string name="publish_init_jmid_title">首次设置基米 ID 前缀</string>
+    <string name="publish_init_jmid_desc_format">基米 ID 是作品的唯一标识，格式为 JM-ABCD-001</string>
+    <string name="publish_init_jmid_desc_exclusive">前缀由每位创作者独占，一旦设定则不可更改</string>
+    <string name="publish_init_jmid_prefix_placeholder">前缀</string>
+    <string name="publish_prefix_inactive_title">首次审核中</string>
+    <string name="publish_prefix_inactive_text">您首次发布的作品正在审核中，请等待首个作品审核完毕后再发布其他作品</string>
+
+    <!-- My artworks and artwork detail -->
+    <string name="artwork_tab_published">已发布</string>
+    <string name="artwork_tab_submissions">我的提交</string>
+    <string name="artwork_my_songs">我的作品 (%1$d)</string>
+    <string name="artwork_publish_time">发布时间</string>
+    <string name="artwork_all_submissions">全部提交 (%1$d)</string>
+    <string name="artwork_submissions_empty">什么都没有，快发布你的第一个作品吧！</string>
+    <string name="artwork_tab_detail">详情</string>
+    <string name="artwork_tab_statistics">统计数据</string>
+    <string name="artwork_tab_history">编辑历史</string>
+    <string name="artwork_edit">编辑作品</string>
+    <string name="artwork_change_jmid_title">更改基米 ID</string>
+    <string name="artwork_new_jmid">新的基米 ID</string>
+    <string name="artwork_change_jmid_unavailable_title">当前不可更改</string>
+    <string name="artwork_change_jmid_unavailable_text">你还没有一个独占的基米ID前缀，当前不可更改</string>
 </resources>

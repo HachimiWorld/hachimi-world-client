@@ -45,10 +45,15 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import world.hachimi.app.api.module.AuthModule
+import world.hachimi.app.api.module.CommentModule
+import world.hachimi.app.api.module.CommitteeModule
 import world.hachimi.app.api.module.ContributorModule
+import world.hachimi.app.api.module.MessageModule
+import world.hachimi.app.api.module.NotificationModule
 import world.hachimi.app.api.module.PlayHistoryModule
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.module.PostModule
+import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.api.module.PublishModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
@@ -71,7 +76,7 @@ class ApiClient(
     private val baseUrl: String,
 ) {
     companion object {
-        const val VERSION: Int = 260701
+        const val VERSION: Int = 261031
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -316,7 +321,6 @@ class ApiClient(
         if (accessToken != null) {
             header("Authorization", "Bearer $accessToken")
         }
-        header("X-Real-IP", "127.0.0.1")
         header(HttpHeaders.Referrer, "https://hachimi.world/")
     }
 
@@ -329,6 +333,11 @@ class ApiClient(
     val versionModule by lazy { VersionModule(this) }
     val contributorModule by lazy { ContributorModule(this) }
     val postModule by lazy { PostModule(this) }
+    val notificationModule by lazy { NotificationModule(this) }
+    val messageModule by lazy { MessageModule(this) }
+    val reportModule by lazy { ReportModule(this) }
+    val committeeModule by lazy { CommitteeModule(this) }
+    val commentModule by lazy { CommentModule(this) }
 }
 
 interface AuthenticationListener {

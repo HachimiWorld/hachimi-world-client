@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MusicOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,8 +24,11 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_more
 import hachimiworld.composeapp.generated.resources.playlist_remove_item
 import hachimiworld.composeapp.generated.resources.song_cover_cd
+import hachimiworld.composeapp.generated.resources.unavailable_remove
+import hachimiworld.composeapp.generated.resources.unavailable_song
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.CoilHeaders
+import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.ui.design.components.*
 import world.hachimi.app.util.formatSongDuration
 import kotlin.time.Duration
@@ -103,3 +107,56 @@ fun SongItem(
         }
     }
 }
+/** In place of a song that was deleted or hidden. [onRemoveClick] is null when it can't be removed. */
+@Composable
+fun UnavailableSongItem(
+    onRemoveClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    Surface(modifier = modifier, shape = RoundedCornerShape(16.dp)) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(
+                Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(LocalContentColor.current.copy(0.06f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Default.MusicOff, contentDescription = null, tint = LocalContentColor.current.copy(0.4f))
+            }
+            Text(
+                stringResource(Res.string.unavailable_song),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = LocalContentColor.current.copy(0.5f),
+            )
+            if (onRemoveClick != null) {
+                TextButton(onClick = onRemoveClick) {
+                    Text(stringResource(Res.string.unavailable_remove))
+                }
+            }
+        }
+    }
+}
+
+/** A playlist entry in order: a song, or one that's no longer available. */
+sealed interface PlaylistEntry {
+    val key: Any
+
+    data class Song(val song: PlaylistModule.SongItem) : PlaylistEntry {
+        override val key: Any get() = song.songId
+    }
+
+    data class Unavailable(val song: PlaylistModule.UnavailableSongItem) : PlaylistEntry {
+        override val key: Any get() = "unavailable_${song.songId}"
+    }
+}
+
+fun playlistEntries(
+    songs: List<PlaylistModule.SongItem>,
+    unavailable: List<PlaylistModule.UnavailableSongItem>,
+): List<PlaylistEntry> =
+    (songs.map { it.orderIndex to PlaylistEntry.Song(it) } + unavailable.map { it.orderIndex to PlaylistEntry.Unavailable(it) })
+        .sortedBy { it.first }
+        .map { it.second }

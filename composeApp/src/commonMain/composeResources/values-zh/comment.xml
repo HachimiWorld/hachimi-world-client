@@ -1,0 +1,37 @@
+<resources>
+    <string name="comment_page_title">评论</string>
+    <string name="comment_header">评论 %1$s</string>
+    <string name="comment_replies_header">回复 %1$s</string>
+    <string name="comment_order_newest">最新</string>
+    <string name="comment_order_oldest">最早</string>
+    <string name="comment_section_hot">热门评论</string>
+    <string name="comment_section_all">全部评论</string>
+    <string name="comment_empty_title">还没有评论</string>
+    <string name="comment_empty_subtitle">来说点什么吧</string>
+    <string name="comment_load_error">评论加载失败，请检查网络后重试</string>
+    <string name="comment_load_more_failed">更多评论加载失败</string>
+    <string name="comment_input_placeholder">哈一些基米</string>
+    <string name="comment_replying_to">回复 %1$s</string>
+    <string name="comment_cancel_reply_cd">取消回复</string>
+    <string name="comment_send_cd">发送</string>
+    <string name="comment_reply">回复</string>
+    <string name="comment_reply_to_inline">回复 %1$s：</string>
+    <string name="comment_view_all_replies">查看全部 %1$s 条回复</string>
+    <string name="comment_removed">该评论已删除</string>
+    <string name="comment_like_cd">点赞</string>
+    <string name="comment_unlike_cd">取消点赞</string>
+    <string name="comment_delete_confirm_title">删除这条评论？</string>
+    <string name="comment_delete_confirm_text">删除后无法恢复</string>
+    <string name="comment_sent_pending">已发送，审核通过后才会显示</string>
+    <string name="comment_send_failed">发送失败，请稍后再试</string>
+    <string name="comment_like_failed">点赞失败，请稍后再试</string>
+    <string name="comment_delete_failed">删除失败，请稍后再试</string>
+    <string name="comment_error_rejected">评论包含不适宜的内容，请修改后再试</string>
+    <string name="comment_error_empty">评论不能为空</string>
+    <string name="comment_error_too_long">评论最多 500 字</string>
+    <string name="comment_error_rate_limited">评论太频繁了，请稍后再试</string>
+    <string name="comment_error_banned">你的账号已被限制，暂时不能评论</string>
+    <string name="comment_error_not_found">这条评论不存在或已删除</string>
+    <string name="comment_error_target_not_found">作品不存在或已删除</string>
+    <string name="comment_error_permission_denied">你不能删除这条评论</string>
+</resources>

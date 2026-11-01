@@ -86,7 +86,13 @@ class SongModule(
         /**
          * @since 251106
          */
-        val gain: Float?
+        val gain: Float?,
+        /**
+         * Hidden by the platform; only its uploader gets it.
+         *
+         * @since 261008
+         */
+        val isHidden: Boolean = false,
     )
 
     @Serializable
@@ -126,16 +132,18 @@ class SongModule(
         val id: String,
     )
 
-    suspend fun detail(displayId: String): WebResult<PublicSongDetail> =
-        client.get("/song/detail", DetailReq(displayId), false)
+    /** Send [auth] to get your own song even if it's hidden. */
+    suspend fun detail(displayId: String, auth: Boolean = false): WebResult<PublicSongDetail> =
+        client.get("/song/detail", DetailReq(displayId), auth)
 
     @Serializable
     data class DetailByIdReq(
         val id: Long,
     )
 
-    suspend fun detailById(id: Long): WebResult<PublicSongDetail> =
-        client.get("/song/detail_by_id", DetailByIdReq(id), false)
+    /** Send [auth] to get your own song even if it's hidden. */
+    suspend fun detailById(id: Long, auth: Boolean = false): WebResult<PublicSongDetail> =
+        client.get("/song/detail_by_id", DetailByIdReq(id), auth)
     @Serializable
     data class SearchReq(
         val q: String,
@@ -306,6 +314,19 @@ class SongModule(
         val pageSize: Long,
         val pageIndex: Long,
         val total: Long,
+        /**
+         * Likes on this page of songs that were deleted or hidden.
+         *
+         * @since 261008
+         */
+        val unavailable: List<UnavailableLikeItem> = emptyList(),
+    )
+
+    /** @since 261008 */
+    @Serializable
+    data class UnavailableLikeItem(
+        val songId: Long,
+        val likedTime: Instant,
     )
 
     @Serializable

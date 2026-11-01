@@ -1,0 +1,6 @@
+<resources>
+    <string name="events_empty">暂无活动</string>
+    <string name="events_content_empty">内容为空</string>
+    <string name="events_content_unsupported">当前客户端不支持展示该文章内容，请升级版本</string>
+    <string name="events_cover_cd">活动封面</string>
+</resources>

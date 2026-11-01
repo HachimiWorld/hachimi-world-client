@@ -12,4 +12,10 @@
     <string name="playlist_unfavorite">已收藏</string>
     <string name="playlist_update_time">%1$s</string>
     <string name="playlist_login_required">歌单功能登录后可用</string>
+
+    <string name="playlist_favorites_title">收藏的歌单</string>
+    <string name="playlist_name_rejected">歌单名称包含不适宜的内容，请修改后再试</string>
+    <string name="playlist_description_rejected">歌单简介包含不适宜的内容，请修改后再试</string>
+    <string name="playlist_cover_rejected">封面包含不适宜的内容，请换一张图片再试</string>
+    <string name="playlist_cover_rate_limited">封面上传过于频繁，请稍后再试</string>
 </resources>

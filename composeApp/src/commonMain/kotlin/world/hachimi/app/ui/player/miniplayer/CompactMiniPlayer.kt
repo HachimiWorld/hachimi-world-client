@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.player.miniplayer
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.player_cover_cd
+import hachimiworld.composeapp.generated.resources.player_next_song
+import hachimiworld.composeapp.generated.resources.player_not_playing
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateDp
@@ -33,9 +37,6 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.chrisbanes.haze.HazeState
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.player_next_song
-import hachimiworld.composeapp.generated.resources.player_not_playing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -156,7 +157,7 @@ private fun Cover(
                     .placeholderMemoryCacheKey(model)
                     .memoryCacheKey(model)
                     .build(),
-                contentDescription = "Cover",
+                contentDescription = stringResource(Res.string.player_cover_cd),
                 contentScale = ContentScale.Crop
             )
         }

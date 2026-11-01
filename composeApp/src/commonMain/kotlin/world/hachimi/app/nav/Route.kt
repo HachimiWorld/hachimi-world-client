@@ -21,7 +21,11 @@ sealed interface Route : NavKey {
 
             @Serializable
             @SerialName("/events/detail")
-            data class Detail(val postId: Long) : Events
+            data class Detail(
+                val postId: Long,
+                /** Opens scrolled to the comments. @since 261031 */
+                val atComments: Boolean = false,
+            ) : Events
         }
 
         @Serializable
@@ -120,6 +124,16 @@ sealed interface Route : NavKey {
         @SerialName("/committee_center")
         data object CommitteeCenter : Root
 
+        /** One report case, by its target. @since 261008 */
+        @Serializable
+        @SerialName("/committee_center/case")
+        data class ReportCase(val targetType: String, val targetId: Long) : Root
+
+        /** @since 261008 */
+        @Serializable
+        @SerialName("/committee_center/members")
+        data object CommitteeMembers : Root
+
         @Serializable
         sealed interface ContributorCenter : Root {
             companion object {
@@ -198,6 +212,41 @@ sealed interface Route : NavKey {
         @Serializable
         @SerialName("/settings/devices")
         data object DeviceManagement : Root
+
+        /** @since 261005 */
+        @Serializable
+        @SerialName("/notifications")
+        data object Notifications : Root
+
+        /** @since 261005 */
+        @Serializable
+        @SerialName("/notifications/detail")
+        data class NotificationDetail(val notificationId: String) : Root
+
+        /** @since 261006 */
+        @Serializable
+        @SerialName("/messages")
+        data object Messages : Root
+
+        /** @since 261006 */
+        @Serializable
+        @SerialName("/messages/likes")
+        data object ReceivedLikes : Root
+
+        /** @since 261006 */
+        @Serializable
+        @SerialName("/messages/followers")
+        data object NewFollowers : Root
+
+        /** @since 261021 */
+        @Serializable
+        @SerialName("/messages/replies")
+        data object ReceivedReplies : Root
+
+        /** @since 261031 */
+        @Serializable
+        @SerialName("/song/comments")
+        data class SongComments(val songDisplayId: String) : Root
     }
 
     @Serializable

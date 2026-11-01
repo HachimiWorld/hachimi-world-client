@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.creation.publish.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_create
+import hachimiworld.composeapp.generated.resources.common_no_results
+import hachimiworld.composeapp.generated.resources.common_remove_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -58,7 +63,7 @@ fun TagEdit(
                     label = { Text(item.name) },
                     trailingIcon = {
 //                        IconButton(onClick = { onRemoveClick(index) }) {
-                        Icon(Icons.Default.Close, contentDescription = "Remove")
+                        Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.common_remove_cd))
 //                        }
                     },
                     onClick = {
@@ -107,7 +112,7 @@ fun TagEdit(
                     Spacer(Modifier.height(12.dp))
                     if (vm.tagCandidates.isEmpty()) Text(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        text = "无结果", style = MaterialTheme.typography.bodyMedium
+                        text = stringResource(Res.string.common_no_results), style = MaterialTheme.typography.bodyMedium
                     ) else LazyColumn(Modifier.height(120.dp)) {
                         items(vm.tagCandidates, key = { item -> item.id }) { item ->
                             Item(
@@ -124,7 +129,7 @@ fun TagEdit(
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
-                                Text("创建")
+                                Text(stringResource(Res.string.common_create))
                             }
                         }
                     }

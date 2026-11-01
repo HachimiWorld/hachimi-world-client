@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.root.component
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_search_cd
+import hachimiworld.composeapp.generated.resources.search_placeholder
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,8 +21,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.search_placeholder
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
@@ -61,7 +62,7 @@ fun SearchBox(
                 },
 //                enabled = searchText.isNotBlank()
             ) {
-                Icon(Icons.Default.Search, "Search")
+                Icon(Icons.Default.Search, stringResource(Res.string.common_search_cd))
             }
         },
         placeholder = { Text(stringResource(Res.string.search_placeholder)) },

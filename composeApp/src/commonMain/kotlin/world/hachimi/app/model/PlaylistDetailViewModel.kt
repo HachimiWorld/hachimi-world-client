@@ -21,6 +21,7 @@ import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
 import world.hachimi.app.api.module.PlaylistModule
+import world.hachimi.app.api.module.ReportModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 import kotlin.time.Duration.Companion.seconds
@@ -37,6 +38,10 @@ class PlaylistDetailViewModel(
     var playlistId by mutableStateOf<Long?>(null)
     var playlistInfo by mutableStateOf<PlaylistModule.PlaylistItem?>(null)
     var songs by mutableStateOf<List<PlaylistModule.SongItem>>(emptyList())
+    /** Songs that were deleted or hidden, shown as unavailable in their place. */
+    var unavailableSongs by mutableStateOf<List<PlaylistModule.UnavailableSongItem>>(emptyList())
+    /** Why the playlist is hidden, if it is. */
+    var hiddenReason by mutableStateOf<String?>(null)
 
     var showEditDialog by mutableStateOf(false)
     var editName by mutableStateOf("")
@@ -99,7 +104,8 @@ class PlaylistDetailViewModel(
                         refresh()
                     } else {
                         val data = resp.err()
-                        global.alert(data.msg)
+                        val message = playlistUpdateErrorMessage(data.code)
+                        if (message != null) global.alert(message) else global.alert(data.msg)
                     }
                 } catch (e: Throwable) {
                     Logger.e("playlist", "Failed to edit playlist", e)
@@ -140,6 +146,11 @@ class PlaylistDetailViewModel(
                 val data = resp.ok()
                 playlistInfo = data.playlistInfo
                 songs = data.songs
+                unavailableSongs = data.unavailableSongs
+                hiddenReason = if (data.playlistInfo.isHidden) {
+                    api.reportModule.hiddenReason(ReportModule.HiddenReasonReq(ReportModule.TARGET_PLAYLIST, data.playlistInfo.id))
+                        .takeIf { it.ok }?.ok()?.reason
+                } else null
                 if (initStatus == InitializeStatus.INIT) {
                     initStatus = InitializeStatus.LOADED
                 }
@@ -185,7 +196,8 @@ class PlaylistDetailViewModel(
                         refresh()
                     } else {
                         val error = resp.err()
-                        global.alert(error.msg)
+                        val message = playlistCoverErrorMessage(error.code)
+                        if (message != null) global.alert(message) else global.alert(error.msg)
                         return@launch
                     }
                 } catch (e: Throwable) {

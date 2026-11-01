@@ -1,5 +1,13 @@
 package world.hachimi.app.ui.search.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_duration_cd
+import hachimiworld.composeapp.generated.resources.common_explicit_cd
+import hachimiworld.composeapp.generated.resources.common_play_count_cd
+import hachimiworld.composeapp.generated.resources.search_matched_origin_artist
+import hachimiworld.composeapp.generated.resources.search_matched_origin_title
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,7 +62,7 @@ fun SearchSongItem(
                         .data(data.info.coverArtUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Song Cover Image",
+                    contentDescription = stringResource(Res.string.song_cover_cd),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -84,7 +92,7 @@ fun SearchSongItem(
                         if (data.info.explicit == true) Icon(
                             modifier = Modifier.padding(start = 8.dp).requiredSize(16.dp),
                             imageVector = Icons.Default.Explicit,
-                            contentDescription = "Explicit",
+                            contentDescription = stringResource(Res.string.common_explicit_cd),
                             tint = LocalContentColor.current.copy(0.72f),
                         )
                     }
@@ -93,22 +101,26 @@ fun SearchSongItem(
                         LocalTextStyle provides MaterialTheme.typography.bodySmall.copy(LocalContentColor.current.copy(0.72f))
                     ) {
                         if (data.matchedOriginTitles.isNotEmpty()) {
+                            val (before, after) = stringResource(Res.string.search_matched_origin_title).split("%1\$s")
                             Text(
                                 text = buildAnnotatedString {
-                                    append("原曲：")
+                                    append(before)
                                     withStyle(LocalTextStyle.current.copy(color = HachimiTheme.colorScheme.primary).toSpanStyle()) {
                                         append(data.matchedOriginTitles.first())
                                     }
+                                    append(after)
                                 },
                                 maxLines = 1
                             )
                         } else if (data.matchedOriginArtists.isNotEmpty()) {
+                            val (before, after) = stringResource(Res.string.search_matched_origin_artist).split("%1\$s")
                             Text(
                                 text = buildAnnotatedString {
-                                    append("原作者：")
+                                    append(before)
                                     withStyle(LocalTextStyle.current.copy(color = HachimiTheme.colorScheme.primary).toSpanStyle()) {
                                         append(data.matchedOriginArtists.first())
                                     }
+                                    append(after)
                                 },
                                 maxLines = 1
                             )
@@ -161,7 +173,7 @@ fun SearchSongItem(
                 }
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Schedule, contentDescription = "Duration", modifier = Modifier.size(12.dp))
+                        Icon(Icons.Default.Schedule, contentDescription = stringResource(Res.string.common_duration_cd), modifier = Modifier.size(12.dp))
                         Text(
                             modifier = Modifier.padding(start = 4.dp),
                             text = formatSongDuration(data.info.durationSeconds.seconds),
@@ -170,7 +182,7 @@ fun SearchSongItem(
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Headphones, contentDescription = "Play Count", modifier = Modifier.size(12.dp))
+                        Icon(Icons.Default.Headphones, contentDescription = stringResource(Res.string.common_play_count_cd), modifier = Modifier.size(12.dp))
                         Text(
                             modifier = Modifier.padding(start = 4.dp),
                             text = formatCompactCount(data.info.playCount),

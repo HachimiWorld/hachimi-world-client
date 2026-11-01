@@ -39,11 +39,18 @@ fun Button(
     enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
+    // Disabled buttons drop their own colors, so an accent button doesn't still look pressable
+    val onSurface = HachimiTheme.colorScheme.onSurface
+    val containerColor = when {
+        enabled || color == Color.Transparent -> color
+        else -> onSurface.copy(alpha = 0.08f)
+    }
+    val labelColor = if (enabled) contentColor else onSurface.copy(alpha = 0.38f)
     Surface(
         modifier = modifier,
         shape = shape,
-        color = color,
-        contentColor = contentColor,
+        color = containerColor,
+        contentColor = labelColor,
     ) {
         Row(
             Modifier.clickable(onClick = onClick, enabled = enabled, role = Role.Button).padding(contentPadding),
@@ -51,7 +58,7 @@ fun Button(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CompositionLocalProvider(
-                LocalContentColor provides if (enabled) contentColor else contentColor.copy(0.6f),
+                LocalContentColor provides labelColor,
                 LocalTextStyle provides buttonLabelTextStyle
             ) {
                 content()

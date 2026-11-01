@@ -41,8 +41,90 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_add
+import hachimiworld.composeapp.generated.resources.common_add_cd
+import hachimiworld.composeapp.generated.resources.common_cancel
+import hachimiworld.composeapp.generated.resources.common_ok
+import hachimiworld.composeapp.generated.resources.common_remove_cd
+import hachimiworld.composeapp.generated.resources.platform_bilibili
+import hachimiworld.composeapp.generated.resources.platform_douyin
+import hachimiworld.composeapp.generated.resources.platform_youtube
+import hachimiworld.composeapp.generated.resources.publish_add_link_title
+import hachimiworld.composeapp.generated.resources.publish_add_staff_external
+import hachimiworld.composeapp.generated.resources.publish_add_staff_internal
+import hachimiworld.composeapp.generated.resources.publish_add_staff_name
+import hachimiworld.composeapp.generated.resources.publish_add_staff_role
+import hachimiworld.composeapp.generated.resources.publish_add_staff_role_supporting
+import hachimiworld.composeapp.generated.resources.publish_add_staff_title
+import hachimiworld.composeapp.generated.resources.publish_audio_change
+import hachimiworld.composeapp.generated.resources.publish_audio_choose
+import hachimiworld.composeapp.generated.resources.publish_audio_download
+import hachimiworld.composeapp.generated.resources.publish_audio_header
+import hachimiworld.composeapp.generated.resources.publish_audio_subtitle
+import hachimiworld.composeapp.generated.resources.publish_cover_header
+import hachimiworld.composeapp.generated.resources.publish_cover_subtitle
+import hachimiworld.composeapp.generated.resources.publish_creation_type_header
+import hachimiworld.composeapp.generated.resources.publish_creation_type_subtitle
+import hachimiworld.composeapp.generated.resources.publish_derive_artist_header
+import hachimiworld.composeapp.generated.resources.publish_derive_id_header
+import hachimiworld.composeapp.generated.resources.publish_derive_id_supporting
+import hachimiworld.composeapp.generated.resources.publish_derive_link_header
+import hachimiworld.composeapp.generated.resources.publish_derive_title_header
+import hachimiworld.composeapp.generated.resources.publish_description_header
+import hachimiworld.composeapp.generated.resources.publish_description_subtitle
+import hachimiworld.composeapp.generated.resources.publish_explicit_header
+import hachimiworld.composeapp.generated.resources.publish_explicit_no
+import hachimiworld.composeapp.generated.resources.publish_explicit_subtitle
+import hachimiworld.composeapp.generated.resources.publish_explicit_yes
+import hachimiworld.composeapp.generated.resources.publish_jmid_header
+import hachimiworld.composeapp.generated.resources.publish_jmid_set_prefix
+import hachimiworld.composeapp.generated.resources.publish_link_bv_placeholder
+import hachimiworld.composeapp.generated.resources.publish_link_choose_platform
+import hachimiworld.composeapp.generated.resources.publish_link_https_required
+import hachimiworld.composeapp.generated.resources.publish_link_invalid_bv
+import hachimiworld.composeapp.generated.resources.publish_link_invalid_sm
+import hachimiworld.composeapp.generated.resources.publish_link_platform_required
+import hachimiworld.composeapp.generated.resources.publish_link_sm_placeholder
+import hachimiworld.composeapp.generated.resources.publish_link_url_placeholder
+import hachimiworld.composeapp.generated.resources.publish_links_subtitle
+import hachimiworld.composeapp.generated.resources.publish_lyrics_header
+import hachimiworld.composeapp.generated.resources.publish_lyrics_none_warning
+import hachimiworld.composeapp.generated.resources.publish_lyrics_subtitle
+import hachimiworld.composeapp.generated.resources.publish_lyrics_tool
+import hachimiworld.composeapp.generated.resources.publish_lyrics_type_lrc
+import hachimiworld.composeapp.generated.resources.publish_lyrics_type_none
+import hachimiworld.composeapp.generated.resources.publish_lyrics_type_text
 import hachimiworld.composeapp.generated.resources.publish_modify_comment
 import hachimiworld.composeapp.generated.resources.publish_modify_comment_supporting
+import hachimiworld.composeapp.generated.resources.publish_notice
+import hachimiworld.composeapp.generated.resources.publish_origin_artist_header
+import hachimiworld.composeapp.generated.resources.publish_origin_artist_supporting
+import hachimiworld.composeapp.generated.resources.publish_origin_link_header
+import hachimiworld.composeapp.generated.resources.publish_origin_link_supporting
+import hachimiworld.composeapp.generated.resources.publish_origin_title_header
+import hachimiworld.composeapp.generated.resources.publish_origin_title_supporting
+import hachimiworld.composeapp.generated.resources.publish_screen_title_create
+import hachimiworld.composeapp.generated.resources.publish_screen_title_edit
+import hachimiworld.composeapp.generated.resources.publish_staff_subtitle
+import hachimiworld.composeapp.generated.resources.publish_submit_create
+import hachimiworld.composeapp.generated.resources.publish_submit_edit
+import hachimiworld.composeapp.generated.resources.publish_subtitle_header
+import hachimiworld.composeapp.generated.resources.publish_subtitle_subtitle
+import hachimiworld.composeapp.generated.resources.publish_success_text_create
+import hachimiworld.composeapp.generated.resources.publish_success_text_edit
+import hachimiworld.composeapp.generated.resources.publish_success_title_create
+import hachimiworld.composeapp.generated.resources.publish_success_title_edit
+import hachimiworld.composeapp.generated.resources.publish_tags_header
+import hachimiworld.composeapp.generated.resources.publish_tags_subtitle
+import hachimiworld.composeapp.generated.resources.publish_title_header
+import hachimiworld.composeapp.generated.resources.publish_title_subtitle
+import hachimiworld.composeapp.generated.resources.review_creation_type_derivation
+import hachimiworld.composeapp.generated.resources.review_creation_type_derivation_of_derivation
+import hachimiworld.composeapp.generated.resources.review_creation_type_original
+import hachimiworld.composeapp.generated.resources.review_external_links
+import hachimiworld.composeapp.generated.resources.review_production_crew
+import hachimiworld.composeapp.generated.resources.song_cover_cd
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -97,9 +179,9 @@ fun PublishScreen(
     }
     HandleNavigationRequests(vm.navigationRequests, navigator)
     val screenTitle = when (vm.initializeStatus) {
-        InitializeStatus.LOADED -> if (vm.type == Type.CREATE) "发布作品" else "编辑作品"
-        else -> "发布作品"
-    }
+        InitializeStatus.LOADED -> if (vm.type == Type.CREATE) Res.string.publish_screen_title_create else Res.string.publish_screen_title_edit
+        else -> Res.string.publish_screen_title_create
+    }.let { stringResource(it) }
     ScreenScaffold(
         title = { Text(screenTitle, maxLines = 1) },
         showBack = true,
@@ -136,7 +218,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             if (vm.type == Type.CREATE) Text(
-                "温馨提示：\n本站尊重每一位创作者的劳动成果，因此我们不会收录搬运的作品。\n若您是首次投稿，您可以前往个人资料页绑定您的 BiliBili 账号便于审核确认您是作者。\n此外，暂不收录下类作品：\n1. 时长过短的作品（建议至少包含一整个段落）；\n2. 与“哈基米音乐”无关的作品；\n3. 不适宜收录的作品（如政治敏感等）",
+                stringResource(Res.string.publish_notice),
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -146,8 +228,8 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     FormItem(
-                        header = { Text("上传音频*") },
-                        subtitle = { Text("支持 flac 和 mp3 格式，大小不超过 20MB") }
+                        header = { Text(stringResource(Res.string.publish_audio_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_audio_subtitle)) }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -156,12 +238,12 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                             if (editing) Button(onClick = {
                                 getPlatform().openUrl(vm.audioUrl!!)
                             }) {
-                                Text("下载音频")
+                                Text(stringResource(Res.string.publish_audio_download))
                             }
 
                             Button(onClick = { vm.setAudioFile() }, enabled = !vm.audioUploading) {
-                                if (editing) Text("更改音频")
-                                else Text("选择文件")
+                                if (editing) Text(stringResource(Res.string.publish_audio_change))
+                                else Text(stringResource(Res.string.publish_audio_choose))
                             }
 
                             if (vm.audioUploading) {
@@ -179,9 +261,9 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     }
 
                     FormItem(
-                        header = { Text("设置封面*") },
+                        header = { Text(stringResource(Res.string.publish_cover_header)) },
                         subtitle = {
-                            Text("支持 jpg, png, webp 格式。请使用正方形图片作为封面。")
+                            Text(stringResource(Res.string.publish_cover_subtitle))
                         }
                     ) {
                         Surface(
@@ -200,12 +282,12 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                         .data(vm.coverImageUrl)
                                         .crossfade(true)
                                         .build(),
-                                    contentDescription = "Cover Image",
+                                    contentDescription = stringResource(Res.string.song_cover_cd),
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 ) else AsyncImage(
                                     model = vm.coverImage,
-                                    contentDescription = "Cover Image",
+                                    contentDescription = stringResource(Res.string.song_cover_cd),
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
@@ -226,13 +308,13 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 ) {
 
                     if (vm.type == Type.CREATE) FormItem(
-                        header = { Text("基米ID*") }
+                        header = { Text(stringResource(Res.string.publish_jmid_header)) }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             val prefix = vm.jmidPrefix
                             if (prefix == null) {
                                 Button(onClick = { vm.showJmidDialog() }) {
-                                    Text("设置前缀")
+                                    Text(stringResource(Res.string.publish_jmid_set_prefix))
                                 }
                             } else {
                                 JmidTextField(
@@ -247,8 +329,8 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     }
 
                     FormItem(
-                        header = { Text("标题*") },
-                        subtitle = { Text("请使用纯文字标题。请不要在标题中添加标签、Emoji、符号等内容。如 钢铁雄基、哈基哈基天使") }
+                        header = { Text(stringResource(Res.string.publish_title_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_title_subtitle)) }
                     ) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -259,8 +341,8 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     }
 
                     FormItem(
-                        header = { Text("副标题") },
-                        subtitle = { Text("可选。通常是一句简短的描述，或 OST 的出处，如《XXX》OP、《XXX》游戏原声带。") }
+                        header = { Text(stringResource(Res.string.publish_subtitle_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_subtitle_subtitle)) }
                     ) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -271,15 +353,15 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     }
 
                     FormItem(
-                        header = { Text("标签") },
-                        subtitle = { Text("描述你的曲风类型（如古典、流行、J-Pop、ACG、R&B）、创作类型（如纯净哈基米、原曲不使用）。\n不建议添加过多的标签。若只有英文请按照每单词首字母大写空格隔开，或使用行业标准写法。请勿使用符号和 Emoji") }
+                        header = { Text(stringResource(Res.string.publish_tags_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_tags_subtitle)) }
                     ) {
                         TagEdit(vm)
                     }
 
                     FormItem(
-                        header = { Text("简介") },
-                        subtitle = { Text("介绍一下你的作品，编写一段故事，或是描述一下你的创作历程吧") }
+                        header = { Text(stringResource(Res.string.publish_description_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_description_subtitle)) }
                     ) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -296,13 +378,13 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     FormItem(
-                        header = { Text("歌词") },
+                        header = { Text(stringResource(Res.string.publish_lyrics_header)) },
                         subtitle = {
-                            Text("建议使用LRC格式的滚动歌词", modifier = Modifier.weight(1f))
+                            Text(stringResource(Res.string.publish_lyrics_subtitle), modifier = Modifier.weight(1f))
                             TextButton(onClick = {
                                 getPlatform().openUrl("https://lrc-maker.github.io/")
                             }) {
-                                Text("制作工具")
+                                Text(stringResource(Res.string.publish_lyrics_tool))
                             }
                         }
                     ) {
@@ -314,9 +396,9 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 ) {
                                     Text(
                                         when (it) {
-                                            LyricsType.LRC -> "LRC歌词"
-                                            LyricsType.TEXT -> "文本歌词"
-                                            LyricsType.NONE -> "不填写"
+                                            LyricsType.LRC -> stringResource(Res.string.publish_lyrics_type_lrc)
+                                            LyricsType.TEXT -> stringResource(Res.string.publish_lyrics_type_text)
+                                            LyricsType.NONE -> stringResource(Res.string.publish_lyrics_type_none)
                                         }
                                     )
                                 }
@@ -325,7 +407,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
 
                         if (vm.lyricsType == LyricsType.NONE) {
                             Text(
-                                "强烈建议至少使用文本歌词",
+                                stringResource(Res.string.publish_lyrics_none_warning),
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -347,29 +429,29 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     FormItem(
-                        header = { Text("创作类型*") },
-                        subtitle = { Text("如果你的作品是对现有作品的再创作（如对《D大调卡农》的改编），请选择二创并填写原作信息。如果你的作品是对哈基米音乐的再创作（如翻唱），请选择三创") }
+                        header = { Text(stringResource(Res.string.publish_creation_type_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_creation_type_subtitle)) }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = vm.creationType == 0,
                                 onClick = { vm.creationType = 0 }
                             ) {
-                                Text("原创")
+                                Text(stringResource(Res.string.review_creation_type_original))
                             }
 
                             RadioButton(
                                 selected = vm.creationType == 1,
                                 onClick = { vm.creationType = 1 }
                             ) {
-                                Text("二创")
+                                Text(stringResource(Res.string.review_creation_type_derivation))
                             }
 
                             RadioButton(
                                 selected = vm.creationType == 2,
                                 onClick = { vm.creationType = 2 }
                             ) {
-                                Text("三创")
+                                Text(stringResource(Res.string.review_creation_type_derivation_of_derivation))
                             }
                         }
                     }
@@ -384,47 +466,47 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 supportingText = { Text("如果原作是基米天堂站内的作品，填写基米 ID 即可，无需再填写标题与链接") }
                             )
                         }*/
-                        FormItem(header = { Text("原作标题*") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_origin_title_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.originTitle,
                                 onValueChange = { vm.originTitle = it.singleLined() },
                                 singleLine = true,
-                                supportingText = { Text("如 D 大调卡农") }
+                                supportingText = { Text(stringResource(Res.string.publish_origin_title_supporting)) }
                             )
                         }
-                        FormItem(header = { Text("原作艺术家") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_origin_artist_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.originArtist,
                                 onValueChange = { vm.originArtist = it.singleLined() },
                                 singleLine = true,
-                                supportingText = { Text("涉及到多位艺术家的，暂时填写主要的一位歌手即可") }
+                                supportingText = { Text(stringResource(Res.string.publish_origin_artist_supporting)) }
                             )
                         }
-                        FormItem(header = { Text("原作链接") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_origin_link_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.originLink,
                                 onValueChange = { vm.originLink = it.singleLined() },
                                 singleLine = true,
                                 placeholder = { Text("https://") },
-                                supportingText = { Text("建议填写，请使用 https:// 格式的链接") }
+                                supportingText = { Text(stringResource(Res.string.publish_origin_link_supporting)) }
                             )
                         }
                     }
 
                     if (vm.creationType > 1) {
-                        FormItem(header = { Text("二作基米ID") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_derive_id_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.deriveId,
                                 onValueChange = { vm.deriveId = it.singleLined() },
                                 singleLine = true,
-                                supportingText = { Text("如果二作是站内作品，填写 ID 即可，则无需再填写标题与链接") }
+                                supportingText = { Text(stringResource(Res.string.publish_derive_id_supporting)) }
                             )
                         }
-                        FormItem(header = { Text("二作标题*") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_derive_title_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.deriveTitle,
@@ -432,7 +514,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 singleLine = true
                             )
                         }
-                        FormItem(header = { Text("二作艺术家") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_derive_artist_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.deriveArtist,
@@ -440,7 +522,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 singleLine = true
                             )
                         }
-                        FormItem(header = { Text("二作链接") }) {
+                        FormItem(header = { Text(stringResource(Res.string.publish_derive_link_header)) }) {
                             TextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = vm.deriveLink,
@@ -461,12 +543,12 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 ) {
                     FormItem(
                         header = {
-                            Text("制作团队")
+                            Text(stringResource(Res.string.review_production_crew))
                             IconButton(onClick = { vm.addStaff() }) {
-                                Icon(Icons.Default.Add, contentDescription = "Add")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.common_add_cd))
                             }
                         },
-                        subtitle = { Text("如果该作品的制作者不止一人，请在此添加并选择角色（如混音、编曲）。你可以选择站内用户，也可以仅填写他的名字") }
+                        subtitle = { Text(stringResource(Res.string.publish_staff_subtitle)) }
                     ) {
                         vm.staffs.fastForEachIndexed { index, item ->
                             Row(
@@ -486,7 +568,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 )
 
                                 IconButton(onClick = { vm.removeStaff(index) }) {
-                                    Icon(Icons.Default.Remove, contentDescription = "Remove")
+                                    Icon(Icons.Default.Remove, contentDescription = stringResource(Res.string.common_remove_cd))
                                 }
                             }
                         }
@@ -502,13 +584,13 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                 ) {
                     FormItem(
                         header = {
-                            Text("外部链接")
+                            Text(stringResource(Res.string.review_external_links))
 
                             IconButton(onClick = { vm.showAddExternalLinkDialog() }) {
-                                Icon(Icons.Default.Add, contentDescription = "Add")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.common_add_cd))
                             }
                         },
-                        subtitle = { Text("如果你的作品已发表在其他平台上，请在此添加链接") }
+                        subtitle = { Text(stringResource(Res.string.publish_links_subtitle)) }
                     ) {
                         vm.externalLinks.fastForEachIndexed { index, item ->
                             Row(
@@ -530,7 +612,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                                 )
 
                                 IconButton(onClick = { vm.removeLink(index) }) {
-                                    Icon(Icons.Default.Remove, contentDescription = "Remove")
+                                    Icon(Icons.Default.Remove, contentDescription = stringResource(Res.string.common_remove_cd))
                                 }
                             }
                         }
@@ -545,22 +627,22 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     FormItem(
-                        header = { Text("是否含有露骨内容*") },
-                        subtitle = { Text("如果作品含有脏话、低俗、暴力等内容，尤其是儿童不宜内容，请务必正确标记") }
+                        header = { Text(stringResource(Res.string.publish_explicit_header)) },
+                        subtitle = { Text(stringResource(Res.string.publish_explicit_subtitle)) }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = vm.explicit == false,
                                 onClick = { vm.explicit = false }
                             ) {
-                                Text("全年龄")
+                                Text(stringResource(Res.string.publish_explicit_no))
                             }
 
                             RadioButton(
                                 selected = vm.explicit == true,
                                 onClick = { vm.explicit = true }
                             ) {
-                                Text("非全年龄")
+                                Text(stringResource(Res.string.publish_explicit_yes))
                             }
                         }
                     }
@@ -587,7 +669,7 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
             }
 
             Button(onClick = { vm.publish() }, enabled = !vm.isOperating) {
-                Text(if (vm.type == Type.CREATE) "提交作品" else "提交修改")
+                Text(stringResource(if (vm.type == Type.CREATE) Res.string.publish_submit_create else Res.string.publish_submit_edit))
             }
         }
     }
@@ -596,21 +678,21 @@ private fun Content(vm: PublishViewModel, global: GlobalStore) {
         onDismissRequest = { vm.closeDialog() },
         title = {
             if (vm.type == Type.CREATE) {
-                Text("作品提交成功")
+                Text(stringResource(Res.string.publish_success_title_create))
             } else {
-                Text("编辑提交成功")
+                Text(stringResource(Res.string.publish_success_title_edit))
             }
         },
         text = {
             if (vm.type == Type.CREATE) {
-                Text("你的作品编号为：${vm.publishedSongId}。首次发布需要确认您是该作品的作者，请留意相关视频平台的私信。目前由原始贡献者人工审核，可能会很慢，请耐心等待或主动联系我们，感谢您的理解！")
+                Text(stringResource(Res.string.publish_success_text_create, vm.publishedSongId.toString()))
             } else {
-                Text("更改提交成功，请等待审核或主动联系")
+                Text(stringResource(Res.string.publish_success_text_edit))
             }
         },
         confirmButton = {
             TextButton(onClick = { vm.closeDialog() }) {
-                Text("确定")
+                Text(stringResource(Res.string.common_ok))
             }
         }
     )
@@ -649,7 +731,7 @@ private fun AddStaffDialog(vm: PublishViewModel) {
         modifier = Modifier.width(300.dp),
         onDismissRequest = { vm.cancelAddStaff() },
         title = {
-            Text("添加成员")
+            Text(stringResource(Res.string.publish_add_staff_title))
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -658,10 +740,10 @@ private fun AddStaffDialog(vm: PublishViewModel) {
                 TextField(
                     value = vm.addStaffRole,
                     onValueChange = { vm.addStaffRole = it.singleLined() },
-                    placeholder = { Text("角色") },
+                    placeholder = { Text(stringResource(Res.string.publish_add_staff_role)) },
                     singleLine = true,
                     supportingText = {
-                        Text("如：编曲、作词、混音、吉他等")
+                        Text(stringResource(Res.string.publish_add_staff_role_supporting))
                     }
                 )
 
@@ -670,13 +752,13 @@ private fun AddStaffDialog(vm: PublishViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     RadioButton(selected = type == 0, onClick = { type = 0 }) {
-                        Text(text = "站内用户")
+                        Text(text = stringResource(Res.string.publish_add_staff_internal))
                     }
                     RadioButton(selected = type == 1, onClick = {
                         vm.addStaffUid = ""
                         type = 1
                     }) {
-                        Text(text = "站外艺术家")
+                        Text(text = stringResource(Res.string.publish_add_staff_external))
                     }
                 }
 
@@ -690,7 +772,7 @@ private fun AddStaffDialog(vm: PublishViewModel) {
                 if (type == 1) TextField(
                     value = vm.addStaffName,
                     onValueChange = { vm.addStaffName = it.singleLined() },
-                    placeholder = { Text("名称") },
+                    placeholder = { Text(stringResource(Res.string.publish_add_staff_name)) },
                     singleLine = true
                 )
             }
@@ -700,12 +782,12 @@ private fun AddStaffDialog(vm: PublishViewModel) {
                 onClick = { vm.confirmAddStaff() },
                 enabled = !vm.addStaffOperating && (vm.addStaffRole.isNotBlank() && (vm.addStaffUid.isNotBlank() || vm.addStaffName.isNotBlank()))
             ) {
-                Text("添加")
+                Text(stringResource(Res.string.common_add))
             }
         },
         dismissButton = {
             TextButton(onClick = { vm.cancelAddStaff() }) {
-                Text("取消")
+                Text(stringResource(Res.string.common_cancel))
             }
         }
     )
@@ -718,13 +800,13 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
     if (vm.showAddExternalLinkDialog) {
         var platform by remember { mutableStateOf<String?>(null) }
         var value by remember { mutableStateOf("") }
-        var error by remember { mutableStateOf<String?>(null) }
+        var error by remember { mutableStateOf<StringResource?>(null) }
 
         AlertDialog(
             modifier = Modifier.width(300.dp),
             onDismissRequest = { vm.closeAddExternalLinkDialog() },
             title = {
-                Text("添加外部链接")
+                Text(stringResource(Res.string.publish_add_link_title))
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -733,7 +815,7 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                         onValueChange = { platform = it },
                         options = presetPlatforms,
                     ) {
-                        Text(translatePlatformLabel(it ?: "选择平台"))
+                        Text(it?.let { translatePlatformLabel(it) } ?: stringResource(Res.string.publish_link_choose_platform))
                     }
                     /*Box {
                         var dropdown by remember { mutableStateOf(false) }
@@ -769,11 +851,11 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                             onValueChange = {
                                 value = it.singleLined()
                             },
-                            placeholder = { Text("BV号") },
+                            placeholder = { Text(stringResource(Res.string.publish_link_bv_placeholder)) },
                             singleLine = true,
                             supportingText = {
                                 error?.let { error ->
-                                    Text(error, color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(error), color = MaterialTheme.colorScheme.error)
                                 }
                             }
                         )
@@ -782,11 +864,11 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                             modifier = Modifier,
                             value = value,
                             onValueChange = { value = it.singleLined() },
-                            placeholder = { Text("sm号") },
+                            placeholder = { Text(stringResource(Res.string.publish_link_sm_placeholder)) },
                             singleLine = true,
                             supportingText = {
                                 error?.let { error ->
-                                    Text(error, color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(error), color = MaterialTheme.colorScheme.error)
                                 }
                             }
                         )
@@ -794,11 +876,11 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                         modifier = Modifier,
                         value = value,
                         onValueChange = { value = it.singleLined() },
-                        placeholder = { Text("链接") },
+                        placeholder = { Text(stringResource(Res.string.publish_link_url_placeholder)) },
                         singleLine = true,
                         supportingText = {
                             error?.let { error ->
-                                Text(error, color = MaterialTheme.colorScheme.error)
+                                Text(stringResource(error), color = MaterialTheme.colorScheme.error)
                             }
                         }
                     )
@@ -812,7 +894,7 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                         var link = value
 
                         if (platform == null) {
-                            error = "请选择平台"
+                            error = Res.string.publish_link_platform_required
                             return@TextButton
                         }
 
@@ -821,7 +903,7 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                                 if (link.matches("""BV[1-9A-HJ-NP-Za-km-z]{10}""".toRegex())) {
                                     link = "https://www.bilibili.com/video/$value"
                                 } else {
-                                    error = "请输入正确的 BV 号"
+                                    error = Res.string.publish_link_invalid_bv
                                     return@TextButton
                                 }
                             }
@@ -830,14 +912,14 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                                 if (link.matches("""sm\d+""".toRegex())) {
                                     link = "https://www.nicovideo.jp/watch/$value"
                                 } else {
-                                    error = "请输入正确的 sm 号"
+                                    error = Res.string.publish_link_invalid_sm
                                     return@TextButton
                                 }
                             }
 
                             else -> {
                                 if (!link.startsWith("https://")) {
-                                    error = "请使用 https:// 格式的链接"
+                                    error = Res.string.publish_link_https_required
                                     return@TextButton
                                 }
                             }
@@ -847,12 +929,12 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
                         vm.closeAddExternalLinkDialog()
                     },
                 ) {
-                    Text("添加")
+                    Text(stringResource(Res.string.common_add))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { vm.closeAddExternalLinkDialog() }) {
-                    Text("取消")
+                    Text(stringResource(Res.string.common_cancel))
                 }
             }
         )
@@ -862,10 +944,9 @@ private fun AddExternalLinkDialog(vm: PublishViewModel) {
 @Stable
 @Composable
 fun translatePlatformLabel(label: String): String = when (label) {
-    // TODO: i18n
-    "bilibili" -> "哔哩哔哩"
-    "douyin" -> "抖音"
-    "youtube" -> "YouTube"
+    "bilibili" -> stringResource(Res.string.platform_bilibili)
+    "douyin" -> stringResource(Res.string.platform_douyin)
+    "youtube" -> stringResource(Res.string.platform_youtube)
     "niconico" -> "niconico"
     else -> label
 }

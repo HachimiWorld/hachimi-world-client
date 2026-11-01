@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.player.fullscreen.components
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.info_open_in_new_tab_cd
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -29,7 +32,7 @@ fun PVChip(
             contentDescription = platform
         )
         Spacer(Modifier.width(4.dp))
-        Icon(Icons.Filled.ArrowOutward, "Open in new tab", tint = LocalContentColor.current.copy(0.6f))
+        Icon(Icons.Filled.ArrowOutward, stringResource(Res.string.info_open_in_new_tab_cd), tint = LocalContentColor.current.copy(0.6f))
     }
 }
 
@@ -47,6 +50,6 @@ fun AmbientPVChip(
             contentDescription = platform
         )
         Spacer(Modifier.width(4.dp))
-        Icon(Icons.Filled.ArrowOutward, "Open in new tab", tint = LocalContentColor.current.copy(0.6f))
+        Icon(Icons.Filled.ArrowOutward, stringResource(Res.string.info_open_in_new_tab_cd), tint = LocalContentColor.current.copy(0.6f))
     }
 }

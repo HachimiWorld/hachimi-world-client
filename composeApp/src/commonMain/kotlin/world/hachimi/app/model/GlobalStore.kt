@@ -1,14 +1,16 @@
 package world.hachimi.app.model
 
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.auth_auth_token_invalid
+import hachimiworld.composeapp.generated.resources.common_unknown_error
+import hachimiworld.composeapp.generated.resources.global_error_check_min_api_failed
+import hachimiworld.composeapp.generated.resources.player_load_failed
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.navigation3.runtime.NavKey
-import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_auth_token_invalid
-import hachimiworld.composeapp.generated.resources.global_error_check_min_api_failed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -65,8 +67,12 @@ class GlobalStore(
         private set
     var playerExpanded by mutableStateOf(false)
         private set
+    val events = AppEvents()
     val player = PlayerService(this, dataStore, api, engine, songCache)
     val like = CurrentSongLike(this, api)
+    val starPrompt = StarPrompt(dataStore, events.events) {
+        updates.prompt != null || showKidsDialog || showApiVersionIncompatible
+    }
     private val scope = CoroutineScope(Dispatchers.Default)
     val snackbarHostState = SnackbarHostState()
     private val _appNavigationRequests = MutableSharedFlow<NavigationRequest>(
@@ -97,7 +103,7 @@ class GlobalStore(
                             player.initialize()
                         } catch (e: Throwable) {
                             Logger.e("global", "Failed to initialize player", e)
-                            alert("播放器载入失败")
+                            alert(Res.string.player_load_failed)
                         }
                     }
                 }
@@ -105,6 +111,7 @@ class GlobalStore(
             }
         }
         launch { checkMinApiVersion() }
+        events.send(AppEvent.AppLaunched)
         like.start()
         updates.start()
     }
@@ -183,7 +190,7 @@ class GlobalStore(
     fun alert(text: String?) {
         scope.launch {
             snackbarHostState.showSnackbar(
-                text?.take(64) ?: "Unknown Error",
+                text?.take(64) ?: org.jetbrains.compose.resources.getString(Res.string.common_unknown_error),
                 withDismissAction = true
             )
         }
