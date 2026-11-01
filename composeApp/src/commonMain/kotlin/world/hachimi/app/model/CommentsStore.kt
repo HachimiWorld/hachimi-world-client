@@ -306,6 +306,7 @@ class CommentsStore(
                 if (item != null) {
                     added(item)
                     _sent.tryEmit(item)
+                    global.events.send(AppEvent.CommentPosted)
                 } else {
                     global.alert(Res.string.comment_sent_pending)
                 }

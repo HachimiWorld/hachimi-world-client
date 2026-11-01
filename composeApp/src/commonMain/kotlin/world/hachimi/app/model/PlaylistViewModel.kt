@@ -150,14 +150,14 @@ class PlaylistViewModel(
         viewModelScope.launch {
             addingToPlaylistOperating = true
             try {
+                val playlistId = selectedPlaylistId ?: return@launch
+                val songId = toBeAddedSongId ?: return@launch
                 val resp = api.playlistModule.addSong(
-                    PlaylistModule.AddSongReq(
-                        playlistId = selectedPlaylistId ?: return@launch,
-                        songId = toBeAddedSongId ?: return@launch
-                    )
+                    PlaylistModule.AddSongReq(playlistId = playlistId, songId = songId)
                 )
                 if (resp.ok) {
                     showPlaylistDialog = false
+                    global.events.send(AppEvent.SongAddedToPlaylist(songId, playlistId))
                 } else {
                     global.alert(resp.err().msg)
                 }

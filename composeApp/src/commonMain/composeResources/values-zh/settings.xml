@@ -30,6 +30,7 @@
     <string name="settings_official_website">官方网站</string>
     <string name="settings_github_text">GitHub</string>
     <string name="settings_official_site_text">hachimi.world</string>
+    <string name="settings_star_on_github">在 GitHub 上为我们点亮 Star</string>
     <string name="settings_open_in_browser_cd">在浏览器中打开</string>
 
     <!-- Language selection -->

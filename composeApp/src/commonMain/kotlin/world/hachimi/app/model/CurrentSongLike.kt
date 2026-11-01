@@ -86,6 +86,7 @@ class CurrentSongLike(
                         liked = targetLiked
                         likeCount = (likeCount + if (targetLiked) 1 else -1).coerceAtLeast(0)
                     }
+                    if (targetLiked) global.events.send(AppEvent.SongLiked(songId))
                 } else {
                     global.alert(resp.err().msg)
                 }

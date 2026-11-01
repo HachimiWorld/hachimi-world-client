@@ -89,6 +89,7 @@ class PublicPlaylistViewModel(
                 val resp = api.playlistModule.addFavorite(PlaylistModule.AddFavoriteReq(playlistId))
                 if (resp.ok) {
                     isFavorite = true
+                    global.events.send(AppEvent.PlaylistFavorited(playlistId))
                 } else {
                     global.alert(resp.err().msg)
                 }

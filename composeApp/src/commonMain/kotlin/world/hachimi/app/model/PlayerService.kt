@@ -92,6 +92,7 @@ class PlayerService(
                 when (event) {
                     PlayEvent.End -> {
                         playerState.isPlaying = false
+                        playerState.readySongInfo?.id?.let { global.events.send(AppEvent.SongCompleted(it)) }
                         autoNext()
                     }
 
