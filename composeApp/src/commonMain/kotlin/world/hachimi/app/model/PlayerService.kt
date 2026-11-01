@@ -92,7 +92,7 @@ class PlayerService(
                 when (event) {
                     PlayEvent.End -> {
                         playerState.isPlaying = false
-                        global.starPrompt.onSongCompleted()
+                        playerState.readySongInfo?.id?.let { global.events.send(AppEvent.SongCompleted(it)) }
                         autoNext()
                     }
 

@@ -4,8 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -24,13 +26,16 @@ const val GITHUB_REPO_URL = "https://github.com/HachimiWorld/hachimi-world-clien
  * When it shows:
  * - The app was first opened at least [MIN_AGE] ago, and has been opened [MIN_LAUNCHES] times
  *   or has played [MIN_COMPLETED_SONGS] songs to the end.
- * - Only right after something good happens ([onPositiveAction]: liking a song, adding one to a playlist,
- *   favoriting a playlist), after a short pause. Never at launch, and never over another dialog.
+ * - Only right after something good happens (liking a song, adding one to a playlist, favoriting a playlist,
+ *   posting a comment), after a short pause. Never at launch, and never over another dialog.
  * - At most once per session, [SNOOZE] apart, [MAX_PROMPTS] times in total.
  * - Starring (from the dialog or from settings) or "Don't ask again" turns it off for good.
+ *
+ * It only listens to [AppEvent]s, so the code that likes songs or plays them doesn't know about it.
  */
 class StarPrompt(
     private val dataStore: MyDataStore,
+    events: Flow<AppEvent>,
     /** True while another dialog is open, so the prompt does not stack on top of it */
     private val isBusy: () -> Boolean,
 ) {
@@ -42,7 +47,23 @@ class StarPrompt(
     var visible by mutableStateOf(false)
         private set
 
-    fun onAppLaunch() {
+    init {
+        // Undispatched, so it is already listening when the app sends AppLaunched
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            events.collect { event ->
+                when (event) {
+                    AppEvent.AppLaunched -> onAppLaunch()
+                    is AppEvent.SongCompleted -> onSongCompleted()
+                    is AppEvent.SongLiked,
+                    is AppEvent.SongAddedToPlaylist,
+                    is AppEvent.PlaylistFavorited,
+                    AppEvent.CommentPosted -> onPositiveAction()
+                }
+            }
+        }
+    }
+
+    private fun onAppLaunch() {
         scope.launch {
             storeMutex.withLock {
                 if (dataStore.get(KEY_FIRST_LAUNCH_AT) == null) {
@@ -53,7 +74,7 @@ class StarPrompt(
         }
     }
 
-    fun onSongCompleted() {
+    private fun onSongCompleted() {
         scope.launch {
             storeMutex.withLock {
                 dataStore.set(KEY_COMPLETED_SONGS, (dataStore.get(KEY_COMPLETED_SONGS) ?: 0L) + 1)
@@ -61,7 +82,7 @@ class StarPrompt(
         }
     }
 
-    fun onPositiveAction() {
+    private fun onPositiveAction() {
         if (shownThisSession || visible) return
         scope.launch {
             // Ignore taps that arrive while one is already waiting to show

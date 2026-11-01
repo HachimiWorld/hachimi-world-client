@@ -67,9 +67,10 @@ class GlobalStore(
         private set
     var playerExpanded by mutableStateOf(false)
         private set
+    val events = AppEvents()
     val player = PlayerService(this, dataStore, api, engine, songCache)
     val like = CurrentSongLike(this, api)
-    val starPrompt = StarPrompt(dataStore) {
+    val starPrompt = StarPrompt(dataStore, events.events) {
         updates.prompt != null || showKidsDialog || showApiVersionIncompatible
     }
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -110,7 +111,7 @@ class GlobalStore(
             }
         }
         launch { checkMinApiVersion() }
-        starPrompt.onAppLaunch()
+        events.send(AppEvent.AppLaunched)
         like.start()
         updates.start()
     }
