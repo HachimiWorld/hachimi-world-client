@@ -2,17 +2,17 @@
 
 ## Features 新功能
 
-1. Message center: system notifications, likes and new followers in one place. 新增消息中心，系统通知、收到的赞和新粉丝都在这里。
-2. Reports: report songs, playlists and users from their "more" menu. 新增举报，可在作品、歌单和用户的「更多」菜单中举报。
-3. Comments on songs and event posts, with replies and likes. 歌曲和活动文章可以评论了，支持回复和点赞。
-4. You may be invited to star the project on GitHub. 使用一段时间后，可能会邀请您去 GitHub 为项目点 Star。
+1. Added a message center for system notifications, replies, likes and new followers. 新增消息中心，可查看系统通知、回复、收到的赞和新粉丝。
+2. Added comments on songs and event posts. 新增作品与活动文章的评论功能。
+3. Added reporting for songs, playlists and users. 新增作品、歌单与用户的举报功能。
+4. Added an invitation to star the project on GitHub, also available in Settings > About. 新增 GitHub Star 邀请，设置的「关于」中亦提供入口。
 
 ## Enhancements 改进
 
-1. More of the app is translated into English. 补全了更多英文翻译。
-2. Pending edits show what changed. 待审核的修改稿会显示改了哪些地方。
-3. Saving your profile says whether the nickname or the bio needs changing. 保存资料不通过时，会提示是昵称还是简介需要修改。
-4. Like and comment buttons now sit next to the artist in the full player. 全屏播放器的点赞和评论按钮移到了作者旁边。
+1. Completed English translations for more screens. 补全更多界面的英文翻译。
+2. Pending edit reviews now list the changes. 待审核的修改稿将列出改动内容。
+3. Profile saving now indicates whether the nickname or the bio is not allowed. 保存资料时将提示昵称或简介是否合规。
+4. Full player: like and comments moved to the author row. 全屏播放器的点赞与评论移至作者一行。
 
 # 1.5.0
 
