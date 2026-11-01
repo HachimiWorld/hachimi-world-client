@@ -38,6 +38,7 @@ import world.hachimi.app.ui.design.HachimiPalette
 import world.hachimi.app.ui.theme.JvmTheme
 import world.hachimi.app.ui.theme.LocalWindow
 import world.hachimi.app.ui.window.WindowFrame
+import java.awt.Desktop
 import java.awt.Dimension
 
 
@@ -53,6 +54,19 @@ fun main() {
     val global = koin.koin.get<GlobalStore>()
     val mediaControls = koin.koin.get<DesktopMediaControls>()
     mediaControls.initialize()
+
+    // On macOS, Cmd+Q, Quit in the Dock menu and logging out don't close the window: AppKit asks the app to quit,
+    // and the default handler calls System.exit() right away, so the code after application {} never runs.
+    // Start the installer for a put-off update here too, then quit as before.
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+        Desktop.getDesktop().setQuitHandler { _, response ->
+            try {
+                global.updates.onAppExit()
+            } finally {
+                response.performQuit()
+            }
+        }
+    }
 
     // Return here after the last window closes instead of exiting, so the update installer can start
     application(exitProcessOnExit = false) {
