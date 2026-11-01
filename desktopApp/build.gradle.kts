@@ -79,7 +79,9 @@ compose.desktop {
                 vendor = "Hachimi World, NPO"
                 copyright = "© 2025 Hachimi World Open Source Project"
                 packageVersion = gitVersionNameShort.get()
-                licenseFile = rootProject.file("LICENSE")
+                // Not on macOS: a license in the DMG makes mounting it wait for "Agree", which breaks the in-app
+                // updater that mounts the DMG in the background. Each OS builds its own package, so MSI and DEB keep it.
+                if (!System.getProperty("os.name").startsWith("Mac")) licenseFile = rootProject.file("LICENSE")
 
                 modules("jdk.unsupported", "java.naming")
 
