@@ -2,17 +2,8 @@
 
 ## Features 新功能
 
-1. Added a message center for system notifications, replies, likes and new followers. 新增消息中心，汇总系统通知、回复、点赞与关注。
-2. Added comments on songs and event posts. 新增作品与活动文章评论。
-3. Support reporting songs, playlists and users. 支持举报作品、歌单与用户。
-4. Added a GitHub star invitation, with an entry in Settings > About. 新增 GitHub Star 邀请，并在「关于」中提供入口。
-
-## Enhancements 改进
-
-1. Improved English translations. 完善英文翻译。
-2. Edit reviews now list the differences from the live version. 修改稿审核新增与线上版本的差异对比。
-3. Improved profile validation messages to identify the rejected field. 优化资料校验提示，明确不合规的字段。
-4. Adjusted the position of like and comments in the full player. 调整全屏播放器中点赞与评论的位置。
+1. Added a message center. 新增消息中心。
+2. Added song comments. 新增歌曲评论区。
 
 # 1.5.0
 
