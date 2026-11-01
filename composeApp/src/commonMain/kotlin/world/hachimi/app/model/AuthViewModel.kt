@@ -148,16 +148,18 @@ class AuthViewModel(
         viewModelScope.launch {
             isOperating = true
             try {
+                // The server rejects names that start or end with a space
+                val username = name.trim()
                 val resp = api.userModule.updateProfile(
                     UserModule.UpdateProfileReq(
-                        username = name,
+                        username = username,
                         bio = intro,
                         gender = gender.takeUnless { it == 2 }, // Map 2 to null
                     )
                 )
                 if (resp.ok) {
-                    dataStore.set(PreferencesKeys.USER_NAME, name)
-                    global.setLoginUser(uid.toLong(), name, null, false)
+                    dataStore.set(PreferencesKeys.USER_NAME, username)
+                    global.setLoginUser(uid.toLong(), username, null, false)
                     navigate(NavigationRequest.Replace(listOf(Route.Root.Home.Main)))
                 } else {
                     val err = resp.err()
