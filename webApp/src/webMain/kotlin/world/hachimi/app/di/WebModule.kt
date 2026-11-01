@@ -13,8 +13,10 @@ import world.hachimi.app.model.NotificationDetailViewModel
 import world.hachimi.app.model.NotificationStore
 import world.hachimi.app.model.MessageCenterStore
 import world.hachimi.app.model.ReceivedLikesViewModel
+import world.hachimi.app.model.ReceivedRepliesViewModel
 import world.hachimi.app.model.ReportStore
 import world.hachimi.app.model.CommitteeViewModel
+import world.hachimi.app.model.CommentsStore
 import world.hachimi.app.model.ReportCaseViewModel
 import world.hachimi.app.model.CommitteeMembersViewModel
 import world.hachimi.app.model.ChangelogViewModel
@@ -43,6 +45,7 @@ import world.hachimi.app.model.ReviewDetailViewModel
 import world.hachimi.app.model.ReviewHistoryViewModel
 import world.hachimi.app.model.ReviewViewModel
 import world.hachimi.app.model.SearchViewModel
+import world.hachimi.app.model.SongCommentsViewModel
 import world.hachimi.app.model.UserSpaceViewModel
 import world.hachimi.app.model.WeeklyHotViewModel
 import world.hachimi.app.player.PlayerEngine
@@ -93,6 +96,7 @@ val webModule = module {
     singleOf(::NotificationStore)
     singleOf(::MessageCenterStore)
     singleOf(::ReportStore)
+    singleOf(::CommentsStore)
     single { WebPlayerHelper(get<GlobalStore>().player) }
 
     applyViewModels()
@@ -136,8 +140,10 @@ fun org.koin.core.module.Module.applyViewModels() {
     }
     viewModelOf(::DeviceManagementViewModel)
     viewModelOf(::ReceivedLikesViewModel)
+    viewModelOf(::ReceivedRepliesViewModel)
     viewModelOf(::CommitteeViewModel)
     viewModelOf(::ReportCaseViewModel)
+    viewModelOf(::SongCommentsViewModel)
     viewModelOf(::CommitteeMembersViewModel)
     viewModel { parameters ->
         NotificationDetailViewModel(
