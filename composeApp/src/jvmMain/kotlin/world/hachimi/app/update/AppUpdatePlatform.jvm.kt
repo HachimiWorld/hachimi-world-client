@@ -150,7 +150,8 @@ internal object MacDmgInstaller {
         i=0
         while kill -0 "${'$'}PARENT_PID" 2>/dev/null && [ ${'$'}i -lt 120 ]; do sleep 0.5; i=${'$'}((i + 1)); done
 
-        relaunch() { [ "${'$'}RELAUNCH" = "1" ] && open "${'$'}APP"; }
+        # An if, so that not relaunching doesn't make the script exit with 1 after a successful install
+        relaunch() { if [ "${'$'}RELAUNCH" = "1" ]; then open "${'$'}APP"; fi; }
         # When the user asked to install and the app couldn't be replaced (e.g. macOS blocked it), show the DMG
         # so they can drag the app over themselves. Quitting with a pending update stays quiet instead.
         fallback() {
