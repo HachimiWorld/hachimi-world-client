@@ -195,7 +195,7 @@ class AuthViewModel(
                 val data = resp.ok()
 
                 // Set token
-                api.setToken(data.token.accessToken, data.token.refreshToken)
+                api.setToken(data.token.accessToken, data.token.refreshToken, freshlyIssued = true)
                 dataStore.set(PreferencesKeys.AUTH_ACCESS_TOKEN, data.token.accessToken)
                 dataStore.set(PreferencesKeys.AUTH_REFRESH_TOKEN, data.token.refreshToken)
 
@@ -241,7 +241,7 @@ class AuthViewModel(
                 regStep = 2
 
                 // Set token to the api client
-                api.setToken(data.token.accessToken, data.token.refreshToken)
+                api.setToken(data.token.accessToken, data.token.refreshToken, freshlyIssued = true)
 
                 // Save token
                 dataStore.set(PreferencesKeys.AUTH_ACCESS_TOKEN, data.token.accessToken)
