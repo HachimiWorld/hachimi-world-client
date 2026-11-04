@@ -63,6 +63,8 @@ import world.hachimi.app.logging.Logger
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -118,9 +120,37 @@ class ApiClient(
     internal var accessToken: String? = null
     internal var refreshToken: String? = null
 
-    fun setToken(accessToken: String?, refreshToken: String?) {
+    /**
+     * How far the server clock is ahead of the local clock, in seconds. Negative when the local clock is ahead.
+     *
+     * Expiry is judged by the server's clock, so a device whose clock runs behind would keep sending an
+     * access token the server already treats as expired. We measure the gap from the `iat` of every freshly
+     * issued token and judge expiry in server time.
+     */
+    internal var clockOffsetSeconds: Long = 0
+        private set
+
+    /**
+     * @param freshlyIssued Whether the tokens were issued by the server just now (e.g. from a login response).
+     * Only then can its `iat` tell us how far the local clock is off. Tokens restored from storage are old.
+     */
+    fun setToken(accessToken: String?, refreshToken: String?, freshlyIssued: Boolean = false) {
         this.accessToken = accessToken
         this.refreshToken = refreshToken
+        if (freshlyIssued && accessToken != null) updateClockOffset(accessToken)
+    }
+
+    private fun updateClockOffset(freshAccessToken: String) {
+        val issuedAt = try {
+            parseJwtWithoutVerification(freshAccessToken)["iat"]?.jsonPrimitive?.long
+        } catch (e: Exception) {
+            Logger.w(TAG, "Failed to read iat from access token", e)
+            null
+        } ?: return
+        clockOffsetSeconds = clockOffsetSeconds(issuedAt, Clock.System.now())
+        if (kotlin.math.abs(clockOffsetSeconds) >= 60) {
+            Logger.i(TAG, "Local clock is off from the server clock by ${clockOffsetSeconds}s")
+        }
     }
 
     private var authListener: AuthenticationListener = DefaultAuthenticationListener
@@ -165,63 +195,37 @@ class ApiClient(
         path: String,
         auth: Boolean = true,
         crossinline block: HttpRequestBuilder.() -> Unit
-    ): WebResult<T> {
-        return withContext(Dispatchers.Default) {
-            if (auth) refreshToken()
-
-            val url = buildUrl(path)
-            val requestId = generateRequestId()
-            Logger.d(TAG, "POST(requestId=$requestId) to $path")
-            val resp = httpClient.post(url) {
+    ): WebResult<T> =
+        // Multipart bodies read their source once, so they can't be sent a second time
+        execute("POST", path, auth, retryOnUnauthorized = false) { requestId ->
+            httpClient.post(buildUrl(path)) {
                 applyAuth()
                 applyRequestId(requestId)
                 block()
             }.body<HttpResponse>()
-
-            val data = checkAndDecode<T>(resp, path, requestId)
-            data
         }
-    }
 
     internal suspend inline fun <reified T> post(path: String, body: Any, auth: Boolean = true): WebResult<T> =
-        withContext(Dispatchers.Default) {
-            if (auth) refreshToken()
-
-            val url = buildUrl(path)
-            val requestId = generateRequestId()
-            Logger.d(TAG, "POST(requestId=$requestId) to $path")
-            val resp = httpClient.post(url) {
+        execute("POST", path, auth) { requestId ->
+            httpClient.post(buildUrl(path)) {
                 applyAuth()
                 applyRequestId(requestId)
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }.body<HttpResponse>()
-
-            val data = checkAndDecode<T>(resp, path, requestId)
-            data
         }
 
     internal suspend inline fun <reified T> get(path: String, auth: Boolean = true): WebResult<T> =
-        withContext(Dispatchers.Default) {
-            if (auth) refreshToken()
-            val url = buildUrl(path)
-            val requestId = generateRequestId()
-            Logger.d(TAG, "GET(requestId=${requestId}) to $path")
-            val resp = httpClient.get(url) {
+        execute("GET", path, auth) { requestId ->
+            httpClient.get(buildUrl(path)) {
                 applyAuth()
                 applyRequestId(requestId)
             }.body<HttpResponse>()
-            val data = checkAndDecode<T>(resp, path, requestId)
-            data
         }
 
     internal suspend inline fun <reified P, reified T> get(path: String, query: P, auth: Boolean = true): WebResult<T> =
-        withContext(Dispatchers.Default) {
-            if (auth) refreshToken()
-            val url = buildUrl(path)
-            val requestId = generateRequestId()
-            Logger.d(TAG, "GET(requestId=${requestId}) $path")
-            val resp = httpClient.get(url) {
+        execute("GET", path, auth) { requestId ->
+            httpClient.get(buildUrl(path)) {
                 applyAuth()
                 applyRequestId(requestId)
 
@@ -231,29 +235,68 @@ class ApiClient(
                     parameter(key, value.jsonPrimitive.content)
                 }
             }.body<HttpResponse>()
-            val data = checkAndDecode<T>(resp, path, requestId)
-            data
         }
+
+    /**
+     * Refresh the access token if needed, send the request, and if the server still answers 401
+     * (e.g. the local clock was too far off to notice the token had expired), refresh once and send it again.
+     */
+    internal suspend inline fun <reified T> execute(
+        method: String,
+        path: String,
+        auth: Boolean,
+        retryOnUnauthorized: Boolean = true,
+        crossinline send: suspend (requestId: String) -> HttpResponse,
+    ): WebResult<T> = withContext(Dispatchers.Default) {
+        if (auth) refreshToken()
+
+        var requestId = generateRequestId()
+        Logger.d(TAG, "$method(requestId=$requestId) to $path")
+        val sentToken = accessToken
+        var resp = send(requestId)
+
+        if (auth && retryOnUnauthorized && sentToken != null && resp.status == HttpStatusCode.Unauthorized) {
+            Logger.w(TAG, "Request[$requestId] to $path was rejected with 401, refreshing token and retrying once")
+            refreshToken(rejectedAccessToken = sentToken)
+            if (accessToken != null && accessToken != sentToken) {
+                requestId = generateRequestId()
+                Logger.d(TAG, "$method(requestId=$requestId) to $path (retry)")
+                resp = send(requestId)
+            }
+        }
+
+        checkAndDecode<T>(resp, path, requestId)
+    }
 
     // FIXME(api): If any api call triggered refreshing token, and then be canceled manually,
     //  after refreshing request be sent, before the responded token is set to state and be saved,
     //  any further requests will take the old used refresh-token, then cause 401 error.
     //  Update: This issue might be fixed by using `NonCancellable` context
-    internal suspend fun refreshToken() = withContext(Dispatchers.Default + NonCancellable) {
+    /**
+     * Refresh the access token when it is about to expire in server time.
+     *
+     * @param rejectedAccessToken The token a request was just rejected with. Refresh now if it is still the
+     * current one, whatever its `exp` says. If another request already replaced it, nothing to do.
+     */
+    internal suspend fun refreshToken(rejectedAccessToken: String? = null) = withContext(Dispatchers.Default + NonCancellable) {
         // Only execute once at the same time
         if (authLock.isLocked) {
             authLock.withLock { }
         } else {
             authLock.withLock {
-                if (accessToken != null) {
-                    // Pick exp time from access toke
-                    val claims = parseJwtWithoutVerification(accessToken!!)
-                    val expiration = claims.getValue("exp").jsonPrimitive.long // In seconds
-                    val now = Clock.System.now()
-                    val expDate = Instant.fromEpochSeconds(expiration)
+                val currentToken = accessToken
+                if (currentToken != null) {
+                    val needsRefresh = if (rejectedAccessToken != null) {
+                        currentToken == rejectedAccessToken
+                    } else {
+                        // Pick exp time from access token
+                        val claims = parseJwtWithoutVerification(currentToken)
+                        val expiration = claims.getValue("exp").jsonPrimitive.long // In seconds
+                        shouldRefreshAccessToken(expiration, Clock.System.now(), clockOffsetSeconds)
+                    }
 
-                    if (now >= expDate) {
-                        Logger.d(TAG, "Access token expired, refreshing token")
+                    if (needsRefresh) {
+                        Logger.d(TAG, "Access token expired or about to expire, refreshing token")
 
                         val resp = try {
                             authModule.rawRefreshToken(
@@ -275,6 +318,7 @@ class ApiClient(
                                 val data = result.ok()
                                 accessToken = data.accessToken
                                 refreshToken = data.refreshToken
+                                updateClockOffset(data.accessToken)
                                 authListener.onTokenChange(data.accessToken, data.refreshToken)
                             } else {
                                 val data = result.err()
@@ -339,6 +383,29 @@ class ApiClient(
     val committeeModule by lazy { CommitteeModule(this) }
     val commentModule by lazy { CommentModule(this) }
 }
+
+/** Refresh this long before the access token expires, so it doesn't expire while a request is on its way. */
+internal val ACCESS_TOKEN_REFRESH_AHEAD: Duration = 30.seconds
+
+/**
+ * @param expiration The access token's `exp`, in epoch seconds of the server clock
+ * @param clockOffsetSeconds How far the server clock is ahead of the local clock
+ */
+internal fun shouldRefreshAccessToken(
+    expiration: Long,
+    localNow: Instant,
+    clockOffsetSeconds: Long,
+    refreshAhead: Duration = ACCESS_TOKEN_REFRESH_AHEAD,
+): Boolean {
+    val serverNow = localNow + clockOffsetSeconds.seconds
+    return serverNow >= Instant.fromEpochSeconds(expiration) - refreshAhead
+}
+
+/**
+ * @param issuedAt The `iat` of a token the server issued just now, in epoch seconds
+ * @return How far the server clock is ahead of the local clock, in seconds
+ */
+internal fun clockOffsetSeconds(issuedAt: Long, localNow: Instant): Long = issuedAt - localNow.epochSeconds
 
 interface AuthenticationListener {
     suspend fun onTokenChange(accessToken: String, refreshToken: String)
