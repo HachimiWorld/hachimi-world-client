@@ -7,28 +7,33 @@ concurrency:
   group: release-distributions
   cancel-in-progress: true
 jobs:
-  # Read this version's notes from CHANGELOG.md before anything is built,
-  # so a release without a changelog section fails fast.
+  # Read this version's notes from changelogs/<version>.md before anything is built,
+  # so a release without one fails fast.
   changelog:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
-      changelog: ${{ steps.extract.outputs.changelog }}
+      changelog: ${{ steps.read.outputs.changelog }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Extract changelog
-        id: extract
+      - name: Read changelog
+        id: read
         run: |
           # The latest release tag, like v1.6.0, the same one the app's version name comes from
           TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*')
-          echo "Changelog of $TAG:"
-          CHANGELOG=$(.github/scripts/extract-changelog.sh "$TAG")
-          echo "$CHANGELOG"
+          FILE="changelogs/${TAG#v}.md"
+          if [ ! -s "$FILE" ]; then
+            echo "::error::$FILE is missing or empty. Add the release notes of $TAG there."
+            exit 1
+          fi
+          echo "Changelog of $TAG, from $FILE:"
+          cat "$FILE"
           {
             echo "changelog<<CHANGELOG_EOF"
-            echo "$CHANGELOG"
+            # $(...) drops trailing newlines, so the delimiter always starts its own line
+            printf '%s\n' "$(cat "$FILE")"
             echo "CHANGELOG_EOF"
           } >> "$GITHUB_OUTPUT"
 

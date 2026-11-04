@@ -32,7 +32,7 @@ inputs:
     description: 'Version code from get-version-info'
   changelog:
     required: true
-    description: 'Release notes of this version, from CHANGELOG.md'
+    description: 'Release notes of this version, from changelogs/<version>.md'
   s3_endpoint:
     required: true
   s3_key_id:
