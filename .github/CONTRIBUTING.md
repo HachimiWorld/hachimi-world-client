@@ -42,8 +42,8 @@ JDK Version: 21
 ```
 ## Release
 
-1. Write the release notes in `changelogs/x.y.z.md`, with `## Features 新功能`, `## Enhancements 改进` and `## Fixes 修复` sections.
-2. Tag that commit `vx.y.z` and push the tag.
-3. Open a PR from `dev` to `main` and merge it.
+1. Write the release notes in `changelogs/x.y.z.md` on `dev`, with `## Features 新功能`, `## Enhancements 改进` and `## Fixes 修复` sections.
+2. Tag that commit `vx.y.z` and push the tag. This starts the release: the workflow builds the tagged commit and publishes `changelogs/x.y.z.md` as the in-app changelog.
+3. Open a PR from `dev` to `main` and merge it, to keep `main` at the latest release.
 
-The release workflow publishes `changelogs/x.y.z.md` as the in-app changelog, where `x.y.z` comes from the latest `v*` tag. The PR description is not used. If the file is missing or empty, the release fails before anything is built.
+The release fails before anything is built if the changelog file is missing or empty, or if the tag is not on `dev`. The version code is the first-parent commit count, which is larger on `dev` than on `main`, so a tag on `main` would publish a smaller version code than the last release.

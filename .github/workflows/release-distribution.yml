@@ -1,16 +1,15 @@
 name: Release Distributions
+# Push a vx.y.z tag to release that commit
 on:
-  pull_request:
-    types: [ closed ]
-    branches: [ main ]
+  push:
+    tags: [ 'v[0-9]*' ]
 concurrency:
   group: release-distributions
   cancel-in-progress: true
 jobs:
-  # Read this version's notes from changelogs/<version>.md before anything is built,
-  # so a release without one fails fast.
+  # Check the tag and read this version's notes from changelogs/<version>.md
+  # before anything is built, so a bad release fails fast.
   changelog:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       changelog: ${{ steps.read.outputs.changelog }}
@@ -18,17 +17,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # The version code is the first-parent commit count, which is larger on dev
+      # than on main. A tag on main would publish a smaller code than the last
+      # release, and apps would not offer the update.
+      - name: Check the tag is on dev
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/dev; then
+            echo "::error::$GITHUB_REF_NAME is not on dev. Tag a commit on dev."
+            exit 1
+          fi
       - name: Read changelog
         id: read
         run: |
-          # The latest release tag, like v1.6.0, the same one the app's version name comes from
-          TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*')
-          FILE="changelogs/${TAG#v}.md"
+          FILE="changelogs/${GITHUB_REF_NAME#v}.md"
           if [ ! -s "$FILE" ]; then
-            echo "::error::$FILE is missing or empty. Add the release notes of $TAG there."
+            echo "::error::$FILE is missing or empty. Add the release notes of $GITHUB_REF_NAME there."
             exit 1
           fi
-          echo "Changelog of $TAG, from $FILE:"
+          echo "Changelog of $GITHUB_REF_NAME, from $FILE:"
           cat "$FILE"
           {
             echo "changelog<<CHANGELOG_EOF"
@@ -39,7 +45,6 @@ jobs:
 
   build-ios:
     needs: changelog
-    if: github.event.pull_request.merged == true
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +97,6 @@ jobs:
 
   build-macos:
     needs: changelog
-    if: github.event.pull_request.merged == true
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +145,6 @@ jobs:
 
   build-windows:
     needs: changelog
-    if: github.event.pull_request.merged == true
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -190,7 +193,6 @@ jobs:
 
   build-linux:
     needs: changelog
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -243,7 +245,6 @@ jobs:
 
   build-android:
     needs: changelog
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -309,7 +310,7 @@ jobs:
       # Expressions cannot slice strings, so shorten the SHA here
       - name: Short SHA
         env:
-          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SHA: ${{ github.sha }}
         run: echo "SHORT_SHA=${SHA:0:7}" >> "$GITHUB_ENV"
       # Two steps, one per result, like the server's Woodpecker pipelines.
       - name: Notify success
@@ -320,7 +321,7 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           message: |
-            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.ref_name }} @ ${{ env.SHORT_SHA }}
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: Notify failure
         if: ${{ contains(needs.*.result, 'failure') }}
@@ -330,5 +331,5 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           message: |
-            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.ref_name }} @ ${{ env.SHORT_SHA }}
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
