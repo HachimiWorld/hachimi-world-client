@@ -40,3 +40,11 @@ JDK Version: 21
 ```shell
 ./gradlew run
 ```
+## Release
+
+1. Write the release notes in `CHANGELOG.md` under a `# x.y.z` heading, with `## Features 新功能`, `## Enhancements 改进` and `## Fixes 修复` sections.
+2. Tag that commit `vx.y.z` and push the tag.
+3. Open a PR from `dev` to `main` and merge it.
+
+The release workflow publishes the `# x.y.z` section of `CHANGELOG.md` as the in-app changelog, where `x.y.z` comes from the latest `v*` tag. The PR description is not used. If the section is missing, the release fails before anything is built.
+To check a section locally: `.github/scripts/extract-changelog.sh 1.6.0`.
