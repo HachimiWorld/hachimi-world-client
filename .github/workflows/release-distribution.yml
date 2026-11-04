@@ -301,9 +301,41 @@ jobs:
           publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
+  # Publish the same release on GitHub, with the notes and the built packages.
+  # Runs once every build has succeeded; re-running a failed build runs it again.
+  github-release:
+    needs: [ changelog, build-ios, build-macos, build-windows, build-linux, build-android ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHANGELOG: ${{ needs.changelog.outputs.changelog }}
+        run: |
+          printf '%s\n' "$CHANGELOG" > notes.md
+          ls -l dist
+          # Tags with a suffix, like v1.0.6-beta, are pre-releases
+          PRERELEASE=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then PRERELEASE=(--prerelease); fi
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            # A re-run: refresh the notes and replace the packages
+            gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+            gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md "${PRERELEASE[@]}"
+          fi
+
   # One message per run. Skipped when the run was cancelled or every job was skipped.
   notify-discord:
-    needs: [ changelog, build-ios, build-macos, build-windows, build-linux, build-android ]
+    needs: [ changelog, build-ios, build-macos, build-windows, build-linux, build-android, github-release ]
     if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
     runs-on: ubuntu-latest
     steps:
