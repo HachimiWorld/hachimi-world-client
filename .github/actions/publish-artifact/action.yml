@@ -68,14 +68,14 @@ runs:
         path: ${{ inputs.source_dir }}/${{ env.FILE_NAME }}
         compression-level: 0
 
-    # The AWS CLI is preinstalled on every GitHub-hosted runner.
-    # Like the action used before: public-read, and only the package is uploaded.
+    # The bucket is on Cloudflare R2. The AWS CLI is preinstalled on every GitHub-hosted runner.
+    # R2 has no object ACLs: the files are public through the bucket's own settings.
     - name: Upload to S3
       shell: bash
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.s3_key_id }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.s3_secret_access_key }}
-        AWS_DEFAULT_REGION: us-east-1
+        AWS_DEFAULT_REGION: auto
         # Newer CLIs add checksums that some S3-compatible services reject
         AWS_REQUEST_CHECKSUM_CALCULATION: when_required
         AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
@@ -87,7 +87,6 @@ runs:
         if [[ "$S3_ENDPOINT" != *://* ]]; then S3_ENDPOINT="https://$S3_ENDPOINT"; fi
         aws s3 cp "${{ inputs.source_dir }}/${FILE_NAME}" "s3://${S3_BUCKET}/${S3_DESTINATION}${FILE_NAME}" \
           --endpoint-url "$S3_ENDPOINT" \
-          --acl public-read \
           --no-progress
 
     - name: Send publish request
