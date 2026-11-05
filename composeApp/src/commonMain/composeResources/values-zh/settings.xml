@@ -63,8 +63,11 @@
     <!-- Change email -->
     <string name="settings_change_email">更换邮箱</string>
     <string name="change_email_current">当前邮箱：%1$s</string>
-    <string name="change_email_tab_with_old">原邮箱可用</string>
-    <string name="change_email_tab_without_old">原邮箱不可用</string>
+    <string name="change_email_choose_hint">请选择验证身份的方式。</string>
+    <string name="change_email_method_old_email">通过原邮箱验证</string>
+    <string name="change_email_method_old_email_desc">向原邮箱和新邮箱分别发送验证码，验证通过后立即更换。</string>
+    <string name="change_email_method_password">通过密码验证</string>
+    <string name="change_email_method_password_desc">原邮箱无法使用时选择此方式。提交申请 7 天后更换生效。</string>
     <string name="change_email_with_old_hint">原邮箱和新邮箱将分别收到一个验证码。两个验证码都验证通过后，邮箱立即更换。</string>
     <string name="change_email_without_old_hint">使用密码代替原邮箱验证码。提交申请 7 天后更换生效，在此期间原邮箱将收到 3 封提醒邮件，你可以随时取消。每 30 天只能通过密码更换一次邮箱。</string>
     <string name="change_email_next_request">下次可通过密码更换的时间：%1$s</string>

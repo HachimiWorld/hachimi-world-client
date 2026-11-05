@@ -65,8 +65,11 @@
     <!-- Change email -->
     <string name="settings_change_email">Change email</string>
     <string name="change_email_current">Current email: %1$s</string>
-    <string name="change_email_tab_with_old">Old email available</string>
-    <string name="change_email_tab_without_old">Old email unavailable</string>
+    <string name="change_email_choose_hint">Choose how to verify your identity.</string>
+    <string name="change_email_method_old_email">Verify with old email</string>
+    <string name="change_email_method_old_email_desc">Codes are sent to your old and new email. Once both are verified, the email changes right away.</string>
+    <string name="change_email_method_password">Verify with password</string>
+    <string name="change_email_method_password_desc">Choose this if you can't use your old email. The change takes effect 7 days after you submit.</string>
     <string name="change_email_with_old_hint">Your old and new email each receive a code. Once both codes are verified, the email changes right away.</string>
     <string name="change_email_without_old_hint">Use your password instead of a code from your old email. The change takes effect 7 days after you submit. During that time, your old email receives 3 reminders, and you can cancel at any time. You can change your email with a password once every 30 days.</string>
     <string name="change_email_next_request">Next change with a password available: %1$s</string>

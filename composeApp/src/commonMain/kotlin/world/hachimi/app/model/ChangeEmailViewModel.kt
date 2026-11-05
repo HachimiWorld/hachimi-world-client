@@ -44,8 +44,11 @@ class ChangeEmailViewModel(
     var operating by mutableStateOf(false)
         private set
 
-    /** Whether the user can still read the old email. */
-    var withOldEmail by mutableStateOf(true)
+    /** How the user verifies the change, or null while choosing. */
+    var method by mutableStateOf<EmailChangeMethod?>(null)
+        private set
+    /** Whether the user verifies with a code from the old email, else with the password and a wait. */
+    val withOldEmail: Boolean get() = method == EmailChangeMethod.OLD_EMAIL
     var newEmail by mutableStateOf("")
     var oldCode by mutableStateOf("")
     var newCode by mutableStateOf("")
@@ -117,14 +120,14 @@ class ChangeEmailViewModel(
                 AuthModule.ChangeEmailReq(newEmail = target, oldCode = oldCode.trim(), newCode = newCode.trim())
             ).onOk {
                 changedTo = target
-                clearForm()
+                chooseMethod(null)
                 load()
             }
         } else {
             api.authModule.requestEmailChange(
                 AuthModule.RequestEmailChangeReq(newEmail = newEmail.trim(), newCode = newCode.trim(), password = password)
             ).onOk {
-                clearForm()
+                chooseMethod(null)
                 load()
             }
         }
@@ -136,6 +139,12 @@ class ChangeEmailViewModel(
             global.alert(Res.string.change_email_cancelled)
             load()
         }
+    }
+
+    /** Opens the form for [method], or goes back to choosing with null. */
+    fun chooseMethod(method: EmailChangeMethod?) {
+        if (method == null) clearForm()
+        this.method = method
     }
 
     fun closeSuccessDialog() {
@@ -171,3 +180,6 @@ class ChangeEmailViewModel(
         }
     }
 }
+
+/** @since 261105 */
+enum class EmailChangeMethod { OLD_EMAIL, PASSWORD }
