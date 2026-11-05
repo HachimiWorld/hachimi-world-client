@@ -36,6 +36,8 @@ import hachimiworld.composeapp.generated.resources.auth_resend_seconds
 import hachimiworld.composeapp.generated.resources.auth_send
 import hachimiworld.composeapp.generated.resources.change_email_cancel
 import hachimiworld.composeapp.generated.resources.change_email_cancel_confirm_text
+import hachimiworld.composeapp.generated.resources.change_email_cancel_confirm_title
+import hachimiworld.composeapp.generated.resources.change_email_cancel_keep
 import hachimiworld.composeapp.generated.resources.change_email_current
 import hachimiworld.composeapp.generated.resources.change_email_new_code
 import hachimiworld.composeapp.generated.resources.change_email_new_email
@@ -54,7 +56,6 @@ import hachimiworld.composeapp.generated.resources.change_email_with_old_hint
 import hachimiworld.composeapp.generated.resources.change_email_without_old_hint
 import hachimiworld.composeapp.generated.resources.common_ok
 import hachimiworld.composeapp.generated.resources.settings_change_email
-import hachimiworld.composeapp.generated.resources.settings_device_logout_cancel
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -142,10 +143,10 @@ fun ChangeEmailScreen(vm: ChangeEmailViewModel = koinViewModel()) {
         },
         dismissButton = {
             TextButton(onClick = { vm.showCancelConfirm = false }) {
-                Text(stringResource(Res.string.settings_device_logout_cancel))
+                Text(stringResource(Res.string.change_email_cancel_keep))
             }
         },
-        title = { Text(stringResource(Res.string.change_email_cancel)) },
+        title = { Text(stringResource(Res.string.change_email_cancel_confirm_title)) },
         text = { Text(stringResource(Res.string.change_email_cancel_confirm_text)) }
     )
 }
