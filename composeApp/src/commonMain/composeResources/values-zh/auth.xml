@@ -55,4 +55,14 @@
 
     <string name="auth_show_password_cd">显示密码</string>
     <string name="auth_hide_password_cd">隐藏密码</string>
+
+    <!-- Revert email change -->
+    <string name="auth_revert_email_title">改回原来的邮箱</string>
+    <string name="auth_revert_email_subtitle">取消或撤回这次邮箱更换，把账号邮箱改回本邮箱。更换的人可能知道你的密码，所以请设置一个新密码，所有设备也会退出登录。</string>
+    <string name="auth_revert_email_success_title">已改回</string>
+    <string name="auth_revert_email_success_text">账号邮箱已改回原来的邮箱，请用新密码重新登录。</string>
+    <string name="auth_revert_email_err_invalid_token">链接无效、已用过或已过期</string>
+    <string name="auth_revert_email_err_old_email_taken">原来的邮箱已被其他账号使用，请联系我们</string>
+    <string name="auth_revert_email_failed">操作失败，请稍后重试</string>
+    <string name="auth_revert_email_password_too_short">密码长度至少为 8 位</string>
 </resources>

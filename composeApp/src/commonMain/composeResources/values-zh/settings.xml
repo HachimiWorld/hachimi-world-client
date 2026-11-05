@@ -59,4 +59,37 @@
     <string name="settings_section_system">系统</string>
     <string name="settings_section_account">账户</string>
     <string name="settings_section_about">关于</string>
+
+    <!-- Change email -->
+    <string name="settings_change_email">更换邮箱</string>
+    <string name="change_email_current">当前邮箱：%1$s</string>
+    <string name="change_email_tab_with_old">旧邮箱能收信</string>
+    <string name="change_email_tab_without_old">旧邮箱用不了</string>
+    <string name="change_email_with_old_hint">旧邮箱和新邮箱各会收到一个验证码，两个都填对后立即更换。</string>
+    <string name="change_email_without_old_hint">用登录密码代替旧邮箱的验证码。提交后要等 7 天才生效，这期间旧邮箱会收到 3 封提醒，你也可以随时取消。30 天内只能这样换一次。</string>
+    <string name="change_email_next_request">%1$s 之后才能再这样更换</string>
+    <string name="change_email_old_code">旧邮箱验证码</string>
+    <string name="change_email_new_email">新邮箱</string>
+    <string name="change_email_new_code">新邮箱验证码</string>
+    <string name="change_email_password">登录密码</string>
+    <string name="change_email_submit">更换</string>
+    <string name="change_email_request_submit">提交申请</string>
+    <string name="change_email_success_title">邮箱已更换</string>
+    <string name="change_email_success_text">以后请用 %1$s 登录。</string>
+    <string name="change_email_pending_title">正在更换邮箱</string>
+    <string name="change_email_pending_text">你的邮箱将在 %2$s 更换为 %1$s。在此之前可以随时取消。</string>
+    <string name="change_email_cancel">取消更换</string>
+    <string name="change_email_cancel_confirm_text">确定要取消这次邮箱更换吗？</string>
+    <string name="change_email_cancelled">已取消邮箱更换</string>
+    <string name="change_email_failed">操作失败，请稍后重试</string>
+    <string name="change_email_err_invalid_email">邮箱格式不正确</string>
+    <string name="change_email_err_same_email">这就是你现在的邮箱</string>
+    <string name="change_email_err_email_existed">这个邮箱已被其他账号使用</string>
+    <string name="change_email_err_too_many_requests">发送太频繁，请稍后再试</string>
+    <string name="change_email_err_invalid_old_code">旧邮箱验证码不正确</string>
+    <string name="change_email_err_invalid_new_code">新邮箱验证码不正确</string>
+    <string name="change_email_err_password_not_match">密码不正确</string>
+    <string name="change_email_err_too_many_attempts">密码错误次数太多，请一小时后再试</string>
+    <string name="change_email_err_too_frequent">30 天内只能不验证旧邮箱更换一次</string>
+    <string name="change_email_err_pending_exists">已经有一个正在等待的邮箱更换</string>
 </resources>

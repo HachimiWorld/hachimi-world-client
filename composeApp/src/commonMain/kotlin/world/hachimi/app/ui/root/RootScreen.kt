@@ -103,6 +103,7 @@ import world.hachimi.app.ui.root.component.ExpandedUpdateCard
 import world.hachimi.app.ui.root.component.rememberClientPromoState
 import world.hachimi.app.ui.search.SearchScreen
 import world.hachimi.app.ui.settings.ChangelogScreen
+import world.hachimi.app.ui.settings.ChangeEmailScreen
 import world.hachimi.app.ui.settings.DeviceManagementScreen
 import world.hachimi.app.ui.notification.NotificationDetailScreen
 import world.hachimi.app.ui.notification.NotificationInboxScreen
@@ -340,6 +341,9 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         Route.Root.Changelog -> NavEntry(key) { ChangelogScreen() }
         Route.Root.DeviceManagement -> NavEntry(key) {
             if (global.isLoggedIn) DeviceManagementScreen() else NeedLoginScreen()
+        }
+        Route.Root.ChangeEmail -> NavEntry(key) {
+            if (global.isLoggedIn) ChangeEmailScreen() else NeedLoginScreen()
         }
         Route.Root.Notifications -> NavEntry(key) {
             if (global.isLoggedIn) NotificationInboxScreen() else NeedLoginScreen()

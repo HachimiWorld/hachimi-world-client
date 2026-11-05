@@ -55,4 +55,14 @@
 
     <string name="auth_show_password_cd">Show password</string>
     <string name="auth_hide_password_cd">Hide password</string>
+
+    <!-- Revert email change -->
+    <string name="auth_revert_email_title">Change back to your email</string>
+    <string name="auth_revert_email_subtitle">Cancel or undo the email change, and put this email back on the account. Whoever changed it may know your password, so set a new one. Every device will be logged out.</string>
+    <string name="auth_revert_email_success_title">Changed back</string>
+    <string name="auth_revert_email_success_text">Your account email is back. Log in again with your new password.</string>
+    <string name="auth_revert_email_err_invalid_token">This link is invalid, used or expired</string>
+    <string name="auth_revert_email_err_old_email_taken">Your email is used by another account now. Please contact us</string>
+    <string name="auth_revert_email_failed">Something went wrong. Please try again later</string>
+    <string name="auth_revert_email_password_too_short">Password must be at least 8 characters</string>
 </resources>

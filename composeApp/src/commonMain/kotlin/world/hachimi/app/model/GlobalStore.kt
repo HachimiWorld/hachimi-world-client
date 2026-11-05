@@ -159,8 +159,8 @@ class GlobalStore(
         } catch (_: Exception) { null }
     }
 
-    fun logout() = scope.launch {
-        logoutInternal()
+    fun logout(navigateHome: Boolean = true) = scope.launch {
+        logoutInternal(navigateHome)
     }
 
     fun requestAppNavigation(request: NavigationRequest) {
