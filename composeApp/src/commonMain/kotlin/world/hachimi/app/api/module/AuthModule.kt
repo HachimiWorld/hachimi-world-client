@@ -206,15 +206,4 @@ class AuthModule(
     /** @since 261105 */
     suspend fun cancelEmailChange(): WebResult<Unit> =
         client.post("/auth/email/cancel_change", EmptyReq())
-
-    /** @since 261105 */
-    @Serializable
-    data class RevertEmailChangeReq(
-        val token: String,
-        val newPassword: String,
-    )
-
-    /** From the link sent to the old email. No login needed. @since 261105 */
-    suspend fun revertEmailChange(req: RevertEmailChangeReq): WebResult<Unit> =
-        client.post("/auth/email/revert_change", req, auth = false)
 }

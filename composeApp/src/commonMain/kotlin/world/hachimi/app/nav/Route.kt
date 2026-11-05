@@ -261,12 +261,4 @@ sealed interface Route : NavKey {
     @Serializable
     @SerialName("/forget_password")
     data object ForgetPassword : Route
-
-    /**
-     * Opened from the link in the email sent to the old address when the account email changes.
-     * @since 261105
-     */
-    @Serializable
-    @SerialName("/auth/revert_email_change")
-    data class RevertEmailChange(val token: String) : Route
 }

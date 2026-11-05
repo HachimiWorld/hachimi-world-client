@@ -1,9 +1,6 @@
 package world.hachimi.app.model
 
 import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.auth_revert_email_err_invalid_token
-import hachimiworld.composeapp.generated.resources.auth_revert_email_err_old_email_taken
-import hachimiworld.composeapp.generated.resources.auth_revert_email_password_too_short
 import hachimiworld.composeapp.generated.resources.change_email_err_email_existed
 import hachimiworld.composeapp.generated.resources.change_email_err_invalid_email
 import hachimiworld.composeapp.generated.resources.change_email_err_invalid_new_code
@@ -31,8 +28,5 @@ internal fun emailChangeErrorMessage(code: String): StringResource? = when (code
     "too_many_attempts" -> Res.string.change_email_err_too_many_attempts
     "too_frequent" -> Res.string.change_email_err_too_frequent
     "pending_exists" -> Res.string.change_email_err_pending_exists
-    "invalid_password" -> Res.string.auth_revert_email_password_too_short
-    "invalid_token" -> Res.string.auth_revert_email_err_invalid_token
-    "old_email_taken" -> Res.string.auth_revert_email_err_old_email_taken
     else -> null
 }

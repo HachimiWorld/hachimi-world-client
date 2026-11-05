@@ -37,7 +37,6 @@ import world.hachimi.app.nav.Route.Auth
 import world.hachimi.app.nav.Route.ForgetPassword
 import world.hachimi.app.ui.auth.AuthScreen
 import world.hachimi.app.ui.auth.ForgetPasswordScreen
-import world.hachimi.app.ui.auth.RevertEmailChangeScreen
 import world.hachimi.app.ui.component.ClientApiVersionIncompatibleDialog
 import world.hachimi.app.ui.component.KidsModeDialog
 import world.hachimi.app.ui.component.StarPromptDialog
@@ -135,10 +134,6 @@ private fun AppNavHost(global: GlobalStore) {
 
                 is ForgetPassword -> NavEntry(key) {
                     ForgetPasswordScreen()
-                }
-
-                is Route.RevertEmailChange -> NavEntry(key) {
-                    RevertEmailChangeScreen(key.token)
                 }
 
                 else -> error("Unknown app route: $key")
