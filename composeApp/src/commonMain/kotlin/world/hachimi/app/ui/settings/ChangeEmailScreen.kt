@@ -256,8 +256,8 @@ private fun MethodEntry(
 }
 
 @Composable
-private fun Form(info: AuthModule.EmailInfoResp, vm: ChangeEmailViewModel) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun Form(info: AuthModule.EmailInfoResp, vm: ChangeEmailViewModel) = Card(modifier = Modifier.fillMaxWidth()) {
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             stringResource(
                 if (vm.withOldEmail) Res.string.change_email_method_old_email
