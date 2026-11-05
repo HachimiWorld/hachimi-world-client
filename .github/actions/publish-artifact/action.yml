@@ -62,14 +62,16 @@ runs:
         fi
 
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.source_dir }}/${{ env.FILE_NAME }}
         compression-level: 0
 
     - name: Upload to S3
-      uses: shallwefootball/s3-upload-action@master
+      # Pinned to a commit: a third-party action that gets the S3 keys should not follow a branch.
+      # This is the last commit on master (June 2024); the action is no longer updated.
+      uses: shallwefootball/s3-upload-action@0d261a6f15b3b2e209dfebdecace4b100c04f95b
       with:
         endpoint: ${{ inputs.s3_endpoint }}
         aws_key_id: ${{ inputs.s3_key_id }}

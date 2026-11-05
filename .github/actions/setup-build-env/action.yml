@@ -8,6 +8,10 @@ inputs:
   config_assets_base_url:
     required: true
     description: 'Assets base URL'
+  gradle_cache_read_only:
+    required: false
+    default: 'true'
+    description: 'Only read the Gradle cache. CI passes false on pushes to dev, so pull requests start from a warm cache.'
 
 runs:
   using: composite
@@ -21,10 +25,12 @@ runs:
         echo "app.dev.assetsBaseUrl=${{ inputs.config_assets_base_url }}" >> local.properties
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v6
       with:
         distribution: 'temurin'
         java-version: '21'
 
     - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@v5
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: ${{ inputs.gradle_cache_read_only }}

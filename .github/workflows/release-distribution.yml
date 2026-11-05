@@ -14,7 +14,7 @@ jobs:
     outputs:
       changelog: ${{ steps.read.outputs.changelog }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       # The version code is the first-parent commit count, which is larger on dev
@@ -47,11 +47,12 @@ jobs:
     needs: changelog
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Set build flavor to release
         run: printf "\n%s" "buildkonfig.flavor=release" >> gradle.properties
+      - uses: ./.github/actions/cache-konan
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -99,17 +100,14 @@ jobs:
     needs: changelog
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Cache
-        uses: actions/cache@v4
+      # Caches the crates the player depends on; the player itself is rebuilt
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rustLib/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          workspaces: rustLib
+          key: release
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -118,7 +116,7 @@ jobs:
         run: ./gradlew :desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jpackage-logs
           path: desktopApp/build/compose/logs/
@@ -147,17 +145,14 @@ jobs:
     needs: changelog
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Cache
-        uses: actions/cache@v4
+      # Caches the crates the player depends on; the player itself is rebuilt
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rustLib/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          workspaces: rustLib
+          key: release
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
@@ -166,7 +161,7 @@ jobs:
         run: ./gradlew :desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jpackage-logs
           path: desktopApp/build/compose/logs/
@@ -195,17 +190,14 @@ jobs:
     needs: changelog
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Cache
-        uses: actions/cache@v4
+      # Caches the crates the player depends on; the player itself is rebuilt
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rustLib/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          workspaces: rustLib
+          key: release
       - name: Install dependencies
         run: |
           sudo apt install libasound2-dev
@@ -218,7 +210,7 @@ jobs:
         run: ./gradlew desktopApp:packageDistributionForCurrentOS -P buildkonfig.flavor=release
       - name: Upload failure logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jpackage-logs
           path: desktopApp/build/compose/logs/
@@ -247,18 +239,9 @@ jobs:
     needs: changelog
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
       - name: Decode Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > androidApp/android.jks
@@ -276,7 +259,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       - name: Upload failure logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jpackage-logs
           path: build/reports/problems
@@ -310,7 +293,7 @@ jobs:
       contents: write
     steps:
       - name: Download packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
