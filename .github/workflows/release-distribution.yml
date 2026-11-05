@@ -52,6 +52,10 @@ jobs:
           fetch-depth: 0
       - name: Set build flavor to release
         run: printf "\n%s" "buildkonfig.flavor=release" >> gradle.properties
+      # The release link of the iOS framework runs in the Gradle daemon and runs out
+      # of memory with the default 4 GB heap. The runner has 7 GB.
+      - name: Give Gradle more memory
+        run: printf "\n%s" "org.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8" >> gradle.properties
       - uses: ./.github/actions/setup-build-env
         with:
           config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
