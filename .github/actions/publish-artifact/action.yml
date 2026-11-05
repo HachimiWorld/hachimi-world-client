@@ -30,6 +30,9 @@ inputs:
   version_code:
     required: true
     description: 'Version code from get-version-info'
+  changelog:
+    required: true
+    description: 'Release notes of this version, from changelogs/<version>.md'
   s3_endpoint:
     required: true
   s3_key_id:
@@ -78,10 +81,10 @@ runs:
     - name: Send publish request
       shell: bash
       env:
-        PR_BODY: ${{ github.event.pull_request.body }}
+        CHANGELOG: ${{ inputs.changelog }}
       run: |
         # UTF-8 CL
-        printf '%s' "$PR_BODY" | tr -d '\r' > changelog.txt
+        printf '%s' "$CHANGELOG" | tr -d '\r' > changelog.txt
         DOWNLOAD_URL="https://${{ inputs.s3_domain }}/${{ inputs.s3_destination }}${FILE_NAME}"
 
         # Package metadata for in-app updates (resume + integrity check).

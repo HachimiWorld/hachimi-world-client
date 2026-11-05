@@ -1,14 +1,50 @@
 name: Release Distributions
+# Push a vx.y.z tag to release that commit
 on:
-  pull_request:
-    types: [ closed ]
-    branches: [ main ]
+  push:
+    tags: [ 'v[0-9]*' ]
 concurrency:
   group: release-distributions
   cancel-in-progress: true
 jobs:
+  # Check the tag and read this version's notes from changelogs/<version>.md
+  # before anything is built, so a bad release fails fast.
+  changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.read.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # The version code is the first-parent commit count, which is larger on dev
+      # than on main. A tag on main would publish a smaller code than the last
+      # release, and apps would not offer the update.
+      - name: Check the tag is on dev
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/dev; then
+            echo "::error::$GITHUB_REF_NAME is not on dev. Tag a commit on dev."
+            exit 1
+          fi
+      - name: Read changelog
+        id: read
+        run: |
+          FILE="changelogs/${GITHUB_REF_NAME#v}.md"
+          if [ ! -s "$FILE" ]; then
+            echo "::error::$FILE is missing or empty. Add the release notes of $GITHUB_REF_NAME there."
+            exit 1
+          fi
+          echo "Changelog of $GITHUB_REF_NAME, from $FILE:"
+          cat "$FILE"
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            # $(...) drops trailing newlines, so the delimiter always starts its own line
+            printf '%s\n' "$(cat "$FILE")"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
   build-ios:
-    if: github.event.pull_request.merged == true
+    needs: changelog
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
@@ -50,6 +86,7 @@ jobs:
           artifact_name: ios
           version_name: ${{ steps.versions.outputs.VERSION_NAME }}
           version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          changelog: ${{ needs.changelog.outputs.changelog }}
           s3_endpoint: ${{ secrets.S3_ENDPOINT }}
           s3_key_id: ${{ secrets.S3_KEY_ID }}
           s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -59,7 +96,7 @@ jobs:
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-macos:
-    if: github.event.pull_request.merged == true
+    needs: changelog
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +134,7 @@ jobs:
           artifact_name: macos
           version_name: ${{ steps.versions.outputs.VERSION_NAME }}
           version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          changelog: ${{ needs.changelog.outputs.changelog }}
           s3_endpoint: ${{ secrets.S3_ENDPOINT }}
           s3_key_id: ${{ secrets.S3_KEY_ID }}
           s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -106,7 +144,7 @@ jobs:
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-windows:
-    if: github.event.pull_request.merged == true
+    needs: changelog
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +182,7 @@ jobs:
           artifact_name: windows
           version_name: ${{ steps.versions.outputs.VERSION_NAME }}
           version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          changelog: ${{ needs.changelog.outputs.changelog }}
           s3_endpoint: ${{ secrets.S3_ENDPOINT }}
           s3_key_id: ${{ secrets.S3_KEY_ID }}
           s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -153,7 +192,7 @@ jobs:
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-linux:
-    if: github.event.pull_request.merged == true
+    needs: changelog
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -195,6 +234,7 @@ jobs:
           artifact_name: linux
           version_name: ${{ steps.versions.outputs.VERSION_NAME }}
           version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          changelog: ${{ needs.changelog.outputs.changelog }}
           s3_endpoint: ${{ secrets.S3_ENDPOINT }}
           s3_key_id: ${{ secrets.S3_KEY_ID }}
           s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -204,7 +244,7 @@ jobs:
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
   build-android:
-    if: github.event.pull_request.merged == true
+    needs: changelog
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -252,6 +292,7 @@ jobs:
           artifact_name: android
           version_name: ${{ steps.versions.outputs.VERSION_NAME }}
           version_code: ${{ steps.versions.outputs.VERSION_CODE }}
+          changelog: ${{ needs.changelog.outputs.changelog }}
           s3_endpoint: ${{ secrets.S3_ENDPOINT }}
           s3_key_id: ${{ secrets.S3_KEY_ID }}
           s3_secret_access_key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -260,16 +301,48 @@ jobs:
           publish_version_token: ${{ secrets.PUBLISH_VERSION_TOKEN }}
           publish_version_url: ${{ secrets.PUBLISH_VERSION_URL }}
 
+  # Publish the same release on GitHub, with the notes and the built packages.
+  # Runs once every build has succeeded; re-running a failed build runs it again.
+  github-release:
+    needs: [ changelog, build-ios, build-macos, build-windows, build-linux, build-android ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHANGELOG: ${{ needs.changelog.outputs.changelog }}
+        run: |
+          printf '%s\n' "$CHANGELOG" > notes.md
+          ls -l dist
+          # Tags with a suffix, like v1.0.6-beta, are pre-releases
+          PRERELEASE=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then PRERELEASE=(--prerelease); fi
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            # A re-run: refresh the notes and replace the packages
+            gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+            gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md "${PRERELEASE[@]}"
+          fi
+
   # One message per run. Skipped when the run was cancelled or every job was skipped.
   notify-discord:
-    needs: [ build-ios, build-macos, build-windows, build-linux, build-android ]
+    needs: [ changelog, build-ios, build-macos, build-windows, build-linux, build-android, github-release ]
     if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
     runs-on: ubuntu-latest
     steps:
       # Expressions cannot slice strings, so shorten the SHA here
       - name: Short SHA
         env:
-          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SHA: ${{ github.sha }}
         run: echo "SHORT_SHA=${SHA:0:7}" >> "$GITHUB_ENV"
       # Two steps, one per result, like the server's Woodpecker pipelines.
       - name: Notify success
@@ -280,7 +353,7 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           message: |
-            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.ref_name }} @ ${{ env.SHORT_SHA }}
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: Notify failure
         if: ${{ contains(needs.*.result, 'failure') }}
@@ -290,5 +363,5 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           message: |
-            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.ref_name }} @ ${{ env.SHORT_SHA }}
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

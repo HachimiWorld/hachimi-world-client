@@ -138,7 +138,7 @@ private val headingPrefix = Regex("""^#{1,6}\s+""")
 private val listItemPrefix = Regex("""^(\d+[.)]|[-*•])\s+""")
 
 /**
- * Parses a changelog in the CHANGELOG.md format: `## Section` headings and numbered or bulleted items.
+ * Parses a changelog in the format of `changelogs/<version>.md`: `## Section` headings and numbered or bulleted items.
  * Anything else, including malformed markdown, is kept as a plain paragraph, so nothing is lost.
  */
 internal fun parseChangelog(markdown: String): List<ChangelogLine> =
