@@ -62,21 +62,32 @@ runs:
         fi
 
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.source_dir }}/${{ env.FILE_NAME }}
         compression-level: 0
 
+    # The bucket is on Cloudflare R2. The AWS CLI is preinstalled on every GitHub-hosted runner.
+    # R2 has no object ACLs: the files are public through the bucket's own settings.
     - name: Upload to S3
-      uses: shallwefootball/s3-upload-action@master
-      with:
-        endpoint: ${{ inputs.s3_endpoint }}
-        aws_key_id: ${{ inputs.s3_key_id }}
-        aws_secret_access_key: ${{ inputs.s3_secret_access_key }}
-        aws_bucket: ${{ inputs.s3_bucket }}
-        source_dir: ${{ inputs.source_dir }}
-        destination_dir: ${{ inputs.s3_destination }}
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.s3_key_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.s3_secret_access_key }}
+        AWS_DEFAULT_REGION: auto
+        # Newer CLIs add checksums that some S3-compatible services reject
+        AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+        AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+        S3_ENDPOINT: ${{ inputs.s3_endpoint }}
+        S3_BUCKET: ${{ inputs.s3_bucket }}
+        S3_DESTINATION: ${{ inputs.s3_destination }}
+      run: |
+        # The old action accepted an endpoint without a scheme; the CLI does not
+        if [[ "$S3_ENDPOINT" != *://* ]]; then S3_ENDPOINT="https://$S3_ENDPOINT"; fi
+        aws s3 cp "${{ inputs.source_dir }}/${FILE_NAME}" "s3://${S3_BUCKET}/${S3_DESTINATION}${FILE_NAME}" \
+          --endpoint-url "$S3_ENDPOINT" \
+          --no-progress
 
     - name: Send publish request
       shell: bash
