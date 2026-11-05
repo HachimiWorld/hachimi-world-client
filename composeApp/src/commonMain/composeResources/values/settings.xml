@@ -61,4 +61,42 @@
     <string name="settings_section_system">System</string>
     <string name="settings_section_account">Account</string>
     <string name="settings_section_about">About</string>
+
+    <!-- Change email -->
+    <string name="settings_change_email">Change email</string>
+    <string name="change_email_current">Current email: %1$s</string>
+    <string name="change_email_choose_hint">Choose how to verify your identity.</string>
+    <string name="change_email_method_old_email">Verify with old email</string>
+    <string name="change_email_method_old_email_desc">Codes are sent to your old and new email. Once both are verified, the email changes right away.</string>
+    <string name="change_email_method_password">Verify with password</string>
+    <string name="change_email_method_password_desc">Choose this if you can't use your old email. The change takes effect 7 days after you submit.</string>
+    <string name="change_email_with_old_hint">Your old and new email each receive a code. Once both codes are verified, the email changes right away.</string>
+    <string name="change_email_without_old_hint">Use your password instead of a code from your old email. The change takes effect 7 days after you submit. During that time, your old email receives 3 reminders, and you can cancel at any time. You can change your email with a password once every 30 days.</string>
+    <string name="change_email_next_request">Next change with a password available: %1$s</string>
+    <string name="change_email_old_code">Code from old email</string>
+    <string name="change_email_new_email">New email</string>
+    <string name="change_email_new_code">Code from new email</string>
+    <string name="change_email_password">Password</string>
+    <string name="change_email_submit">Change email</string>
+    <string name="change_email_request_submit">Submit request</string>
+    <string name="change_email_success_title">Email changed</string>
+    <string name="change_email_success_text">Log in with %1$s from now on.</string>
+    <string name="change_email_pending_title">Email change pending</string>
+    <string name="change_email_pending_text">Your account email changes to %1$s at %2$s. You can cancel before then.</string>
+    <string name="change_email_cancel">Cancel change</string>
+    <string name="change_email_cancel_confirm_title">Cancel this email change?</string>
+    <string name="change_email_cancel_confirm_text">Your account email stays the same, and your old email gets no more reminders.</string>
+    <string name="change_email_cancel_keep">Keep request</string>
+    <string name="change_email_cancelled">Email change cancelled</string>
+    <string name="change_email_failed">Something went wrong. Please try again later</string>
+    <string name="change_email_err_invalid_email">Invalid email address</string>
+    <string name="change_email_err_same_email">This is your current email</string>
+    <string name="change_email_err_email_existed">This email is used by another account</string>
+    <string name="change_email_err_too_many_requests">Codes were sent too often. Please try again later</string>
+    <string name="change_email_err_invalid_old_code">Wrong code from your old email</string>
+    <string name="change_email_err_invalid_new_code">Wrong code from your new email</string>
+    <string name="change_email_err_password_not_match">Wrong password</string>
+    <string name="change_email_err_too_many_attempts">Too many wrong passwords. Please try again in an hour</string>
+    <string name="change_email_err_too_frequent">You can change your email with a password once every 30 days</string>
+    <string name="change_email_err_pending_exists">An email change is already pending</string>
 </resources>
