@@ -297,13 +297,26 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      # The same SHA-256 the in-app updater checks, for people who download from GitHub.
+      # Attached as SHA256SUMS.txt and listed under the notes; verify with `sha256sum -c SHA256SUMS.txt`.
+      - name: Write checksums
+        working-directory: dist
+        run: |
+          sha256sum -- * > ../SHA256SUMS.txt
+          mv ../SHA256SUMS.txt .
+          cat SHA256SUMS.txt
       - name: Create or update the release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           CHANGELOG: ${{ needs.changelog.outputs.changelog }}
         run: |
-          printf '%s\n' "$CHANGELOG" > notes.md
+          {
+            printf '%s\n' "$CHANGELOG"
+            printf '\n## SHA-256\n\n```\n'
+            cat dist/SHA256SUMS.txt
+            printf '```\n'
+          } > notes.md
           ls -l dist
           # Tags with a suffix, like v1.0.6-beta, are pre-releases
           PRERELEASE=()
