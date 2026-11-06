@@ -213,6 +213,11 @@ sealed interface Route : NavKey {
         @SerialName("/settings/devices")
         data object DeviceManagement : Root
 
+        /** @since 261105 */
+        @Serializable
+        @SerialName("/settings/change_email")
+        data object ChangeEmail : Root
+
         /** @since 261005 */
         @Serializable
         @SerialName("/notifications")

@@ -1,0 +1,12 @@
+name: Cache Kotlin/Native
+description: Caches ~/.konan, the Kotlin/Native compiler and its LLVM and sysroot downloads
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache@v6
+      with:
+        path: ~/.konan
+        key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+        restore-keys: |
+          konan-${{ runner.os }}-${{ runner.arch }}-

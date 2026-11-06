@@ -1,0 +1,119 @@
+name: CI
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+# Caches are written by pushes to dev and read by pull requests into dev.
+# setup-gradle would only write on the default branch (main), where nothing runs.
+jobs:
+  desktop:
+    name: desktop (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install libasound2-dev # This is essential for build `rodio` dependency.
+          sudo apt install libdbus-1-dev
+      # Caches the crates the player depends on; the player itself is rebuilt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rustLib
+          key: debug
+          save-if: ${{ github.event_name == 'push' }}
+      - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
+          gradle_cache_read_only: ${{ github.event_name != 'push' }}
+      - name: Compile
+        run: ./gradlew :desktopApp:compileKotlin -P rust.debug=true
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
+          gradle_cache_read_only: ${{ github.event_name != 'push' }}
+      - name: Compile
+        run: ./gradlew :androidApp:assembleDebug
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
+          gradle_cache_read_only: ${{ github.event_name != 'push' }}
+      - name: Compile
+        run: ./gradlew :webApp:compileKotlinJs :webApp:compileKotlinWasmJs
+
+  # Only compiles the Kotlin code for iOS. Linking the release framework takes
+  # much longer and only runs when releasing.
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/cache-konan
+      - uses: ./.github/actions/setup-build-env
+        with:
+          config_api_base_url: ${{ secrets.CONFIG_API_BASE_URL }}
+          config_assets_base_url: ${{ secrets.CONFIG_ASSETS_BASE_URL }}
+          gradle_cache_read_only: ${{ github.event_name != 'push' }}
+      - name: Compile
+        run: ./gradlew :composeApp:compileKotlinIosArm64
+
+  # One message per run. Skipped when the run was cancelled or every job was skipped.
+  notify-discord:
+    needs: [ desktop, android, web, ios ]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    runs-on: ubuntu-latest
+    steps:
+      # Expressions cannot slice strings, so shorten the SHA here
+      - name: Short SHA
+        env:
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: echo "SHORT_SHA=${SHA:0:7}" >> "$GITHUB_ENV"
+      # Two steps, one per result, like the server's Woodpecker pipelines.
+      - name: Notify success
+        if: ${{ !contains(needs.*.result, 'failure') }}
+        uses: appleboy/discord-action@v1.2.0
+        # A Discord outage should not mark the workflow as failed
+        continue-on-error: true
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ✅ Succeeded: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Notify failure
+        if: ${{ contains(needs.*.result, 'failure') }}
+        uses: appleboy/discord-action@v1.2.0
+        # A Discord outage should not mark the workflow as failed
+        continue-on-error: true
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            ❌ Failed: ${{ github.event.repository.name }} · ${{ github.workflow }} · ${{ github.head_ref || github.ref_name }} @ ${{ env.SHORT_SHA }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

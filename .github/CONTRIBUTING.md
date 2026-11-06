@@ -40,3 +40,10 @@ JDK Version: 21
 ```shell
 ./gradlew run
 ```
+## Release
+
+1. Write the release notes in `changelogs/x.y.z.md` on `dev`, with `## Features 新功能`, `## Enhancements 改进` and `## Fixes 修复` sections.
+2. Tag that commit `vx.y.z` and push the tag. This starts the release: the workflow builds the tagged commit and publishes `changelogs/x.y.z.md` as the in-app changelog. Once every build succeeds, it also creates a GitHub Release for the tag with the same notes and all packages.
+3. Open a PR from `dev` to `main` and merge it, to keep `main` at the latest release.
+
+The release fails before anything is built if the changelog file is missing or empty, or if the tag is not on `dev`. The version code is the first-parent commit count, which is larger on `dev` than on `main`, so a tag on `main` would publish a smaller version code than the last release.

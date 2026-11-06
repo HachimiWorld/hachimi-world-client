@@ -3,6 +3,7 @@ package world.hachimi.app.ui.settings
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.settings_auto_download_update
 import hachimiworld.composeapp.generated.resources.settings_auto_download_update_wifi
+import hachimiworld.composeapp.generated.resources.settings_change_email
 import hachimiworld.composeapp.generated.resources.settings_changelog
 import hachimiworld.composeapp.generated.resources.settings_check_update
 import hachimiworld.composeapp.generated.resources.settings_check_update_action
@@ -130,6 +131,7 @@ fun SettingsScreen(
 
         Section(title = { Text(stringResource(Res.string.settings_section_account)) }) {
             DeviceManagementEntry()
+            if (globalStore.isLoggedIn) ChangeEmailEntry()
         }
 
         Section(title = { Text(stringResource(Res.string.settings_section_about)) }) {
@@ -416,6 +418,17 @@ private fun LinkButton(
             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = stringResource(Res.string.settings_open_in_browser_cd)
         )
+    }
+}
+
+@Composable
+private fun ChangeEmailEntry() {
+    val navigator = LocalNavigator.current
+    PropertyItem(
+        label = { Text(stringResource(Res.string.settings_change_email)) },
+        onClick = { navigator.push(Route.Root.ChangeEmail) }
+    ) {
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
 }
 

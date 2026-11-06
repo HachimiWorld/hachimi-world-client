@@ -79,7 +79,7 @@ compose.desktop {
                 vendor = "Hachimi World, NPO"
                 copyright = "© 2025 Hachimi World Open Source Project"
                 packageVersion = gitVersionNameShort.get()
-                licenseFile = rootProject.file("LICENSE")
+                // No licenseFile: in a DMG it makes mounting wait for "Agree", which breaks the in-app updater
 
                 modules("jdk.unsupported", "java.naming")
 

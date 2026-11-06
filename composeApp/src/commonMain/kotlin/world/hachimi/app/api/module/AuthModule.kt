@@ -141,4 +141,69 @@ class AuthModule(
 
     suspend fun deviceLogout(req: DeviceLogoutReq): WebResult<Unit> =
         client.post("/auth/device/logout", req)
+
+    /** For POSTs without a body. @since 261105 */
+    @Serializable
+    class EmptyReq
+
+    /** @since 261105 */
+    @Serializable
+    data class PendingEmailChange(
+        val newEmail: String,
+        val effectiveTime: Instant,
+        val createTime: Instant,
+    )
+
+    /** @since 261105 */
+    @Serializable
+    data class EmailInfoResp(
+        val email: String,
+        val pending: PendingEmailChange?,
+        /** When a change without the current email can be requested again, or null if now. */
+        val nextRequestTime: Instant?,
+    )
+
+    /** @since 261105 */
+    suspend fun emailInfo(): WebResult<EmailInfoResp> =
+        client.get("/auth/email/info")
+
+    /** Sends a code to the current email. @since 261105 */
+    suspend fun sendOldEmailCode(): WebResult<Unit> =
+        client.post("/auth/email/send_old_code", EmptyReq())
+
+    /** @since 261105 */
+    @Serializable
+    data class SendNewEmailCodeReq(val newEmail: String)
+
+    /** Sends a code to the email to change to. @since 261105 */
+    suspend fun sendNewEmailCode(req: SendNewEmailCodeReq): WebResult<Unit> =
+        client.post("/auth/email/send_new_code", req)
+
+    /** @since 261105 */
+    @Serializable
+    data class ChangeEmailReq(
+        val newEmail: String,
+        val oldCode: String,
+        val newCode: String,
+    )
+
+    /** Changes the email at once, with codes from both emails. @since 261105 */
+    suspend fun changeEmail(req: ChangeEmailReq): WebResult<Unit> =
+        client.post("/auth/email/change", req)
+
+    /** @since 261105 */
+    @Serializable
+    data class RequestEmailChangeReq(
+        val newEmail: String,
+        val newCode: String,
+        val password: String,
+    )
+
+    /** Changes the email after a wait, for users who can't read their current email. @since 261105 */
+    suspend fun requestEmailChange(req: RequestEmailChangeReq): WebResult<PendingEmailChange> =
+        client.post("/auth/email/request_change", req)
+
+    /** @since 261105 */
+    suspend fun cancelEmailChange(): WebResult<Unit> =
+        client.post("/auth/email/cancel_change", EmptyReq())
 }
