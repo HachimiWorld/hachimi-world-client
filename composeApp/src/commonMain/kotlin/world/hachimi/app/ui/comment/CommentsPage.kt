@@ -138,6 +138,7 @@ import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalTextStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.insets.AdjustResizeForIme
@@ -740,6 +741,8 @@ private fun CommentComposer(
     val sendBackground by animateColorAsState(if (canSend) HachimiTheme.colorScheme.primary else Color.Transparent)
     val sendTint by animateColorAsState(if (canSend) HachimiTheme.colorScheme.onSurfaceReverse else HachimiTheme.colorScheme.onSurfaceVariant)
     val shownReplyTo = rememberLastNonNull(replyTo)
+    // The theme's font too, which the text field doesn't pick up by itself
+    val textStyle = LocalTextStyle.current.merge(ComposerTextStyle)
 
     Column(
         modifier
@@ -785,7 +788,7 @@ private fun CommentComposer(
                     onValueChange = onValueChange,
                     modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                     enabled = !sending,
-                    textStyle = ComposerTextStyle.copy(color = onSurface),
+                    textStyle = textStyle.copy(color = onSurface),
                     maxLines = 5,
                     interactionSource = interactionSource,
                     cursorBrush = SolidColor(HachimiTheme.colorScheme.primary),
@@ -794,7 +797,7 @@ private fun CommentComposer(
                     Text(
                         text = stringResource(Res.string.comment_input_placeholder),
                         color = HachimiTheme.colorScheme.onSurfaceVariant,
-                        style = ComposerTextStyle,
+                        style = textStyle,
                     )
                 }
             }
