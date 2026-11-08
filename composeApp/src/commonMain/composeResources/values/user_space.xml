@@ -67,6 +67,5 @@
 
     <string name="user_space_tab_songs">Songs</string>
     <string name="user_space_tab_playlists">Playlists</string>
-    <string name="user_space_tab_activity">Activity</string>
-    <string name="user_space_activity_empty">Coming soon</string>
+    <string name="user_space_tab_activity">Moments</string>
 </resources>

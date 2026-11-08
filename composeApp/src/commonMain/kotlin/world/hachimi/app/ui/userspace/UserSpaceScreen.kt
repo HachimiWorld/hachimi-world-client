@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,8 +47,8 @@ import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm_subti
 import hachimiworld.composeapp.generated.resources.follow_unfollow_confirm_title
 import hachimiworld.composeapp.generated.resources.player_play_all
 import hachimiworld.composeapp.generated.resources.user_edit_profile
-import hachimiworld.composeapp.generated.resources.user_space_activity_empty
 import hachimiworld.composeapp.generated.resources.user_space_empty
+import hachimiworld.composeapp.generated.resources.moment_create_button
 import hachimiworld.composeapp.generated.resources.user_space_tab_activity
 import hachimiworld.composeapp.generated.resources.user_space_tab_playlists
 import hachimiworld.composeapp.generated.resources.user_space_tab_songs
@@ -74,6 +76,10 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.PlaceholderDefaults
 import world.hachimi.app.ui.design.components.TabBar
+import world.hachimi.app.ui.moment.LoadMoreMomentsEffect
+import world.hachimi.app.ui.moment.MomentActions
+import world.hachimi.app.ui.moment.momentItems
+import world.hachimi.app.ui.moment.rememberMomentActions
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.placeholder
@@ -113,8 +119,15 @@ fun UserSpaceScreen(
         BoxWithConstraints {
             val constraintsMaxWidth = maxWidth
             var selectedTab by remember { mutableIntStateOf(0) }
+            val gridState = rememberLazyGridState()
+            val momentActions = rememberMomentActions()
+            LaunchedEffect(selectedTab, vm.moments) {
+                if (selectedTab == MOMENTS_TAB) vm.moments.ensureLoaded()
+            }
+            LoadMoreMomentsEffect(gridState, vm.moments, enabled = selectedTab == MOMENTS_TAB)
 
             LazyVerticalGrid(
+            state = gridState,
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(constraintsMaxWidth),
             contentPadding = contentPaddingForMaxWidth(
@@ -143,17 +156,7 @@ fun UserSpaceScreen(
             when (selectedTab) {
                 0 -> artworkTabContents(vm, global)
                 1 -> playlistsTabContents(vm, navigator)
-                2 -> {
-                    // Activity tab: placeholder
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            modifier = Modifier.height(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = stringResource(Res.string.user_space_activity_empty))
-                        }
-                    }
-                }
+                MOMENTS_TAB -> momentsTabContents(vm, momentActions, onCreate = { navigator.push(Route.Root.CreateMoment) })
             }
 
             listTailSpacerItem()
@@ -189,6 +192,28 @@ fun UserSpaceScreen(
     } else {
         content()
     }
+}
+
+private const val MOMENTS_TAB = 2
+
+private fun LazyGridScope.momentsTabContents(
+    vm: UserSpaceViewModel,
+    actions: MomentActions,
+    onCreate: () -> Unit,
+) {
+    if (vm.myself) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Button(
+                modifier = Modifier.wrapContentWidth(align = Alignment.Start),
+                onClick = onCreate,
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(Res.string.moment_create_button))
+            }
+        }
+    }
+    momentItems(vm.moments, actions, empty = null)
 }
 
 private fun LazyGridScope.artworkTabContents(

@@ -73,7 +73,10 @@ import world.hachimi.app.ui.creation.publish.PublishScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.events.EventDetailScreen
-import world.hachimi.app.ui.events.EventsScreen
+import world.hachimi.app.ui.moment.CreateMomentScreen
+import world.hachimi.app.ui.moment.MomentDetailScreen
+import world.hachimi.app.ui.square.SquareScreen
+import world.hachimi.app.ui.square.SquareTab
 import world.hachimi.app.ui.follow.FollowListScreen
 import world.hachimi.app.ui.home.CategorySongsScreen
 import world.hachimi.app.ui.home.HomeMainScreen
@@ -236,7 +239,8 @@ private fun PrimaryNavDisplay(global: GlobalStore, navigator: Navigator) {
 
 private fun primaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Route.Root> =
     when (key) {
-        Route.Root.Events.Feed -> NavEntry(key) { EventsScreen() }
+        Route.Root.Square -> NavEntry(key) { SquareScreen() }
+        Route.Root.Events.Feed -> NavEntry(key) { SquareScreen(initialTab = SquareTab.ANNOUNCEMENTS) }
         Route.Root.Home.Main -> NavEntry(key) { HomeMainScreen() }
         Route.Root.RecentPlay -> NavEntry(key) {
             if (global.isLoggedIn) RecentPlayScreen() else NeedLoginScreen()
@@ -271,6 +275,11 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         is Route.Root.Home.Category -> NavEntry(key) { CategorySongsScreen(key.category) }
 
         is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId, key.atComments) }
+
+        is Route.Root.MomentDetail -> NavEntry(key) { MomentDetailScreen(key.momentId, key.atComments) }
+        Route.Root.CreateMoment -> NavEntry(key) {
+            if (global.isLoggedIn) CreateMomentScreen() else NeedLoginScreen()
+        }
 
         is Route.Root.Search -> NavEntry(key) { SearchScreen(key.query, key.type) }
 
