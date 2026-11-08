@@ -1,8 +1,8 @@
 <resources>
     <string name="square_tab_moments">动态</string>
-    <string name="square_intro_title">试试我们的新功能：广场</string>
-    <string name="square_intro_desc">在这里发动态、分享歌曲，看看大家都在聊什么</string>
-    <string name="square_intro_go">去看看</string>
+    <string name="square_intro_title">新增「广场」</string>
+    <string name="square_intro_desc">浏览其他用户的动态，或发布自己的动态</string>
+    <string name="square_intro_go">前往广场</string>
     <string name="square_intro_dismiss_cd">关闭</string>
     <string name="square_tab_announcements">公告</string>
     <string name="moment_page_title">动态</string>
