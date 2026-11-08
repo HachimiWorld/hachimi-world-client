@@ -1,5 +1,9 @@
 <resources>
     <string name="square_tab_moments">Moments</string>
+    <string name="square_intro_title">Try our new Square</string>
+    <string name="square_intro_desc">Post moments, share songs and see what everyone is talking about</string>
+    <string name="square_intro_go">Take a look</string>
+    <string name="square_intro_dismiss_cd">Close</string>
     <string name="square_tab_announcements">Announcements</string>
     <string name="moment_page_title">Moment</string>
     <string name="moment_create_button">Post</string>

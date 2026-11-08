@@ -37,6 +37,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.model.SquareIntro
 import world.hachimi.app.model.SquareViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
@@ -71,7 +72,10 @@ enum class SquareTab { MOMENTS, ANNOUNCEMENTS }
 fun SquareScreen(
     initialTab: SquareTab = SquareTab.MOMENTS,
     vm: SquareViewModel = koinViewModel(),
+    squareIntro: SquareIntro = koinInject(),
 ) {
+    // Found the square, so the home page needn't point here any more
+    LaunchedEffect(Unit) { squareIntro.markSeen() }
     val pagerState = rememberPagerState(initialPage = initialTab.ordinal) { SquareTab.entries.size }
     val scope = rememberCoroutineScope()
     val pager = vm.moments
