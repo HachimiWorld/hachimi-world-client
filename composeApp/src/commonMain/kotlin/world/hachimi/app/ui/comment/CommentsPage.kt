@@ -75,6 +75,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -784,7 +785,7 @@ private fun CommentComposer(
                     onValueChange = onValueChange,
                     modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                     enabled = !sending,
-                    textStyle = TextStyle(fontSize = 15.sp, lineHeight = 22.sp, color = onSurface),
+                    textStyle = ComposerTextStyle.copy(color = onSurface),
                     maxLines = 5,
                     interactionSource = interactionSource,
                     cursorBrush = SolidColor(HachimiTheme.colorScheme.primary),
@@ -792,9 +793,8 @@ private fun CommentComposer(
                 if (value.isEmpty()) {
                     Text(
                         text = stringResource(Res.string.comment_input_placeholder),
-                        fontSize = 15.sp,
-                        lineHeight = 22.sp,
                         color = HachimiTheme.colorScheme.onSurfaceVariant,
+                        style = ComposerTextStyle,
                     )
                 }
             }
@@ -837,6 +837,17 @@ private fun CommentComposer(
         }
     }
 }
+
+/**
+ * What's typed and the placeholder, alike. Each line's text sits in the middle of its height. By
+ * default the font decides where a line's extra height goes, which left one line off the middle of
+ * the box on macOS.
+ */
+private val ComposerTextStyle = TextStyle(
+    fontSize = 15.sp,
+    lineHeight = 22.sp,
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+)
 
 /** How close to the limit the count of characters left appears. */
 private const val CHARS_LEFT_SHOWN_AT = 50
