@@ -1,7 +1,7 @@
 <resources>
     <string name="square_tab_moments">动态</string>
-    <string name="square_intro_title">新增「广场」</string>
-    <string name="square_intro_desc">浏览其他用户的动态，或发布自己的动态</string>
+    <string name="square_intro_title">全新「广场」上线！</string>
+    <string name="square_intro_desc">和大家分享动态、图片与喜欢的歌曲，来发布你的第一条动态吧</string>
     <string name="square_intro_go">前往广场</string>
     <string name="square_intro_dismiss_cd">关闭</string>
     <string name="square_tab_announcements">公告</string>
