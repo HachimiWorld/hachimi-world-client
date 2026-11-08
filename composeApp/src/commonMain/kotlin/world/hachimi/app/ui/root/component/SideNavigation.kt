@@ -29,7 +29,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Notifications
@@ -62,7 +62,7 @@ import hachimiworld.composeapp.generated.resources.auth_register
 import hachimiworld.composeapp.generated.resources.nav_committee_center
 import hachimiworld.composeapp.generated.resources.nav_contributor_center
 import hachimiworld.composeapp.generated.resources.nav_creation_center
-import hachimiworld.composeapp.generated.resources.nav_home_events
+import hachimiworld.composeapp.generated.resources.nav_square
 import hachimiworld.composeapp.generated.resources.nav_home_title
 import hachimiworld.composeapp.generated.resources.nav_my_playlist
 import hachimiworld.composeapp.generated.resources.nav_my_subscribe
@@ -188,10 +188,10 @@ private fun SideNavItems(
     ) {
         NavItem(
             modifier = Modifier.fillMaxWidth().testTag(TestTags.NAV_EVENTS),
-            icon = Icons.Default.Newspaper,
-            label = stringResource(Res.string.nav_home_events),
-            selected = content is Route.Root.Events.Feed,
-            onSelectedChange = { onChange(Route.Root.Events.Feed) },
+            icon = Icons.Default.Forum,
+            label = stringResource(Res.string.nav_square),
+            selected = content is Route.Root.Square || content is Route.Root.Events.Feed,
+            onSelectedChange = { onChange(Route.Root.Square) },
             density = density,
         )
         NavItem(

@@ -16,7 +16,7 @@ class ReportModule(
     /** @since 261008 */
     @Serializable
     data class SubmitReq(
-        /** [TARGET_SONG], [TARGET_PLAYLIST], [TARGET_USER] or [TARGET_COMMENT] */
+        /** [TARGET_SONG], [TARGET_PLAYLIST], [TARGET_USER], [TARGET_COMMENT] or [TARGET_MOMENT] */
         val targetType: String,
         val targetId: Long,
         /** One of [REASONS] */
@@ -225,6 +225,8 @@ class ReportModule(
         const val TARGET_USER = "user"
         /** @since 261021 */
         const val TARGET_COMMENT = "comment"
+        /** @since 261106 */
+        const val TARGET_MOMENT = "moment"
 
         const val REASON_OTHER = "other"
         val REASONS = listOf("spam", "abuse", "illegal", "nsfw", "copyright", REASON_OTHER)

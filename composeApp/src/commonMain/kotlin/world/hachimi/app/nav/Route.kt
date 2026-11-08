@@ -15,6 +15,7 @@ sealed interface Route : NavKey {
 
         @Serializable
         sealed interface Events : Root {
+            /** The square's announcements tab, for old links. */
             @Serializable
             @SerialName("/events/feed")
             data object Feed : Events
@@ -27,6 +28,25 @@ sealed interface Route : NavKey {
                 val atComments: Boolean = false,
             ) : Events
         }
+
+        /** Everyone's moments, and the announcements. @since 261106 */
+        @Serializable
+        @SerialName("/square")
+        data object Square : Root
+
+        /** @since 261106 */
+        @Serializable
+        @SerialName("/moment")
+        data class MomentDetail(
+            val momentId: Long,
+            /** Opens scrolled to the comments. */
+            val atComments: Boolean = false,
+        ) : Root
+
+        /** @since 261106 */
+        @Serializable
+        @SerialName("/moment/create")
+        data object CreateMoment : Root
 
         @Serializable
         sealed interface Home : Root {

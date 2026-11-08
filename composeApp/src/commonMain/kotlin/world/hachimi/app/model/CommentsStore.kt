@@ -40,7 +40,7 @@ import world.hachimi.app.nav.Route
  * @since 261031
  */
 data class CommentTarget(
-    /** [CommentModule.TARGET_SONG] or [CommentModule.TARGET_POST] */
+    /** [CommentModule.TARGET_SONG], [CommentModule.TARGET_POST] or [CommentModule.TARGET_MOMENT] */
     val type: String,
     val id: Long,
     /** Can delete any comment under it. */
@@ -471,6 +471,7 @@ class CommentsStore(
 fun UgcPreview.commentsRoute(): Route? = when (this) {
     is UgcPreview.Song -> Route.Root.SongComments(displayId)
     is UgcPreview.Post -> Route.Root.Events.Detail(id, atComments = true)
+    is UgcPreview.Moment -> Route.Root.MomentDetail(id, atComments = true)
     is UgcPreview.Comment -> on?.commentsRoute()
     else -> null
 }

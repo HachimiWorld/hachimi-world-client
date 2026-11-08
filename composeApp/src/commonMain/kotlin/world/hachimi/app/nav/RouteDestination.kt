@@ -10,6 +10,7 @@ package world.hachimi.app.nav
  * as siblings of [RootShellNavKey] — full-screen, Activity-style.
  */
 fun Route.Root.isSideNavDestination(): Boolean = when (this) {
+    Route.Root.Square,
     Route.Root.Events.Feed,
     Route.Root.Home.Main,
     Route.Root.RecentPlay,
