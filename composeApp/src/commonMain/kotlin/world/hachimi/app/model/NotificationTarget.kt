@@ -4,6 +4,7 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.notification_action_edit_profile
 import hachimiworld.composeapp.generated.resources.notification_action_view_artwork
 import hachimiworld.composeapp.generated.resources.notification_action_view_comment
+import hachimiworld.composeapp.generated.resources.notification_action_view_moment
 import hachimiworld.composeapp.generated.resources.notification_action_view_playlist
 import hachimiworld.composeapp.generated.resources.notification_action_view_review
 import kotlinx.serialization.json.JsonObject
@@ -40,6 +41,12 @@ fun NotificationModule.ContentIntent.toTarget(): NotificationTarget? = when (act
     }
     "post.comment.view" -> data.long("post_id")?.let {
         NotificationTarget(Route.Root.Events.Detail(it, atComments = true), Res.string.notification_action_view_comment)
+    }
+    "moment.view" -> data.long("moment_id")?.let {
+        NotificationTarget(Route.Root.MomentDetail(it), Res.string.notification_action_view_moment)
+    }
+    "moment.comment.view" -> data.long("moment_id")?.let {
+        NotificationTarget(Route.Root.MomentDetail(it, atComments = true), Res.string.notification_action_view_comment)
     }
     else -> null
 }

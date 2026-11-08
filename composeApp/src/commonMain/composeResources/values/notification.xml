@@ -21,4 +21,5 @@
     <string name="notification_action_view_artwork">View song</string>
     <string name="notification_action_view_playlist">View playlist</string>
     <string name="notification_action_view_comment">View comment</string>
+    <string name="notification_action_view_moment">View moment</string>
 </resources>

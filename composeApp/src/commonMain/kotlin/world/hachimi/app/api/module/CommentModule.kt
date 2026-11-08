@@ -172,6 +172,8 @@ class CommentModule(
         const val TARGET_SONG = "song"
         /** @since 261031 */
         const val TARGET_POST = "post"
+        /** @since 261106 */
+        const val TARGET_MOMENT = "moment"
 
         const val ORDER_NEWEST = "newest"
         const val ORDER_OLDEST = "oldest"

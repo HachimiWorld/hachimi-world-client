@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
+import world.hachimi.app.api.module.MomentModule
 import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
@@ -26,7 +27,8 @@ import kotlin.time.Duration.Companion.seconds
 @KoinViewModel
 class UserSpaceViewModel(
     private val api: ApiClient,
-    private val global: GlobalStore
+    private val global: GlobalStore,
+    momentStore: MomentStore,
 ) : ViewModel(CoroutineScope(Dispatchers.Default)) {
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
@@ -54,6 +56,23 @@ class UserSpaceViewModel(
         private set
     private var uid: Long? = null
 
+    /** Their moments, loaded when the tab is first opened. @since 261106 */
+    val moments = MomentPager(
+        scope = viewModelScope,
+        global = global,
+        store = momentStore,
+        acceptsPosted = { it.author.uid == uid },
+    ) { cursor ->
+        val userId = uid ?: throw MomentLoadException("")
+        val resp = api.momentModule.listByUser(
+            MomentModule.ListByUserReq(userId = userId, cursor = cursor),
+            auth = global.isLoggedIn,
+        )
+        if (!resp.ok) throw MomentLoadException(resp.err().msg)
+        val data = resp.ok<MomentModule.ListResp>()
+        MomentPage(data.items, data.nextCursor)
+    }
+
     /** Profile-page follow/unfollow action loading. */
     var followActionLoading by mutableStateOf(false)
         private set
@@ -78,6 +97,7 @@ class UserSpaceViewModel(
         songs.clear()
         privateConnections.clear()
         publicPlaylists.clear()
+        moments.reset()
         unfollowDialogUsername = null
         followActionLoading = false
 

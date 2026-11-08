@@ -53,6 +53,7 @@ import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.HomeViewModel
 import world.hachimi.app.model.InitializeStatus
+import world.hachimi.app.model.SquareIntro
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.LocalNavigator
@@ -66,6 +67,7 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.home.components.SongCard
+import world.hachimi.app.ui.home.components.SquareIntroCard
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.WindowSize
@@ -77,7 +79,8 @@ import world.hachimi.app.ui.util.listTailSpacerItem
 @Composable
 fun HomeMainScreen(
     vm: HomeViewModel = koinViewModel(),
-    global: GlobalStore = koinInject()
+    global: GlobalStore = koinInject(),
+    squareIntro: SquareIntro = koinInject(),
 ) {
     val navigator = LocalNavigator.current
 
@@ -98,6 +101,16 @@ fun HomeMainScreen(
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             listHeadInsetsSpacerItem()
+            item(key = "square_intro", contentType = "square_intro") {
+                SquareIntroCard(
+                    intro = squareIntro,
+                    onOpen = { navigator.switchPrimary(Route.Root.Square) },
+                    modifier = Modifier
+                        .fillMaxWidthIn()
+                        .padding(horizontal = AdaptiveScreenMargin)
+                        .padding(bottom = AdaptiveListSpacing),
+                )
+            }
             item(contentType = "recent_section") {
                 Segment(
                     modifier = Modifier

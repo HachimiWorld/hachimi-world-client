@@ -51,6 +51,18 @@ sealed interface UgcPreview {
         override val imageUrl get() = coverUrl
     }
 
+    /** @since 261106 */
+    @Serializable
+    data class Moment(
+        val id: Long,
+        /** May be empty. */
+        val content: String,
+        val imageThumbUrls: List<String> = emptyList(),
+    ) : UgcPreview {
+        override val headline get() = content
+        override val imageUrl get() = imageThumbUrls.firstOrNull()
+    }
+
     @Serializable
     data class Comment(
         val content: String,
@@ -75,6 +87,7 @@ sealed interface UgcPreview {
                 "playlist" -> Playlist.serializer()
                 "user" -> User.serializer()
                 "post" -> Post.serializer()
+                "moment" -> Moment.serializer()
                 "comment" -> Comment.serializer()
                 else -> Unknown.serializer()
             }
