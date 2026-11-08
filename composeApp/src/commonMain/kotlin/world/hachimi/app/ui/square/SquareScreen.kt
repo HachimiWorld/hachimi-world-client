@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -41,6 +42,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.design.components.AccentButton
+import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.TabBar
@@ -52,6 +54,7 @@ import world.hachimi.app.ui.moment.LoadMoreMomentsEffect
 import world.hachimi.app.ui.moment.momentItems
 import world.hachimi.app.ui.moment.rememberMomentActions
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
+import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.ui.util.listTailPadding
 import world.hachimi.app.ui.util.listTailSpacerItem
@@ -65,29 +68,57 @@ enum class SquareTab { MOMENTS, ANNOUNCEMENTS }
  * @since 261106
  */
 @Composable
-fun SquareScreen(initialTab: SquareTab = SquareTab.MOMENTS) {
+fun SquareScreen(
+    initialTab: SquareTab = SquareTab.MOMENTS,
+    vm: SquareViewModel = koinViewModel(),
+) {
     val pagerState = rememberPagerState(initialPage = initialTab.ordinal) { SquareTab.entries.size }
     val scope = rememberCoroutineScope()
+    val pager = vm.moments
+    val listState = rememberLazyListState()
 
     Column(Modifier.fillMaxSize().multiplatformStatusBarsPadding()) {
-        TabBar(
-            tabs = listOf(
-                stringResource(Res.string.square_tab_moments),
-                stringResource(Res.string.square_tab_announcements),
-            ),
-            selectedIndex = pagerState.currentPage,
-            onTabSelected = { scope.launch { pagerState.animateScrollToPage(it) } },
-            modifier = Modifier.fillMaxWidthIn(maxWidth = MomentListMaxWidth).padding(
+        Row(
+            Modifier.fillMaxWidthIn(maxWidth = MomentListMaxWidth).padding(
                 top = AdaptiveScreenMargin,
                 start = AdaptiveScreenMargin,
                 end = AdaptiveScreenMargin,
             ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TabBar(
+                tabs = listOf(
+                    stringResource(Res.string.square_tab_moments),
+                    stringResource(Res.string.square_tab_announcements),
+                ),
+                selectedIndex = pagerState.currentPage,
+                onTabSelected = { scope.launch { pagerState.animateScrollToPage(it) } },
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            // Phones pull to refresh; wider screens get a button over the list it refreshes
+            if (LocalWindowSize.current.width >= WindowSize.COMPACT && pagerState.currentPage == SquareTab.MOMENTS.ordinal) {
+                val refreshing = pager.refreshing
+                HachimiIconButton(
+                    onClick = {
+                        // New ones come in on top
+                        scope.launch { listState.scrollToItem(0) }
+                        pager.refresh()
+                    },
+                    enabled = !refreshing,
+                ) {
+                    if (refreshing) {
+                        CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.Refresh, stringResource(Res.string.moment_refresh_cd))
+                    }
+                }
+            }
+        }
         HorizontalPager(pagerState, modifier = Modifier.fillMaxWidth().weight(1f)) { page ->
             when (SquareTab.entries[page]) {
-                SquareTab.MOMENTS -> MomentsTab()
+                SquareTab.MOMENTS -> MomentsTab(vm, listState)
                 SquareTab.ANNOUNCEMENTS -> EventsScreen()
             }
         }
@@ -96,13 +127,13 @@ fun SquareScreen(initialTab: SquareTab = SquareTab.MOMENTS) {
 
 @Composable
 private fun MomentsTab(
-    vm: SquareViewModel = koinViewModel(),
+    vm: SquareViewModel,
+    listState: LazyListState,
     global: GlobalStore = koinInject(),
 ) {
     val navigator = LocalNavigator.current
     val pager = vm.moments
     val actions = rememberMomentActions()
-    val listState = rememberLazyListState()
     LaunchedEffect(pager) { pager.ensureLoaded() }
     LoadMoreMomentsEffect(listState, pager)
     val screenWidth = LocalWindowSize.current.width
@@ -123,17 +154,7 @@ private fun MomentsTab(
                 listTailSpacerItem()
             }
         }
-        Row(
-            Modifier.align(Alignment.BottomEnd).listTailPadding().padding(AdaptiveScreenMargin),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Phones pull to refresh
-            if (screenWidth >= world.hachimi.app.ui.util.WindowSize.COMPACT) {
-                HachimiIconButton(onClick = pager::refresh) {
-                    Icon(Icons.Default.Refresh, stringResource(Res.string.moment_refresh_cd))
-                }
-                Spacer(Modifier.width(8.dp))
-            }
+        Box(Modifier.align(Alignment.BottomEnd).listTailPadding().padding(AdaptiveScreenMargin)) {
             AccentButton(
                 onClick = {
                     if (global.isLoggedIn) navigator.push(Route.Root.CreateMoment)
