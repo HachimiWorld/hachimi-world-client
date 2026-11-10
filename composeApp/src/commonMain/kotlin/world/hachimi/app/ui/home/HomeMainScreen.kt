@@ -1,6 +1,12 @@
 package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,6 +38,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.CircleShape
+import world.hachimi.app.ui.design.HachimiTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import world.hachimi.app.ui.component.BrandLogo
+import world.hachimi.app.ui.root.component.SearchBox
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -88,6 +102,8 @@ fun HomeMainScreen(
         vm.mounted()
         onDispose { vm.unmount() }
     }
+    // The phone has no bar over its pages, so the logo and search open the page and scroll with it
+    val phone = LocalWindowSize.current.width < WindowSize.COMPACT
     AdaptivePullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
         isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
@@ -101,6 +117,9 @@ fun HomeMainScreen(
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             listHeadInsetsSpacerItem()
+            if (phone) item(key = "header", contentType = "header") {
+                HomeHeader(onSearch = { navigator.push(Route.Root.Search(it)) })
+            }
             item(key = "square_intro", contentType = "square_intro") {
                 SquareIntroCard(
                     intro = squareIntro,
@@ -172,6 +191,43 @@ fun HomeMainScreen(
 
             listTailSpacerItem()
         }
+    }
+}
+
+/** The logo and the search field, at the head of the phone's home page. */
+@Composable
+private fun HomeHeader(onSearch: (String) -> Unit) {
+    var searchText by rememberSaveable { mutableStateOf("") }
+    var focused by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    // While searching, the logo steps aside for the field. The clear button stays for as long as the
+    // field is in use and doubles as the way out: it empties the field, lets go of it and drops the keyboard.
+    Row(
+        Modifier.fillMaxWidth().padding(start = AdaptiveScreenMargin, end = AdaptiveScreenMargin, bottom = 20.dp).height(40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AnimatedVisibility(
+            visible = !focused,
+            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+        ) {
+            BrandLogo(Modifier.padding(end = 12.dp))
+        }
+        SearchBox(
+            searchText = searchText,
+            onSearchTextChange = { searchText = it },
+            onSearch = { onSearch(searchText) },
+            modifier = Modifier.weight(1f).height(40.dp).onFocusChanged { focused = it.isFocused },
+            containerColor = HachimiTheme.colorScheme.surface,
+            shape = CircleShape,
+            onClear = {
+                searchText = ""
+                focusManager.clearFocus()
+                keyboard?.hide()
+            },
+            clearVisible = focused || searchText.isNotEmpty(),
+        )
     }
 }
 

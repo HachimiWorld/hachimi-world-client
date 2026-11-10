@@ -11,6 +11,12 @@
     <string name="nav_contributor_center">Contributor Center</string>
     <string name="nav_settings">Settings</string>
 
+    <!-- The phone's Me tab -->
+    <string name="nav_me">Me</string>
+    <string name="me_guest_title">Not signed in</string>
+    <string name="me_guest_hint">Sign in to see your playlists, likes and messages.</string>
+    <string name="me_follow_stats">%1$s following · %2$s followers</string>
+
     <!-- Web: native client promo -->
     <string name="client_promo_title">Get the app</string>
     <string name="client_promo_desc">Smoother playback, offline cache and system media controls.</string>

@@ -17,27 +17,44 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_back_cd
+import org.jetbrains.compose.resources.stringResource
+import world.hachimi.app.nav.BottomTab
+import world.hachimi.app.nav.bottomTab
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.me.MeScreen
+import world.hachimi.app.ui.root.component.CompactBottomBar
+import world.hachimi.app.ui.root.component.CompactBottomBarHeight
+import world.hachimi.app.util.PlatformBackHandler
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import soup.compose.material.motion.animation.materialSharedAxisY
 import soup.compose.material.motion.animation.rememberSlideDistance
@@ -49,7 +66,6 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.RootShellNavKey
 import world.hachimi.app.nav.Route
-import world.hachimi.app.nav.isSideNavDestination
 import world.hachimi.app.ui.LocalContentInsets
 import world.hachimi.app.ui.LocalSharedTransitionScope
 import world.hachimi.app.ui.LocalWindowSize
@@ -58,7 +74,6 @@ import world.hachimi.app.ui.committee.CommitteeMembersScreen
 import world.hachimi.app.ui.committee.ReportCaseScreen
 import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.report.ReportDialogHost
-import world.hachimi.app.ui.component.LocalOpenNavigationDrawer
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.component.NeedLoginScreen
 import world.hachimi.app.ui.contributor.ContributorEntryScreen
@@ -85,7 +100,6 @@ import world.hachimi.app.ui.home.RecommendScreen
 import world.hachimi.app.ui.home.WeeklyHotScreen
 import world.hachimi.app.ui.insets.multiplatformStatusBars
 import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
-import world.hachimi.app.ui.insets.multiplatformSystemBarsPadding
 import world.hachimi.app.ui.likes.RecentLikeScreen
 import world.hachimi.app.ui.player.miniplayer.CompactFooterHeight
 import world.hachimi.app.ui.player.miniplayer.CompactMiniPlayer
@@ -96,9 +110,7 @@ import world.hachimi.app.ui.playlist.PublicPlaylistScreen
 import world.hachimi.app.ui.recentplay.RecentPlayScreen
 import world.hachimi.app.ui.root.component.ClientPromoState
 import world.hachimi.app.ui.root.component.CompactClientPromoBanner
-import world.hachimi.app.ui.root.component.CompactSideNavigation
 import world.hachimi.app.ui.root.component.ExpandedClientPromoCard
-import world.hachimi.app.ui.root.component.CompactTopAppBar
 import world.hachimi.app.ui.root.component.CompactUpdateBanner
 import world.hachimi.app.ui.root.component.ExpandedScaffoldLayout
 import world.hachimi.app.ui.root.component.ExpandedSideNavigation
@@ -137,7 +149,6 @@ fun RootScreen() {
     val navigator = LocalNavigator.current
     val global = koinInject<GlobalStore>()
     val currentPrimary = navigator.currentPrimary ?: return
-    val scope = rememberCoroutineScope()
     val clientPromo = rememberClientPromoState()
     val messageCenter = koinInject<MessageCenterStore>()
     LifecycleResumeEffect(messageCenter) {
@@ -147,25 +158,10 @@ fun RootScreen() {
 
     if (LocalWindowSize.current.width < WindowSize.COMPACT) {
         CompactScreen(
-            navigationContent = { drawerState ->
-                CompactSideNavigation(
-                    content = currentPrimary,
-                    onChange = { route ->
-                        scope.launch {
-                            delay(120)
-                            drawerState.close()
-                            if (route.isSideNavDestination()) {
-                                navigator.switchPrimary(route)
-                            } else {
-                                navigator.push(route)
-                            }
-                        }
-                    },
-                )
-            },
             global = global,
             navigator = navigator,
             clientPromo = clientPromo,
+            meUnread = (messageCenter.totalUnread ?: 0) > 0,
         )
     } else {
         ExpandedScreen(
@@ -242,6 +238,7 @@ private fun primaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Rout
         Route.Root.Square -> NavEntry(key) { SquareScreen() }
         Route.Root.Events.Feed -> NavEntry(key) { SquareScreen(initialTab = SquareTab.ANNOUNCEMENTS) }
         Route.Root.Home.Main -> NavEntry(key) { HomeMainScreen() }
+        Route.Root.Me -> NavEntry(key) { MeScreen() }
         Route.Root.RecentPlay -> NavEntry(key) {
             if (global.isLoggedIn) RecentPlayScreen() else NeedLoginScreen()
         }
@@ -385,94 +382,141 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
 
 // endregion
 
+/**
+ * The phone's shell: pages run to the top of the screen with no bar over them, and the mini
+ * player floats above a bottom bar of three tabs.
+ */
 @Composable
 private fun CompactScreen(
-    navigationContent: @Composable (drawerState: DrawerState) -> Unit,
     global: GlobalStore,
     navigator: Navigator,
     clientPromo: ClientPromoState,
+    meUnread: Boolean,
 ) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    val openDrawer: () -> Unit = {
-        scope.launch { drawerState.open() }
-    }
+    val currentPrimary = navigator.currentPrimary ?: return
+    val barVisible = navigator.isAtRootShell || (navigator.currentRoot as? Route.Root)?.keepsBottomBar() == true
+    // What pages leave free at the bottom: the mini player, the gaps around it, and the bar
+    val footer by animateDpAsState(
+        MiniPlayerGapAbove + CompactFooterHeight + MiniPlayerGapBelow + if (barVisible) CompactBottomBarHeight else 8.dp
+    )
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = navigator.isAtRootShell,
-        drawerContent = {
-            ElevatedCard(
-                modifier = Modifier.width(300.dp),
-                color = HachimiTheme.colorScheme.surface.compositeOver(HachimiTheme.colorScheme.background),
-                shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
+    val hazeState = rememberHazeState()
+    // hazeSource must be a sibling *under* the miniplayer (hazeEffect), not the parent
+    // that also hosts the footer — otherwise blur samples nothing useful.
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .hazeSource(hazeState)
+                .background(HachimiTheme.colorScheme.background)
+        ) {
+            CompositionLocalProvider(
+                // LocalContentInsets = what the footer covers, without the system bar.
+                // Status top: listHeadInsetsSpacerItem / multiplatformStatusBarsPadding
+                // (consumed by the shell → 0).
+                LocalContentInsets provides WindowInsets(bottom = footer),
             ) {
-                Column(Modifier.multiplatformSystemBarsPadding()) {
-                    Logo(Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp))
-                    Box(Modifier.padding(12.dp)) {
-                        navigationContent(drawerState)
-                    }
-                }
-            }
-        },
-    ) {
-        val hazeState = rememberHazeState()
-        // hazeSource must be a sibling *under* the miniplayer (hazeEffect), not the parent
-        // that also hosts the footer — otherwise blur samples nothing useful.
-        Box(Modifier.fillMaxSize()) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .hazeSource(hazeState)
-                    .background(HachimiTheme.colorScheme.background)
-            ) {
-                CompositionLocalProvider(
-                    // LocalContentInsets = MiniPlayer bottom only.
-                    // Status top: listHeadInsetsSpacerItem / multiplatformStatusBarsPadding
-                    // (consumed under AppBar → 0).
-                    LocalContentInsets provides WindowInsets(
-                        bottom = CompactFooterHeight + 24.dp
-                    ),
-                    LocalOpenNavigationDrawer provides openDrawer,
-                ) {
-                    RootNavDisplay(
-                        global = global,
-                        navigator = navigator,
-                        shell = { primaryContent ->
-                            // Root shell: shared AppBar + nested primary NavDisplay
-                            Column(Modifier.fillMaxSize()) {
-                                CompactTopAppBar(
-                                    modifier = Modifier.zIndex(2f).fillMaxWidth(),
-                                    global = global,
-                                    onExpandNavClick = openDrawer,
-                                )
-                                CompactClientPromoBanner(clientPromo)
-                                CompactUpdateBanner(global.updates)
-                                // consume for *descendants* (not AppBar siblings): body must not
-                                // re-apply multiplatform top insets already handled by AppBar.
-                                Box(
-                                    Modifier
-                                        .weight(1f)
-                                        .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
-                                ) {
-                                    primaryContent()
+                RootNavDisplay(
+                    global = global,
+                    navigator = navigator,
+                    shell = { primaryContent ->
+                        // Root shell: the status bar's room, banners, then the nested primary NavDisplay
+                        Column(Modifier.fillMaxSize()) {
+                            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.multiplatformStatusBars))
+                            CompactClientPromoBanner(clientPromo)
+                            CompactUpdateBanner(global.updates)
+                            // consume for *descendants*: the body must not re-apply the top
+                            // inset the spacer above already took.
+                            Column(
+                                Modifier
+                                    .weight(1f)
+                                    .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
+                            ) {
+                                val tab = currentPrimary.bottomTab()
+                                val underMe = tab == BottomTab.ME && currentPrimary != Route.Root.Me
+                                // Back leads up: from a page under Me to Me, from another tab to home
+                                PlatformBackHandler(enabled = navigator.isAtRootShell && currentPrimary != Route.Root.Default) {
+                                    navigator.switchPrimary(if (underMe) Route.Root.Me else Route.Root.Default)
                                 }
+                                if (underMe) {
+                                    Box(Modifier.fillMaxWidth().height(48.dp).padding(start = 4.dp)) {
+                                        HachimiIconButton(
+                                            onClick = { navigator.switchPrimary(Route.Root.Me) },
+                                            modifier = Modifier.size(48.dp),
+                                            touchMode = true,
+                                        ) {
+                                            Icon(
+                                                Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(Res.string.common_back_cd),
+                                            )
+                                        }
+                                    }
+                                }
+                                Box(Modifier.weight(1f)) { primaryContent() }
                             }
-                        },
+                        }
+                    },
+                )
+            }
+        }
+
+        val background = HachimiTheme.colorScheme.background
+        Column(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().drawBehind {
+                // Behind the mini player the page fades out, and is gone by the gap above the
+                // bar, so the bar needs no line over it
+                if (barVisible) {
+                    val solidFrom = CompactFooterHeight.toPx()
+                    val fadeFrom = solidFrom - 40.dp.toPx()
+                    drawRect(
+                        Brush.verticalGradient(listOf(Color.Transparent, background), fadeFrom, solidFrom),
+                        topLeft = Offset(0f, fadeFrom),
+                        size = Size(size.width, size.height - fadeFrom),
                     )
                 }
             }
-
+        ) {
             CompactMiniPlayer(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentHeight(align = Alignment.Bottom)
-                    .padding(24.dp)
-                    .navigationBarsPadding(),
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, end = 12.dp, bottom = MiniPlayerGapBelow),
                 hazeState = hazeState,
             )
+            AnimatedVisibility(
+                visible = barVisible,
+                enter = expandVertically(expandFrom = Alignment.Top),
+                exit = shrinkVertically(shrinkTowards = Alignment.Top),
+            ) {
+                CompactBottomBar(
+                    selected = currentPrimary.bottomTab(),
+                    onSelect = { navigator.switchPrimary(it.route) },
+                    avatarUrl = global.userInfo?.avatarUrl,
+                    meUnread = meUnread,
+                )
+            }
+            // With the bar away, the player still clears the system bar
+            if (!barVisible) Spacer(Modifier.navigationBarsPadding().height(8.dp))
         }
     }
+}
+
+private val MiniPlayerGapAbove = 12.dp
+private val MiniPlayerGapBelow = 8.dp
+
+/**
+ * Secondary pages that are for browsing keep the bottom bar; the ones for a task of their own
+ * (writing, editing, reading a thread) take the whole screen.
+ */
+private fun Route.Root.keepsBottomBar(): Boolean = when (this) {
+    is Route.Root.Home,
+    is Route.Root.Search,
+    is Route.Root.MyPlaylist.Detail,
+    is Route.Root.PublicPlaylist,
+    Route.Root.UserSpace,
+    is Route.Root.PublicUserSpace,
+    -> true
+
+    else -> false
 }
 
 @Composable

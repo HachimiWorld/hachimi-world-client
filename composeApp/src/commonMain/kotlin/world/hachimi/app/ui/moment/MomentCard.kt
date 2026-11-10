@@ -7,15 +7,18 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -23,9 +26,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.ripple
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.QueueMusic
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.Delete
@@ -43,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
@@ -79,7 +84,6 @@ import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
-import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
@@ -163,10 +167,13 @@ fun rememberMomentActions(
 }
 
 /**
- * A moment: who and when, its text, images and attachment, and its likes and comments.
+ * A moment: who and when, its text, images and attachment, and its likes and comments. Flat on the
+ * page: a list rules a line between them.
  *
- * @param full Shows all of its text, selectable, for its own page, which gives the margins; a
- * list folds long text and opens the moment on a click.
+ * @param full Shows all of its text, larger and selectable, under the author, for its own page; a
+ * list keeps everything beside the avatar, folds long text and opens the moment on a click.
+ * @param contentPadding Around the content and inside the click's ripple, so a list can run the
+ * ripple to its edges. @since 261110
  * @since 261106
  */
 @Composable
@@ -175,79 +182,130 @@ fun MomentCard(
     actions: MomentActions,
     modifier: Modifier = Modifier,
     full: Boolean = false,
+    contentPadding: PaddingValues = if (full) PaddingValues(top = 16.dp, bottom = 4.dp) else MomentCardPadding,
 ) {
-    val variant = HachimiTheme.colorScheme.onSurfaceVariant
-    Column(
+    if (full) {
+        Column(modifier.fillMaxWidth().padding(contentPadding)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Avatar(item, actions)
+                Column(Modifier.weight(1f).padding(start = 12.dp)) {
+                    AuthorName(item, actions)
+                    TimeText(item, fontSize = 13.sp)
+                }
+                MoreButton(item, actions)
+            }
+            Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (item.isHidden) HiddenNotice()
+                if (item.content.isNotEmpty()) {
+                    SelectionContainer {
+                        Text(item.content, fontSize = 17.sp, lineHeight = 27.sp)
+                    }
+                }
+                Media(item, actions)
+            }
+            FooterRow(item, actions, Modifier.padding(top = 8.dp))
+        }
+        return
+    }
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .then(if (full) Modifier else Modifier.clickable { actions.onOpen(item, false) })
-            .padding(horizontal = if (full) 0.dp else 12.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .clickable { actions.onOpen(item, false) }
+            .padding(contentPadding),
     ) {
-        AuthorRow(item, actions)
-        if (item.isHidden) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(Icons.Outlined.VisibilityOff, null, Modifier.size(14.dp), tint = variant)
-                Text(stringResource(Res.string.moment_hidden_notice), fontSize = 12.sp, color = variant)
-            }
-        }
-        if (item.content.isNotEmpty()) {
-            if (full) {
-                SelectionContainer {
-                    Text(item.content, fontSize = 15.sp, lineHeight = 23.sp)
+        Avatar(item, actions)
+        Column(Modifier.weight(1f).padding(start = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    AuthorName(item, actions, Modifier.weight(1f, fill = false))
+                    Text(" · ", fontSize = 14.sp, color = HachimiTheme.colorScheme.onSurfaceVariant)
+                    TimeText(item, fontSize = 14.sp)
                 }
-            } else {
-                FoldedText(item.content)
+                MoreButton(item, actions)
             }
+            if (item.isHidden) HiddenNotice(Modifier.padding(top = 2.dp))
+            if (item.content.isNotEmpty()) {
+                FoldedText(item.content, Modifier.padding(top = 2.dp))
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Media(item, actions, Modifier.padding(top = 10.dp))
+            }
+            FooterRow(item, actions, Modifier.padding(top = 4.dp))
         }
-        if (item.images.isNotEmpty()) {
-            ImageGrid(item.images, onClick = { actions.onImageClick(item, it) })
-        }
-        item.attachments.forEach { attachment ->
-            AttachmentCard(attachment, onClick = { actions.onAttachmentClick(attachment) })
-        }
-        FooterRow(item, actions)
     }
 }
 
+/** Around a moment in a list: 16dp at the sides, with its footer's own padding closing the bottom. @since 261110 */
+val MomentCardPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+
 @Composable
-private fun AuthorRow(item: MomentItem, actions: MomentActions) {
+private fun Avatar(item: MomentItem, actions: MomentActions) {
+    RemoteImage(
+        item.author.avatarUrl,
+        Modifier.size(40.dp).clip(CircleShape).clickable { actions.onUserClick(item.author.uid) },
+    )
+}
+
+/** The name opens the author, quietly: the row's own ripple would fight a second one. */
+@Composable
+private fun AuthorName(item: MomentItem, actions: MomentActions, modifier: Modifier = Modifier) {
+    Text(
+        text = item.author.username,
+        modifier = modifier.clickable(interactionSource = null, indication = null) {
+            actions.onUserClick(item.author.uid)
+        },
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.SemiBold,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+@Composable
+private fun TimeText(item: MomentItem, fontSize: TextUnit) {
+    Text(
+        text = formatTime(item.createTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMD),
+        fontSize = fontSize,
+        lineHeight = 20.sp,
+        color = HachimiTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+    )
+}
+
+@Composable
+private fun HiddenNotice(modifier: Modifier = Modifier) {
     val variant = HachimiTheme.colorScheme.onSurfaceVariant
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        RemoteImage(
-            item.author.avatarUrl,
-            Modifier.size(36.dp).clip(CircleShape).clickable { actions.onUserClick(item.author.uid) },
+    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Icon(Icons.Outlined.VisibilityOff, null, Modifier.size(14.dp), tint = variant)
+        Text(stringResource(Res.string.moment_hidden_notice), fontSize = 12.sp, color = variant)
+    }
+}
+
+/** The images, then what's attached; [first] goes on whichever comes first. */
+@Composable
+private fun ColumnScope.Media(item: MomentItem, actions: MomentActions, first: Modifier = Modifier) {
+    if (item.images.isNotEmpty()) {
+        ImageGrid(item.images, onClick = { actions.onImageClick(item, it) }, modifier = first)
+    }
+    item.attachments.forEachIndexed { index, attachment ->
+        AttachmentCard(
+            attachment,
+            onClick = { actions.onAttachmentClick(attachment) },
+            modifier = if (index == 0 && item.images.isEmpty()) first else Modifier,
         )
-        Column(Modifier.weight(1f).padding(start = 10.dp)) {
-            Text(
-                text = item.author.username,
-                modifier = Modifier.clickable { actions.onUserClick(item.author.uid) },
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = formatTime(item.createTime, distance = true, precise = false, fullFormat = LocalDateTime.Formats.YMD),
-                fontSize = 12.sp,
-                color = variant,
-                maxLines = 1,
-            )
-        }
-        MoreButton(item, actions)
     }
 }
 
 /** Long text folded to [FOLDED_LINES], with a hint that there's more. */
 @Composable
-private fun FoldedText(text: String) {
+private fun FoldedText(text: String, modifier: Modifier = Modifier) {
     var overflows by remember(text) { mutableStateOf(false) }
-    Column {
+    Column(modifier) {
         Text(
             text = text,
             fontSize = 15.sp,
-            lineHeight = 23.sp,
+            lineHeight = 22.sp,
             maxLines = FOLDED_LINES,
             overflow = TextOverflow.Ellipsis,
             onTextLayout = { overflows = it.hasVisualOverflow },
@@ -263,19 +321,19 @@ private fun FoldedText(text: String) {
     }
 }
 
-/** One image at its own shape; more in rows of three (four as two by two), cut square. */
+/** One image at its own shape; more in rows of three (four as two by two), cut square, as one rounded block. */
 @Composable
 internal fun ImageGrid(images: List<MomentImage>, onClick: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = RoundedCornerShape(12.dp)
     if (images.size == 1) {
         val image = images.first()
         val ratio = if (image.width > 0 && image.height > 0) image.width.toFloat() / image.height else 1f
         RemoteImage(
             image.thumbUrl,
             modifier
-                .widthIn(max = if (ratio >= 1f) 320.dp else 220.dp)
+                .widthIn(max = if (ratio >= 1f) 400.dp else 240.dp)
                 .fillMaxWidth()
-                .aspectRatio(ratio.coerceIn(0.6f, 1.8f))
+                .aspectRatio(ratio.coerceIn(0.75f, 1.8f))
                 .clip(shape)
                 .clickable { onClick(0) },
         )
@@ -283,11 +341,11 @@ internal fun ImageGrid(images: List<MomentImage>, onClick: (Int) -> Unit, modifi
     }
     val columns = if (images.size == 4) 2 else 3
     Column(
-        modifier.widthIn(max = if (columns == 2) 260.dp else 390.dp).fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier.widthIn(max = if (columns == 2) 300.dp else 420.dp).fillMaxWidth().clip(shape),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         images.chunked(columns).forEachIndexed { row, chunk ->
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 for (column in 0 until columns) {
                     val index = row * columns + column
                     val image = chunk.getOrNull(column)
@@ -296,7 +354,7 @@ internal fun ImageGrid(images: List<MomentImage>, onClick: (Int) -> Unit, modifi
                     } else {
                         RemoteImage(
                             image.thumbUrl,
-                            Modifier.weight(1f).aspectRatio(1f).clip(shape).clickable { onClick(index) },
+                            Modifier.weight(1f).aspectRatio(1f).clickable { onClick(index) },
                         )
                     }
                 }
@@ -313,27 +371,32 @@ internal fun AttachmentCard(attachment: MomentAttachment, onClick: () -> Unit, m
     val clickable = attachment is MomentAttachment.Song || attachment is MomentAttachment.Playlist
     Row(
         modifier = modifier
-            .widthIn(max = 420.dp)
+            .widthIn(max = 400.dp)
             .fillMaxWidth()
             .clip(shape)
-            .background(HachimiTheme.colorScheme.onSurface.copy(alpha = 0.04f))
-            .border(1.dp, HachimiTheme.colorScheme.outline, shape)
+            .background(HachimiTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             .then(if (clickable) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         when (attachment) {
             is MomentAttachment.Song -> {
-                RemoteImage(attachment.song.coverUrl, Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)))
+                RemoteImage(attachment.song.coverUrl, Modifier.size(48.dp).clip(RoundedCornerShape(6.dp)))
                 Column(Modifier.weight(1f)) {
                     Text(attachment.song.title, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(attachment.song.uploaderName, fontSize = 12.sp, color = variant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-                Icon(Icons.Default.PlayArrow, null, Modifier.size(24.dp), tint = HachimiTheme.colorScheme.primary)
+                Box(
+                    Modifier.padding(end = 4.dp).size(32.dp).clip(CircleShape)
+                        .background(HachimiTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Default.PlayArrow, null, Modifier.size(20.dp), tint = HachimiTheme.colorScheme.primary)
+                }
             }
             is MomentAttachment.Playlist -> {
-                Box(Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(48.dp).clip(RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                     RemoteImage(attachment.playlist.coverUrl, Modifier.size(48.dp))
                     if (attachment.playlist.coverUrl == null) {
                         Icon(Icons.AutoMirrored.Outlined.QueueMusic, null, Modifier.size(24.dp), tint = variant)
@@ -367,8 +430,13 @@ internal fun AttachmentCard(attachment: MomentAttachment, onClick: () -> Unit, m
 }
 
 @Composable
-private fun FooterRow(item: MomentItem, actions: MomentActions) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+private fun FooterRow(item: MomentItem, actions: MomentActions, modifier: Modifier = Modifier) {
+    // Icons line up with the text above rather than with their own padding
+    Row(
+        modifier = modifier.offset(x = (-10).dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(28.dp),
+    ) {
         CountButton(
             icon = if (item.liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
             contentDescription = stringResource(if (item.liked) Res.string.moment_unlike_cd else Res.string.moment_like_cd),
@@ -397,11 +465,12 @@ private fun CountButton(
     val color by animateColorAsState(if (active) HachimiTheme.colorScheme.primary else HachimiTheme.colorScheme.onSurfaceVariant)
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(50))
+            .defaultMinSize(minWidth = 38.dp, minHeight = 36.dp)
+            .clip(CircleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Icon(icon, contentDescription, Modifier.size(18.dp), tint = color)
         AnimatedVisibility(
@@ -422,9 +491,16 @@ private fun MoreButton(item: MomentItem, actions: MomentActions) {
     val mine = actions.isMine(item)
     Box {
         var expanded by remember { mutableStateOf(false) }
-        HachimiIconButton(onClick = { expanded = true }) {
+        // Takes no more room than the line of text it sits on, with a ripple that spills past it
+        Box(
+            Modifier.size(20.dp).offset(x = 2.dp).clickable(
+                interactionSource = null,
+                indication = ripple(bounded = false, radius = 18.dp),
+            ) { expanded = true },
+            contentAlignment = Alignment.Center,
+        ) {
             Icon(
-                Icons.Default.MoreVert,
+                Icons.Default.MoreHoriz,
                 contentDescription = stringResource(Res.string.common_more),
                 modifier = Modifier.size(18.dp),
                 tint = HachimiTheme.colorScheme.onSurfaceVariant,

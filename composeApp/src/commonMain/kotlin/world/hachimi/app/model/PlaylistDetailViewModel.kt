@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.playlist_reorder_failed
 import hachimiworld.composeapp.generated.resources.publish_image_too_large
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -49,6 +50,13 @@ class PlaylistDetailViewModel(
     var editOperating by mutableStateOf(false)
     var editPrivate by mutableStateOf(true)
 
+    var showDeleteConfirm by mutableStateOf(false)
+    var deleteOperating by mutableStateOf(false)
+        private set
+    /** Set once the playlist is gone, for the screen to leave. @since 261111 */
+    var deleted by mutableStateOf(false)
+        private set
+
     var coverUploading by mutableStateOf(false)
     var coverUploadingProgress by mutableStateOf(0f)
 
@@ -69,6 +77,7 @@ class PlaylistDetailViewModel(
 
     fun init() = viewModelScope.launch {
         initStatus = InitializeStatus.INIT
+        deleted = false
         refresh()
     }
 
@@ -207,6 +216,58 @@ class PlaylistDetailViewModel(
                 } finally {
                     coverUploading = false
                 }
+            }
+        }
+    }
+
+    /**
+     * Moves [songId] to [target] and saves it. [order] is every song id, unavailable ones included,
+     * in the order shown after the move; the list takes it at once and only goes back if saving fails.
+     *
+     * @since 261111
+     */
+    fun moveSong(songId: Long, target: Int, order: List<Long>) {
+        val playlistId = playlistId ?: return
+        val position = order.withIndex().associate { (index, id) -> id to index }
+        songs = songs.map { it.copy(orderIndex = position[it.songId] ?: it.orderIndex) }
+        unavailableSongs = unavailableSongs.map { it.copy(orderIndex = position[it.songId] ?: it.orderIndex) }
+        viewModelScope.launch {
+            try {
+                val resp = api.playlistModule.changeOrder(
+                    PlaylistModule.ChangeOrderReq(playlistId = playlistId, songId = songId, targetOrder = target)
+                )
+                if (!resp.ok) {
+                    global.alert(Res.string.playlist_reorder_failed)
+                    refresh()
+                }
+            } catch (e: Throwable) {
+                Logger.e("playlist", "Failed to change order", e)
+                global.alert(Res.string.playlist_reorder_failed)
+                refresh()
+            }
+        }
+    }
+
+    /** @since 261111 */
+    fun confirmDelete() {
+        val id = playlistId ?: return
+        viewModelScope.launch {
+            deleteOperating = true
+            try {
+                val resp = api.playlistModule.delete(PlaylistModule.PlaylistIdReq(id))
+                if (resp.ok) {
+                    showDeleteConfirm = false
+                    showEditDialog = false
+                    global.events.send(AppEvent.PlaylistDeleted(id))
+                    deleted = true
+                } else {
+                    global.alert(resp.err().msg)
+                }
+            } catch (e: Throwable) {
+                Logger.e("playlist", "Failed to delete playlist", e)
+                global.alert(e.message)
+            } finally {
+                deleteOperating = false
             }
         }
     }

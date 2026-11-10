@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_logout
@@ -126,6 +127,7 @@ fun UserSpaceScreen(
             }
             LoadMoreMomentsEffect(gridState, vm.moments, enabled = selectedTab == MOMENTS_TAB)
 
+            val screenMargin = AdaptiveScreenMargin
             LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.fillMaxSize(),
@@ -156,7 +158,7 @@ fun UserSpaceScreen(
             when (selectedTab) {
                 0 -> artworkTabContents(vm, global)
                 1 -> playlistsTabContents(vm, navigator)
-                MOMENTS_TAB -> momentsTabContents(vm, momentActions, onCreate = { navigator.push(Route.Root.CreateMoment) })
+                MOMENTS_TAB -> momentsTabContents(vm, momentActions, bleed = screenMargin, onCreate = { navigator.push(Route.Root.CreateMoment) })
             }
 
             listTailSpacerItem()
@@ -199,6 +201,7 @@ private const val MOMENTS_TAB = 2
 private fun LazyGridScope.momentsTabContents(
     vm: UserSpaceViewModel,
     actions: MomentActions,
+    bleed: Dp,
     onCreate: () -> Unit,
 ) {
     if (vm.myself) {
@@ -213,7 +216,7 @@ private fun LazyGridScope.momentsTabContents(
             }
         }
     }
-    momentItems(vm.moments, actions, empty = null)
+    momentItems(vm.moments, actions, empty = null, bleed = bleed)
 }
 
 private fun LazyGridScope.artworkTabContents(

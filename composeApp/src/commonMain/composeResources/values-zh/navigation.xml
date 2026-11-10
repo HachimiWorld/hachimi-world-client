@@ -11,6 +11,12 @@
     <string name="nav_contributor_center">贡献者中心</string>
     <string name="nav_settings">设置</string>
 
+    <!-- The phone's Me tab -->
+    <string name="nav_me">我的</string>
+    <string name="me_guest_title">尚未登录</string>
+    <string name="me_guest_hint">登录后可查看歌单、点赞与消息。</string>
+    <string name="me_follow_stats">%1$s 关注 · %2$s 粉丝</string>
+
     <!-- Web: native client promo -->
     <string name="client_promo_title">下载客户端</string>
     <string name="client_promo_desc">播放更流畅，支持离线缓存与系统媒体控制</string>

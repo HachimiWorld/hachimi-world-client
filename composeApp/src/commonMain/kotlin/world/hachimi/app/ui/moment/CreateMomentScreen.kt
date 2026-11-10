@@ -89,7 +89,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.message.components.RemoteImage
-import world.hachimi.app.ui.square.MomentListMaxWidth
+import world.hachimi.app.ui.square.SquareMaxWidth
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.ui.util.listTailPadding
@@ -125,7 +125,7 @@ fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .fillMaxWidthIn(maxWidth = MomentListMaxWidth)
+                .fillMaxWidthIn(maxWidth = SquareMaxWidth)
                 .padding(AdaptiveScreenMargin)
                 .listTailPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),

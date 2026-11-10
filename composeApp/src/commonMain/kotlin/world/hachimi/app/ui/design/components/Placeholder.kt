@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -19,6 +21,10 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.design.HachimiTheme
@@ -71,11 +77,34 @@ fun Modifier.placeholder(
 ): Modifier = composed {
     if (!visible) return@composed this
 
-    val brush = rememberShimmerBrush()
-    clip(shape).drawWithContent {
-        drawRect(brush = brush, size = size)
+    val colorScheme = HachimiTheme.colorScheme
+    val baseColor = colorScheme.onSurface.copy(alpha = 0.06f)
+    val highlightColor = colorScheme.onSurface.copy(alpha = 0.12f)
+    // The frame clock is shared, so every placeholder on screen is in the same phase
+    val frameMillis = produceState(0L) { while (true) withFrameMillis { value = it } }
+    var coordinates: LayoutCoordinates? = null
+
+    onPlaced { coordinates = it }.clip(shape).drawWithContent {
+        // One band crossing the whole window, read in its coordinates, so blocks of any width
+        // and at any density light up in turn as it passes
+        val coords = coordinates
+        val rootWidth = coords?.findRootCoordinates()?.size?.width?.toFloat() ?: size.width
+        val x = coords?.positionInRoot()?.x ?: 0f
+        val band = ShimmerBandWidth.toPx()
+        val progress = (frameMillis.value % ShimmerPeriodMillis).toFloat() / ShimmerPeriodMillis
+        val center = -band + progress * (rootWidth + band * 2) - x
+        drawRect(
+            Brush.horizontalGradient(
+                listOf(baseColor, highlightColor, baseColor),
+                startX = center - band / 2,
+                endX = center + band / 2,
+            )
+        )
     }
 }
+
+private val ShimmerBandWidth = 240.dp
+private const val ShimmerPeriodMillis = 1600L
 
 @Preview
 @Composable
