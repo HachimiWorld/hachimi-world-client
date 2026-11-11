@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.root
 
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.layout.offset
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.drawWithContent
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Text
@@ -31,10 +35,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -406,10 +407,14 @@ private fun CompactScreen(
     meUnread: Boolean,
 ) {
     val currentPrimary = navigator.currentPrimary ?: return
-    val barVisible = navigator.isAtRootShell || (navigator.currentRoot as? Route.Root)?.keepsBottomBar() == true
-    // What pages leave free at the bottom: the mini player, the gaps around it, and the bar
-    val footer by animateDpAsState(
-        MiniPlayerGapAbove + CompactFooterHeight + MiniPlayerGapBelow + if (barVisible) CompactBottomBarHeight else 8.dp
+    // What pages leave free at the bottom: the mini player and the gaps around it, and on the
+    // root pages the bar too. Each page keeps its own, so nothing under a page moves when another opens.
+    val playerRoom = MiniPlayerGapAbove + CompactFooterHeight + MiniPlayerGapBelow
+    // The player rides on the bar on the root pages and drops to the bottom over any other page,
+    // in step with the pages' own transition
+    val playerLift by animateDpAsState(
+        if (navigator.isAtRootShell) CompactBottomBarHeight else 0.dp,
+        animationSpec = tween(PageTransitionMillis, easing = FastOutSlowInEasing),
     )
 
     val hazeState = rememberHazeState()
@@ -426,14 +431,16 @@ private fun CompactScreen(
                 // LocalContentInsets = what the footer covers, without the system bar.
                 // Status top: pages run under the status bar and keep their own room with
                 // listHeadInsetsSpacerItem / multiplatformStatusBarsPadding.
-                LocalContentInsets provides WindowInsets(bottom = footer),
+                LocalContentInsets provides WindowInsets(bottom = playerRoom),
             ) {
                 RootNavDisplay(
                     global = global,
                     navigator = navigator,
                     shell = { primaryContent ->
-                        // Root shell: banners, then the nested primary NavDisplay, with the status bar faded over it
+                        // Root shell: banners, then the nested primary NavDisplay, with the status bar faded
+                        // over it and the tab bar under it. A page opened from here covers all of this.
                         Box(Modifier.fillMaxSize()) {
+                        CompositionLocalProvider(LocalContentInsets provides WindowInsets(bottom = playerRoom + CompactBottomBarHeight)) {
                         Column(Modifier.fillMaxSize()) {
                             // A banner takes the status bar's room itself, and only while it's up;
                             // otherwise pages run edge to edge and keep their own top room
@@ -470,71 +477,68 @@ private fun CompactScreen(
                                 }
                             }
                         }
+                        }
                         StatusBarFade(Modifier.align(Alignment.TopCenter))
+                        ShellFooter(
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                            selected = currentPrimary.bottomTab(),
+                            onSelect = { navigator.switchPrimary(it.route) },
+                            avatarUrl = global.userInfo?.avatarUrl,
+                            meUnread = meUnread,
+                        )
                         }
                     },
                 )
             }
         }
 
-        val background = HachimiTheme.colorScheme.background
-        Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().drawBehind {
-                // Behind the mini player the page fades out, and is gone by the gap above the
-                // bar, so the bar needs no line over it
-                if (barVisible) {
-                    val solidFrom = CompactFooterHeight.toPx()
-                    val fadeFrom = solidFrom - 40.dp.toPx()
-                    drawRect(
-                        Brush.verticalGradient(listOf(Color.Transparent, background), fadeFrom, solidFrom),
-                        topLeft = Offset(0f, fadeFrom),
-                        size = Size(size.width, size.height - fadeFrom),
-                    )
-                }
-            }
-        ) {
-            CompactMiniPlayer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, bottom = MiniPlayerGapBelow),
-                hazeState = hazeState,
-            )
-            AnimatedVisibility(
-                visible = barVisible,
-                enter = expandVertically(expandFrom = Alignment.Top),
-                exit = shrinkVertically(shrinkTowards = Alignment.Top),
-            ) {
-                CompactBottomBar(
-                    selected = currentPrimary.bottomTab(),
-                    onSelect = { navigator.switchPrimary(it.route) },
-                    avatarUrl = global.userInfo?.avatarUrl,
-                    meUnread = meUnread,
-                )
-            }
-            // With the bar away, the player still clears the system bar
-            if (!barVisible) Spacer(Modifier.navigationBarsPadding().height(8.dp))
-        }
+        // The player floats over every page; the bar under it belongs to the root pages
+        CompactMiniPlayer(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(start = 12.dp, end = 12.dp, bottom = MiniPlayerGapBelow)
+                .offset { IntOffset(0, -playerLift.roundToPx()) },
+            hazeState = hazeState,
+        )
     }
 }
 
 private val MiniPlayerGapAbove = 12.dp
 private val MiniPlayerGapBelow = 8.dp
 
-/**
- * Secondary pages that are for browsing keep the bottom bar; the ones for a task of their own
- * (writing, editing, reading a thread) take the whole screen.
- */
-private fun Route.Root.keepsBottomBar(): Boolean = when (this) {
-    is Route.Root.Home,
-    is Route.Root.Search,
-    is Route.Root.MyPlaylist.Detail,
-    is Route.Root.PublicPlaylist,
-    Route.Root.UserSpace,
-    is Route.Root.PublicUserSpace,
-    -> true
+/** How long a page takes to open over another, matching the root NavDisplay's transition. */
+private const val PageTransitionMillis = 300
 
-    else -> false
+/**
+ * The bottom of the root pages: the tab bar, and above it the page fading out behind where the
+ * mini player sits, solid by the gap above the bar, so the bar needs no line over it.
+ */
+@Composable
+private fun ShellFooter(
+    selected: BottomTab,
+    onSelect: (BottomTab) -> Unit,
+    avatarUrl: String?,
+    meUnread: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val background = HachimiTheme.colorScheme.background
+    Column(
+        modifier.fillMaxWidth().drawBehind {
+            val solidFrom = PlayerFade.toPx()
+            drawRect(Brush.verticalGradient(listOf(Color.Transparent, background), 0f, solidFrom))
+            drawRect(background, topLeft = Offset(0f, solidFrom), size = Size(size.width, size.height - solidFrom))
+        }
+    ) {
+        // The fade runs out where the player's bottom edge rests
+        Spacer(Modifier.height(PlayerFade + MiniPlayerGapBelow))
+        CompactBottomBar(selected = selected, onSelect = onSelect, avatarUrl = avatarUrl, meUnread = meUnread)
+    }
 }
+
+/** How far up from the player's bottom edge the page starts to fade into the bar. */
+private val PlayerFade = 40.dp
 
 @Composable
 private fun ExpandedScreen(
