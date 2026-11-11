@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.root
 
+import androidx.compose.ui.draw.drawWithContent
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.component.LocalPageTitleShown
@@ -423,25 +424,27 @@ private fun CompactScreen(
         ) {
             CompositionLocalProvider(
                 // LocalContentInsets = what the footer covers, without the system bar.
-                // Status top: listHeadInsetsSpacerItem / multiplatformStatusBarsPadding
-                // (consumed by the shell → 0).
+                // Status top: pages run under the status bar and keep their own room with
+                // listHeadInsetsSpacerItem / multiplatformStatusBarsPadding.
                 LocalContentInsets provides WindowInsets(bottom = footer),
             ) {
                 RootNavDisplay(
                     global = global,
                     navigator = navigator,
                     shell = { primaryContent ->
-                        // Root shell: the status bar's room, banners, then the nested primary NavDisplay
+                        // Root shell: banners, then the nested primary NavDisplay, with the status bar faded over it
+                        Box(Modifier.fillMaxSize()) {
                         Column(Modifier.fillMaxSize()) {
-                            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.multiplatformStatusBars))
+                            // A banner takes the status bar's room itself, and only while it's up;
+                            // otherwise pages run edge to edge and keep their own top room
+                            val bannerUp = clientPromo.visible || global.updates.notice != null
+                            if (bannerUp) Spacer(Modifier.windowInsetsTopHeight(WindowInsets.multiplatformStatusBars))
                             CompactClientPromoBanner(clientPromo)
                             CompactUpdateBanner(global.updates)
-                            // consume for *descendants*: the body must not re-apply the top
-                            // inset the spacer above already took.
                             Column(
                                 Modifier
                                     .weight(1f)
-                                    .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
+                                    .then(if (bannerUp) Modifier.consumeWindowInsets(WindowInsets.multiplatformStatusBars) else Modifier)
                             ) {
                                 val tab = currentPrimary.bottomTab()
                                 val underMe = tab == BottomTab.ME && currentPrimary != Route.Root.Me
@@ -466,6 +469,8 @@ private fun CompactScreen(
                                     Box(Modifier.weight(1f)) { primaryContent() }
                                 }
                             }
+                        }
+                        StatusBarFade(Modifier.align(Alignment.TopCenter))
                         }
                     },
                 )
@@ -609,3 +614,33 @@ private fun Route.Root.meSubpageTitle(): StringResource? = when (this) {
     Route.Root.ContributorCenter.Entry -> Res.string.nav_contributor_center
     else -> null
 }
+
+/**
+ * Over the status bar on the root pages, which scroll under it: the page color, solid behind the
+ * bar's icons and fading out just below it, so they stay legible over a cover without a line.
+ */
+@Composable
+internal fun StatusBarFade(modifier: Modifier = Modifier) {
+    val background = HachimiTheme.colorScheme.background
+    Box(
+        modifier
+            .fillMaxWidth()
+            .windowInsetsTopHeight(WindowInsets.multiplatformStatusBars)
+            .drawWithContent {
+                if (size.height <= 0f) return@drawWithContent
+                val fadeTo = size.height + StatusFadeBelow.toPx()
+                drawRect(
+                    Brush.verticalGradient(
+                        0f to background,
+                        size.height * 0.6f / fadeTo to background.copy(alpha = 0.92f),
+                        1f to background.copy(alpha = 0f),
+                        endY = fadeTo,
+                    ),
+                    size = size.copy(height = fadeTo),
+                )
+            }
+    )
+}
+
+/** How far below the status bar its fade runs out. */
+private val StatusFadeBelow = 10.dp
