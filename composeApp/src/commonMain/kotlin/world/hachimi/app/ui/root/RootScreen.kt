@@ -492,16 +492,19 @@ private fun CompactScreen(
             }
         }
 
-        // The player floats over every page; the bar under it belongs to the root pages
-        CompactMiniPlayer(
-            modifier = Modifier
+        // The player floats over every page; the bar under it belongs to the root pages. It is
+        // placed through a box of its own: CompactMiniPlayer hands its modifier to the card inside
+        // its AnimatedVisibility, where an align would never reach this Box.
+        Box(
+            Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .padding(start = 12.dp, end = 12.dp, bottom = MiniPlayerGapBelow)
-                .offset { IntOffset(0, -playerLift.roundToPx()) },
-            hazeState = hazeState,
-        )
+                .offset { IntOffset(0, -playerLift.roundToPx()) }
+        ) {
+            CompactMiniPlayer(modifier = Modifier.fillMaxWidth(), hazeState = hazeState)
+        }
     }
 }
 
