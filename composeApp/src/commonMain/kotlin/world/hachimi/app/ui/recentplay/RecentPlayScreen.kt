@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.recentplay
 
+import world.hachimi.app.ui.component.LocalPageTitleShown
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.recent_play_title
 import hachimiworld.composeapp.generated.resources.song_cover_cd
@@ -58,6 +59,7 @@ fun RecentPlayScreen(
     }
 
     val state = rememberLazyListState()
+    val titleShown = LocalPageTitleShown.current
     LaunchedEffect(state.canScrollForward, vm.refreshing, vm.hasMore) {
         if (!vm.refreshing && vm.hasMore && !state.canScrollForward) {
             vm.loadMore()
@@ -77,7 +79,7 @@ fun RecentPlayScreen(
                 contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth)
             ) {
                 listHeadInsetsSpacerItem()
-                item {
+                if (!titleShown) item {
                     Text(
                         modifier = Modifier.padding(bottom = 12.dp),
                         text = stringResource(Res.string.recent_play_title),

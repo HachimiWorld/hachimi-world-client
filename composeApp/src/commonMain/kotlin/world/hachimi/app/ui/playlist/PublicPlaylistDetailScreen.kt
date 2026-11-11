@@ -22,6 +22,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
@@ -55,6 +56,8 @@ fun PublicPlaylistScreen(
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Revealed,
         title = { Text(vm.playlistInfo?.name.orEmpty(), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,

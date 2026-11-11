@@ -68,6 +68,7 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.TagBadge
@@ -109,6 +110,7 @@ fun PlaylistDetailScreen(
 
     val global = koinInject<GlobalStore>()
     ScreenScaffold(
+        titleStyle = TitleStyle.Revealed,
         title = { Text(vm.playlistInfo?.name.orEmpty(), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,

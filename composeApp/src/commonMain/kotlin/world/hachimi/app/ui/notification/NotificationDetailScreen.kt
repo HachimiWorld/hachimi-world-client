@@ -35,6 +35,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.SubtleButton
@@ -51,6 +52,7 @@ import world.hachimi.app.util.formatTime
 fun NotificationDetailScreen(notificationId: String) {
     val navigator = LocalNavigator.current
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.notification_detail_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,

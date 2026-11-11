@@ -1,26 +1,104 @@
 package world.hachimi.app.ui.component
 
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import hachimiworld.composeapp.generated.resources.Res
+import hachimiworld.composeapp.generated.resources.common_back_cd
+import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.LocalContentColor
+import world.hachimi.app.ui.design.components.LocalTextStyle
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.insets.multiplatformSafeDrawing
 import world.hachimi.app.ui.insets.multiplatformStatusBars
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.util.PlatformBackHandler
+import kotlin.math.roundToInt
 
+/**
+ * How a page's title sits on a phone.
+ *
+ * @since 261111
+ */
+enum class TitleStyle {
+    /** Large, at the top of the page, and folded into the bar as the page scrolls. For lists and settings. */
+    Large,
+
+    /** Small, in the bar, always. For pages that are one thing: a detail, a form, a thread. */
+    Compact,
+
+    /** In the bar only once the page has scrolled, for pages whose own header already shows the name. */
+    Revealed,
+}
+
+/**
+ * True inside a page whose title the surrounding scaffold already shows, so the page leaves out
+ * its own heading.
+ *
+ * @since 261111
+ */
+val LocalPageTitleShown = compositionLocalOf { false }
+
+/** Set by a scaffold for what it wraps, so a scaffold inside it adds no second bar. */
+private val LocalInScaffold = compositionLocalOf { false }
+
+/**
+ * A page below the top level: a bar with the way back, the title and the page's actions, over
+ * the page. Wide screens keep the plain toolbar ([ScreenToolbar]). On phones the bar sits flat on
+ * the page with no line under it until something has scrolled beneath it, and the title follows
+ * [titleStyle].
+ */
 @Composable
 fun ScreenScaffold(
     title: @Composable () -> Unit,
@@ -31,10 +109,32 @@ fun ScreenScaffold(
     onBack: (() -> Unit)? = null,
     onMenuClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    /** @since 261111 */
+    titleStyle: TitleStyle = TitleStyle.Large,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    // Already inside a scaffold that shows this page's bar
+    if (LocalInScaffold.current) {
+        Column(modifier.fillMaxSize(), content = content)
+        return
+    }
     if (showBack && onBack != null) {
         PlatformBackHandler(enabled = true, onBack = onBack)
+    }
+
+    val phone = LocalWindowSize.current.width < WindowSize.COMPACT
+    if (phone) {
+        PhoneScaffold(
+            title = title,
+            subtitle = subtitle,
+            onBack = onBack.takeIf { showBack },
+            actions = actions,
+            // A subtitle needs the bar's two lines
+            titleStyle = if (subtitle != null && titleStyle == TitleStyle.Large) TitleStyle.Compact else titleStyle,
+            modifier = modifier,
+            content = content,
+        )
+        return
     }
 
     Column(modifier.fillMaxSize()) {
@@ -54,10 +154,175 @@ fun ScreenScaffold(
                 .fillMaxSize()
                 .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
         ) {
-            content()
+            CompositionLocalProvider(LocalInScaffold provides true) {
+                content()
+            }
         }
     }
 }
+
+/**
+ * Where the large title has got to. [collapse] runs from 0 (all shown) to [range] (folded away);
+ * [scrolled] is how far the page under the bar has scrolled, as far as the bar can tell from the
+ * scrolling that passes through it.
+ */
+@Stable
+private class TitleScroll(val range: Float) {
+    var collapse by mutableFloatStateOf(0f)
+    var scrolled by mutableFloatStateOf(0f)
+    val fraction: Float get() = if (range <= 0f) 1f else collapse / range
+}
+
+/** The large title folds away before the page scrolls, and opens again only once the page is back at its top. */
+private class TitleScrollConnection(private val state: TitleScroll, private val folds: Boolean) : NestedScrollConnection {
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        if (!folds) return Offset.Zero
+        val before = state.collapse
+        if (available.y < 0f) {
+            state.collapse = (before - available.y).coerceAtMost(state.range)
+        } else if (available.y > 0f && state.scrolled <= 0f) {
+            // Back at the top, the title opens before anything under it (such as pull to refresh) takes the drag
+            state.collapse = (before - available.y).coerceAtLeast(0f)
+        }
+        return Offset(0f, before - state.collapse)
+    }
+
+    override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+        state.scrolled = (state.scrolled - consumed.y).coerceAtLeast(0f)
+        if (!folds || available.y <= 0f) return Offset.Zero
+        val before = state.collapse
+        state.collapse = (before - available.y).coerceAtLeast(0f)
+        return Offset(0f, before - state.collapse)
+    }
+
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+        // Never left half folded
+        if (folds && state.collapse > 0f && state.collapse < state.range) {
+            val target = if (state.fraction > 0.5f) state.range else 0f
+            animate(state.collapse, target, animationSpec = spring(stiffness = 600f)) { value, _ -> state.collapse = value }
+        }
+        return Velocity.Zero
+    }
+}
+
+@Composable
+private fun PhoneScaffold(
+    title: @Composable () -> Unit,
+    subtitle: (@Composable () -> Unit)?,
+    onBack: (() -> Unit)?,
+    actions: @Composable RowScope.() -> Unit,
+    titleStyle: TitleStyle,
+    modifier: Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val colors = HachimiTheme.colorScheme
+    val density = LocalDensity.current
+    val large = titleStyle == TitleStyle.Large
+    val state = remember(large) { TitleScroll(if (large) with(density) { LargeTitleHeight.toPx() } else 0f) }
+    val connection = remember(state, large) { TitleScrollConnection(state, folds = large) }
+    val revealAt = with(density) { RevealAfter.toPx() }
+
+    // The bar's title: in once the large one has mostly folded, or once the page has scrolled
+    val smallTitleShown = when (titleStyle) {
+        TitleStyle.Large -> state.fraction > 0.75f
+        TitleStyle.Compact -> true
+        TitleStyle.Revealed -> state.scrolled > revealAt
+    }
+    val smallTitleAlpha by animateFloatAsState(if (smallTitleShown) 1f else 0f)
+    // The line under the bar only once something is under it
+    val lineShown = if (large) state.fraction >= 1f && state.scrolled > 0f else state.scrolled > 0f
+    val lineAlpha by animateFloatAsState(if (lineShown) 1f else 0f)
+
+    Column(modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .background(colors.background)
+                .windowInsetsPadding(WindowInsets.multiplatformSafeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+        ) {
+            Row(
+                Modifier.fillMaxWidth().height(BarHeight).padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (onBack != null) {
+                    HachimiIconButton(onClick = onBack, modifier = Modifier.size(48.dp), touchMode = true) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back_cd))
+                    }
+                } else {
+                    Spacer(Modifier.width(12.dp))
+                }
+                Column(
+                    Modifier.weight(1f).padding(start = 4.dp, end = 8.dp).graphicsLayer { alpha = smallTitleAlpha },
+                ) {
+                    CompositionLocalProvider(LocalTextStyle provides SmallTitleStyle.copy(color = LocalContentColor.current)) {
+                        title()
+                    }
+                    subtitle?.let {
+                        CompositionLocalProvider(LocalTextStyle provides SubtitleStyle.copy(color = colors.onSurfaceVariant)) {
+                            it()
+                        }
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, content = actions)
+            }
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .graphicsLayer { alpha = lineAlpha }
+                    .background(colors.outline)
+            )
+        }
+        if (large) {
+            // Folds up under the bar: the box shrinks and the title rides up with its top edge
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .clipToBounds()
+                    .layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        val shift = state.collapse.roundToInt()
+                        layout(placeable.width, (placeable.height - shift).coerceAtLeast(0)) {
+                            placeable.place(0, -shift)
+                        }
+                    }
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(LargeTitleHeight)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+                        .graphicsLayer { alpha = (1f - state.fraction * 1.4f).coerceIn(0f, 1f) },
+                    contentAlignment = Alignment.BottomStart,
+                ) {
+                    CompositionLocalProvider(LocalTextStyle provides LargeTitleStyle.copy(color = LocalContentColor.current)) {
+                        title()
+                    }
+                }
+            }
+        }
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxSize()
+                .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
+                .nestedScroll(connection)
+        ) {
+            CompositionLocalProvider(LocalInScaffold provides true) {
+                content()
+            }
+        }
+    }
+}
+
+private val BarHeight = 56.dp
+private val LargeTitleHeight = 52.dp
+/** How far a [TitleStyle.Revealed] page scrolls before its name comes into the bar. */
+private val RevealAfter = 160.dp
+private val SmallTitleStyle = TextStyle(fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)
+private val SubtitleStyle = TextStyle(fontSize = 13.sp, lineHeight = 18.sp)
+private val LargeTitleStyle = TextStyle(fontSize = 26.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold)
 
 @Preview(widthDp = 360, name = "Compact · Secondary")
 @Composable
@@ -72,8 +337,8 @@ private fun PreviewScreenScaffoldCompact() {
                 onBack = {},
                 showMenu = false,
             ) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Page content")
+                LazyColumn(Modifier.fillMaxSize()) {
+                    items(30) { Text("Row $it", Modifier.padding(16.dp)) }
                 }
             }
         }

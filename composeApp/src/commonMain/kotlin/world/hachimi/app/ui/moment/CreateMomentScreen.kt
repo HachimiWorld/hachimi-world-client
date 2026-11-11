@@ -78,6 +78,7 @@ import world.hachimi.app.model.DraftAttachment
 import world.hachimi.app.model.DraftImage
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -108,6 +109,8 @@ fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
     val leave = { if (vm.hasDraft && !vm.publishing) confirmDiscard = true else navigator.back() }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.moment_create_title), maxLines = 1) },
         showBack = true,
         onBack = leave,

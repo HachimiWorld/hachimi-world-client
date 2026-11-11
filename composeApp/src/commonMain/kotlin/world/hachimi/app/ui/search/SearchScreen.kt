@@ -49,6 +49,7 @@ import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
@@ -78,6 +79,8 @@ fun SearchScreen(
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.search_result_title), maxLines = 1) },
         subtitle = if (!vm.loading) {
             { Text("${vm.searchProcessingTimeMs} ms", maxLines = 1) }

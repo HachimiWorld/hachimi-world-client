@@ -26,6 +26,7 @@ import world.hachimi.app.ui.comment.CommentsPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
 
@@ -86,6 +87,7 @@ private enum class DetailState { LOADING, FAILED, NOT_FOUND, LOADED }
 @Composable
 private fun Placeholder(onBack: () -> Unit, content: @Composable () -> Unit) {
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.moment_page_title), maxLines = 1) },
         showBack = true,
         onBack = onBack,

@@ -6,3 +6,4 @@
 4. Searching from the home page now has a clear button that also leaves the search and closes the keyboard. 主页搜索新增清空按钮，点按后同时退出搜索并收起键盘。
 5. Pull to refresh uses the app's own colors. 下拉刷新改用应用自身的配色。
 6. In your own playlist, hold a song to drag it to a new place; the playlist can be deleted from the More menu at the top of its page. 在自己的歌单中，长按歌曲即可拖动调整顺序；可从歌单页顶部的「更多」菜单删除歌单。
+7. On phones, pages below the top level open with their title large at the top, which folds into the bar as you scroll; the bar has no line under it until something scrolls beneath. 手机端的二级页面以大标题开篇，向下滚动时标题收进顶栏；顶栏下的分隔线只在内容滚到其下方时出现。

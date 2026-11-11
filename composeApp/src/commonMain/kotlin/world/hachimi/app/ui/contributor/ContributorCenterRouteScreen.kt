@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.contributor
 
+import world.hachimi.app.ui.component.LocalPageTitleShown
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.contributor_create_post
 import hachimiworld.composeapp.generated.resources.contributor_not_contributor
@@ -108,7 +109,7 @@ private fun Content(
             .multiplatformStatusBarsPadding()
             .padding(AdaptiveScreenMargin)
     ) {
-        Text(
+        if (!LocalPageTitleShown.current) Text(
             text = stringResource(Res.string.nav_contributor_center),
             modifier = Modifier.padding(bottom = 16.dp),
             style = MaterialTheme.typography.titleLarge,

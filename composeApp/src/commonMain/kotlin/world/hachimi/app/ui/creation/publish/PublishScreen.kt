@@ -140,6 +140,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.creation.publish.components.InitJmidDialog
 import world.hachimi.app.ui.creation.publish.components.JmidTextField
@@ -183,6 +184,7 @@ fun PublishScreen(
         else -> Res.string.publish_screen_title_create
     }.let { stringResource(it) }
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = { Text(screenTitle, maxLines = 1) },
         showBack = true,
         onBack = navigator::back

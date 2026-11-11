@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.likes
 
+import world.hachimi.app.ui.component.LocalPageTitleShown
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -165,7 +166,7 @@ private fun Header(vm: RecentLikeViewModel) {
 		modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
-		Text(
+		if (!LocalPageTitleShown.current) Text(
 			text = stringResource(Res.string.nav_recent_like),
 			style = MaterialTheme.typography.titleLarge,
 		)

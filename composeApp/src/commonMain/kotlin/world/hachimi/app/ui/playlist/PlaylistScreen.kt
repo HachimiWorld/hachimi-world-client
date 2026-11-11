@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.ui.component.LocalPageTitleShown
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.playlist_empty
 import hachimiworld.composeapp.generated.resources.playlist_favorites_title
@@ -71,7 +72,7 @@ private fun Content(vm: PlaylistViewModel, navigator: Navigator) {
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "my-header") {
-                Text(
+                if (!LocalPageTitleShown.current) Text(
                     modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
                     text = stringResource(Res.string.playlist_my_playlists_title),
                     style = MaterialTheme.typography.titleLarge,

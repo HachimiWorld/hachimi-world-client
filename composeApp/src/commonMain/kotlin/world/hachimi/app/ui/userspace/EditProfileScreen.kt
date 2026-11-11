@@ -76,6 +76,7 @@ import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.model.EditProfileViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Card
@@ -96,6 +97,8 @@ fun EditProfileScreen(vm: EditProfileViewModel = koinViewModel()) {
     val navigator = LocalNavigator.current
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.user_edit_profile), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,

@@ -70,6 +70,7 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -168,6 +169,7 @@ fun UserSpaceScreen(
 
     if (showToolbar) {
         ScreenScaffold(
+            titleStyle = TitleStyle.Revealed,
             title = { Text(vm.profile?.username.orEmpty(), maxLines = 1) },
             showBack = true,
             onBack = navigator::back,

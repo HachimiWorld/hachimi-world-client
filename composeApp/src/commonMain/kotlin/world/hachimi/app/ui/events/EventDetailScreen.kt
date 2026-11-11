@@ -55,6 +55,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.MarkdownText
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
@@ -111,6 +112,7 @@ fun EventDetailScreen(
 @Composable
 private fun EventDetailPlaceholder(onBack: () -> Unit, content: @Composable () -> Unit) {
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = { Text("", maxLines = 1) },
         showBack = true,
         onBack = onBack,

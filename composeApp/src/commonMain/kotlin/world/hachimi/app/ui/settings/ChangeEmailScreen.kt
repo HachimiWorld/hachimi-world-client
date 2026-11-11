@@ -73,6 +73,7 @@ import world.hachimi.app.model.EmailChangeMethod
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.auth.components.PasswordToggleButton
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -99,6 +100,8 @@ fun ChangeEmailScreen(vm: ChangeEmailViewModel = koinViewModel()) {
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.settings_change_email), maxLines = 1) },
         showBack = true,
         onBack = { if (vm.method != null) vm.chooseMethod(null) else navigator.back() },

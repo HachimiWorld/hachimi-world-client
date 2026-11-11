@@ -57,6 +57,7 @@ import world.hachimi.app.ui.component.DevelopingPage
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.creation.publish.components.JmidTextField
 import world.hachimi.app.ui.design.components.AccentButton
@@ -93,6 +94,8 @@ fun ArtworkDetailScreen(
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.artwork_details_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back

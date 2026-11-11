@@ -1,5 +1,16 @@
 package world.hachimi.app.ui.root
 
+import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.component.LocalPageTitleShown
+import org.jetbrains.compose.resources.StringResource
+import hachimiworld.composeapp.generated.resources.nav_recent_play
+import hachimiworld.composeapp.generated.resources.nav_recent_like
+import hachimiworld.composeapp.generated.resources.nav_my_subscribe
+import hachimiworld.composeapp.generated.resources.nav_my_playlist
+import hachimiworld.composeapp.generated.resources.nav_creation_center
+import hachimiworld.composeapp.generated.resources.nav_committee_center
+import hachimiworld.composeapp.generated.resources.nav_contributor_center
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -438,21 +449,22 @@ private fun CompactScreen(
                                 PlatformBackHandler(enabled = navigator.isAtRootShell && currentPrimary != Route.Root.Default) {
                                     navigator.switchPrimary(if (underMe) Route.Root.Me else Route.Root.Default)
                                 }
-                                if (underMe) {
-                                    Box(Modifier.fillMaxWidth().height(48.dp).padding(start = 4.dp)) {
-                                        HachimiIconButton(
-                                            onClick = { navigator.switchPrimary(Route.Root.Me) },
-                                            modifier = Modifier.size(48.dp),
-                                            touchMode = true,
-                                        ) {
-                                            Icon(
-                                                Icons.AutoMirrored.Filled.ArrowBack,
-                                                contentDescription = stringResource(Res.string.common_back_cd),
-                                            )
+                                val underMeTitle = if (underMe) currentPrimary.meSubpageTitle() else null
+                                if (underMeTitle != null) {
+                                    // Pages kept under Me read as pages of their own: a bar with the way
+                                    // back to Me, and their title large at the top, folding into it
+                                    ScreenScaffold(
+                                        title = { Text(stringResource(underMeTitle), maxLines = 1) },
+                                        showBack = true,
+                                        onBack = { navigator.switchPrimary(Route.Root.Me) },
+                                    ) {
+                                        CompositionLocalProvider(LocalPageTitleShown provides true) {
+                                            Box(Modifier.weight(1f)) { primaryContent() }
                                         }
                                     }
+                                } else {
+                                    Box(Modifier.weight(1f)) { primaryContent() }
                                 }
-                                Box(Modifier.weight(1f)) { primaryContent() }
                             }
                         }
                     },
@@ -584,4 +596,16 @@ private fun ExpandedScreen(
             }
         }
     )
+}
+
+/** The title a page reached from Me shows over itself on a phone; null for pages that bring their own bar. */
+private fun Route.Root.meSubpageTitle(): StringResource? = when (this) {
+    Route.Root.RecentPlay -> Res.string.nav_recent_play
+    Route.Root.RecentLike -> Res.string.nav_recent_like
+    Route.Root.MySubscribe -> Res.string.nav_my_subscribe
+    Route.Root.MyPlaylist.List -> Res.string.nav_my_playlist
+    Route.Root.CreationCenter.MyArtwork -> Res.string.nav_creation_center
+    Route.Root.CommitteeCenter -> Res.string.nav_committee_center
+    Route.Root.ContributorCenter.Entry -> Res.string.nav_contributor_center
+    else -> null
 }

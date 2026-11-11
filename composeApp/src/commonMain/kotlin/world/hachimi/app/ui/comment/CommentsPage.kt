@@ -130,6 +130,7 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.AnimatedCount
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -335,6 +336,7 @@ private fun CommentsPageLayout(
     composer: @Composable () -> Unit,
 ) {
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = {
             AnimatedContent(
                 targetState = title,

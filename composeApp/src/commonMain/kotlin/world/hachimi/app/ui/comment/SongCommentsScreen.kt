@@ -33,6 +33,7 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.SongCommentsViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -55,6 +56,7 @@ fun SongCommentsScreen(
     Crossfade(vm.song?.takeIf { it.displayId == songDisplayId }) { song ->
         if (song == null) {
             ScreenScaffold(
+                titleStyle = TitleStyle.Compact,
                 title = { Text(stringResource(Res.string.comment_page_title), maxLines = 1) },
                 showBack = true,
                 onBack = navigator::back,

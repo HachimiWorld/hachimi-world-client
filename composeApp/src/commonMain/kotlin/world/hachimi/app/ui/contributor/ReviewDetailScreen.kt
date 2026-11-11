@@ -96,6 +96,7 @@ import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -132,6 +133,8 @@ fun ReviewDetailScreen(
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.review_detail_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
