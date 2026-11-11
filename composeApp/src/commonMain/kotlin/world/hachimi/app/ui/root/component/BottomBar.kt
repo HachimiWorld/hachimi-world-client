@@ -96,7 +96,8 @@ val CompactBottomBarHeight = 60.dp
  *
  * The open tab wears the halo from the app's icon: a small tilted ring floating over its icon, its
  * far half drawn under the icon and its near half over it, so the two can cross. Choosing another tab sends the halo over in
- * a small hop; choosing the open one again turns it once on the spot. Nothing else on the bar is in
+ * a small hop; choosing the open one again turns it once on the spot, showing for a moment its back
+ * face in the blue of the icon's own halo. Nothing else on the bar is in
  * the brand color.
  *
  * @param avatarUrl Stands in for the person icon once someone is signed in.
@@ -262,10 +263,13 @@ private fun DrawScope.drawHalo(motion: HaloMotion, color: Color, front: Boolean)
     val squeeze = if (abs(turnScale) < EdgeOn) EdgeOn * (if (turnScale < 0f) -1f else 1f) else turnScale
     // Which half is nearer flips while the ring shows its other face
     val nearIsBottom = turnScale >= 0f
+    // The ring has two faces: the app's color in front, and on the back the blue of the icon's own
+    // halo. The face changes while the ring is edge-on, so the two never blend
+    val ringColor = if (turnScale < 0f) IconHaloBlue else color
     rotate(tilt, center) {
         scale(scaleX = squeeze, scaleY = 1f, pivot = center) {
             drawArc(
-                color = color,
+                color = ringColor,
                 startAngle = if (front == nearIsBottom) 0f else 180f,
                 sweepAngle = 180f,
                 useCenter = false,
@@ -391,6 +395,8 @@ private val HopHeight = 10.dp
 private const val HaloTilt = -14f
 private const val HopLean = 16f
 private const val EdgeOn = 0.06f
+/** The ring's color in the app icon. */
+private val IconHaloBlue = Color(0xFF4A8CE6)
 
 @Preview(widthDp = 400)
 @Composable
