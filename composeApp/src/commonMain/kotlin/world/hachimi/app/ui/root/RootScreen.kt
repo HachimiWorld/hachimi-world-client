@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.root
 
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.layout.offset
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -199,6 +202,11 @@ fun RootScreen() {
 
 /**
  * Outer NavDisplay: RootShell (with nested primary) + secondary full-screen routes.
+ *
+ * Each secondary page gets its own ViewModelStore, so its view models are made for it and cleared
+ * when it leaves the back stack: opening another playlist or user never shows the previous one, and
+ * going back finds the page as it was left. The shell keeps the app's store, so the root pages and
+ * the player overlays above the shell share view models as they always have.
  */
 @Composable
 private fun RootNavDisplay(
@@ -207,9 +215,15 @@ private fun RootNavDisplay(
     shell: @Composable (primaryContent: @Composable () -> Unit) -> Unit,
 ) {
     val slideDistance = rememberSlideDistance()
+    val appStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) { "No ViewModelStoreOwner for the app" }
     NavDisplay(
         backStack = navigator.rootBackStack,
         onBack = navigator::back,
+        // The saveable state holder comes first: the view model stores rely on it for SavedStateHandle
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
         sharedTransitionScope = LocalSharedTransitionScope.current,
         modifier = Modifier.fillMaxSize(),
         transitionSpec = { materialSharedAxisY(true, slideDistance) },
@@ -218,8 +232,10 @@ private fun RootNavDisplay(
         entryProvider = { key ->
             when (key) {
                 RootShellNavKey -> NavEntry(key) {
-                    shell {
-                        PrimaryNavDisplay(global, navigator)
+                    CompositionLocalProvider(LocalViewModelStoreOwner provides appStoreOwner) {
+                        shell {
+                            PrimaryNavDisplay(global, navigator)
+                        }
                     }
                 }
 
