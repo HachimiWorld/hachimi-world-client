@@ -1,6 +1,5 @@
 package world.hachimi.app.ui.moment
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
 import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.component.ErrorPage
@@ -16,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.comment_header
 import hachimiworld.composeapp.generated.resources.moment_not_found
 import hachimiworld.composeapp.generated.resources.moment_page_title
 import org.jetbrains.compose.resources.stringResource
@@ -49,48 +47,43 @@ fun MomentDetailScreen(
     val actions = rememberMomentActions(onDeleted = navigator::back)
 
     val moment = vm.moment
+    // The comments don't wait for the moment: both load at once, and only a moment that's gone or
+    // didn't load takes the page from them
     val state = when {
         vm.notFound -> DetailState.NOT_FOUND
         vm.status == InitializeStatus.FAILED -> DetailState.FAILED
-        moment == null -> DetailState.LOADING
-        else -> DetailState.LOADED
+        else -> DetailState.SHOWN
     }
     AnimatedContent(state, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) { st ->
         when (st) {
-            DetailState.LOADING -> Placeholder(navigator::back) {
-                // Where the moment will open: its card, then the line above the comments
-                Column(Modifier.padding(top = 8.dp)) {
-                    MomentSkeleton(index = 0)
-                    Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
-                }
-            }
             DetailState.FAILED -> Placeholder(navigator::back) { ErrorPage(onRetry = vm::retry) }
             DetailState.NOT_FOUND -> Placeholder(navigator::back) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(stringResource(Res.string.moment_not_found), color = HachimiTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            DetailState.LOADED -> {
-                val item = vm.moment ?: return@AnimatedContent
-                CommentsPage(
-                    target = CommentTarget(CommentModule.TARGET_MOMENT, item.id, item.author.uid),
-                    title = { total ->
-                        if (total > 0) stringResource(Res.string.comment_header, total.toString())
-                        else stringResource(Res.string.moment_page_title)
-                    },
-                    onBack = navigator::back,
-                    header = {
-                        MomentCard(vm.moment ?: item, actions, full = true)
-                        Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
-                    },
-                    startAtComments = atComments,
-                )
-            }
+            DetailState.SHOWN -> CommentsPage(
+                target = CommentTarget(CommentModule.TARGET_MOMENT, momentId, moment?.author?.uid),
+                title = { stringResource(Res.string.moment_page_title) },
+                onBack = navigator::back,
+                header = {
+                    AnimatedContent(vm.moment, transitionSpec = { loadStateTransition() }, contentKey = { it != null }) { shown ->
+                        Column {
+                            // Where the moment will open, until it does
+                            if (shown == null) MomentSkeleton(index = 0) else MomentCard(shown, actions, full = true)
+                            Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
+                        }
+                    }
+                },
+                startAtComments = atComments,
+                // Comments that come back first wait for the moment; a moment that comes first shows at once
+                holdComments = moment == null,
+            )
         }
     }
 }
 
-private enum class DetailState { LOADING, FAILED, NOT_FOUND, LOADED }
+private enum class DetailState { SHOWN, FAILED, NOT_FOUND }
 
 @Composable
 private fun Placeholder(onBack: () -> Unit, content: @Composable () -> Unit) {

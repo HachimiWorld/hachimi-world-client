@@ -164,6 +164,8 @@ import kotlin.time.Instant
  * @param title The page's title over the list, given the number of comments.
  * @param header What the comments are on, above them.
  * @param startAtComments Opens scrolled past [header], for when it's long.
+ * @param holdComments Keeps the comments as stand-ins even once they've loaded, so they don't show
+ * before the [header] they're under has arrived. @since 261112
  * @since 261031
  */
 @Composable
@@ -173,6 +175,7 @@ fun CommentsPage(
     onBack: () -> Unit,
     header: (@Composable () -> Unit)? = null,
     startAtComments: Boolean = false,
+    holdComments: Boolean = false,
     store: CommentsStore = koinInject(),
     reports: ReportStore = koinInject(),
 ) {
@@ -197,7 +200,7 @@ fun CommentsPage(
         canDelete = store::canDelete,
         isMine = store::isMine,
     )
-    val current = store.target == target
+    val current = target.sameAs(store.target)
     val thread = store.openThread.takeIf { current }
     // Still there for the replies animating out
     val shownThread = rememberLastNonNull(thread)
@@ -237,7 +240,7 @@ fun CommentsPage(
                     if (openId == null || replied == null) {
                         CommentList(
                             header = header,
-                            status = store.initializeStatus,
+                            status = if (holdComments) InitializeStatus.INIT else store.initializeStatus,
                             hotThreads = store.hotThreads,
                             threads = store.threads,
                             order = store.order,
