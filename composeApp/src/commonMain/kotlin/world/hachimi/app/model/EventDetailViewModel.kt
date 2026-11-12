@@ -27,6 +27,10 @@ class EventDetailViewModel(
     var initStat by mutableStateOf(InitializeStatus.INIT)
         private set
 
+    /**
+     * The post [initStat] and [data] are about. This view model outlives one page, so the page checks
+     * it against its own before trusting the rest.
+     */
     var eventId by mutableStateOf<Long?>(null)
         private set
 
@@ -39,6 +43,7 @@ class EventDetailViewModel(
     fun mounted(eventId: Long) {
         if (this.eventId != eventId) {
             initStat = InitializeStatus.INIT
+            data = null
         }
         this.eventId = eventId
         refresh()
@@ -58,6 +63,8 @@ class EventDetailViewModel(
         loading = true
         try {
             val resp = api.postModule.detail(PostModule.PostIdReq(postId = id))
+            // Another post was opened while this one loaded
+            if (eventId != id) return@launch
             if (resp.ok) {
                 data = resp.ok()
                 initStat = InitializeStatus.LOADED
@@ -69,6 +76,7 @@ class EventDetailViewModel(
         } catch (e: Throwable) {
             if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to load event detail", e)
+            if (eventId != id) return@launch
             initStat = InitializeStatus.FAILED
         } finally {
             loading = false

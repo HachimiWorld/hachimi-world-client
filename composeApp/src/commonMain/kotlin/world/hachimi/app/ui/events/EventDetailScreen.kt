@@ -86,9 +86,13 @@ fun EventDetailScreen(
 
     // The comments load together with the post; they show once the post is there, and only a post
     // that didn't load, or has nothing in it, takes the page from them
+    // The view model is shared between post pages, and mounted() only runs after the first frame:
+    // until it's on this post, what it holds belongs to another one, so the page shows it loading
+    val mine = vm.eventId == eventId
     val state = when {
+        !mine -> PostState.SHOWN
         vm.initStat == InitializeStatus.FAILED -> PostState.FAILED
-        vm.initStat == InitializeStatus.LOADED && vm.data?.id != eventId -> PostState.EMPTY
+        vm.initStat == InitializeStatus.LOADED && vm.data == null -> PostState.EMPTY
         else -> PostState.SHOWN
     }
     AnimatedContent(state, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) { st ->
@@ -100,8 +104,7 @@ fun EventDetailScreen(
                 }
             }
             PostState.SHOWN -> {
-                // The view model may still hold the last post opened; only this one belongs above these comments
-                val post = vm.data?.takeIf { it.id == eventId }
+                val post = vm.data.takeIf { mine }
                 CommentsPage(
                     target = CommentTarget(CommentModule.TARGET_POST, eventId, post?.author?.uid),
                     title = { post?.title.orEmpty() },
