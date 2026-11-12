@@ -10,8 +10,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,10 +47,11 @@ import world.hachimi.app.ui.component.BrandLogo
 import world.hachimi.app.ui.root.component.SearchBox
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onVisibilityChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
@@ -74,8 +74,10 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.TestTags
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ErrorPage
+import soup.compose.material.motion.animation.materialFadeThroughIn
+import soup.compose.material.motion.animation.materialFadeThroughOut
+import world.hachimi.app.ui.home.components.SongCardSkeleton
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -259,6 +261,7 @@ private fun Segment(
             val cardSize = calculateCardSizeInGrid(maxWidth)
 
             LoadableContent(
+                cardSize = cardSize,
                 modifier = Modifier.fillMaxWidth()
                     .height(cardSize.height * 2 + AdaptiveListSpacing),
                 initializeStatus = status,
@@ -328,6 +331,7 @@ private fun CategorySegment(
             val status = state?.status?.value ?: InitializeStatus.INIT
             val loading = state?.loading?.value ?: false
             LoadableContent(
+                cardSize = cardSize,
                 modifier = Modifier.fillMaxWidth()
                     .height(cardSize.height * 2 + AdaptiveListSpacing),
                 initializeStatus = status,
@@ -430,6 +434,7 @@ private fun SegmentHeader(
 
 @Composable
 private fun LoadableContent(
+    cardSize: DpSize,
     loading: Boolean,
     initializeStatus: InitializeStatus,
     onRefresh: () -> Unit,
@@ -439,32 +444,44 @@ private fun LoadableContent(
     onDispose: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    val slideOffset = with(LocalDensity.current) {
-        32.dp.roundToPx()
-    }
     AnimatedContent(
         initializeStatus,
         modifier = modifier.onVisibilityChanged { visible ->
             if (visible) onLoad()
         },
-        transitionSpec = {
-            if (targetState == InitializeStatus.LOADED) {
-                (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                        slideInVertically(
-                            initialOffsetY = { slideOffset },
-                            animationSpec = tween(220, delayMillis = 90)
-                        ))
-                    .togetherWith(fadeOut(animationSpec = tween(90)))
-            } else {
-                (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                        scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90)))
-                    .togetherWith(fadeOut(animationSpec = tween(90)))
-            }
-        }) {
+        // Material fade through, without its scale: the skeleton, the failure and the cards all sit in
+        // the same place at the same size, so the new state only fades in where the old one was
+        transitionSpec = { materialFadeThroughIn(initialScale = 1f) togetherWith materialFadeThroughOut() },
+    ) {
         when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onRetryClick)
+            InitializeStatus.INIT -> SongGridSkeleton(cardSize)
+            InitializeStatus.FAILED -> ErrorPage(
+                onRetry = onRetryClick,
+                // The failed section keeps the cards' footprint, tinted like a card so the reach of the tap shows
+                modifier = Modifier.fillMaxSize()
+                    .padding(horizontal = AdaptiveScreenMargin)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(HachimiTheme.colorScheme.surface),
+            )
             InitializeStatus.LOADED -> content()
         }
     }
 }
+
+/** Two rows of card stand-ins, laid out like the section's grid. */
+@Composable
+private fun SongGridSkeleton(cardSize: DpSize) {
+    LazyHorizontalGrid(
+        modifier = Modifier.fillMaxSize()
+            .horizontalFadingEdges(startEdgeWidth = AdaptiveScreenMargin, endEdgeWidth = AdaptiveScreenMargin),
+        rows = GridCells.Fixed(2),
+        contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin),
+        horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        userScrollEnabled = false,
+    ) {
+        items(SkeletonCardCount) { SongCardSkeleton(Modifier.size(cardSize)) }
+    }
+}
+
+private const val SkeletonCardCount = 12

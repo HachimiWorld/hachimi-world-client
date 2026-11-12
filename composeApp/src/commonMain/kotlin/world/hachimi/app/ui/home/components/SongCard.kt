@@ -55,6 +55,7 @@ import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.design.components.Card
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.TagBadge
+import world.hachimi.app.ui.design.components.placeholder
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.util.formatCompactCount
@@ -214,5 +215,37 @@ private fun Preview2() {
                 onClick = {}
             )
         }
+    }
+}
+
+/**
+ * Stands in for a [SongCard] while the songs load: the same card, the cover square and two lines
+ * where the title and the author go, so nothing moves when the real cards arrive.
+ *
+ * @since 261112
+ */
+@Composable
+fun SongCardSkeleton(modifier: Modifier = Modifier) {
+    Card(modifier = modifier.defaultMinSize(minWidth = 160.dp)) {
+        Column(Modifier.padding(8.dp)) {
+            Box(Modifier.fillMaxWidth().aspectRatio(1f).placeholder(true, RoundedCornerShape(8.dp)))
+            Column(Modifier.padding(top = 8.dp)) {
+                // On the 20sp title line and the 16sp author line of the real card
+                Box(Modifier.height(20.dp), contentAlignment = Alignment.CenterStart) {
+                    Box(Modifier.fillMaxWidth(0.7f).height(12.dp).placeholder(true))
+                }
+                Box(Modifier.height(16.dp), contentAlignment = Alignment.CenterStart) {
+                    Box(Modifier.fillMaxWidth(0.4f).height(10.dp).placeholder(true))
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewSkeleton() {
+    PreviewTheme(background = true) {
+        SongCardSkeleton(Modifier.size(160.dp, 208.dp))
     }
 }
