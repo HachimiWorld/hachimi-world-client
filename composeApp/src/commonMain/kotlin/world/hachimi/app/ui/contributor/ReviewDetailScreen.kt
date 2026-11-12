@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.contributor
 
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.DetailSkeleton
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -92,9 +95,7 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.ReviewDetailViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Button
@@ -139,10 +140,10 @@ fun ReviewDetailScreen(
         showBack = true,
         onBack = navigator::back,
     ) {
-        AnimatedContent(vm.initializeStatus) {
+        AnimatedContent(vm.initializeStatus, transitionSpec = { loadStateTransition() }) {
             when (it) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.refresh() })
+                InitializeStatus.INIT -> DetailSkeleton()
+                InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.refresh() })
                 InitializeStatus.LOADED -> Content(vm, source = source)
             }
         }

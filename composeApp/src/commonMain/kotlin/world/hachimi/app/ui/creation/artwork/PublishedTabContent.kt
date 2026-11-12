@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.creation.artwork
 
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.RefreshingIndicator
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.PlainListSkeleton
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.artwork_my_songs
 import hachimiworld.composeapp.generated.resources.artwork_publish_time
@@ -36,18 +40,14 @@ import coil3.request.crossfade
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PublishedTabViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
@@ -73,12 +73,12 @@ fun PublishedTabContent(
 
     AnimatedContent(
         targetState = vm.initializeStatus,
-        transitionSpec = { materialFadeThrough() },
+        transitionSpec = { loadStateTransition() },
         modifier = Modifier.fillMaxSize()
     ) {
         when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.INIT -> PlainListSkeleton(header = true, headerAction = true)
+            InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
             InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -125,7 +125,7 @@ fun PublishedTabContent(
                         )
                     }
                 }
-                if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
+                RefreshingIndicator(isRefreshing = vm.loading)
             }
         }
     }

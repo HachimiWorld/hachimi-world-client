@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.notification
 
+import world.hachimi.app.ui.component.DetailSkeleton
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -80,23 +82,20 @@ fun NotificationDetailContent(
     LaunchedEffect(vm) { vm.mounted() }
 
     when (vm.initializeStatus) {
-        InitializeStatus.INIT -> Unit
-        InitializeStatus.FAILED -> NotificationMessageState(
-            title = stringResource(
-                if (vm.unavailable) Res.string.notification_unavailable else Res.string.notification_load_error
-            ),
+        InitializeStatus.INIT -> DetailSkeleton(modifier)
+        // Gone for good: nothing to retry, only the way back
+        InitializeStatus.FAILED -> if (vm.unavailable) NotificationMessageState(
+            title = stringResource(Res.string.notification_unavailable),
             modifier = modifier.listTailPadding(),
             action = {
-                if (vm.unavailable) {
-                    if (onBackToInbox != null) SubtleButton(onClick = onBackToInbox) {
-                        Text(stringResource(Res.string.notification_back_to_inbox))
-                    }
-                } else {
-                    AccentButton(onClick = { vm.retry() }) {
-                        Text(stringResource(Res.string.notification_retry))
-                    }
+                if (onBackToInbox != null) SubtleButton(onClick = onBackToInbox) {
+                    Text(stringResource(Res.string.notification_back_to_inbox))
                 }
             },
+        ) else ErrorPage(
+            onRetry = { vm.retry() },
+            modifier = modifier.fillMaxSize().listTailPadding(),
+            message = stringResource(Res.string.notification_load_error),
         )
         InitializeStatus.LOADED -> {
             val item = vm.item ?: return

@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.comment
 
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clipToBounds
+import world.hachimi.app.ui.design.components.placeholder
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -108,7 +113,6 @@ import hachimiworld.composeapp.generated.resources.comment_section_all
 import hachimiworld.composeapp.generated.resources.comment_section_hot
 import hachimiworld.composeapp.generated.resources.comment_unlike_cd
 import hachimiworld.composeapp.generated.resources.comment_view_all_replies
-import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.report_action
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -132,7 +136,6 @@ import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.DropdownMenu
@@ -425,16 +428,14 @@ private fun SectionHeader(label: String, modifier: Modifier = Modifier, trailing
 internal fun CommentsLoadState(status: InitializeStatus, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     Crossfade(status, modifier.fillMaxSize()) { shown ->
         when (shown) {
-            InitializeStatus.INIT -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                LoadMoreItem(hasMore = true, isLoading = true)
+            // Stand-ins from the top, where the first comments will be
+            InitializeStatus.INIT -> Column(Modifier.fillMaxSize().clipToBounds().wrapContentHeight(Alignment.Top, unbounded = true)) {
+                repeat(CommentSkeletonCount) { CommentSkeleton(it) }
             }
-            InitializeStatus.FAILED -> NotificationMessageState(
-                title = stringResource(Res.string.comment_load_error),
+            InitializeStatus.FAILED -> ErrorPage(
+                onRetry = onRetry,
                 modifier = Modifier.fillMaxSize(),
-                icon = Icons.AutoMirrored.Outlined.Comment,
-                action = {
-                    AccentButton(onClick = onRetry) { Text(stringResource(Res.string.notification_retry)) }
-                },
+                message = stringResource(Res.string.comment_load_error),
             )
             InitializeStatus.LOADED -> NotificationMessageState(
                 title = stringResource(Res.string.comment_empty_title),
@@ -445,6 +446,21 @@ internal fun CommentsLoadState(status: InitializeStatus, onRetry: () -> Unit, mo
         }
     }
 }
+
+/** Stands in for a top-level comment: the avatar, the name and a line or two. */
+@Composable
+private fun CommentSkeleton(index: Int) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
+        Box(Modifier.size(36.dp).placeholder(true, CircleShape))
+        Column(Modifier.weight(1f).padding(start = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(Modifier.width(72.dp).height(10.dp).placeholder(true))
+            Box(Modifier.fillMaxWidth(if (index % 2 == 0) 0.9f else 0.7f).height(12.dp).placeholder(true))
+            if (index % 3 != 1) Box(Modifier.fillMaxWidth(0.45f).height(12.dp).placeholder(true))
+        }
+    }
+}
+
+private const val CommentSkeletonCount = 5
 
 @Composable
 private fun CommentList(

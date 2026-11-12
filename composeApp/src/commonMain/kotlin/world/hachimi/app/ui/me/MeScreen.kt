@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.me
 
+import world.hachimi.app.ui.component.SectionErrorPage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +32,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import hachimiworld.composeapp.generated.resources.message_entry_unread_cd
-import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.playlist_empty
 import hachimiworld.composeapp.generated.resources.playlist_favorites_title
 import hachimiworld.composeapp.generated.resources.playlist_my_playlists_title
@@ -39,7 +39,6 @@ import hachimiworld.composeapp.generated.resources.playlist_song_count
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.PlaylistViewModel
 import world.hachimi.app.ui.design.components.HachimiIconButton
-import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.placeholder
 import world.hachimi.app.ui.notification.components.NotificationBell
 import world.hachimi.app.ui.notification.components.formatBadgeCount
@@ -203,9 +202,10 @@ fun MeScreen(
                     playlists.initializeStatus == InitializeStatus.INIT ->
                         items(3, key = { "playlist_skeleton_$it" }) { PlaylistRowSkeleton() }
                     playlists.initializeStatus == InitializeStatus.FAILED -> item(key = "playlist_failed") {
-                        Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
-                            TextButton(onClick = playlists::retry) { Text(stringResource(Res.string.notification_retry)) }
-                        }
+                        SectionErrorPage(
+                            onRetry = playlists::retry,
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).height(120.dp),
+                        )
                     }
                     playlists.playlists.isEmpty() -> item(key = "playlist_empty") {
                         Text(

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import world.hachimi.app.model.InitializeStatus
-import world.hachimi.app.ui.component.LoadingPage
+import world.hachimi.app.ui.component.PlainListSkeleton
 import world.hachimi.app.ui.component.RefreshingIndicator
 import world.hachimi.app.ui.component.ErrorPage
 
@@ -15,7 +15,7 @@ fun InitStatusScaffold(
     isLoading: Boolean,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
-    initPage: @Composable () -> Unit = { LoadingPage() },
+    initPage: @Composable () -> Unit = { PlainListSkeleton() },
     errorPage: @Composable () -> Unit = { ErrorPage(onRetry = onRetryClick) },
     content: @Composable () -> Unit
 ) {

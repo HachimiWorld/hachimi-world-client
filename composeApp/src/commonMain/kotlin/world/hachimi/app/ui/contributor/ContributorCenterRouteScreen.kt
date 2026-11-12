@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.contributor
 
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.PlainListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.contributor_create_post
@@ -27,9 +30,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.NeedLoginScreen
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.creation.publish.PublishScreen
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Text
@@ -65,16 +66,17 @@ fun ContributorEntryScreen(
 
     AnimatedContent(
         vm.initStat,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        transitionSpec = { loadStateTransition() },
     ) { status ->
         when (status) {
-            InitializeStatus.INIT -> LoadingPage()
+            InitializeStatus.INIT -> PlainListSkeleton(leading = 24.dp)
             InitializeStatus.FAILED -> {
                 // If user not logged in, show the login prompt
                 if (!global.isLoggedIn) {
                     NeedLoginScreen()
                 } else {
-                    ReloadPage(onReloadClick = { vm.retry() })
+                    ErrorPage(onRetry = { vm.retry() })
                 }
             }
 

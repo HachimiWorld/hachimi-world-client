@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.creation.artwork
 
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.PlainListSkeleton
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.artwork_all_submissions
 import hachimiworld.composeapp.generated.resources.artwork_submissions_empty
@@ -29,8 +32,6 @@ import world.hachimi.app.model.MyPRViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.LoadMoreItem
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
@@ -53,10 +54,10 @@ fun PRTabContent(
             vm.loadMore()
         }
     }
-    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+    AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) {
         when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.INIT -> PlainListSkeleton(header = true)
+            InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
             InitializeStatus.LOADED -> Column {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(AdaptiveScreenMargin),

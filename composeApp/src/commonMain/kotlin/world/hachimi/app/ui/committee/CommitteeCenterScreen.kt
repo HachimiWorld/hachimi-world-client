@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.committee
 
+import world.hachimi.app.ui.component.PlainListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -71,6 +72,7 @@ fun CommitteeCenterScreen(vm: CommitteeViewModel = koinViewModel()) {
         isLoading = false,
         onRetryClick = vm::retry,
         modifier = Modifier.fillMaxSize(),
+        initPage = { PlainListSkeleton(leading = null) },
     ) {
         if (vm.access?.canView != true) {
             Box(Modifier.fillMaxSize().padding(AdaptiveScreenMargin), contentAlignment = Alignment.Center) {

@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.square
 
+import world.hachimi.app.ui.component.SectionErrorPage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +48,6 @@ import hachimiworld.composeapp.generated.resources.moment_create_button
 import hachimiworld.composeapp.generated.resources.moment_input_placeholder
 import hachimiworld.composeapp.generated.resources.moment_refresh_cd
 import hachimiworld.composeapp.generated.resources.nav_square
-import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.square_tab_announcements
 import hachimiworld.composeapp.generated.resources.square_tab_moments
 import kotlinx.coroutines.launch
@@ -72,7 +72,6 @@ import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.HeadlineTabRow
 import world.hachimi.app.ui.design.components.Text
-import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.events.EventsScreen
 import world.hachimi.app.ui.home.components.AdaptivePullToRefreshBox
 import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
@@ -346,12 +345,10 @@ private fun AnnouncementsPanel(modifier: Modifier = Modifier, vm: EventsListView
             fontWeight = FontWeight.SemiBold,
         )
         when {
-            vm.initializeStatus == InitializeStatus.FAILED -> Box(
-                Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                TextButton(onClick = vm::retry) { Text(stringResource(Res.string.notification_retry)) }
-            }
+            vm.initializeStatus == InitializeStatus.FAILED -> SectionErrorPage(
+                onRetry = vm::retry,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).height(120.dp),
+            )
             vm.initializeStatus == InitializeStatus.INIT -> repeat(3) { AnnouncementRowSkeleton() }
             vm.items.isEmpty() -> Text(
                 stringResource(Res.string.events_empty),

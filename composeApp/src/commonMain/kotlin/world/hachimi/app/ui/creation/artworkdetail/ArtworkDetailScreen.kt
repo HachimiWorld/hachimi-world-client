@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.creation.artworkdetail
 
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.DetailSkeleton
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.artwork_change_jmid_title
 import hachimiworld.composeapp.generated.resources.artwork_change_jmid_unavailable_text
@@ -54,8 +57,6 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.DevelopingPage
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.creation.publish.components.FormItem
@@ -152,10 +153,10 @@ fun ArtworkDetailScreen(
 
 @Composable
 private fun DetailTab(vm: ArtworkDetailViewModel = koinViewModel()) {
-    AnimatedContent(vm.initializeStatus) {
+    AnimatedContent(vm.initializeStatus, transitionSpec = { loadStateTransition() }) {
         when (it) {
-            InitializeStatus.INIT -> LoadingPage(Modifier.padding(bottom = 24.dp))
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() }, modifier = Modifier.padding(bottom = 24.dp))
+            InitializeStatus.INIT -> DetailSkeleton()
+            InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() }, modifier = Modifier.fillMaxSize().padding(bottom = 24.dp))
             InitializeStatus.LOADED -> DetailContent(vm)
         }
     }

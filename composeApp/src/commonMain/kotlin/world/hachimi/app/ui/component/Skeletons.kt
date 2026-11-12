@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.component
 
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -120,6 +123,70 @@ fun SongListSkeleton(
             }
             items(SkeletonRows, contentType = { "row" }) { SongRowSkeleton(index = it) }
         }
+    }
+}
+
+/**
+ * A plain list for the tool pages (creation, review, committee, devices): rows without cards, each
+ * an optional [leading] square or circle, two lines and a short value at the end. [header] leaves a
+ * title over the rows, with a button at its end when [headerAction] is set.
+ *
+ * @since 261112
+ */
+@Composable
+fun PlainListSkeleton(
+    modifier: Modifier = Modifier,
+    leading: Dp? = 42.dp,
+    leadingShape: Shape = RoundedCornerShape(8.dp),
+    header: Boolean = false,
+    headerAction: Boolean = false,
+) {
+    Column(modifier.fillMaxSize().clipToBounds().wrapContentHeight(Alignment.Top, unbounded = true)) {
+        if (header) Row(
+            Modifier.fillMaxWidth().padding(AdaptiveScreenMargin).height(36.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.width(120.dp).height(18.dp).placeholder(true))
+            Spacer(Modifier.weight(1f))
+            if (headerAction) Box(Modifier.size(88.dp, 36.dp).placeholder(true, CircleShape))
+        }
+        repeat(SkeletonRows) { index ->
+            Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (leading != null) {
+                    Box(Modifier.size(leading).placeholder(true, leadingShape))
+                    Spacer(Modifier.width(16.dp))
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Bar(TitleWidths[index % TitleWidths.size], 12.dp)
+                    Bar(0.3f, 10.dp)
+                }
+                Box(Modifier.padding(start = 16.dp).width(40.dp).height(10.dp).placeholder(true))
+            }
+        }
+    }
+}
+
+/**
+ * A page of reading: a title, a line of details, then paragraphs and a block. For detail pages
+ * whose layout varies with what they show (a report, a review, a changelog).
+ *
+ * @since 261112
+ */
+@Composable
+fun DetailSkeleton(modifier: Modifier = Modifier) {
+    Column(
+        modifier.fillMaxSize().clipToBounds().wrapContentHeight(Alignment.Top, unbounded = true).padding(horizontal = AdaptiveScreenMargin, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Bar(0.55f, 20.dp)
+        Bar(0.35f, 10.dp)
+        Spacer(Modifier.height(8.dp))
+        repeat(2) { paragraph ->
+            repeat(3) { Bar(1f, 12.dp) }
+            Bar(if (paragraph == 0) 0.6f else 0.4f, 12.dp)
+            Spacer(Modifier.height(8.dp))
+        }
+        Box(Modifier.fillMaxWidth().height(120.dp).placeholder(true, RoundedCornerShape(16.dp)))
     }
 }
 

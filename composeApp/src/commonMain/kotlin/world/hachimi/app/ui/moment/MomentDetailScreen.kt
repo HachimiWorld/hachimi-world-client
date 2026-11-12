@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.moment
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -23,8 +27,6 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.MomentDetailViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.comment.CommentsPage
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
@@ -53,10 +55,16 @@ fun MomentDetailScreen(
         moment == null -> DetailState.LOADING
         else -> DetailState.LOADED
     }
-    AnimatedContent(state, modifier = Modifier.fillMaxSize()) { st ->
+    AnimatedContent(state, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) { st ->
         when (st) {
-            DetailState.LOADING -> Placeholder(navigator::back) { LoadingPage() }
-            DetailState.FAILED -> Placeholder(navigator::back) { ReloadPage(onReloadClick = vm::retry) }
+            DetailState.LOADING -> Placeholder(navigator::back) {
+                // Where the moment will open: its card, then the line above the comments
+                Column(Modifier.padding(top = 8.dp)) {
+                    MomentSkeleton(index = 0)
+                    Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
+                }
+            }
+            DetailState.FAILED -> Placeholder(navigator::back) { ErrorPage(onRetry = vm::retry) }
             DetailState.NOT_FOUND -> Placeholder(navigator::back) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(stringResource(Res.string.moment_not_found), color = HachimiTheme.colorScheme.onSurfaceVariant)

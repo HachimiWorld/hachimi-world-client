@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.moment
 
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -148,12 +149,11 @@ private fun MomentRow(modifier: Modifier = Modifier, content: @Composable () -> 
 
 @Composable
 private fun MomentListState(pager: MomentPager) {
-    Box(Modifier.fillMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(Res.string.moment_load_error), color = HachimiTheme.colorScheme.onSurfaceVariant)
-            TextButton(onClick = pager::retry) { Text(stringResource(Res.string.notification_retry)) }
-        }
-    }
+    ErrorPage(
+        onRetry = pager::retry,
+        modifier = Modifier.fillMaxWidth().height(320.dp),
+        message = stringResource(Res.string.moment_load_error),
+    )
 }
 
 @Composable

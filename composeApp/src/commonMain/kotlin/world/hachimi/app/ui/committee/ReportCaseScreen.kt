@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.committee
 
+import world.hachimi.app.ui.component.DetailSkeleton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -107,6 +108,7 @@ fun ReportCaseScreen(
             isLoading = false,
             onRetryClick = vm::retry,
             modifier = Modifier.fillMaxSize(),
+            initPage = { DetailSkeleton() },
         ) {
             val case = vm.case ?: return@InitStatusScaffold
             val showDecision = vm.canResolve && case.verdicts.isNotEmpty()
