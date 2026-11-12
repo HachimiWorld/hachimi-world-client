@@ -1,5 +1,6 @@
 package world.hachimi.app.model
 
+import kotlinx.coroutines.CancellationException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -61,12 +62,13 @@ class EventDetailViewModel(
                 data = resp.ok()
                 initStat = InitializeStatus.LOADED
             } else {
-                global.alert(resp.err().msg)
+                // The page shows the failure and the way to retry
+                Logger.w(TAG, "Failed to load event detail: ${resp.err().msg}")
                 initStat = InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to load event detail", e)
-            global.alert(e.message)
             initStat = InitializeStatus.FAILED
         } finally {
             loading = false
