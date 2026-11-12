@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.userspace
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import world.hachimi.app.ui.userspace.component.PublicPlaylistCardSkeleton
 import world.hachimi.app.ui.home.components.SongCardSkeleton
 import world.hachimi.app.ui.component.SectionErrorPage
@@ -123,7 +124,8 @@ fun UserSpaceScreen(
     val content: @Composable () -> Unit = {
         BoxWithConstraints {
             val constraintsMaxWidth = maxWidth
-            var selectedTab by remember { mutableIntStateOf(0) }
+            // Saveable, so going back to this page finds the tab it was left on
+            var selectedTab by rememberSaveable { mutableIntStateOf(0) }
             val gridState = rememberLazyGridState()
             val momentActions = rememberMomentActions()
             LaunchedEffect(selectedTab, vm.moments) {
