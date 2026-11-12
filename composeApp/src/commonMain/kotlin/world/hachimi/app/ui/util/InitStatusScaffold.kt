@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.RefreshingIndicator
-import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.ErrorPage
 
 @Composable
 fun InitStatusScaffold(
@@ -16,13 +16,13 @@ fun InitStatusScaffold(
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
     initPage: @Composable () -> Unit = { LoadingPage() },
-    errorPage: @Composable () -> Unit = { ReloadPage(onReloadClick = onRetryClick) },
+    errorPage: @Composable () -> Unit = { ErrorPage(onRetry = onRetryClick) },
     content: @Composable () -> Unit
 ) {
     Box(modifier) {
         AnimatedContent(
             targetState = initializeStatus,
-            transitionSpec = { fadeInFadeOut() }
+            transitionSpec = { loadStateTransition() }
         ) { initStatus ->
             when (initStatus) {
                 InitializeStatus.INIT -> initPage()

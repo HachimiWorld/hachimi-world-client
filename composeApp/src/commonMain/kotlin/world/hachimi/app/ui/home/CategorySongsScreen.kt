@@ -41,6 +41,7 @@ import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
+import world.hachimi.app.ui.home.components.SongCardGridSkeleton
 import world.hachimi.app.ui.util.ListTailSpacer
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
@@ -66,6 +67,7 @@ fun CategorySongsScreen(
             initializeStatus = vm.initializeStatus,
             isLoading = vm.loading,
             onRetryClick = { vm.retry() },
+            initPage = { SongCardGridSkeleton() },
         ) {
             Content(category, vm, global)
         }

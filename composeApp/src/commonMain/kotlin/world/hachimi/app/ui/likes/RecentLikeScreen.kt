@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.likes
 
+import world.hachimi.app.ui.component.SongListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -88,6 +89,7 @@ fun RecentLikeScreen(
 		isLoading = vm.loading,
 		onRetryClick = { vm.retry() },
 		modifier = Modifier.fillMaxSize(),
+		initPage = { SongListSkeleton(playAll = true, dateLabel = true) },
 	) {
 		Content(vm)
 	}

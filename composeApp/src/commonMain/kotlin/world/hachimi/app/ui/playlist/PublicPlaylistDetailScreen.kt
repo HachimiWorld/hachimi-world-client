@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -72,6 +73,7 @@ fun PublicPlaylistScreen(
             initializeStatus = vm.initStatus,
             isLoading = vm.loading,
             onRetryClick = { vm.retry() },
+            initPage = { PlaylistDetailSkeleton() },
         ) {
             Box(Modifier.fillMaxSize()) {
                 val playlistInfo = vm.playlistInfo

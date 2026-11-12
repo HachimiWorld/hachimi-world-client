@@ -44,8 +44,9 @@ import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.home.components.SongCardGridSkeleton
+import world.hachimi.app.ui.component.ErrorPage
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -79,10 +80,14 @@ fun RecentPublishScreen(
         showBack = true,
         onBack = navigator::back,
     ) {
-        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+        AnimatedContent(
+            vm.initializeStatus,
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = { loadStateTransition() },
+        ) {
             when (it) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.INIT -> SongCardGridSkeleton(dateLabel = true)
+                InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
                 InitializeStatus.LOADED -> Content(vm, global)
             }
         }

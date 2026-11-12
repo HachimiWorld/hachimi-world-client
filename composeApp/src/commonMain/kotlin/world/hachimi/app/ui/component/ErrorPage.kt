@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.component
 
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -90,6 +93,21 @@ fun ErrorPage(
             }
         }
     }
+}
+
+/**
+ * [ErrorPage] for one part of a page, such as a section of the home page or a tab of a profile:
+ * tinted and rounded like a card, so the reach of the tap shows. [modifier] sets its size.
+ *
+ * @since 261112
+ */
+@Composable
+fun SectionErrorPage(onRetry: () -> Unit, modifier: Modifier = Modifier, message: String? = null) {
+    ErrorPage(
+        onRetry = onRetry,
+        modifier = modifier.clip(RoundedCornerShape(16.dp)).background(HachimiTheme.colorScheme.surface),
+        message = message,
+    )
 }
 
 @Preview

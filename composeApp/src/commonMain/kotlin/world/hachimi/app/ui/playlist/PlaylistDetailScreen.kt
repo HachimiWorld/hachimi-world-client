@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.ui.component.RefreshingIndicator
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
+import world.hachimi.app.ui.util.loadStateTransition
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_body
 import hachimiworld.composeapp.generated.resources.moderation_playlist_hidden_title
@@ -65,8 +69,6 @@ import world.hachimi.app.model.PlaylistDetailViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Button
@@ -85,7 +87,6 @@ import world.hachimi.app.api.module.PlaylistModule
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
-import world.hachimi.app.ui.util.fadeInFadeOut
 import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
 import world.hachimi.app.ui.util.listTailSpacerItem
 import kotlin.time.Duration.Companion.seconds
@@ -117,11 +118,11 @@ fun PlaylistDetailScreen(
     ) {
     AnimatedContent(
         targetState = vm.initStatus,
-        transitionSpec = { fadeInFadeOut() }
+        transitionSpec = { loadStateTransition() }
     ) { initStatus ->
         when (initStatus) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+            InitializeStatus.INIT -> PlaylistDetailSkeleton()
+            InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
             InitializeStatus.LOADED -> BoxWithConstraints(Modifier.fillMaxSize()) {
                 vm.playlistInfo?.let { info ->
                     val listState = rememberLazyListState()
@@ -229,7 +230,8 @@ fun PlaylistDetailScreen(
                     }
                 }
 
-                if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
+                // A refresh over a page already shown takes the pull indicator's place at the top
+                RefreshingIndicator(isRefreshing = vm.loading)
 
                 EditDialog(vm)
                 DeleteConfirmDialog(vm)

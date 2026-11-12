@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.recentplay
 
+import world.hachimi.app.ui.component.SongListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.recent_play_title
@@ -70,7 +71,8 @@ fun RecentPlayScreen(
         initializeStatus = vm.initializeStatus,
         isLoading = vm.refreshing,
         onRetryClick = { vm.retry() },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        initPage = { SongListSkeleton() },
     ) {
         BoxWithConstraints {
             LazyColumn(

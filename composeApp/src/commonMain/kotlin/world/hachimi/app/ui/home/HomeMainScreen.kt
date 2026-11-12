@@ -10,7 +10,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,8 +49,6 @@ import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
@@ -74,9 +71,8 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.TestTags
-import world.hachimi.app.ui.component.ErrorPage
-import soup.compose.material.motion.animation.materialFadeThroughIn
-import soup.compose.material.motion.animation.materialFadeThroughOut
+import world.hachimi.app.ui.component.SectionErrorPage
+import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardSkeleton
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
@@ -449,19 +445,14 @@ private fun LoadableContent(
         modifier = modifier.onVisibilityChanged { visible ->
             if (visible) onLoad()
         },
-        // Material fade through, without its scale: the skeleton, the failure and the cards all sit in
-        // the same place at the same size, so the new state only fades in where the old one was
-        transitionSpec = { materialFadeThroughIn(initialScale = 1f) togetherWith materialFadeThroughOut() },
+        transitionSpec = { loadStateTransition() },
     ) {
         when (it) {
             InitializeStatus.INIT -> SongGridSkeleton(cardSize)
-            InitializeStatus.FAILED -> ErrorPage(
+            // The failed section keeps the cards' footprint
+            InitializeStatus.FAILED -> SectionErrorPage(
                 onRetry = onRetryClick,
-                // The failed section keeps the cards' footprint, tinted like a card so the reach of the tap shows
-                modifier = Modifier.fillMaxSize()
-                    .padding(horizontal = AdaptiveScreenMargin)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(HachimiTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxSize().padding(horizontal = AdaptiveScreenMargin),
             )
             InitializeStatus.LOADED -> content()
         }

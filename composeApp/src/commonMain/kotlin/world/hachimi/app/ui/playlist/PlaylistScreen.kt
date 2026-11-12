@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.ui.home.components.SongCardGridSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.playlist_empty
@@ -49,6 +50,7 @@ fun PlaylistScreen(vm: PlaylistViewModel = koinViewModel()) {
         initializeStatus = vm.initializeStatus,
         isLoading = vm.playlistIsLoading,
         onRetryClick = { vm.retry() },
+        initPage = { SongCardGridSkeleton(playAll = false) },
     ) {
         Content(vm, navigator)
     }
