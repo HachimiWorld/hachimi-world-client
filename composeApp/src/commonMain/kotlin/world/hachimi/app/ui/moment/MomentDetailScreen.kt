@@ -70,7 +70,7 @@ fun MomentDetailScreen(
                     AnimatedContent(moment, transitionSpec = { loadStateTransition() }, contentKey = { it != null }) { shown ->
                         Column {
                             // Where the moment will open, until it does
-                            if (shown == null) MomentSkeleton(index = 0) else MomentCard(shown, actions, full = true)
+                            if (shown == null) MomentDetailSkeleton() else MomentCard(shown, actions, full = true)
                             Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
                         }
                     }

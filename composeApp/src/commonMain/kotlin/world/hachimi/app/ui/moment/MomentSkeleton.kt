@@ -70,6 +70,35 @@ fun MomentSkeleton(
     }
 }
 
+/**
+ * Stands in for a moment's own page ([MomentCard] with `full`) while it loads: avatar beside name and
+ * time, then the text across the full width, on the same lines and paddings as the real one.
+ *
+ * @since 261113
+ */
+@Composable
+fun MomentDetailSkeleton(modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth().padding(top = 16.dp, bottom = 4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(40.dp).placeholder(true, CircleShape))
+            Column(Modifier.padding(start = 12.dp)) {
+                Box(Modifier.height(20.dp), contentAlignment = Alignment.CenterStart) { Bar(88.dp) }
+                Box(Modifier.height(20.dp), contentAlignment = Alignment.CenterStart) { Bar(48.dp) }
+            }
+        }
+        // Text on the 27dp lines of the real one
+        Column(Modifier.padding(top = 12.dp)) {
+            listOf(1f, 0.55f).forEach { width ->
+                Box(Modifier.height(27.dp), contentAlignment = Alignment.CenterStart) {
+                    Box(Modifier.fillMaxWidth(width).height(14.dp).placeholder(true, BarShape))
+                }
+            }
+        }
+        // Room for the footer buttons
+        Spacer(Modifier.height(44.dp))
+    }
+}
+
 @Composable
 private fun Bar(width: Dp) {
     Box(Modifier.width(width).height(12.dp).placeholder(true, BarShape))
