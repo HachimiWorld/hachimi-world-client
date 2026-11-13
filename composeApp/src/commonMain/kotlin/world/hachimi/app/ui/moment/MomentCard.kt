@@ -103,7 +103,12 @@ class MomentActions(
     val onImageClick: (MomentItem, index: Int) -> Unit,
     val onAttachmentClick: (MomentAttachment) -> Unit,
     val isMine: (MomentItem) -> Boolean,
-)
+) {
+    /** The same, but opening a moment does [onOpen] instead, such as on the moment's own page. @since 261113 */
+    fun withOpen(onOpen: (MomentItem, atComments: Boolean) -> Unit) = MomentActions(
+        onOpen, onLike, onDelete, onReport, onUserClick, onImageClick, onAttachmentClick, isMine,
+    )
+}
 
 /**
  * The usual [MomentActions], and where they show: the delete confirmation and the image viewer are

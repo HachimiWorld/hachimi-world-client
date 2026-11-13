@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -67,10 +68,12 @@ fun MomentDetailScreen(
                 title = { stringResource(Res.string.moment_page_title) },
                 onBack = navigator::back,
                 header = {
+                    // Here the comment button stays on the page: it brings up the box to write in
+                    val inPage = remember(actions) { actions.withOpen { _, _ -> writeComment() } }
                     AnimatedContent(moment, transitionSpec = { loadStateTransition() }, contentKey = { it != null }) { shown ->
                         Column {
                             // Where the moment will open, until it does
-                            if (shown == null) MomentDetailSkeleton() else MomentCard(shown, actions, full = true)
+                            if (shown == null) MomentDetailSkeleton() else MomentCard(shown, inPage, full = true)
                             Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
                         }
                     }

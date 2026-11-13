@@ -65,6 +65,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -157,12 +159,18 @@ import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
 
+/** What [CommentsPage] offers the [header][CommentsPage] above its comments. @since 261113 */
+interface CommentsHeaderScope {
+    /** Brings the comments into view, if they're not, and puts the cursor in the box to write one. */
+    fun writeComment()
+}
+
 /**
  * A target's comments as a page: [header] and the list scroll together, with the box to write in
  * below them. Back leaves the replies of a comment first.
  *
  * @param title The page's title over the list, given the number of comments.
- * @param header What the comments are on, above them.
+ * @param header What the comments are on, above them. Its scope is @since 261113.
  * @param startAtComments Opens scrolled past [header], for when it's long.
  * @param holdComments Keeps the comments as stand-ins even once they've loaded, so they don't show
  * before the [header] they're under has arrived. @since 261112
@@ -173,7 +181,7 @@ fun CommentsPage(
     target: CommentTarget,
     title: @Composable (total: Long) -> String,
     onBack: () -> Unit,
-    header: (@Composable () -> Unit)? = null,
+    header: (@Composable CommentsHeaderScope.() -> Unit)? = null,
     startAtComments: Boolean = false,
     holdComments: Boolean = false,
     store: CommentsStore = koinInject(),
@@ -185,6 +193,18 @@ fun CommentsPage(
     // Here so the place in the list, past a long header, survives opening a comment's replies
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = if (startAtComments && header != null) 1 else 0)
     val slideDistance = rememberSlideDistance()
+    val scope = rememberCoroutineScope()
+    val headerScope = remember(listState, focusRequester) {
+        object : CommentsHeaderScope {
+            override fun writeComment() {
+                // The comments start right under the header
+                if (listState.layoutInfo.visibleItemsInfo.none { it.index == 1 }) {
+                    scope.launch { listState.animateScrollToItem(1) }
+                }
+                focusRequester.requestFocus()
+            }
+        }
+    }
     AdjustResizeForIme()
     LaunchedEffect(target) { store.open(target) }
     LaunchedEffect(store.replyTo) {
@@ -239,7 +259,7 @@ fun CommentsPage(
                     val replied = shownThread
                     if (openId == null || replied == null) {
                         CommentList(
-                            header = header,
+                            header = header?.let { content -> { headerScope.content() } },
                             status = if (holdComments) InitializeStatus.INIT else store.initializeStatus,
                             hotThreads = store.hotThreads,
                             threads = store.threads,
