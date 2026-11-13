@@ -431,11 +431,11 @@ internal fun AttachmentCard(attachment: MomentAttachment, onClick: () -> Unit, m
 
 @Composable
 private fun FooterRow(item: MomentItem, actions: MomentActions, modifier: Modifier = Modifier) {
-    // Icons line up with the text above rather than with their own padding
+    // Icons line up with the text above rather than with their own padding, and each button keeps a
+    // slot of its own, so a count coming or going doesn't move the next icon
     Row(
-        modifier = modifier.offset(x = (-10).dp),
+        modifier = modifier.offset(x = -CountButtonPadding),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(28.dp),
     ) {
         CountButton(
             icon = if (item.liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
@@ -443,6 +443,7 @@ private fun FooterRow(item: MomentItem, actions: MomentActions, modifier: Modifi
             count = item.likeCount.toLong(),
             active = item.liked,
             onClick = { actions.onLike(item) },
+            modifier = Modifier.widthIn(min = CountButtonSlot),
         )
         CountButton(
             icon = Icons.AutoMirrored.Outlined.Comment,
@@ -450,9 +451,13 @@ private fun FooterRow(item: MomentItem, actions: MomentActions, modifier: Modifi
             count = item.commentCount,
             active = false,
             onClick = { actions.onOpen(item, true) },
+            modifier = Modifier.widthIn(min = CountButtonSlot),
         )
     }
 }
+
+private val CountButtonPadding = 8.dp
+private val CountButtonSlot = 56.dp
 
 @Composable
 private fun CountButton(
@@ -461,26 +466,30 @@ private fun CountButton(
     count: Long,
     active: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val color by animateColorAsState(if (active) HachimiTheme.colorScheme.primary else HachimiTheme.colorScheme.onSurfaceVariant)
-    Row(
-        modifier = Modifier
-            .defaultMinSize(minWidth = 38.dp, minHeight = 36.dp)
-            .clip(CircleShape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Icon(icon, contentDescription, Modifier.size(18.dp), tint = color)
-        AnimatedVisibility(
-            visible = count > 0,
-            enter = fadeIn() + expandHorizontally(),
-            exit = fadeOut() + shrinkHorizontally(),
+    // The slot is the modifier's; the ripple hugs the icon and count inside it
+    Box(modifier, contentAlignment = Alignment.CenterStart) {
+        Row(
+            modifier = Modifier
+                .defaultMinSize(minHeight = 36.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onClick)
+                .padding(horizontal = CountButtonPadding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            // Stays at 1 while it animates out at 0
-            AnimatedCount(count.coerceAtLeast(1)) {
-                Text(text = it.toString(), fontSize = 13.sp, color = color)
+            Icon(icon, contentDescription, Modifier.size(18.dp), tint = color)
+            AnimatedVisibility(
+                visible = count > 0,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally(),
+            ) {
+                // Stays at 1 while it animates out at 0
+                AnimatedCount(count.coerceAtLeast(1)) {
+                    Text(text = it.toString(), fontSize = 13.sp, color = color)
+                }
             }
         }
     }
