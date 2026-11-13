@@ -30,12 +30,7 @@ class MomentDetailViewModel(
     /** It was deleted, or never existed. */
     var notFound by mutableStateOf(false)
         private set
-    /**
-     * The moment [status], [moment] and [notFound] are about. This view model outlives one page, so
-     * the page checks it against its own before trusting the rest. Public @since 261112.
-     */
-    var momentId by mutableStateOf<Long?>(null)
-        private set
+    private var momentId: Long? = null
 
     init {
         viewModelScope.launch {
@@ -71,8 +66,6 @@ class MomentDetailViewModel(
         viewModelScope.launch {
             try {
                 val resp = api.momentModule.detail(MomentModule.MomentIdReq(id), auth = global.isLoggedIn)
-                // Another moment was opened while this one loaded
-                if (momentId != id) return@launch
                 if (resp.ok) {
                     val item = resp.ok<MomentModule.MomentItem>()
                     moment = item
@@ -93,7 +86,6 @@ class MomentDetailViewModel(
                 throw e
             } catch (e: Throwable) {
                 Logger.e("moment_detail", "Failed to load a moment", e)
-                if (momentId != id) return@launch
                 status = InitializeStatus.FAILED
             }
         }

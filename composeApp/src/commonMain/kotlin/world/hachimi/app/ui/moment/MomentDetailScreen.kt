@@ -46,14 +46,10 @@ fun MomentDetailScreen(
     LaunchedEffect(momentId) { vm.mounted(momentId) }
     val actions = rememberMomentActions(onDeleted = navigator::back)
 
-    // The view model is shared between moment pages, and mounted() only runs after the first frame:
-    // until it's on this moment, what it holds belongs to another one, so the page shows it loading
-    val mine = vm.momentId == momentId
-    val moment = vm.moment.takeIf { mine }
+    val moment = vm.moment
     // The comments don't wait for the moment: both load at once, and only a moment that's gone or
     // didn't load takes the page from them
     val state = when {
-        !mine -> DetailState.SHOWN
         vm.notFound -> DetailState.NOT_FOUND
         vm.status == InitializeStatus.FAILED -> DetailState.FAILED
         else -> DetailState.SHOWN
