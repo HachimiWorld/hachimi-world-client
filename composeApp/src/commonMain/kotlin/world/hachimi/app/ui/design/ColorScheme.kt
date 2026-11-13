@@ -14,6 +14,7 @@ object HachimiPalette {
     val onSurfaceVariantLight = Color(0xFF000000).copy(0.60f)
     val onSurfaceReverseLight = Color(0xFFFFFFFF).copy(0.87f)
     val outlineLight = Color(0xFF000000).copy(0.10f)
+    val inverseSurfaceLight = Color(0xFF262626)
 
     val backgroundDark = Color(0xFF2B2A25)
     val primaryDark = Color(0xFFFF782F)
@@ -25,6 +26,7 @@ object HachimiPalette {
     val onSurfaceVariantDark = Color(0xFFFFFFFF).copy(0.60f)
     val onSurfaceReverseDark = Color(0xFF000000).copy(0.87f)
     val outlineDark = Color(0xFFFFFFFF).copy(0.10f)
+    val inverseSurfaceDark = Color(0xFFF5F5F5)
 }
 
 
@@ -39,7 +41,13 @@ class ColorScheme(
     val onSurface: Color,
     val onSurfaceVariant: Color,
     val onSurfaceReverse: Color,
-    val outline: Color
+    val outline: Color,
+    /**
+     * An opaque, neutral surface in the opposite tone to the page, for things that float over it
+     * (such as a toast). Content on it uses [onSurfaceReverse].
+     * @since 261114
+     */
+    val inverseSurface: Color,
 )
 
 val hachimiLightScheme = ColorScheme(
@@ -52,7 +60,8 @@ val hachimiLightScheme = ColorScheme(
     onSurface = HachimiPalette.onSurfaceLight,
     onSurfaceVariant = HachimiPalette.onSurfaceVariantLight,
     onSurfaceReverse = HachimiPalette.onSurfaceReverseLight,
-    outline = HachimiPalette.outlineLight
+    outline = HachimiPalette.outlineLight,
+    inverseSurface = HachimiPalette.inverseSurfaceLight,
 )
 
 val hachimiDarkScheme = ColorScheme(
@@ -65,5 +74,6 @@ val hachimiDarkScheme = ColorScheme(
     onSurface = HachimiPalette.onSurfaceDark,
     onSurfaceVariant = HachimiPalette.onSurfaceVariantDark,
     onSurfaceReverse = HachimiPalette.onSurfaceReverseDark,
-    outline = HachimiPalette.outlineDark
+    outline = HachimiPalette.outlineDark,
+    inverseSurface = HachimiPalette.inverseSurfaceDark,
 )

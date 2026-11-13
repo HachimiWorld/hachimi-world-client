@@ -193,7 +193,6 @@ class GlobalStore(
         scope.launch {
             snackbarHostState.showSnackbar(
                 text?.take(64) ?: org.jetbrains.compose.resources.getString(Res.string.common_unknown_error),
-                withDismissAction = true
             )
         }
     }

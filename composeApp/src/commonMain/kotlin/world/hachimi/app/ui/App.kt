@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -42,6 +41,7 @@ import world.hachimi.app.ui.component.KidsModeDialog
 import world.hachimi.app.ui.component.StarPromptDialog
 import world.hachimi.app.ui.component.UpgradeDialog
 import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.components.ToastHost
 import world.hachimi.app.ui.player.PlayerScreen2
 import world.hachimi.app.ui.root.RootScreen
 import world.hachimi.app.ui.util.setupCoil
@@ -96,10 +96,10 @@ fun App(
                                 }
                             }
                         }
-                        SnackbarHost(
-                            modifier = Modifier.align(Alignment.BottomCenter)
-                                .padding(bottom = 120.dp),
+                        ToastHost(
                             hostState = global.snackbarHostState,
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                                .padding(bottom = 112.dp),
                         )
                     }
                 }
