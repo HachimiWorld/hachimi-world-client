@@ -1,6 +1,5 @@
 package world.hachimi.app.model
 
-import kotlinx.coroutines.CancellationException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_not_logged_in
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -167,6 +167,7 @@ class UserSpaceViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to follow user $targetUid", e)
             global.alert(e.message)
         } finally {
@@ -198,6 +199,7 @@ class UserSpaceViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to unfollow user $targetUid", e)
             global.alert(e.message)
         } finally {
@@ -324,6 +326,7 @@ class UserSpaceViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to load connections", e)
             global.alert(e.message)
         } finally {

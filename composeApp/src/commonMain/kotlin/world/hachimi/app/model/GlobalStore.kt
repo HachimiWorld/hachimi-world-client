@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.navigation3.runtime.NavKey
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -102,6 +103,7 @@ class GlobalStore(
                         try {
                             player.initialize()
                         } catch (e: Throwable) {
+                            if (e is CancellationException) throw e
                             Logger.e("global", "Failed to initialize player", e)
                             alert(Res.string.player_load_failed)
                         }
@@ -203,6 +205,7 @@ class GlobalStore(
                 val resolved = org.jetbrains.compose.resources.getString(text, *params)
                 alert(resolved)
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 // Fallback to a simple unknown error message if getString isn't available on the platform
                 alert("Unknown Error")
             }
@@ -258,6 +261,7 @@ class GlobalStore(
                 showApiVersionIncompatible = true
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("player", "Failed to check min API version", e)
             alert(Res.string.global_error_check_min_api_failed)
         }

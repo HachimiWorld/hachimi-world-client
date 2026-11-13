@@ -127,6 +127,7 @@ class EventsListViewModel(
                         global.alert(resp.err().msg)
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("events", "Failed to load more events(posts)", e)
                     global.alert(e.message)
                 } finally {

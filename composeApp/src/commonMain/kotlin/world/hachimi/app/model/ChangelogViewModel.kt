@@ -129,6 +129,7 @@ class ChangelogViewModel(
                         global.alert(resp.err().msg)
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("changelog", "Failed to load more changelog", e)
                     global.alert(e.message)
                 } finally {

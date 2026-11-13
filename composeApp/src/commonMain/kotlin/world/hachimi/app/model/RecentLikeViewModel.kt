@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,6 +130,7 @@ class RecentLikeViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to unlike song $songId", e)
                 global.alert(e.message)
             } finally {
@@ -180,6 +182,7 @@ class RecentLikeViewModel(
                 }
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to fetch recent likes", e)
             global.alert(e.message)
             if (initializeStatus == InitializeStatus.INIT) {
@@ -232,6 +235,7 @@ class RecentLikeViewModel(
                 rebuildSongs()
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to refresh recent likes after unlike", e)
             global.alert(e.message)
         } finally {

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,6 +48,7 @@ class WeeklyHotViewModel(
                 initializeStatus = InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("hot", "Failed to get hot song list", e)
             initializeStatus = InitializeStatus.FAILED
             global.alert(e.message)

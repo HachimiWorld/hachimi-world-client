@@ -14,6 +14,7 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -117,6 +118,7 @@ class PlaylistDetailViewModel(
                         if (message != null) global.alert(message) else global.alert(data.msg)
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("playlist", "Failed to edit playlist", e)
                     global.alert(e.message)
                 } finally {
@@ -170,6 +172,7 @@ class PlaylistDetailViewModel(
                 }
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("playlist detail", "Failed to refresh playlist detail", e)
             global.alert(e.message)
         } finally {
@@ -210,6 +213,7 @@ class PlaylistDetailViewModel(
                         return@launch
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("playlist", "Failed to set cover image", e)
                     global.alert(e.message)
                     return@launch
@@ -241,6 +245,7 @@ class PlaylistDetailViewModel(
                     refresh()
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("playlist", "Failed to change order", e)
                 global.alert(Res.string.playlist_reorder_failed)
                 refresh()
@@ -264,6 +269,7 @@ class PlaylistDetailViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("playlist", "Failed to delete playlist", e)
                 global.alert(e.message)
             } finally {

@@ -17,6 +17,7 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -103,6 +104,7 @@ class CreatePostViewModel(
                     }
                     resp.ok()
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("post", "Failed to upload cover image", e)
                     global.alert(e.message)
                     return@launch
@@ -151,6 +153,7 @@ class CreatePostViewModel(
                     global.alert(err.msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("post", "Failed to create post", e)
                 global.alert(e.message)
             } finally {

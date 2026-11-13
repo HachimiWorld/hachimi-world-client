@@ -17,6 +17,7 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.size
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -119,6 +120,7 @@ class EditProfileViewModel(
                         global.alert(resp.err().msg)
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("edit_profile", "Failed to upload avatar", e)
                     global.alert(e.message)
                 } finally {
@@ -151,6 +153,7 @@ class EditProfileViewModel(
                     if (message != null) global.alert(message) else global.alert(err.msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("edit_profile", "Failed to save profile", e)
                 global.alert(e.message)
             } finally {
@@ -177,6 +180,7 @@ class EditProfileViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("edit_profile", "Failed to fetch profile", e)
             global.alert(e.message)
         } finally {
@@ -198,6 +202,7 @@ class EditProfileViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("edit_profile", "Failed to load connections", e)
             global.alert(e.message)
         } finally {
@@ -237,6 +242,7 @@ class EditProfileViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("edit_profile", "Failed to generate challenge", e)
                 global.alert(e.message)
             } finally {
@@ -261,6 +267,7 @@ class EditProfileViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("edit_profile", "Failed to verify challenge", e)
                 global.alert(e.message)
             } finally {
@@ -295,6 +302,7 @@ class EditProfileViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("edit_profile", "Failed to unlink account", e)
                 global.alert(e.message)
             } finally {

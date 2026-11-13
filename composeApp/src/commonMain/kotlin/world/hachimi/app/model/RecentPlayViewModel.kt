@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -93,6 +94,7 @@ class RecentPlayViewModel(
                 return@launch
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("recent", "Failed to fetch recent play history", e)
             global.alert(e.message)
             if (initializeStatus == InitializeStatus.INIT) {

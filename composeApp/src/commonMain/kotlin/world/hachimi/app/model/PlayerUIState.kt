@@ -4,6 +4,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CancellationException
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.module.UserModule
 import world.hachimi.app.logging.Logger
@@ -167,6 +168,7 @@ class PlayerUIState() {
                 timedLyricsEnabled = false
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("player", "Failed to parse lyrics", e)
             lyricsLines = content.lines()
             timedLyricsEnabled = false

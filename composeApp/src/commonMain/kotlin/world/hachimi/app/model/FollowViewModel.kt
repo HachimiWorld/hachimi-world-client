@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -93,6 +94,7 @@ class FollowViewModel(
                 load(reset = true)
                 errorData = null
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to refresh ${listType.name}", e)
                 errorData = e.message
                 global.alert(e.message)
@@ -109,6 +111,7 @@ class FollowViewModel(
             try {
                 load(reset = false)
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to load more ${listType.name}", e)
                 e.message?.let { global.alert(it) } ?: global.alert(Res.string.common_load_more_failed)
             } finally {
@@ -127,6 +130,7 @@ class FollowViewModel(
                 load(reset = true)
                 initializeStatus = InitializeStatus.LOADED
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to init ${listType.name}", e)
                 errorData = e.message
                 initializeStatus = InitializeStatus.FAILED
@@ -211,6 +215,7 @@ class FollowViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to unfollow user ${target.uid}", e)
             global.alert(e.message)
         } finally {

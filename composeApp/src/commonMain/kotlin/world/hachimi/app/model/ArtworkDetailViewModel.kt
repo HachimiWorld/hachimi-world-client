@@ -93,6 +93,7 @@ class ArtworkDetailViewModel(
                     if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to fetch detail", e)
                 global.alert(e.message)
                 if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
@@ -142,6 +143,7 @@ class ArtworkDetailViewModel(
                     changeJmidAvailable = false
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to fetch detail", e)
                 global.alert(e.message)
             } finally {
@@ -196,6 +198,7 @@ class ArtworkDetailViewModel(
                                     }
                                 }
                             } catch (e: Throwable) {
+                                if (e is CancellationException) throw e
                                 Logger.e("publish", "Failed to check jmid", e)
                                 jmidValid = false
                                 jmidSupportText = e.message
@@ -235,6 +238,7 @@ class ArtworkDetailViewModel(
                     global.alert(err.msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to change jmid", e)
                 global.alert(e.message)
             } finally {

@@ -9,6 +9,7 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_forget_captcha_failed
 import hachimiworld.composeapp.generated.resources.auth_forget_reset_failed
 import hachimiworld.composeapp.generated.resources.auth_forget_send_code_failed
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -75,6 +76,7 @@ class ForgetPasswordViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to send verify code", e)
             global.alert(Res.string.auth_forget_send_code_failed)
         } finally {
@@ -103,6 +105,7 @@ class ForgetPasswordViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to reset password", e)
             global.alert(Res.string.auth_forget_reset_failed)
         } finally {
@@ -127,6 +130,7 @@ class ForgetPasswordViewModel(
                     getPlatform().openUrl(data.url)
                     showCaptchaDialog = true
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e(TAG, "Failed to open captcha url", e)
                     return
                 }
@@ -135,6 +139,7 @@ class ForgetPasswordViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to generate captcha", e)
             global.alert(Res.string.auth_forget_captcha_failed)
         } finally {
