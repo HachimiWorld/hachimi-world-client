@@ -49,7 +49,6 @@ import hachimiworld.composeapp.generated.resources.moment_input_placeholder
 import hachimiworld.composeapp.generated.resources.moment_refresh_cd
 import hachimiworld.composeapp.generated.resources.nav_square
 import hachimiworld.composeapp.generated.resources.square_tab_announcements
-import hachimiworld.composeapp.generated.resources.square_tab_moments
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -157,7 +156,7 @@ private fun TabbedSquare(vm: SquareViewModel, listState: LazyListState, width: D
             // No bar above, so the tabs are the page's title
             HeadlineTabRow(
                 tabs = listOf(
-                    stringResource(Res.string.square_tab_moments),
+                    stringResource(Res.string.nav_square),
                     stringResource(Res.string.square_tab_announcements),
                 ),
                 position = { pagerState.currentPage + pagerState.currentPageOffsetFraction },
