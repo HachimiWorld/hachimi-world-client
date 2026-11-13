@@ -7,3 +7,4 @@
 5. Pull to refresh uses the app's own colors. 下拉刷新改用应用自身的配色。
 6. In your own playlist, hold a song to drag it to a new place; the playlist can be deleted from the More menu at the top of its page. 在自己的歌单中，长按歌曲即可拖动调整顺序；可从歌单页顶部的「更多」菜单删除歌单。
 7. On phones, pages below the top level open with their title large at the top, which folds into the bar as you scroll; the bar has no line under it until something scrolls beneath. 手机端的二级页面以大标题开篇，向下滚动时标题收进顶栏；顶栏下的分隔线只在内容滚到其下方时出现。
+8. Images in a moment open over the whole screen, system bars included. Pinch, double-tap or use the mouse wheel to zoom, drag a zoomed image to look around, and save it: to the photo album on phones, to a file of your choosing on desktop, as a download on the web. 动态中的图片全屏打开，覆盖系统栏；可双指、双击或滚轮缩放，放大后可拖动查看，也可保存：手机存入相册，桌面端另存为文件，网页端直接下载。

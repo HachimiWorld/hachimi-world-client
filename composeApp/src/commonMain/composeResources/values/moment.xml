@@ -52,4 +52,7 @@
     <string name="moment_err_image_expired">Images expired. Please upload them again</string>
     <string name="moment_err_invalid_attachment">The song or playlist can't be attached</string>
     <string name="moment_err_user_banned">Your account is restricted and can't post for now</string>
+    <string name="image_save">Save image</string>
+    <string name="image_saved">Saved</string>
+    <string name="image_save_failed">Couldn't save the image</string>
 </resources>
