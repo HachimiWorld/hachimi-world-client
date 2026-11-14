@@ -178,7 +178,12 @@ interface CommentsHeaderScope {
  */
 @Composable
 fun CommentsPage(
-    target: CommentTarget,
+    /**
+     * What the comments are on. Null while that is still loading (a song known only by its display
+     * id): the page already shows its header, the placeholders and the box to write in, so nothing
+     * jumps when it arrives. @since 261114 (nullable)
+     */
+    target: CommentTarget?,
     title: @Composable (total: Long) -> String,
     onBack: () -> Unit,
     header: (@Composable CommentsHeaderScope.() -> Unit)? = null,
@@ -206,7 +211,7 @@ fun CommentsPage(
         }
     }
     AdjustResizeForIme()
-    LaunchedEffect(target) { store.open(target) }
+    LaunchedEffect(target) { target?.let(store::open) }
     LaunchedEffect(store.replyTo) {
         if (store.replyTo != null) focusRequester.requestFocus()
     }
@@ -220,7 +225,8 @@ fun CommentsPage(
         canDelete = store::canDelete,
         isMine = store::isMine,
     )
-    val current = target.sameAs(store.target)
+    // Until the store holds this target, the page shows placeholders under its header, never another's comments
+    val current = target != null && target.sameAs(store.target)
     val thread = store.openThread.takeIf { current }
     // Still there for the replies animating out
     val shownThread = rememberLastNonNull(thread)
@@ -249,57 +255,56 @@ fun CommentsPage(
         },
         onBack = { if (thread != null) store.closeThread() else onBack() },
         list = {
-            if (!current) {
-                CommentsLoadState(InitializeStatus.INIT, onRetry = {})
-            } else {
-                AnimatedContent(
-                    targetState = thread?.comment?.id,
-                    transitionSpec = { materialSharedAxisX(forward = targetState != null, slideDistance) },
-                ) { openId ->
-                    val replied = shownThread
-                    if (openId == null || replied == null) {
-                        CommentList(
-                            header = header?.let { content -> { headerScope.content() } },
-                            status = if (holdComments) InitializeStatus.INIT else store.initializeStatus,
-                            hotThreads = store.hotThreads,
-                            threads = store.threads,
-                            order = store.order,
-                            onOrderChange = store::changeOrder,
-                            hasMore = store.hasMore,
-                            loadingMore = store.loadingMore,
-                            loadMoreFailed = store.loadMoreFailed,
-                            actions = actions,
-                            onLoadMore = store::loadMore,
-                            onRetry = store::retry,
-                            onOpenReplies = store::openReplies,
-                            listState = listState,
-                        )
-                    } else {
-                        ReplyList(
-                            thread = replied,
-                            status = store.repliesStatus,
-                            replies = store.replies,
-                            hasMore = store.repliesHasMore,
-                            loadingMore = store.repliesLoadingMore,
-                            actions = actions,
-                            onLoadMore = store::loadMoreReplies,
-                            onRetry = store::retryReplies,
-                            listState = repliesState,
-                        )
-                    }
+            AnimatedContent(
+                targetState = thread?.comment?.id,
+                transitionSpec = { materialSharedAxisX(forward = targetState != null, slideDistance) },
+            ) { openId ->
+                val replied = shownThread
+                if (openId == null || replied == null) {
+                    CommentList(
+                        header = header?.let { content -> { headerScope.content() } },
+                        status = if (holdComments || !current) InitializeStatus.INIT else store.initializeStatus,
+                        hotThreads = if (current) store.hotThreads else emptyList(),
+                        threads = if (current) store.threads else emptyList(),
+                        order = store.order,
+                        onOrderChange = store::changeOrder,
+                        hasMore = current && store.hasMore,
+                        loadingMore = store.loadingMore,
+                        loadMoreFailed = store.loadMoreFailed,
+                        actions = actions,
+                        onLoadMore = store::loadMore,
+                        onRetry = store::retry,
+                        onOpenReplies = store::openReplies,
+                        listState = listState,
+                    )
+                } else {
+                    ReplyList(
+                        thread = replied,
+                        status = store.repliesStatus,
+                        replies = store.replies,
+                        hasMore = store.repliesHasMore,
+                        loadingMore = store.repliesLoadingMore,
+                        actions = actions,
+                        onLoadMore = store::loadMoreReplies,
+                        onRetry = store::retryReplies,
+                        listState = repliesState,
+                    )
                 }
             }
         },
         composer = {
             CommentComposer(
-                value = store.input,
-                onValueChange = { store.input = it.take(CommentModule.CONTENT_MAX_CHARS) },
-                replyTo = store.replyTo,
+                // What's typed belongs to the store's target, so it waits for this one
+                value = if (current) store.input else "",
+                onValueChange = { if (current) store.input = it.take(CommentModule.CONTENT_MAX_CHARS) },
+                replyTo = store.replyTo.takeIf { current },
                 onCancelReply = store::cancelReply,
                 sending = store.sending,
                 onSend = {
-                    focusManager.clearFocus()
-                    store.send()
+                    if (current) {
+                        focusManager.clearFocus()
+                        store.send()
+                    }
                 },
                 focusRequester = focusRequester,
             )

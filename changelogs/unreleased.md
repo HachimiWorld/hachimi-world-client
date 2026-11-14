@@ -9,3 +9,7 @@
 7. On phones, pages below the top level open with their title large at the top, which folds into the bar as you scroll; the bar has no line under it until something scrolls beneath. Pages that play a list show the covers of their first songs fanned beside the title (at the end of the header row on wide screens), which play them all; the plain button takes their place in the bar once the title folds. Recent likes also say how many there are, over a row of the last 30 days with a bar for each day's likes; tap a day to go to it. On wide screens these list pages also head with a large title and a quiet line under it in place of a title in the bar, which shows it once you scroll. 手机端的二级页面以大标题开篇，向下滚动时标题收进顶栏；顶栏下的分隔线只在内容滚到其下方时出现。可整体播放的页面，标题右侧（宽屏为标题行末尾）斜叠着前几首歌的封面，点按即全部播放；标题收起后以播放按钮置于顶栏。「最近点赞」另列出总数，以及近 30 天每日点赞的细柱，点某一天即跳至当天。宽屏下这些列表页同样以大标题开篇，下附一行灰色说明，顶栏的标题在滚动后才出现。
 8. Images in a moment open over the whole screen, system bars included. Pinch, double-tap or use the mouse wheel to zoom, drag a zoomed image to look around, and save it: to the photo album on phones, to a file of your choosing on desktop, as a download on the web. 动态中的图片全屏打开，覆盖系统栏；可双指、双击或滚轮缩放，放大后可拖动查看，也可保存：手机存入相册，桌面端另存为文件，网页端直接下载。
 9. Brief notices appear as a plain pill in neutral black or white, opposite to the page, and go away when tapped. 简短提示改为中性黑白色调的圆角条，与页面明暗相反，点按即可收起。
+
+## Fixes 修复
+
+1. A song's comments open in one go: from the player they show the song at once, and opened by a link the page no longer swaps a first set of placeholders for a second. 歌曲评论一次载入：从播放器进入时歌曲信息立即显示；经链接打开时，页面不再先后出现两轮占位。
