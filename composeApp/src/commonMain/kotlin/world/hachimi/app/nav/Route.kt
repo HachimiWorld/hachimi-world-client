@@ -43,10 +43,19 @@ sealed interface Route : NavKey {
             val atComments: Boolean = false,
         ) : Root
 
-        /** @since 261106 */
+        /**
+         * Writing a moment. Opened from a song's or playlist's share action, it shares that one.
+         *
+         * @since 261106
+         */
         @Serializable
         @SerialName("/moment/create")
-        data object CreateMoment : Root
+        data class CreateMoment(
+            /** The song being shared. @since 261114 */
+            val songId: Long? = null,
+            /** The playlist being shared. @since 261114 */
+            val playlistId: Long? = null,
+        ) : Root
 
         @Serializable
         sealed interface Home : Root {

@@ -24,6 +24,8 @@
     <string name="moment_deleted">已删除</string>
     <string name="moment_delete_failed">删除失败，请稍后再试</string>
     <string name="moment_like_failed">点赞失败，请稍后再试</string>
+    <string name="moment_share">分享到动态</string>
+    <string name="moment_shared_load_failed">分享的内容加载失败</string>
     <string name="moment_create_title">发动态</string>
     <string name="moment_publish">发布</string>
     <string name="moment_input_placeholder">分享点什么吧</string>
@@ -33,13 +35,6 @@
     <string name="moment_image_failed">上传失败，点击重试</string>
     <string name="moment_image_too_large">%1$s 超过 8 MB</string>
     <string name="moment_too_many_images">最多 %1$s 张图片</string>
-    <string name="moment_add_attachment">添加歌曲或歌单</string>
-    <string name="moment_picker_title">添加歌曲或歌单</string>
-    <string name="moment_picker_tab_recent">最近播放</string>
-    <string name="moment_picker_tab_playlists">我的歌单</string>
-    <string name="moment_picker_empty">这里还没有内容</string>
-    <string name="moment_picker_failed">列表加载失败</string>
-    <string name="moment_picker_playlist_private">私密歌单不能分享</string>
     <string name="moment_discard_title">放弃这条动态？</string>
     <string name="moment_discard_text">写的内容不会保留</string>
     <string name="moment_discard">放弃</string>
@@ -50,7 +45,7 @@
     <string name="moment_err_rejected">发布失败，内容可能不合适</string>
     <string name="moment_err_rate_limited">发得太快了，请稍后再试</string>
     <string name="moment_err_image_expired">图片已过期，请重新上传</string>
-    <string name="moment_err_invalid_attachment">这首歌或这个歌单不能添加</string>
+    <string name="moment_err_invalid_attachment">这首歌或这个歌单不能分享</string>
     <string name="moment_err_user_banned">你的账号已被限制，暂时不能发动态</string>
     <string name="image_save">保存图片</string>
     <string name="image_saved">已保存</string>

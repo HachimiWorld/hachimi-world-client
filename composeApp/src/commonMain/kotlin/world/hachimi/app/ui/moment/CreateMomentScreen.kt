@@ -14,22 +14,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.QueueMusic
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
-import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,9 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -48,8 +41,6 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
-import hachimiworld.composeapp.generated.resources.common_cancel
-import hachimiworld.composeapp.generated.resources.moment_add_attachment
 import hachimiworld.composeapp.generated.resources.moment_add_image_cd
 import hachimiworld.composeapp.generated.resources.moment_create_title
 import hachimiworld.composeapp.generated.resources.moment_discard
@@ -59,37 +50,28 @@ import hachimiworld.composeapp.generated.resources.moment_image_failed
 import hachimiworld.composeapp.generated.resources.moment_image_rejected
 import hachimiworld.composeapp.generated.resources.moment_input_placeholder
 import hachimiworld.composeapp.generated.resources.moment_keep_editing
-import hachimiworld.composeapp.generated.resources.moment_picker_empty
-import hachimiworld.composeapp.generated.resources.moment_picker_failed
-import hachimiworld.composeapp.generated.resources.moment_picker_playlist_private
-import hachimiworld.composeapp.generated.resources.moment_picker_tab_playlists
-import hachimiworld.composeapp.generated.resources.moment_picker_tab_recent
-import hachimiworld.composeapp.generated.resources.moment_picker_title
 import hachimiworld.composeapp.generated.resources.moment_publish
 import hachimiworld.composeapp.generated.resources.moment_remove_cd
+import hachimiworld.composeapp.generated.resources.moment_shared_load_failed
 import hachimiworld.composeapp.generated.resources.notification_retry
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import world.hachimi.app.api.module.MomentModule
-import world.hachimi.app.api.module.PlaylistModule
-import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.CreateMomentViewModel
-import world.hachimi.app.model.DraftAttachment
 import world.hachimi.app.model.DraftImage
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
-import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
-import world.hachimi.app.ui.design.components.TabBar
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
-import world.hachimi.app.ui.message.components.RemoteImage
 import world.hachimi.app.ui.square.SquareMaxWidth
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
@@ -101,10 +83,12 @@ import world.hachimi.app.ui.util.listTailPadding
  * @since 261106
  */
 @Composable
-fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
+fun CreateMomentScreen(
+    route: Route.Root.CreateMoment,
+    vm: CreateMomentViewModel = koinViewModel { parametersOf(route) },
+) {
     val navigator = LocalNavigator.current
     var confirmDiscard by remember { mutableStateOf(false) }
-    var picking by remember { mutableStateOf(false) }
     LaunchedEffect(vm) { vm.done.collect { navigator.back() } }
     val leave = { if (vm.hasDraft && !vm.publishing) confirmDiscard = true else navigator.back() }
 
@@ -149,10 +133,7 @@ fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
                 color = HachimiTheme.colorScheme.onSurfaceVariant,
             )
             ImagesEditor(vm)
-            AttachmentEditor(vm, onPick = {
-                vm.loadPickerSources()
-                picking = true
-            })
+            if (vm.sharing) SharedPreview(vm)
         }
     }
 
@@ -170,16 +151,6 @@ fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
             dismissButton = {
                 TextButton(onClick = { confirmDiscard = false }) { Text(stringResource(Res.string.moment_keep_editing)) }
             },
-        )
-    }
-    if (picking) {
-        AttachmentPicker(
-            vm = vm,
-            onPick = {
-                vm.attachment = it
-                picking = false
-            },
-            onDismiss = { picking = false },
         )
     }
 }
@@ -279,153 +250,22 @@ private fun DraftImageTile(image: DraftImage, onRemove: () -> Unit, onRetry: () 
     }
 }
 
+/** The song or playlist being shared, as the moment will show it. */
 @Composable
-private fun AttachmentEditor(vm: CreateMomentViewModel, onPick: () -> Unit) {
-    val attachment = vm.attachment
-    if (attachment == null) {
-        TextButton(onClick = onPick, enabled = !vm.publishing) {
-            Icon(Icons.Outlined.LibraryMusic, null, Modifier.size(18.dp))
-            Text(stringResource(Res.string.moment_add_attachment), modifier = Modifier.padding(start = 8.dp))
-        }
-        return
-    }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.weight(1f)) {
-            when (attachment) {
-                is DraftAttachment.Song -> SongRow(attachment.song, onClick = null)
-                is DraftAttachment.Playlist -> PlaylistRow(attachment.playlist, onClick = null)
-            }
-        }
-        HachimiIconButton(onClick = { vm.attachment = null }, enabled = !vm.publishing) {
-            Icon(Icons.Default.Close, stringResource(Res.string.moment_remove_cd))
-        }
-    }
-}
-
-/** Picks a song from what the user played lately, or one of their public playlists. */
-@Composable
-private fun AttachmentPicker(vm: CreateMomentViewModel, onPick: (DraftAttachment) -> Unit, onDismiss: () -> Unit) {
-    var tab by remember { mutableIntStateOf(0) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.moment_picker_title)) },
-        text = {
-            Column(Modifier.fillMaxWidth()) {
-                TabBar(
-                    tabs = listOf(
-                        stringResource(Res.string.moment_picker_tab_recent),
-                        stringResource(Res.string.moment_picker_tab_playlists),
-                    ),
-                    selectedIndex = tab,
-                    onTabSelected = { tab = it },
-                )
-                Box(Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 420.dp)) {
-                    val songs = vm.recentSongs
-                    val playlists = vm.myPlaylists
-                    val loaded = if (tab == 0) songs != null else playlists != null
-                    when {
-                        !loaded && vm.pickerFailed -> Column(
-                            Modifier.align(Alignment.Center),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text(stringResource(Res.string.moment_picker_failed), color = HachimiTheme.colorScheme.onSurfaceVariant)
-                            TextButton(onClick = vm::loadPickerSources) { Text(stringResource(Res.string.notification_retry)) }
-                        }
-                        !loaded -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                        tab == 0 && songs.isNullOrEmpty() || tab == 1 && playlists.isNullOrEmpty() -> Text(
-                            stringResource(Res.string.moment_picker_empty),
-                            modifier = Modifier.align(Alignment.Center),
-                            color = HachimiTheme.colorScheme.onSurfaceVariant,
-                        )
-                        tab == 0 -> LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            items(songs.orEmpty(), key = { it.id }) { song ->
-                                SongRow(song, onClick = { onPick(DraftAttachment.Song(song)) })
-                            }
-                        }
-                        else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            items(playlists.orEmpty(), key = { it.id }) { playlist ->
-                                val usable = playlist.isPublic && !playlist.isHidden
-                                PlaylistRow(
-                                    playlist,
-                                    onClick = if (usable) ({ onPick(DraftAttachment.Playlist(playlist)) }) else null,
-                                    note = if (usable) null else stringResource(Res.string.moment_picker_playlist_private),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.common_cancel)) }
-        },
-    )
-}
-
-@Composable
-private fun SongRow(song: SongModule.PublicSongDetail, onClick: (() -> Unit)?) {
-    PickRow(
-        image = { RemoteImage(song.coverUrl, Modifier.size(44.dp).clip(RoundedCornerShape(8.dp))) },
-        title = song.title,
-        subtitle = song.uploaderName,
-        onClick = onClick,
-    )
-}
-
-@Composable
-private fun PlaylistRow(playlist: PlaylistModule.PlaylistItem, onClick: (() -> Unit)?, note: String? = null) {
-    PickRow(
-        image = {
-            Box(Modifier.size(44.dp).clip(RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                RemoteImage(playlist.coverUrl, Modifier.size(44.dp))
-                if (playlist.coverUrl == null) {
-                    Icon(Icons.AutoMirrored.Outlined.QueueMusic, null, Modifier.size(22.dp), tint = HachimiTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        },
-        title = playlist.name,
-        subtitle = note ?: playlist.songsCount.toString(),
-        onClick = onClick,
-        enabled = note == null,
-    )
-}
-
-@Composable
-private fun PickRow(
-    image: @Composable () -> Unit,
-    title: String,
-    subtitle: String,
-    onClick: (() -> Unit)?,
-    enabled: Boolean = true,
-) {
-    val alpha = if (enabled) 1f else 0.5f
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        image()
-        Column(Modifier.weight(1f)) {
+private fun SharedPreview(vm: CreateMomentViewModel) {
+    val shared = vm.shared
+    when {
+        shared != null -> AttachmentCard(shared, onClick = null)
+        vm.sharedLoadFailed -> Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = HachimiTheme.colorScheme.onSurface.copy(alpha = alpha),
+                stringResource(Res.string.moment_shared_load_failed),
+                fontSize = 13.sp,
+                color = HachimiTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
-                subtitle,
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = HachimiTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
-            )
+            TextButton(onClick = vm::loadShared) { Text(stringResource(Res.string.notification_retry)) }
+        }
+        else -> Box(Modifier.fillMaxWidth().heightIn(min = 64.dp), contentAlignment = Alignment.CenterStart) {
+            CircularProgressIndicator(Modifier.padding(start = 16.dp).size(20.dp), strokeWidth = 2.dp)
         }
     }
 }

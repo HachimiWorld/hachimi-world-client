@@ -24,6 +24,8 @@
     <string name="moment_deleted">Deleted</string>
     <string name="moment_delete_failed">Couldn't delete it. Please try again later</string>
     <string name="moment_like_failed">Couldn't like it. Please try again later</string>
+    <string name="moment_share">Share as a moment</string>
+    <string name="moment_shared_load_failed">Couldn't load what's being shared</string>
     <string name="moment_create_title">New moment</string>
     <string name="moment_publish">Post</string>
     <string name="moment_input_placeholder">What's on your mind?</string>
@@ -33,13 +35,6 @@
     <string name="moment_image_failed">Upload failed, tap to retry</string>
     <string name="moment_image_too_large">%1$s is over 8 MB</string>
     <string name="moment_too_many_images">Up to %1$s images</string>
-    <string name="moment_add_attachment">Add a song or playlist</string>
-    <string name="moment_picker_title">Add a song or playlist</string>
-    <string name="moment_picker_tab_recent">Recently played</string>
-    <string name="moment_picker_tab_playlists">My playlists</string>
-    <string name="moment_picker_empty">Nothing here yet</string>
-    <string name="moment_picker_failed">Couldn't load the list</string>
-    <string name="moment_picker_playlist_private">Private playlists can't be shared</string>
     <string name="moment_discard_title">Discard this moment?</string>
     <string name="moment_discard_text">What you wrote won't be kept</string>
     <string name="moment_discard">Discard</string>
@@ -50,7 +45,7 @@
     <string name="moment_err_rejected">Couldn't post it. It may contain inappropriate content</string>
     <string name="moment_err_rate_limited">You're posting too fast. Please try again later</string>
     <string name="moment_err_image_expired">Images expired. Please upload them again</string>
-    <string name="moment_err_invalid_attachment">The song or playlist can't be attached</string>
+    <string name="moment_err_invalid_attachment">This song or playlist can't be shared</string>
     <string name="moment_err_user_banned">Your account is restricted and can't post for now</string>
     <string name="image_save">Save image</string>
     <string name="image_saved">Saved</string>

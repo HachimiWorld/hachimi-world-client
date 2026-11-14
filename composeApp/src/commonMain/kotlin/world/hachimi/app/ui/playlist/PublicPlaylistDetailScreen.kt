@@ -27,6 +27,7 @@ import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
+import world.hachimi.app.ui.playlist.components.ShareToMomentButton
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
 import world.hachimi.app.ui.playlist.components.UnavailableSongItem
@@ -149,6 +150,9 @@ private fun Header(
                             operating = vm.operating
                         )
                     }
+                },
+                extraActions = {
+                    ShareToMomentButton(onClick = { navigator.push(Route.Root.CreateMoment(playlistId = playlistInfo.id)) })
                 }
             )
         } else {
@@ -171,6 +175,7 @@ private fun Header(
                             operating = vm.operating
                         )
                     }
+                    ShareToMomentButton(onClick = { navigator.push(Route.Root.CreateMoment(playlistId = playlistInfo.id)) })
                 }
             )
         }

@@ -370,17 +370,17 @@ internal fun ImageGrid(images: List<MomentImage>, onClick: (Int) -> Unit, modifi
 
 /** A song to play, a playlist to open, or a note that it can't be shown. */
 @Composable
-internal fun AttachmentCard(attachment: MomentAttachment, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun AttachmentCard(attachment: MomentAttachment, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
     val variant = HachimiTheme.colorScheme.onSurfaceVariant
     val shape = RoundedCornerShape(12.dp)
-    val clickable = attachment is MomentAttachment.Song || attachment is MomentAttachment.Playlist
+    val clickable = onClick != null && (attachment is MomentAttachment.Song || attachment is MomentAttachment.Playlist)
     Row(
         modifier = modifier
             .widthIn(max = 400.dp)
             .fillMaxWidth()
             .clip(shape)
             .background(HachimiTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-            .then(if (clickable) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(if (clickable) Modifier.clickable(onClick = onClick!!) else Modifier)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

@@ -348,8 +348,8 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId, key.atComments) }
 
         is Route.Root.MomentDetail -> NavEntry(key) { MomentDetailScreen(key.momentId, key.atComments) }
-        Route.Root.CreateMoment -> NavEntry(key) {
-            if (global.isLoggedIn) CreateMomentScreen() else NeedLoginScreen()
+        is Route.Root.CreateMoment -> NavEntry(key) {
+            if (global.isLoggedIn) CreateMomentScreen(key) else NeedLoginScreen()
         }
 
         is Route.Root.Search -> NavEntry(key) { SearchScreen(key.query, key.type) }

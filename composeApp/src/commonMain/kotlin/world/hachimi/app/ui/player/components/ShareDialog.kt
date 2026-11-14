@@ -2,6 +2,7 @@ package world.hachimi.app.ui.player.components
 
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_close
+import hachimiworld.composeapp.generated.resources.moment_share
 import hachimiworld.composeapp.generated.resources.player_share_copied_clipboard
 import hachimiworld.composeapp.generated.resources.player_share_text
 import hachimiworld.composeapp.generated.resources.share
@@ -32,7 +33,9 @@ fun ShareDialog(
     onDismissRequest: () -> Unit,
     jmid: String,
     title: String,
-    author: String
+    author: String,
+    /** Writes a moment sharing the song; null hides the button. @since 261114 */
+    onShareToMoment: (() -> Unit)? = null,
 ) {
     val ctx = LocalPlatformContext.current
     val text = stringResource(Res.string.player_share_text, title, author, "https://hachimi.world/song/${jmid.lowercase()}")
@@ -68,6 +71,9 @@ fun ShareDialog(
             TextButton(onClick = onDismissRequest) {
                 Text(stringResource(Res.string.common_close))
             }
+            if (onShareToMoment != null) TextButton(onClick = onShareToMoment) {
+                Text(stringResource(Res.string.moment_share))
+            }
         }
     )
 }
@@ -82,7 +88,8 @@ private fun Preview() {
             onDismissRequest = {},
             jmid = "JM-ABCD-001",
             title = "Test Song",
-            author = "Test Author"
+            author = "Test Author",
+            onShareToMoment = {},
         )
     }
 }

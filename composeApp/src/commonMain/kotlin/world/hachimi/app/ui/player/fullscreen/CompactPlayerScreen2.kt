@@ -289,6 +289,11 @@ fun CompactPlayerScreen2(
                 jmid = info.displayId,
                 title = info.title,
                 author = info.uploaderName,
+                onShareToMoment = if (global.isLoggedIn) ({
+                    showShareDialog = false
+                    navigator.push(Route.Root.CreateMoment(songId = info.id))
+                    global.shrinkPlayer()
+                }) else null,
             )
         }
     }

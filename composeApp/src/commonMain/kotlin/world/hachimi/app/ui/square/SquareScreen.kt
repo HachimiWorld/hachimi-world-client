@@ -228,7 +228,7 @@ private fun MomentsFeed(
     LaunchedEffect(pager) { pager.ensureLoaded() }
     LoadMoreMomentsEffect(listState, pager)
     val create = {
-        if (global.isLoggedIn) navigator.push(Route.Root.CreateMoment)
+        if (global.isLoggedIn) navigator.push(Route.Root.CreateMoment())
         else navigator.push(Route.Auth(false))
     }
 

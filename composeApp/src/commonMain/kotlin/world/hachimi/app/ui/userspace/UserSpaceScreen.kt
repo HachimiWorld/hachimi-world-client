@@ -169,7 +169,7 @@ fun UserSpaceScreen(
             when (selectedTab) {
                 0 -> artworkTabContents(vm, global)
                 1 -> playlistsTabContents(vm, navigator)
-                MOMENTS_TAB -> momentsTabContents(vm, momentActions, bleed = screenMargin, onCreate = { navigator.push(Route.Root.CreateMoment) })
+                MOMENTS_TAB -> momentsTabContents(vm, momentActions, bleed = screenMargin, onCreate = { navigator.push(Route.Root.CreateMoment()) })
             }
 
             listTailSpacerItem()
