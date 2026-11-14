@@ -32,7 +32,10 @@ import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.ui.component.PageTitleAction
+import world.hachimi.app.ui.component.PlayAllButton
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -67,7 +70,7 @@ fun CategorySongsScreen(
             initializeStatus = vm.initializeStatus,
             isLoading = vm.loading,
             onRetryClick = { vm.retry() },
-            initPage = { SongCardGridSkeleton() },
+            initPage = { SongCardGridSkeleton(playAll = !titleActionPlaced) },
         ) {
             Content(category, vm, global)
         }
@@ -76,6 +79,10 @@ fun CategorySongsScreen(
 
 @Composable
 private fun Content(category: String, vm: CategorySongsViewModel, global: GlobalStore) {
+    // On phones the button sits by the title
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction {
+        PlayAllButton(onClick = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromSearchSongItem(it) }) })
+    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(stringResource(Res.string.common_empty))
@@ -97,7 +104,7 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
                     )
                     Spacer(Modifier.weight(1f))
 
-                    Button(
+                    if (!playAllInTitle) Button(
                         modifier = Modifier.align(Alignment.Top),
                         onClick = {
                             val items = vm.songs.map { song ->

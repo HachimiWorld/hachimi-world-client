@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.likes
 
+import world.hachimi.app.ui.component.PageTitleAction
+import world.hachimi.app.ui.component.PlayAllButton
 import world.hachimi.app.ui.component.SongListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import androidx.compose.foundation.background
@@ -58,6 +60,7 @@ import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.model.RecentLikeViewModel
 import world.hachimi.app.ui.component.LoadMoreItem
+import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
@@ -89,7 +92,8 @@ fun RecentLikeScreen(
 		isLoading = vm.loading,
 		onRetryClick = { vm.retry() },
 		modifier = Modifier.fillMaxSize(),
-		initPage = { SongListSkeleton(playAll = true, dateLabel = true) },
+		// Under a phone scaffold the button sits by the title instead
+		initPage = { SongListSkeleton(playAll = !titleActionPlaced, dateLabel = true) },
 	) {
 		Content(vm)
 	}
@@ -112,6 +116,8 @@ private fun Content(vm: RecentLikeViewModel) {
 		return
 	}
 
+	val playAllInTitle = PageTitleAction { PlayAllButton(onClick = { vm.playAllLoaded() }) }
+
 	BoxWithConstraints {
 		LazyColumn(
 			state = state,
@@ -119,7 +125,7 @@ private fun Content(vm: RecentLikeViewModel) {
 			contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
 			verticalArrangement = Arrangement.spacedBy(8.dp),
 		) {
-			item {
+			if (!playAllInTitle) item {
 				Header(vm)
 			}
 

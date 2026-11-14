@@ -44,6 +44,9 @@ import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
+import world.hachimi.app.ui.component.PageTitleAction
+import world.hachimi.app.ui.component.PlayAllButton
+import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardGridSkeleton
 import world.hachimi.app.ui.component.ErrorPage
@@ -86,7 +89,7 @@ fun RecentPublishScreen(
             transitionSpec = { loadStateTransition() },
         ) {
             when (it) {
-                InitializeStatus.INIT -> SongCardGridSkeleton(dateLabel = true)
+                InitializeStatus.INIT -> SongCardGridSkeleton(playAll = !titleActionPlaced, dateLabel = true)
                 InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
                 InitializeStatus.LOADED -> Content(vm, global)
             }
@@ -97,6 +100,10 @@ fun RecentPublishScreen(
 
 @Composable
 private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
+    // On phones the button sits by the title
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction {
+        PlayAllButton(onClick = { vm.playAllRecent() })
+    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val constraintMaxWidth = maxWidth
         AdaptivePullToRefreshBox(
@@ -122,7 +129,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 listHeadInsetsSpacerItem()
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                if (!playAllInTitle) item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (constraintMaxWidth >= WindowSize.COMPACT) {
                             HachimiIconButton(

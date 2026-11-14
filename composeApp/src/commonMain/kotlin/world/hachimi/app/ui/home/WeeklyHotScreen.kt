@@ -35,6 +35,9 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.WeeklyHotViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.ui.component.PageTitleAction
+import world.hachimi.app.ui.component.PlayAllButton
+import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardGridSkeleton
 import world.hachimi.app.ui.component.ErrorPage
@@ -72,7 +75,7 @@ fun WeeklyHotScreen(
             transitionSpec = { loadStateTransition() },
         ) {
             when (it) {
-                InitializeStatus.INIT -> SongCardGridSkeleton()
+                InitializeStatus.INIT -> SongCardGridSkeleton(playAll = !titleActionPlaced)
                 InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
                 InitializeStatus.LOADED -> Content(vm, global)
             }
@@ -82,6 +85,10 @@ fun WeeklyHotScreen(
 
 @Composable
 private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
+    // On phones the button sits by the title
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction {
+        PlayAllButton(onClick = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromPublicDetail(it) }) })
+    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(stringResource(Res.string.common_empty))
@@ -105,7 +112,7 @@ private fun Content(vm: WeeklyHotViewModel, global: GlobalStore) {
 
                     Spacer(Modifier.weight(1f))
 
-                    Button(
+                    if (!playAllInTitle) Button(
                         modifier = Modifier.align(Alignment.Top),
                         onClick = { 
                             val items = vm.songs.map { song ->

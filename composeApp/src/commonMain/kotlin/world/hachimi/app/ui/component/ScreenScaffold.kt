@@ -1,9 +1,13 @@
 package world.hachimi.app.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -26,11 +30,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,6 +100,45 @@ val LocalPageTitleShown = compositionLocalOf { false }
 
 /** Set by a scaffold for what it wraps, so a scaffold inside it adds no second bar. */
 private val LocalInScaffold = compositionLocalOf { false }
+
+/** Where the page under a phone scaffold puts its main action, through [PageTitleAction]. */
+@Stable
+private class TitleActionSlot {
+    var content by mutableStateOf<(@Composable () -> Unit)?>(null)
+}
+
+private val LocalTitleActionSlot = compositionLocalOf<TitleActionSlot?> { null }
+
+/**
+ * Puts the page's main action, such as playing everything, beside its large title on phones; once
+ * the title has folded away it waits in the bar. Call it outside any lazy list, which would drop it
+ * as it scrolls by.
+ *
+ * Returns false, and puts nothing anywhere, when no phone scaffold above holds the page (wide
+ * screens), so the page shows the action itself.
+ *
+ * @since 261114
+ */
+/**
+ * Whether a [PageTitleAction] here would sit by the title, so a placeholder for the page can leave
+ * out the page's own button.
+ *
+ * @since 261114
+ */
+val titleActionPlaced: Boolean
+    @Composable @ReadOnlyComposable get() = LocalTitleActionSlot.current != null
+
+@Composable
+fun PageTitleAction(content: @Composable () -> Unit): Boolean {
+    val slot = LocalTitleActionSlot.current ?: return false
+    val latest by rememberUpdatedState(content)
+    DisposableEffect(slot) {
+        val shown: @Composable () -> Unit = { latest() }
+        slot.content = shown
+        onDispose { if (slot.content === shown) slot.content = null }
+    }
+    return true
+}
 
 /**
  * A page below the top level: a bar with the way back, the title and the page's actions, over
@@ -232,6 +279,8 @@ private fun PhoneScaffold(
     // The line under the bar only once something is under it
     val lineShown = if (large) state.fraction >= 1f && state.scrolled > 0f else state.scrolled > 0f
     val lineAlpha by animateFloatAsState(if (lineShown) 1f else 0f)
+    val actionSlot = remember { TitleActionSlot() }
+    val titleAction = actionSlot.content
 
     Column(modifier.fillMaxSize()) {
         Box(
@@ -263,6 +312,13 @@ private fun PhoneScaffold(
                         }
                     }
                 }
+                if (titleAction != null) {
+                    // Beside the large title while it shows, in the bar once it has folded
+                    AnimatedVisibility(!large || smallTitleShown, enter = fadeIn(), exit = fadeOut()) {
+                        // In line with where it stood by the large title (16dp in, past the bar's own 4dp)
+                        Box(Modifier.padding(start = 8.dp, end = 12.dp)) { titleAction() }
+                    }
+                }
                 Row(verticalAlignment = Alignment.CenterVertically, content = actions)
             }
             Box(
@@ -288,17 +344,21 @@ private fun PhoneScaffold(
                         }
                     }
             ) {
-                Box(
+                Row(
                     Modifier
                         .fillMaxWidth()
                         .height(LargeTitleHeight)
                         .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
                         .graphicsLayer { alpha = (1f - state.fraction * 1.4f).coerceIn(0f, 1f) },
-                    contentAlignment = Alignment.BottomStart,
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    CompositionLocalProvider(LocalTextStyle provides LargeTitleStyle.copy(color = LocalContentColor.current)) {
-                        title()
+                    Box(Modifier.weight(1f)) {
+                        CompositionLocalProvider(LocalTextStyle provides LargeTitleStyle.copy(color = LocalContentColor.current)) {
+                            title()
+                        }
                     }
+                    if (titleAction != null && !smallTitleShown) titleAction()
                 }
             }
         }
@@ -309,7 +369,7 @@ private fun PhoneScaffold(
                 .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
                 .nestedScroll(connection)
         ) {
-            CompositionLocalProvider(LocalInScaffold provides true) {
+            CompositionLocalProvider(LocalInScaffold provides true, LocalTitleActionSlot provides actionSlot) {
                 content()
             }
         }
