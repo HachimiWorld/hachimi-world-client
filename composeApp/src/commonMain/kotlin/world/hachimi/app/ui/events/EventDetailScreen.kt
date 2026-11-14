@@ -1,5 +1,11 @@
 package world.hachimi.app.ui.events
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import world.hachimi.app.ui.design.components.placeholder
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.ErrorPage
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.events_content_empty
 import hachimiworld.composeapp.generated.resources.events_content_unsupported
@@ -51,10 +57,9 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.comment.CommentsPage
 import world.hachimi.app.ui.comment.PreviewCommentsPage
-import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.MarkdownText
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.LocalContentColor
 import world.hachimi.app.ui.design.components.Text
@@ -79,43 +84,77 @@ fun EventDetailScreen(
         onDispose { vm.dispose() }
     }
 
-    AnimatedContent(vm.initStat, modifier = Modifier.fillMaxSize()) { st ->
+    // The comments load together with the post; they show once the post is there, and only a post
+    // that didn't load, or has nothing in it, takes the page from them
+    val state = when {
+        vm.initStat == InitializeStatus.FAILED -> PostState.FAILED
+        vm.initStat == InitializeStatus.LOADED && vm.data == null -> PostState.EMPTY
+        else -> PostState.SHOWN
+    }
+    AnimatedContent(state, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) { st ->
         when (st) {
-            InitializeStatus.INIT -> EventDetailPlaceholder(navigator::back) { LoadingPage() }
-            InitializeStatus.FAILED -> EventDetailPlaceholder(navigator::back) { ReloadPage(onReloadClick = { vm.retry() }) }
-            InitializeStatus.LOADED -> {
-                val post = vm.data
-                if (post == null) {
-                    EventDetailPlaceholder(navigator::back) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(stringResource(Res.string.events_content_empty))
-                        }
-                    }
-                } else {
-                    CommentsPage(
-                        target = CommentTarget(CommentModule.TARGET_POST, post.id, post.author.uid),
-                        title = { post.title },
-                        onBack = navigator::back,
-                        header = {
-                            PostArticle(post, onNavToUser = { navigator.push(Route.Root.PublicUserSpace(it)) })
-                        },
-                        startAtComments = atComments,
-                    )
+            PostState.FAILED -> EventDetailPlaceholder(navigator::back) { ErrorPage(onRetry = { vm.retry() }) }
+            PostState.EMPTY -> EventDetailPlaceholder(navigator::back) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(Res.string.events_content_empty))
                 }
+            }
+            PostState.SHOWN -> {
+                val post = vm.data
+                CommentsPage(
+                    target = CommentTarget(CommentModule.TARGET_POST, eventId, post?.author?.uid),
+                    title = { post?.title.orEmpty() },
+                    onBack = navigator::back,
+                    header = {
+                        AnimatedContent(post, transitionSpec = { loadStateTransition() }, contentKey = { it != null }) { shown ->
+                            if (shown == null) PostArticleSkeleton()
+                            else PostArticle(shown, onNavToUser = { navigator.push(Route.Root.PublicUserSpace(it)) })
+                        }
+                    },
+                    startAtComments = atComments,
+                    // Comments that come back first wait for the post; a post that comes first shows at once
+                    holdComments = post == null,
+                )
             }
         }
     }
 }
 
+private enum class PostState { SHOWN, FAILED, EMPTY }
+
 /** The page before there's a post to show. */
 @Composable
 private fun EventDetailPlaceholder(onBack: () -> Unit, content: @Composable () -> Unit) {
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = { Text("", maxLines = 1) },
         showBack = true,
         onBack = onBack,
     ) {
         content()
+    }
+}
+
+/** Stands in for [PostArticle] while the post loads, in its place above the comments: the author, a cover, then paragraphs. */
+@Composable
+private fun PostArticleSkeleton() {
+    Column(
+        Modifier.fillMaxWidth().padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(24.dp).placeholder(true, CircleShape))
+            Box(Modifier.padding(start = 8.dp).width(64.dp).height(10.dp).placeholder(true))
+            Box(Modifier.padding(start = 12.dp).width(40.dp).height(10.dp).placeholder(true))
+        }
+        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).placeholder(true, RoundedCornerShape(16.dp)))
+        repeat(2) { paragraph ->
+            Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                repeat(3) { Box(Modifier.fillMaxWidth().height(12.dp).placeholder(true)) }
+                Box(Modifier.fillMaxWidth(if (paragraph == 0) 0.6f else 0.35f).height(12.dp).placeholder(true))
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
     }
 }
 

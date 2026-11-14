@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.committee
 
+import androidx.compose.foundation.shape.CircleShape
+import world.hachimi.app.ui.component.PlainListSkeleton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +60,7 @@ fun CommitteeMembersScreen(vm: CommitteeMembersViewModel = koinViewModel()) {
             isLoading = false,
             onRetryClick = vm::retry,
             modifier = Modifier.fillMaxSize(),
+            initPage = { PlainListSkeleton(leading = 40.dp, leadingShape = CircleShape) },
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 LazyColumn(

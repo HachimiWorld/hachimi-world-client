@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.component
 
+import androidx.compose.ui.graphics.graphicsLayer
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_back_cd
 import hachimiworld.composeapp.generated.resources.common_menu_cd
@@ -67,6 +68,10 @@ fun ScreenToolbar(
     onBack: (() -> Unit)? = null,
     onMenuClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    /** How much of the title shows, read while drawing; a page with its own heading keeps it hidden until scrolled. @since 261114 */
+    titleAlpha: () -> Float = { 1f },
+    /** How much of the line under the bar shows, read while drawing. @since 261114 */
+    lineAlpha: () -> Float = { 1f },
 ) {
     val menuHandler = onMenuClick ?: LocalOpenNavigationDrawer.current
     val hasLeading = (showBack && onBack != null) || (showMenu && menuHandler != null)
@@ -111,7 +116,8 @@ fun ScreenToolbar(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = if (hasLeading) 0.dp else TopAppBarTitleInset),
+                    .padding(start = if (hasLeading) 0.dp else TopAppBarTitleInset)
+                    .graphicsLayer { alpha = titleAlpha() },
                 verticalArrangement = Arrangement.Center,
             ) {
                 CompositionLocalProvider(LocalTextStyle provides titleStyle) {
@@ -135,6 +141,7 @@ fun ScreenToolbar(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .height(1.dp)
+                .graphicsLayer { alpha = lineAlpha() }
                 .background(HachimiTheme.colorScheme.outline)
         )
     }

@@ -44,6 +44,8 @@ fun SongItem(
     onClick: () -> Unit,
     onRemoveClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Whether a long press opens the menu; off where a long press picks the song up instead. @since 261111 */
+    menuOnLongPress: Boolean = true,
 ) {
     var dropdownExpanded by remember { mutableStateOf(false) }
 
@@ -54,7 +56,7 @@ fun SongItem(
         Row(
             modifier = Modifier.combinedClickable(
                 onClick = onClick,
-                onLongClick = if (editable) { { dropdownExpanded = true } } else null
+                onLongClick = if (editable && menuOnLongPress) { { dropdownExpanded = true } } else null
             ).padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -143,13 +145,17 @@ fun UnavailableSongItem(
 /** A playlist entry in order: a song, or one that's no longer available. */
 sealed interface PlaylistEntry {
     val key: Any
+    /** @since 261111 */
+    val songId: Long
 
     data class Song(val song: PlaylistModule.SongItem) : PlaylistEntry {
         override val key: Any get() = song.songId
+        override val songId: Long get() = song.songId
     }
 
     data class Unavailable(val song: PlaylistModule.UnavailableSongItem) : PlaylistEntry {
         override val key: Any get() = "unavailable_${song.songId}"
+        override val songId: Long get() = song.songId
     }
 }
 

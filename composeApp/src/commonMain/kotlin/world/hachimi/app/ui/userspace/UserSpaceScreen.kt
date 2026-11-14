@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.userspace
 
+import androidx.compose.runtime.saveable.rememberSaveable
+import world.hachimi.app.ui.userspace.component.PublicPlaylistCardSkeleton
+import world.hachimi.app.ui.home.components.SongCardSkeleton
+import world.hachimi.app.ui.component.SectionErrorPage
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -37,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_logout
@@ -69,9 +75,9 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.Pagination
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Button
-import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.PlaceholderDefaults
@@ -118,7 +124,8 @@ fun UserSpaceScreen(
     val content: @Composable () -> Unit = {
         BoxWithConstraints {
             val constraintsMaxWidth = maxWidth
-            var selectedTab by remember { mutableIntStateOf(0) }
+            // Saveable, so going back to this page finds the tab it was left on
+            var selectedTab by rememberSaveable { mutableIntStateOf(0) }
             val gridState = rememberLazyGridState()
             val momentActions = rememberMomentActions()
             LaunchedEffect(selectedTab, vm.moments) {
@@ -126,6 +133,12 @@ fun UserSpaceScreen(
             }
             LoadMoreMomentsEffect(gridState, vm.moments, enabled = selectedTab == MOMENTS_TAB)
 
+            val screenMargin = AdaptiveScreenMargin
+            // Without the profile there is no page to show, only the way to load it again
+            if (vm.profileFailed) {
+                ErrorPage(onRetry = { vm.retry() })
+                return@BoxWithConstraints
+            }
             LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.fillMaxSize(),
@@ -156,7 +169,7 @@ fun UserSpaceScreen(
             when (selectedTab) {
                 0 -> artworkTabContents(vm, global)
                 1 -> playlistsTabContents(vm, navigator)
-                MOMENTS_TAB -> momentsTabContents(vm, momentActions, onCreate = { navigator.push(Route.Root.CreateMoment) })
+                MOMENTS_TAB -> momentsTabContents(vm, momentActions, bleed = screenMargin, onCreate = { navigator.push(Route.Root.CreateMoment) })
             }
 
             listTailSpacerItem()
@@ -166,6 +179,7 @@ fun UserSpaceScreen(
 
     if (showToolbar) {
         ScreenScaffold(
+            titleStyle = TitleStyle.Revealed,
             title = { Text(vm.profile?.username.orEmpty(), maxLines = 1) },
             showBack = true,
             onBack = navigator::back,
@@ -195,10 +209,13 @@ fun UserSpaceScreen(
 }
 
 private const val MOMENTS_TAB = 2
+private const val SongSkeletonCount = 6
+private const val PlaylistSkeletonCount = 4
 
 private fun LazyGridScope.momentsTabContents(
     vm: UserSpaceViewModel,
     actions: MomentActions,
+    bleed: Dp,
     onCreate: () -> Unit,
 ) {
     if (vm.myself) {
@@ -213,7 +230,7 @@ private fun LazyGridScope.momentsTabContents(
             }
         }
     }
-    momentItems(vm.moments, actions, empty = null)
+    momentItems(vm.moments, actions, empty = null, bleed = bleed)
 }
 
 private fun LazyGridScope.artworkTabContents(
@@ -235,10 +252,12 @@ private fun LazyGridScope.artworkTabContents(
     }
 
     if (vm.loadingSongs) {
+        items(SongSkeletonCount, contentType = { "song_skeleton" }) {
+            SongCardSkeleton(Modifier.fillMaxWidth().padding(top = 16.dp))
+        }
+    } else if (vm.songsFailed) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Box(modifier = Modifier.height(300.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            SectionErrorPage(onRetry = { vm.retrySongs() }, modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(300.dp))
         }
     } else if (vm.songs.isEmpty()) {
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -284,10 +303,12 @@ private fun LazyGridScope.playlistsTabContents(
     navigator: Navigator
 ) {
     if (vm.loadingPlaylists) {
+        items(PlaylistSkeletonCount, span = { GridItemSpan(maxLineSpan) }, contentType = { "playlist_skeleton" }) {
+            PublicPlaylistCardSkeleton(Modifier.fillMaxWidth().padding(top = 16.dp))
+        }
+    } else if (vm.playlistsFailed) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            SectionErrorPage(onRetry = { vm.retryPlaylists() }, modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(200.dp))
         }
     } else if (vm.publicPlaylists.isEmpty()) {
         item(span = { GridItemSpan(maxLineSpan) }) {

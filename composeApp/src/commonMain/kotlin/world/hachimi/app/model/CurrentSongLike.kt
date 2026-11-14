@@ -91,6 +91,7 @@ class CurrentSongLike(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to toggle like status for song $songId", e)
                 global.alert(e.message)
             } finally {

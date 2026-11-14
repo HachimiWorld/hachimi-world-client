@@ -78,6 +78,7 @@ import world.hachimi.app.model.DraftAttachment
 import world.hachimi.app.model.DraftImage
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
@@ -89,7 +90,7 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.design.components.TextField
 import world.hachimi.app.ui.message.components.RemoteImage
-import world.hachimi.app.ui.square.MomentListMaxWidth
+import world.hachimi.app.ui.square.SquareMaxWidth
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.fillMaxWidthIn
 import world.hachimi.app.ui.util.listTailPadding
@@ -108,6 +109,8 @@ fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
     val leave = { if (vm.hasDraft && !vm.publishing) confirmDiscard = true else navigator.back() }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.moment_create_title), maxLines = 1) },
         showBack = true,
         onBack = leave,
@@ -125,7 +128,7 @@ fun CreateMomentScreen(vm: CreateMomentViewModel = koinViewModel()) {
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .fillMaxWidthIn(maxWidth = MomentListMaxWidth)
+                .fillMaxWidthIn(maxWidth = SquareMaxWidth)
                 .padding(AdaptiveScreenMargin)
                 .listTailPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),

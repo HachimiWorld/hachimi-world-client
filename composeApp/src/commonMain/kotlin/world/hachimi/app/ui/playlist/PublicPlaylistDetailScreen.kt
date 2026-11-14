@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,6 +23,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
@@ -55,6 +57,8 @@ fun PublicPlaylistScreen(
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Revealed,
         title = { Text(vm.playlistInfo?.name.orEmpty(), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
@@ -69,6 +73,7 @@ fun PublicPlaylistScreen(
             initializeStatus = vm.initStatus,
             isLoading = vm.loading,
             onRetryClick = { vm.retry() },
+            initPage = { PlaylistDetailSkeleton() },
         ) {
             Box(Modifier.fillMaxSize()) {
                 val playlistInfo = vm.playlistInfo

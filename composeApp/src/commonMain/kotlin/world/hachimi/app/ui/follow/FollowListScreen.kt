@@ -40,7 +40,7 @@ import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.follow.components.EmptyState
-import world.hachimi.app.ui.follow.components.ErrorState
+import world.hachimi.app.ui.component.ErrorPage
 import world.hachimi.app.ui.follow.components.FollowerItemCard
 import world.hachimi.app.ui.follow.components.FollowingItemCard
 import world.hachimi.app.ui.follow.components.LoadingSkeleton
@@ -77,9 +77,9 @@ fun FollowListScreen(
             onRetryClick = { vm.retry() },
             initPage = { LoadingSkeleton() },
             errorPage = {
-                ErrorState(
-                    message = vm.errorData ?: stringResource(Res.string.follow_load_error),
+                ErrorPage(
                     onRetry = { vm.retry() },
+                    message = vm.errorData ?: stringResource(Res.string.follow_load_error),
                 )
             },
         ) {

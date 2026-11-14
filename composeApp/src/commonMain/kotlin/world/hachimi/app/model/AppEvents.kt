@@ -15,6 +15,8 @@ sealed interface AppEvent {
     data class SongLiked(val songId: Long) : AppEvent
     data class SongAddedToPlaylist(val songId: Long, val playlistId: Long) : AppEvent
     data class PlaylistFavorited(val playlistId: Long) : AppEvent
+    /** @since 261111 */
+    data class PlaylistDeleted(val playlistId: Long) : AppEvent
     data object CommentPosted : AppEvent
 }
 

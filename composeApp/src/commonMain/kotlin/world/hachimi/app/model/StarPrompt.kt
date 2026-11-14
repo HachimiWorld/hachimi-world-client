@@ -58,6 +58,7 @@ class StarPrompt(
                     is AppEvent.SongAddedToPlaylist,
                     is AppEvent.PlaylistFavorited,
                     AppEvent.CommentPosted -> onPositiveAction()
+                    is AppEvent.PlaylistDeleted -> Unit
                 }
             }
         }

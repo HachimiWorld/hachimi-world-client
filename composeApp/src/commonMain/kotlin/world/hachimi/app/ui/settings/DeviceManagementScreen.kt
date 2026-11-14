@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.settings
 
+import world.hachimi.app.ui.component.PlainListSkeleton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -74,7 +75,8 @@ fun DeviceManagementScreen(
             initializeStatus = vm.initializeStatus,
             isLoading = vm.loading,
             onRetryClick = { vm.retry() },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            initPage = { PlainListSkeleton(leading = 40.dp) },
         ) {
             Content(vm)
         }

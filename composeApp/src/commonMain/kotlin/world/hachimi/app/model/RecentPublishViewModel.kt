@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.recent_error_fetch_recommend_failed
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -98,6 +99,7 @@ class RecentPublishViewModel(
                 }
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("home", "Failed to get recommend songs", e)
             global.alert(Res.string.recent_error_fetch_recommend_failed, e.message ?: "")
              if (initializeStatus == InitializeStatus.INIT) {

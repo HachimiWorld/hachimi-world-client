@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.comment
 
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clipToBounds
+import world.hachimi.app.ui.design.components.placeholder
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -60,6 +65,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -108,7 +115,6 @@ import hachimiworld.composeapp.generated.resources.comment_section_all
 import hachimiworld.composeapp.generated.resources.comment_section_hot
 import hachimiworld.composeapp.generated.resources.comment_unlike_cd
 import hachimiworld.composeapp.generated.resources.comment_view_all_replies
-import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.report_action
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -130,8 +136,8 @@ import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.AnimatedCount
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.DropdownMenu
@@ -153,22 +159,36 @@ import world.hachimi.app.util.YMD
 import world.hachimi.app.util.formatTime
 import kotlin.time.Instant
 
+/** What [CommentsPage] offers the [header][CommentsPage] above its comments. @since 261113 */
+interface CommentsHeaderScope {
+    /** Brings the comments into view, if they're not, and puts the cursor in the box to write one. */
+    fun writeComment()
+}
+
 /**
  * A target's comments as a page: [header] and the list scroll together, with the box to write in
  * below them. Back leaves the replies of a comment first.
  *
  * @param title The page's title over the list, given the number of comments.
- * @param header What the comments are on, above them.
+ * @param header What the comments are on, above them. Its scope is @since 261113.
  * @param startAtComments Opens scrolled past [header], for when it's long.
+ * @param holdComments Keeps the comments as stand-ins even once they've loaded, so they don't show
+ * before the [header] they're under has arrived. @since 261112
  * @since 261031
  */
 @Composable
 fun CommentsPage(
-    target: CommentTarget,
+    /**
+     * What the comments are on. Null while that is still loading (a song known only by its display
+     * id): the page already shows its header, the placeholders and the box to write in, so nothing
+     * jumps when it arrives. @since 261114 (nullable)
+     */
+    target: CommentTarget?,
     title: @Composable (total: Long) -> String,
     onBack: () -> Unit,
-    header: (@Composable () -> Unit)? = null,
+    header: (@Composable CommentsHeaderScope.() -> Unit)? = null,
     startAtComments: Boolean = false,
+    holdComments: Boolean = false,
     store: CommentsStore = koinInject(),
     reports: ReportStore = koinInject(),
 ) {
@@ -178,8 +198,20 @@ fun CommentsPage(
     // Here so the place in the list, past a long header, survives opening a comment's replies
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = if (startAtComments && header != null) 1 else 0)
     val slideDistance = rememberSlideDistance()
+    val scope = rememberCoroutineScope()
+    val headerScope = remember(listState, focusRequester) {
+        object : CommentsHeaderScope {
+            override fun writeComment() {
+                // The comments start right under the header
+                if (listState.layoutInfo.visibleItemsInfo.none { it.index == 1 }) {
+                    scope.launch { listState.animateScrollToItem(1) }
+                }
+                focusRequester.requestFocus()
+            }
+        }
+    }
     AdjustResizeForIme()
-    LaunchedEffect(target) { store.open(target) }
+    LaunchedEffect(target) { target?.let(store::open) }
     LaunchedEffect(store.replyTo) {
         if (store.replyTo != null) focusRequester.requestFocus()
     }
@@ -193,7 +225,8 @@ fun CommentsPage(
         canDelete = store::canDelete,
         isMine = store::isMine,
     )
-    val current = store.target == target
+    // Until the store holds this target, the page shows placeholders under its header, never another's comments
+    val current = target != null && target.sameAs(store.target)
     val thread = store.openThread.takeIf { current }
     // Still there for the replies animating out
     val shownThread = rememberLastNonNull(thread)
@@ -222,57 +255,56 @@ fun CommentsPage(
         },
         onBack = { if (thread != null) store.closeThread() else onBack() },
         list = {
-            if (!current) {
-                CommentsLoadState(InitializeStatus.INIT, onRetry = {})
-            } else {
-                AnimatedContent(
-                    targetState = thread?.comment?.id,
-                    transitionSpec = { materialSharedAxisX(forward = targetState != null, slideDistance) },
-                ) { openId ->
-                    val replied = shownThread
-                    if (openId == null || replied == null) {
-                        CommentList(
-                            header = header,
-                            status = store.initializeStatus,
-                            hotThreads = store.hotThreads,
-                            threads = store.threads,
-                            order = store.order,
-                            onOrderChange = store::changeOrder,
-                            hasMore = store.hasMore,
-                            loadingMore = store.loadingMore,
-                            loadMoreFailed = store.loadMoreFailed,
-                            actions = actions,
-                            onLoadMore = store::loadMore,
-                            onRetry = store::retry,
-                            onOpenReplies = store::openReplies,
-                            listState = listState,
-                        )
-                    } else {
-                        ReplyList(
-                            thread = replied,
-                            status = store.repliesStatus,
-                            replies = store.replies,
-                            hasMore = store.repliesHasMore,
-                            loadingMore = store.repliesLoadingMore,
-                            actions = actions,
-                            onLoadMore = store::loadMoreReplies,
-                            onRetry = store::retryReplies,
-                            listState = repliesState,
-                        )
-                    }
+            AnimatedContent(
+                targetState = thread?.comment?.id,
+                transitionSpec = { materialSharedAxisX(forward = targetState != null, slideDistance) },
+            ) { openId ->
+                val replied = shownThread
+                if (openId == null || replied == null) {
+                    CommentList(
+                        header = header?.let { content -> { headerScope.content() } },
+                        status = if (holdComments || !current) InitializeStatus.INIT else store.initializeStatus,
+                        hotThreads = if (current) store.hotThreads else emptyList(),
+                        threads = if (current) store.threads else emptyList(),
+                        order = store.order,
+                        onOrderChange = store::changeOrder,
+                        hasMore = current && store.hasMore,
+                        loadingMore = store.loadingMore,
+                        loadMoreFailed = store.loadMoreFailed,
+                        actions = actions,
+                        onLoadMore = store::loadMore,
+                        onRetry = store::retry,
+                        onOpenReplies = store::openReplies,
+                        listState = listState,
+                    )
+                } else {
+                    ReplyList(
+                        thread = replied,
+                        status = store.repliesStatus,
+                        replies = store.replies,
+                        hasMore = store.repliesHasMore,
+                        loadingMore = store.repliesLoadingMore,
+                        actions = actions,
+                        onLoadMore = store::loadMoreReplies,
+                        onRetry = store::retryReplies,
+                        listState = repliesState,
+                    )
                 }
             }
         },
         composer = {
             CommentComposer(
-                value = store.input,
-                onValueChange = { store.input = it.take(CommentModule.CONTENT_MAX_CHARS) },
-                replyTo = store.replyTo,
+                // What's typed belongs to the store's target, so it waits for this one
+                value = if (current) store.input else "",
+                onValueChange = { if (current) store.input = it.take(CommentModule.CONTENT_MAX_CHARS) },
+                replyTo = store.replyTo.takeIf { current },
                 onCancelReply = store::cancelReply,
                 sending = store.sending,
                 onSend = {
-                    focusManager.clearFocus()
-                    store.send()
+                    if (current) {
+                        focusManager.clearFocus()
+                        store.send()
+                    }
                 },
                 focusRequester = focusRequester,
             )
@@ -335,6 +367,7 @@ private fun CommentsPageLayout(
     composer: @Composable () -> Unit,
 ) {
     ScreenScaffold(
+        titleStyle = TitleStyle.Compact,
         title = {
             AnimatedContent(
                 targetState = title,
@@ -423,16 +456,14 @@ private fun SectionHeader(label: String, modifier: Modifier = Modifier, trailing
 internal fun CommentsLoadState(status: InitializeStatus, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     Crossfade(status, modifier.fillMaxSize()) { shown ->
         when (shown) {
-            InitializeStatus.INIT -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                LoadMoreItem(hasMore = true, isLoading = true)
+            // Stand-ins from the top, where the first comments will be
+            InitializeStatus.INIT -> Column(Modifier.fillMaxSize().clipToBounds().wrapContentHeight(Alignment.Top, unbounded = true)) {
+                repeat(CommentSkeletonCount) { CommentSkeleton(it) }
             }
-            InitializeStatus.FAILED -> NotificationMessageState(
-                title = stringResource(Res.string.comment_load_error),
+            InitializeStatus.FAILED -> ErrorPage(
+                onRetry = onRetry,
                 modifier = Modifier.fillMaxSize(),
-                icon = Icons.AutoMirrored.Outlined.Comment,
-                action = {
-                    AccentButton(onClick = onRetry) { Text(stringResource(Res.string.notification_retry)) }
-                },
+                message = stringResource(Res.string.comment_load_error),
             )
             InitializeStatus.LOADED -> NotificationMessageState(
                 title = stringResource(Res.string.comment_empty_title),
@@ -443,6 +474,21 @@ internal fun CommentsLoadState(status: InitializeStatus, onRetry: () -> Unit, mo
         }
     }
 }
+
+/** Stands in for a top-level comment: the avatar, the name and a line or two. */
+@Composable
+private fun CommentSkeleton(index: Int) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
+        Box(Modifier.size(36.dp).placeholder(true, CircleShape))
+        Column(Modifier.weight(1f).padding(start = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(Modifier.width(72.dp).height(10.dp).placeholder(true))
+            Box(Modifier.fillMaxWidth(if (index % 2 == 0) 0.9f else 0.7f).height(12.dp).placeholder(true))
+            if (index % 3 != 1) Box(Modifier.fillMaxWidth(0.45f).height(12.dp).placeholder(true))
+        }
+    }
+}
+
+private const val CommentSkeletonCount = 5
 
 @Composable
 private fun CommentList(

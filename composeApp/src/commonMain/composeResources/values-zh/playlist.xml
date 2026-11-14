@@ -18,4 +18,8 @@
     <string name="playlist_description_rejected">歌单简介包含不适宜的内容，请修改后再试</string>
     <string name="playlist_cover_rejected">封面包含不适宜的内容，请换一张图片再试</string>
     <string name="playlist_cover_rate_limited">封面上传过于频繁，请稍后再试</string>
+    <string name="playlist_delete">删除歌单</string>
+    <string name="playlist_delete_confirm_title">删除这个歌单？</string>
+    <string name="playlist_delete_confirm_text">其中的歌曲不受影响。删除后无法恢复。</string>
+    <string name="playlist_reorder_failed">顺序未能保存，请稍后再试</string>
 </resources>

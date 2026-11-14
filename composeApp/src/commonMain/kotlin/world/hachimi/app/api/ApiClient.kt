@@ -26,6 +26,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
@@ -308,6 +309,7 @@ class ApiClient(
                                 )
                             )
                         } catch (e: Throwable) {
+                            if (e is CancellationException) throw e
                             Logger.e(TAG, "refreshToken: Error requesting to refreshing token", e)
                             error("Error requesting to refreshing token: ${e.message}")
                         }

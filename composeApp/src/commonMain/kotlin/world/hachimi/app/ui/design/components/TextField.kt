@@ -15,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.TextLayoutResult
@@ -63,6 +64,8 @@ fun TextField(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     interactionSource: MutableInteractionSource? = null,
     cursorBrush: SolidColor = SolidColor(LocalContentColor.current),
+    /** The field's fill. The default suits a field on a surface; on the page itself, pass the surface color. @since 261110 */
+    containerColor: Color = HachimiTheme.colorScheme.background,
 ) {
     BasicTextField(
         value = value,
@@ -87,7 +90,7 @@ fun TextField(
                 content = {
                     Surface(
                         shape = shape,
-                        color = HachimiTheme.colorScheme.background
+                        color = containerColor
                     ) {
                         Row(
                             modifier = Modifier.padding(contentPadding),

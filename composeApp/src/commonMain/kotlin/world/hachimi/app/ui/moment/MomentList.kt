@@ -1,9 +1,11 @@
 package world.hachimi.app.ui.moment
 
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
@@ -32,19 +36,22 @@ import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.model.MomentPager
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 
 /**
  * The moments of [pager] as list items, each a [MomentCard] with a line under it, and what to show
- * while there are none.
+ * while there are none. The list gives no side padding: each moment runs its ripple and its line
+ * from edge to edge.
  *
  * @since 261106
  */
 fun LazyListScope.momentItems(pager: MomentPager, actions: MomentActions, empty: String? = null) {
     when {
-        pager.status != InitializeStatus.LOADED -> item(key = "moments_state") {
+        pager.status == InitializeStatus.INIT -> items(MomentSkeletonCount, key = { "moment_skeleton_$it" }) {
+            MomentRow { MomentSkeleton(it) }
+        }
+        pager.status == InitializeStatus.FAILED -> item(key = "moments_state") {
             MomentListState(pager)
         }
         pager.items.isEmpty() -> item(key = "moments_empty") {
@@ -59,11 +66,21 @@ fun LazyListScope.momentItems(pager: MomentPager, actions: MomentActions, empty:
     }
 }
 
-/** [momentItems] for a grid, each over its whole row. */
-fun LazyGridScope.momentItems(pager: MomentPager, actions: MomentActions, empty: String? = null) {
+/**
+ * [momentItems] for a grid, each over its whole row.
+ *
+ * @param bleed How far each moment reaches into the grid's side padding, so its text lines up with
+ * the rest of the page while its ripple and its line run past. @since 261110
+ */
+fun LazyGridScope.momentItems(pager: MomentPager, actions: MomentActions, empty: String? = null, bleed: Dp = 0.dp) {
     val full: (androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope) -> GridItemSpan = { GridItemSpan(it.maxLineSpan) }
     when {
-        pager.status != InitializeStatus.LOADED -> item(key = "moments_state", span = full) {
+        pager.status == InitializeStatus.INIT -> items(MomentSkeletonCount, key = { "moment_skeleton_$it" }, span = { full(this) }) {
+            MomentRow(Modifier.bleed(bleed)) {
+                MomentSkeleton(it, contentPadding = PaddingValues(start = bleed, end = bleed, top = 12.dp, bottom = 4.dp))
+            }
+        }
+        pager.status == InitializeStatus.FAILED -> item(key = "moments_state", span = full) {
             MomentListState(pager)
         }
         pager.items.isEmpty() -> item(key = "moments_empty", span = full) {
@@ -72,12 +89,26 @@ fun LazyGridScope.momentItems(pager: MomentPager, actions: MomentActions, empty:
         else -> {
             pager.items.forEach { item ->
                 item(key = "moment_${item.id}", span = full) {
-                    MomentRow { MomentCard(item, actions) }
+                    MomentRow(Modifier.bleed(bleed)) {
+                        MomentCard(
+                            item, actions,
+                            contentPadding = PaddingValues(start = bleed, end = bleed, top = 12.dp, bottom = 4.dp),
+                        )
+                    }
                 }
             }
             item(key = "moments_more", span = full) { MoreLine(pager) }
         }
     }
+}
+
+/** Wider than its place by [horizontal] on each side. */
+private fun Modifier.bleed(horizontal: Dp): Modifier = if (horizontal == 0.dp) this else layout { measurable, constraints ->
+    val extra = horizontal.roundToPx() * 2
+    val placeable = measurable.measure(
+        constraints.copy(minWidth = constraints.minWidth + extra, maxWidth = constraints.maxWidth + extra)
+    )
+    layout(placeable.width - extra, placeable.height) { placeable.place(-extra / 2, 0) }
 }
 
 /** Loads the next page when the end of the list comes into view. */
@@ -109,28 +140,20 @@ fun LoadMoreMomentsEffect(state: LazyGridState, pager: MomentPager, enabled: Boo
 }
 
 @Composable
-private fun MomentRow(content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth()) {
+private fun MomentRow(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Column(modifier.fillMaxWidth()) {
         content()
-        Box(
-            Modifier.fillMaxWidth().padding(horizontal = 12.dp).height(1.dp)
-                .background(HachimiTheme.colorScheme.outline)
-        )
+        Box(Modifier.fillMaxWidth().height(1.dp).background(HachimiTheme.colorScheme.outline))
     }
 }
 
 @Composable
 private fun MomentListState(pager: MomentPager) {
-    Box(Modifier.fillMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) {
-        if (pager.status == InitializeStatus.FAILED) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(Res.string.moment_load_error), color = HachimiTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = pager::retry) { Text(stringResource(Res.string.notification_retry)) }
-            }
-        } else {
-            CircularProgressIndicator()
-        }
-    }
+    ErrorPage(
+        onRetry = pager::retry,
+        modifier = Modifier.fillMaxWidth().height(320.dp),
+        message = stringResource(Res.string.moment_load_error),
+    )
 }
 
 @Composable

@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -86,6 +87,7 @@ class HomeViewModel(
 
             recommendTags = resp.ok().result.map { it.name }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             global.alert(Res.string.home_fetch_tags_failed, e.message.orEmpty())
             Logger.e("home", "Failed to get recommend tags", e)
         }
@@ -196,6 +198,7 @@ class HomeViewModel(
                 recentStatus = InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("home", "Failed to fetch recent songs", e)
             recentStatus = InitializeStatus.FAILED
         } finally {
@@ -264,6 +267,7 @@ class HomeViewModel(
                 initializeStatus.set(if (r) InitializeStatus.LOADED else InitializeStatus.FAILED)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("home", "Failed to fetch recommend songs", e)
             initializeStatus.set(InitializeStatus.FAILED)
         } finally {

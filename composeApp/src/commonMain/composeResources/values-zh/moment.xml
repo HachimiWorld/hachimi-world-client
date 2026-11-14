@@ -1,5 +1,4 @@
 <resources>
-    <string name="square_tab_moments">动态</string>
     <string name="square_intro_title">全新「广场」上线！</string>
     <string name="square_intro_desc">和大家分享动态、图片与喜欢的歌曲，来发布你的第一条动态吧</string>
     <string name="square_intro_go">前往广场</string>
@@ -53,4 +52,7 @@
     <string name="moment_err_image_expired">图片已过期，请重新上传</string>
     <string name="moment_err_invalid_attachment">这首歌或这个歌单不能添加</string>
     <string name="moment_err_user_banned">你的账号已被限制，暂时不能发动态</string>
+    <string name="image_save">保存图片</string>
+    <string name="image_saved">已保存</string>
+    <string name="image_save_failed">未能保存图片</string>
 </resources>

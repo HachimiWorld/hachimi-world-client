@@ -43,9 +43,15 @@ data class CommentTarget(
     /** [CommentModule.TARGET_SONG], [CommentModule.TARGET_POST] or [CommentModule.TARGET_MOMENT] */
     val type: String,
     val id: Long,
-    /** Can delete any comment under it. */
-    val ownerUid: Long,
-)
+    /**
+     * Can delete any comment under it. Null while not yet known, such as when the comments start
+     * loading together with the moment they're on; it's filled in once that arrives. Nullable @since 261112.
+     */
+    val ownerUid: Long?,
+) {
+    /** The same thing commented on, whether or not its owner is known yet. @since 261112 */
+    fun sameAs(other: CommentTarget?): Boolean = other != null && type == other.type && id == other.id
+}
 
 /**
  * The comments of one song or post, for the page showing them. The page names the target with
@@ -109,8 +115,13 @@ class CommentsStore(
 
     /** Shows the comments of the target, loading them if it's a different one. @since 261031 */
     fun open(target: CommentTarget) {
-        if (this.target == target && initializeStatus != InitializeStatus.FAILED) return
-        if (this.target != target) {
+        if (target.sameAs(this.target)) {
+            // Only the owner came to be known: keep what's loaded
+            this.target = target
+            if (initializeStatus == InitializeStatus.FAILED) load()
+            return
+        }
+        run {
             input = ""
             replyTo = null
             closeThread()
@@ -300,7 +311,7 @@ class CommentsStore(
                     return@launch
                 }
                 val item = resp.ok().comment
-                if (this@CommentsStore.target != target) return@launch
+                if (!target.sameAs(this@CommentsStore.target)) return@launch
                 input = ""
                 this@CommentsStore.replyTo = null
                 if (item != null) {

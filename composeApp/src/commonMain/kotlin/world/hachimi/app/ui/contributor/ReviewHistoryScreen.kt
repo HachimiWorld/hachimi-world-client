@@ -1,5 +1,10 @@
 package world.hachimi.app.ui.contributor
 
+import androidx.compose.foundation.shape.CircleShape
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.RefreshingIndicator
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.PlainListSkeleton
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.review_history_empty
 import hachimiworld.composeapp.generated.resources.review_history_no_note
@@ -31,12 +36,9 @@ import world.hachimi.app.model.ReviewHistoryViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.Pagination
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.components.Card
-import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
@@ -62,10 +64,10 @@ fun ReviewHistoryScreen(
         showBack = true,
         onBack = navigator::back,
     ) {
-        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) { status ->
+        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) { status ->
             when (status) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.INIT -> PlainListSkeleton(leading = 32.dp, leadingShape = CircleShape)
+                InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
                 InitializeStatus.LOADED -> Content(vm = vm, global = global, navigator = navigator)
             }
         }
@@ -105,9 +107,7 @@ private fun Content(
                 }
             }
 
-            if (vm.loading) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
-            }
+            RefreshingIndicator(isRefreshing = vm.loading)
         }
 
         if (vm.total > vm.pageSize) {

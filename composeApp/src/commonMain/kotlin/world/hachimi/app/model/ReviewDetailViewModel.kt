@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_done
 import hachimiworld.composeapp.generated.resources.review_discussion_content_empty
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -96,6 +97,7 @@ class ReviewDetailViewModel(
             val resp = api.contributorModule.check()
             isContributor = resp.ok().isContributor
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to check maintainer status", e)
             global.alert(e.message)
             isContributor = false
@@ -120,6 +122,7 @@ class ReviewDetailViewModel(
                 initializeStatus = InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to fetch review detail", e)
             global.alert(e.message)
             initializeStatus = InitializeStatus.FAILED
@@ -136,6 +139,7 @@ class ReviewDetailViewModel(
                 diff = computeReviewDiff(resp.ok(), detail)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.w("review_detail", "Failed to load the live song for diff", e)
         }
     }
@@ -177,6 +181,7 @@ class ReviewDetailViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to create review comment", e)
             global.alert(e.message)
         } finally {
@@ -202,6 +207,7 @@ class ReviewDetailViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to delete review comment", e)
             global.alert(e.message)
         } finally {
@@ -233,6 +239,7 @@ class ReviewDetailViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to load review comments", e)
             if (showAlert) {
                 global.alert(e.message)
@@ -257,6 +264,7 @@ class ReviewDetailViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to approve review", e)
             global.alert(e.message)
         } finally {
@@ -280,6 +288,7 @@ class ReviewDetailViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("review_detail", "Failed to approve review", e)
             global.alert(e.message)
         } finally {

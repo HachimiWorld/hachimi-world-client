@@ -201,6 +201,16 @@ sealed interface Route : NavKey {
             val type: SearchViewModel.SearchType = SearchViewModel.SearchType.SONG
         ) : Root
 
+        /**
+         * The phone's third tab: who's signed in, their library, and the ways into everything
+         * that isn't the home page or the square.
+         *
+         * @since 261110
+         */
+        @Serializable
+        @SerialName("/me")
+        data object Me : Root
+
         @Serializable
         @SerialName("/space")
         data object UserSpace : Root

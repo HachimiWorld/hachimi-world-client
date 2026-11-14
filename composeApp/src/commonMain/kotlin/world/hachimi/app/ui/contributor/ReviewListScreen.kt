@@ -1,5 +1,9 @@
 package world.hachimi.app.ui.contributor
 
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.component.RefreshingIndicator
+import world.hachimi.app.ui.component.ErrorPage
+import world.hachimi.app.ui.component.PlainListSkeleton
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.contributor_not_contributor
 import hachimiworld.composeapp.generated.resources.review_list_title
@@ -26,10 +30,8 @@ import world.hachimi.app.model.ReviewViewModel
 import world.hachimi.app.nav.HandleNavigationRequests
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.Pagination
-import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ReviewItem
 import world.hachimi.app.ui.component.ScreenScaffold
-import world.hachimi.app.ui.design.components.CircularProgressIndicator
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
@@ -55,13 +57,11 @@ fun ReviewListScreen(
         showBack = true,
         onBack = navigator::back,
     ) {
-        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize(), transitionSpec = { loadStateTransition() }) {
             when (it) {
-                InitializeStatus.INIT -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+                InitializeStatus.INIT -> PlainListSkeleton(leading = null)
 
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
                 InitializeStatus.LOADED -> Box(Modifier.fillMaxSize()) {
                     if (vm.isContributor) Content(vm)
                     else NotContributor()
@@ -106,7 +106,7 @@ private fun Content(vm: ReviewViewModel) {
                     )
                 }
             }
-            if (vm.loading) CircularProgressIndicator(Modifier.align(Alignment.Center))
+            RefreshingIndicator(isRefreshing = vm.loading)
         }
 
         // Pagination

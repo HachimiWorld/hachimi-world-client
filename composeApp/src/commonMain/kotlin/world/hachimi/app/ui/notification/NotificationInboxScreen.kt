@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.notification
 
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,7 +24,6 @@ import hachimiworld.composeapp.generated.resources.notification_load_error
 import hachimiworld.composeapp.generated.resources.notification_load_more_failed
 import hachimiworld.composeapp.generated.resources.notification_mark_all_read
 import hachimiworld.composeapp.generated.resources.notification_refresh_failed
-import hachimiworld.composeapp.generated.resources.notification_retry
 import hachimiworld.composeapp.generated.resources.notification_select_hint
 import hachimiworld.composeapp.generated.resources.notification_title
 import org.jetbrains.compose.resources.stringResource
@@ -35,14 +35,12 @@ import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
-import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.message.components.cardItems
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.notification.components.NotificationEmptyState
 import world.hachimi.app.ui.notification.components.NotificationListSkeleton
-import world.hachimi.app.ui.notification.components.NotificationMessageState
 import world.hachimi.app.ui.notification.components.NotificationRow
 import world.hachimi.app.ui.notification.components.NotificationSelectHint
 import world.hachimi.app.ui.notification.components.RetentionHint
@@ -137,14 +135,10 @@ private fun NotificationList(
 ) {
     when (store.initializeStatus) {
         InitializeStatus.INIT -> NotificationListSkeleton(modifier)
-        InitializeStatus.FAILED -> NotificationMessageState(
-            title = stringResource(Res.string.notification_load_error),
-            modifier = modifier.listTailPadding(),
-            action = {
-                AccentButton(onClick = { store.refresh() }, enabled = !store.refreshing) {
-                    Text(stringResource(Res.string.notification_retry))
-                }
-            },
+        InitializeStatus.FAILED -> ErrorPage(
+            onRetry = { store.refresh() },
+            modifier = modifier.fillMaxSize().listTailPadding(),
+            message = stringResource(Res.string.notification_load_error),
         )
         InitializeStatus.LOADED -> if (store.items.isEmpty()) {
             NotificationEmptyState(modifier.listTailPadding())

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,6 +74,7 @@ class MyPRViewModel(
                 if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             global.alert(e.message)
             Logger.e("my_artwork", "Failed to fetch my artwork", e)
             if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
@@ -99,6 +101,7 @@ class MyPRViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             global.alert(e.message)
             Logger.e("my_artwork", "Failed to fetch my artwork", e)
         } finally {

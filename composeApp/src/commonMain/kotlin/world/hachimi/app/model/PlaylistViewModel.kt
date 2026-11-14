@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.playlist_login_required
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -93,6 +94,7 @@ class PlaylistViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("player", "Failed to list containing playlist", e)
         }
     }
@@ -114,6 +116,7 @@ class PlaylistViewModel(
                     InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("player", "Failed to play playlist", e)
             global.alert(e.message)
             if (initializeStatus == InitializeStatus.INIT) initializeStatus =
@@ -140,6 +143,7 @@ class PlaylistViewModel(
                 global.alert(data.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("player", "Failed to refresh favorite playlist", e)
         } finally {
             favoritePlaylistsLoading = false
@@ -162,6 +166,7 @@ class PlaylistViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("player", "Failed to add playlist", e)
                 global.alert(e.message)
             } finally {
@@ -207,6 +212,7 @@ class PlaylistViewModel(
                     if (message != null) global.alert(message) else global.alert(err.msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("player", "Failed to create playlist", e)
                 global.alert(e.message)
             } finally {

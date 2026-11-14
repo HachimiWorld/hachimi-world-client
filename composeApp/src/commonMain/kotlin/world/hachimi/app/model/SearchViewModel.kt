@@ -9,6 +9,7 @@ import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.search_sort_newest
 import hachimiworld.composeapp.generated.resources.search_sort_oldest
 import hachimiworld.composeapp.generated.resources.search_sort_relevance
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -111,6 +112,9 @@ class SearchViewModel(
     var initializeStatus by mutableStateOf(InitializeStatus.INIT)
         private set
     var loading by mutableStateOf(false)
+    /** The last search didn't come back; the results shown are not the answer to it. @since 261112 */
+    var failed by mutableStateOf(false)
+        private set
     var songData by mutableStateOf<List<SearchSongItem>>(emptyList())
         private set
     var userData by mutableStateOf<List<UserModule.PublicUserProfile>>(emptyList())
@@ -156,6 +160,7 @@ class SearchViewModel(
 
     private suspend fun searchSongs() {
         loading = true
+        failed = false
         try {
             val result = mutableListOf<SearchSongItem>()
             // If the query text is display id: JM-ABCD-123, use detail to get information.
@@ -188,14 +193,15 @@ class SearchViewModel(
                 result.addAll(data.hits.map { SearchSongItem.fromItem(query, it) })
                 searchProcessingTimeMs = data.processingTimeMs
             } else {
-                val err = resp.err()
-                global.alert(err.msg)
+                Logger.w("search", "Song search failed: ${resp.err().msg}")
+                failed = true
             }
 
             songData = result
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("search", "Failed to search", e)
-            global.alert(e.message)
+            failed = true
         } finally {
             loading = false
         }
@@ -203,6 +209,7 @@ class SearchViewModel(
 
     private suspend fun searchUsers() {
         loading = true
+        failed = false
         try {
             val result = mutableListOf<UserModule.PublicUserProfile>()
             if (query.toLongOrNull() != null) {
@@ -229,14 +236,15 @@ class SearchViewModel(
                 result.addAll(data.hits)
                 searchProcessingTimeMs = data.processingTimeMs
             } else {
-                val err = resp.err()
-                global.alert(err.msg)
+                Logger.w("search", "User search failed: ${resp.err().msg}")
+                failed = true
             }
 
             userData = result
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("search", "Failed to search", e)
-            global.alert(e.message)
+            failed = true
         } finally {
             loading = false
         }
@@ -244,14 +252,16 @@ class SearchViewModel(
 
     private suspend fun searchPlaylists() {
         loading = true
+        failed = false
         try {
             val resp = api.playlistModule.search(PlaylistModule.SearchReq(q = query, limit = null, offset = null, sortBy = null, userId = null))
             val data = resp.ok()
             searchProcessingTimeMs = data.processingTimeMs
             playlistData = data.hits
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("search", "Failed to search", e)
-            global.alert(e.message)
+            failed = true
         } finally {
             loading = false
         }
