@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -403,6 +404,28 @@ private fun PreviewScreenScaffoldCompact() {
                 onBack = {},
                 showMenu = false,
             ) {
+                LazyColumn(Modifier.fillMaxSize()) {
+                    items(30) { Text("Row $it", Modifier.padding(16.dp)) }
+                }
+            }
+        }
+    }
+}
+
+@Preview(widthDp = 360, name = "Compact · Title action")
+@Composable
+private fun PreviewScreenScaffoldTitleAction() {
+    PreviewTheme(background = true) {
+        CompositionLocalProvider(
+            LocalWindowSize provides DpSize(WindowSize.COMPACT - 1.dp, 800.dp),
+        ) {
+            ScreenScaffold(title = { Text("每日推荐") }, showBack = true, onBack = {}) {
+                PageTitleAction { folded ->
+                    if (folded) PlayAllButton(onClick = {})
+                    else CoverFan(count = 3, onClick = {}) { index ->
+                        Box(Modifier.fillMaxSize().background(listOf(Color(0xFFF2C14E), Color(0xFFE88FB0), Color(0xFF5DB3A0))[index]))
+                    }
+                }
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(30) { Text("Row $it", Modifier.padding(16.dp)) }
                 }

@@ -1,9 +1,18 @@
 package world.hachimi.app.ui.likes
 
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.unit.DpSize
+import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.component.PageTitleAction
 import world.hachimi.app.ui.component.PlayAllCovers
+import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.SongListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import androidx.compose.foundation.background
@@ -72,6 +81,7 @@ import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.theme.PreviewTheme
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
+import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.ui.util.listTailSpacerItem
 import world.hachimi.app.util.formatDaysDistance
@@ -103,23 +113,54 @@ fun RecentLikeScreen(
 
 @Composable
 private fun Content(vm: RecentLikeViewModel) {
+	RecentLikeList(
+		groups = vm.songs,
+		total = vm.total,
+		rhythm = vm.rhythm,
+		hasMore = vm.hasMore,
+		loading = vm.loading,
+		isUnliking = vm::isUnliking,
+		onPlay = vm::play,
+		onPlayAll = vm::playAllLoaded,
+		onUnlike = vm::unlike,
+		onLoadMore = vm::loadMore,
+	)
+}
+
+/**
+ * The likes as they're shown, from what's loaded: the play-all (by the page title when a phone
+ * scaffold holds it, otherwise in a row of its own), the [LikeSummary], then the likes day by day.
+ */
+@Composable
+private fun RecentLikeList(
+	groups: List<RecentLikeViewModel.SongGroup>,
+	total: Long?,
+	rhythm: RecentLikeViewModel.LikeRhythm?,
+	hasMore: Boolean,
+	loading: Boolean,
+	isUnliking: (songId: Long) -> Boolean,
+	onPlay: (SongModule.MyLikeItem) -> Unit,
+	onPlayAll: () -> Unit,
+	onUnlike: (songId: Long) -> Unit,
+	onLoadMore: () -> Unit,
+) {
 	val state = rememberLazyListState()
 
-	LaunchedEffect(state.canScrollForward, vm.loading, vm.hasMore) {
-		if (!vm.loading && vm.hasMore && !state.canScrollForward) {
-			vm.loadMore()
+	LaunchedEffect(state.canScrollForward, loading, hasMore) {
+		if (!loading && hasMore && !state.canScrollForward) {
+			onLoadMore()
 		}
 	}
 
-	if (vm.songs.isEmpty()) {
+	if (groups.isEmpty()) {
 		Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 			Text(stringResource(Res.string.common_empty))
 		}
 		return
 	}
 
-	val covers = remember(vm.songs) {
-		vm.songs.asSequence()
+	val covers = remember(groups) {
+		groups.asSequence()
 			.flatMap { it.entries }
 			.filterIsInstance<RecentLikeViewModel.LikeEntry.Song>()
 			.map { it.item.songData.coverUrl }
@@ -127,7 +168,7 @@ private fun Content(vm: RecentLikeViewModel) {
 			.toList()
 	}
 	val playAllInTitle = PageTitleAction { folded ->
-		PlayAllCovers(covers = covers, folded = folded, onClick = { vm.playAllLoaded() })
+		PlayAllCovers(covers = covers, folded = folded, onClick = onPlayAll)
 	}
 	val scope = rememberCoroutineScope()
 
@@ -139,16 +180,16 @@ private fun Content(vm: RecentLikeViewModel) {
 			verticalArrangement = Arrangement.spacedBy(8.dp),
 		) {
 			if (!playAllInTitle) item {
-				Header(vm)
+				Header(onPlayAll)
 			}
 			item(contentType = "summary") {
 				LikeSummary(
-					total = vm.total,
-					rhythm = vm.rhythm,
+					total = total,
+					rhythm = rhythm,
 					onDayClick = { day ->
 						// Each day is its date line and then its songs
 						var index = if (playAllInTitle) 1 else 2
-						for (group in vm.songs) {
+						for (group in groups) {
 							if (group.date == day) {
 								scope.launch { state.animateScrollToItem(index) }
 								break
@@ -159,7 +200,7 @@ private fun Content(vm: RecentLikeViewModel) {
 				)
 			}
 
-			vm.songs.forEach { group ->
+			groups.forEach { group ->
 				item(key = group.date.toString(), contentType = "separator") {
 					val daysOffset = remember(group.date) {
 						val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
@@ -177,20 +218,20 @@ private fun Content(vm: RecentLikeViewModel) {
 					when (entry) {
 						is RecentLikeViewModel.LikeEntry.Song -> RecentLikeItem(
 							item = entry.item,
-							onClick = { vm.play(entry.item) },
-							onUnlikeClick = { vm.unlike(entry.songId) },
-							unlikeEnabled = !vm.isUnliking(entry.songId),
+							onClick = { onPlay(entry.item) },
+							onUnlikeClick = { onUnlike(entry.songId) },
+							unlikeEnabled = !isUnliking(entry.songId),
 						)
 						is RecentLikeViewModel.LikeEntry.Unavailable -> UnavailableLikeItem(
-							onUnlikeClick = { vm.unlike(entry.songId) },
-							unlikeEnabled = !vm.isUnliking(entry.songId),
+							onUnlikeClick = { onUnlike(entry.songId) },
+							unlikeEnabled = !isUnliking(entry.songId),
 						)
 					}
 				}
 			}
 
 			item(contentType = "load_more") {
-				LoadMoreItem(hasMore = vm.hasMore, isLoading = vm.loading)
+				LoadMoreItem(hasMore = hasMore, isLoading = loading)
 			}
 
 			listTailSpacerItem()
@@ -199,7 +240,7 @@ private fun Content(vm: RecentLikeViewModel) {
 }
 
 @Composable
-private fun Header(vm: RecentLikeViewModel) {
+private fun Header(onPlayAll: () -> Unit) {
 	Row(
 		modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
 		verticalAlignment = Alignment.CenterVertically,
@@ -209,7 +250,7 @@ private fun Header(vm: RecentLikeViewModel) {
 			style = MaterialTheme.typography.titleLarge,
 		)
 		Spacer(Modifier.weight(1f))
-		Button(onClick = { vm.playAllLoaded() }) {
+		Button(onClick = onPlayAll) {
 			Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
 			Spacer(Modifier.size(8.dp))
 			Text(stringResource(Res.string.play_all))
@@ -329,38 +370,111 @@ private fun UnavailableLikeItem(
 	}
 }
 
+private fun previewLike(id: Long, title: String, artist: String, likedTime: Instant) = SongModule.MyLikeItem(
+	songData = SongModule.PublicSongDetail(
+		id = id,
+		displayId = id.toString(),
+		title = title,
+		subtitle = "",
+		description = "",
+		durationSeconds = 120 + (id * 37 % 120).toInt(),
+		tags = listOf(),
+		lyrics = "",
+		audioUrl = "",
+		coverUrl = "https://example.com/cover/$id.jpg",
+		productionCrew = listOf(),
+		creationType = 0,
+		originInfos = listOf(),
+		uploaderUid = 42,
+		uploaderName = artist,
+		playCount = 12345,
+		likeCount = 678,
+		externalLinks = listOf(),
+		createTime = Instant.parse("2024-01-01T00:00:00Z"),
+		releaseTime = Instant.parse("2024-01-02T00:00:00Z"),
+		explicit = false,
+		gain = null,
+	),
+	likedTime = likedTime,
+)
+
+/** Likes on a few of the last 30 days, grouped the way the view model groups them. */
+private fun previewGroups(): List<RecentLikeViewModel.SongGroup> {
+	val now = Clock.System.now()
+	val zone = TimeZone.currentSystemDefault()
+	val likes = listOf(0, 0, 4, 6, 6, 13, 21, 24).mapIndexed { i, daysAgo ->
+		previewLike(i + 1L, listOf("哈基米是猫", "Blue and White Porcelain", "辞基米回忆", "基琶曲", "Love<3#002", "Brightness", "Mambo Of Life", "Practice")[i], "Preview Artist", now - (daysAgo * 24).hours)
+	}
+	return likes.groupBy { it.likedTime.toLocalDateTime(zone).date }
+		.map { (date, items) -> RecentLikeViewModel.SongGroup(date, items.map { RecentLikeViewModel.LikeEntry.Song(it) }) }
+		.sortedByDescending { it.date }
+}
+
+private fun previewRhythm(groups: List<RecentLikeViewModel.SongGroup>): RecentLikeViewModel.LikeRhythm {
+	val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+	val first = today.minus(29, DateTimeUnit.DAY)
+	val byDay = groups.associate { it.date to it.entries.size }
+	return RecentLikeViewModel.LikeRhythm(first, List(30) { byDay[first.plus(it, DateTimeUnit.DAY)] ?: 0 })
+}
+
+@Composable
+private fun PreviewRecentLikeList() {
+	val groups = remember { previewGroups() }
+	RecentLikeList(
+		groups = groups,
+		total = 73,
+		rhythm = remember(groups) { previewRhythm(groups) },
+		hasMore = true,
+		loading = false,
+		isUnliking = { false },
+		onPlay = {},
+		onPlayAll = {},
+		onUnlike = {},
+		onLoadMore = {},
+	)
+}
+
+@Preview(widthDp = 360, heightDp = 800, name = "Phone · under Me")
+@Composable
+private fun RecentLikePhonePreview() {
+	PreviewTheme(background = true) {
+		CompositionLocalProvider(LocalWindowSize provides DpSize(WindowSize.COMPACT - 1.dp, 800.dp)) {
+			ScreenScaffold(title = { Text(stringResource(Res.string.nav_recent_like)) }, showBack = true, onBack = {}) {
+				CompositionLocalProvider(LocalPageTitleShown provides true) {
+					Box(Modifier.weight(1f)) { PreviewRecentLikeList() }
+				}
+			}
+		}
+	}
+}
+
+@Preview(widthDp = 960, heightDp = 640, name = "Wide")
+@Composable
+private fun RecentLikeWidePreview() {
+	PreviewTheme(background = true) {
+		CompositionLocalProvider(LocalWindowSize provides DpSize(960.dp, 640.dp)) {
+			PreviewRecentLikeList()
+		}
+	}
+}
+
+@Preview(widthDp = 360, name = "Empty")
+@Composable
+private fun RecentLikeEmptyPreview() {
+	PreviewTheme(background = true) {
+		RecentLikeList(
+			groups = emptyList(), total = 0, rhythm = null, hasMore = false, loading = false,
+			isUnliking = { false }, onPlay = {}, onPlayAll = {}, onUnlike = {}, onLoadMore = {},
+		)
+	}
+}
+
 @Preview
 @Composable
 private fun RecentLikeItemPreview() {
 	PreviewTheme(background = false) {
 		RecentLikeItem(
-			item = SongModule.MyLikeItem(
-				songData = SongModule.PublicSongDetail(
-					id = 1,
-					displayId = "1",
-					title = "Test Song Title",
-					subtitle = "Test Subtitle",
-					description = "This is a preview description.",
-					durationSeconds = 185,
-					tags = listOf(),
-					lyrics = "",
-					audioUrl = "",
-					coverUrl = "https://example.com/cover.jpg",
-					productionCrew = listOf(),
-					creationType = 0,
-					originInfos = listOf(),
-					uploaderUid = 42,
-					uploaderName = "Preview Artist",
-					playCount = 12345,
-					likeCount = 678,
-					externalLinks = listOf(),
-					createTime = Instant.parse("2024-01-01T00:00:00Z"),
-					releaseTime = Instant.parse("2024-01-02T00:00:00Z"),
-					explicit = false,
-					gain = null,
-				),
-				likedTime = Instant.parse("2024-01-03T12:00:00Z"),
-			),
+			item = previewLike(1, "Test Song Title", "Preview Artist", Instant.parse("2024-01-03T12:00:00Z")),
 			onClick = {},
 			onUnlikeClick = {},
 			unlikeEnabled = true,

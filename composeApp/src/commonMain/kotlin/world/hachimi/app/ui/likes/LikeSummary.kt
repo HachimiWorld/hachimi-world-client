@@ -5,10 +5,12 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,8 +21,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
@@ -35,6 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.model.RecentLikeViewModel.LikeRhythm
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
+import world.hachimi.app.ui.theme.PreviewTheme
 
 /**
  * The head of the likes: how many there are, and under it the last 30 days as a row of thin bars,
@@ -64,7 +69,8 @@ internal fun LikeSummary(
             lineHeight = 18.sp,
         )
         if (counted != null) {
-            RhythmBars(counted, onDayClick, Modifier.padding(top = 12.dp).fillMaxWidth().height(BarsHeight))
+            // Kept to a phone's width on wide screens, where 30 days spread thin
+            RhythmBars(counted, onDayClick, Modifier.padding(top = 12.dp).widthIn(max = 480.dp).fillMaxWidth().height(BarsHeight))
         }
     }
 }
@@ -84,7 +90,9 @@ private fun RhythmBars(rhythm: LikeRhythm, onDayClick: (LocalDate) -> Unit, modi
         }
     }
     // The bars rise once, from the oldest day to today
-    val rise = remember { Animatable(0f) }
+    // Already risen in a preview, which shows a single frame
+    val inspecting = LocalInspectionMode.current
+    val rise = remember { Animatable(if (inspecting) 1f else 0f) }
     LaunchedEffect(Unit) { rise.animateTo(1f, tween(700, easing = FastOutSlowInEasing)) }
 
     Canvas(
@@ -137,3 +145,37 @@ private const val MinBar = 0.3f
 private val BarsHeight = 24.dp
 private val BarWidth = 4.dp
 private val Dot = 3.dp
+
+private fun previewRhythm(days: Int, vararg liked: Pair<Int, Int>): LikeRhythm {
+    val today = LocalDate(2026, 11, 14)
+    val counts = IntArray(days)
+    // daysAgo to songs
+    for ((daysAgo, songs) in liked) counts[days - 1 - daysAgo] = songs
+    return LikeRhythm(today.minus(days - 1, DateTimeUnit.DAY), counts.toList())
+}
+
+@Composable
+private fun PreviewSummaries() {
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        // A month counted, liked today
+        LikeSummary(73, previewRhythm(30, 0 to 1, 4 to 2, 6 to 1, 10 to 3, 13 to 1, 21 to 2, 24 to 1), onDayClick = {})
+        // A busy month, nothing today
+        LikeSummary(412, previewRhythm(30, *Array(29) { (it + 1) to (it * 7 % 5) }), onDayClick = {})
+        // Only twelve days counted so far: the older slots stay empty
+        LikeSummary(980, previewRhythm(12, 0 to 4, 1 to 6, 3 to 2, 7 to 5, 11 to 3), onDayClick = {})
+        // Too few days to draw: the total alone
+        LikeSummary(5, previewRhythm(3, 0 to 2), onDayClick = {})
+    }
+}
+
+@Preview(widthDp = 360, name = "Light")
+@Composable
+private fun LikeSummaryLightPreview() {
+    PreviewTheme(darkTheme = false, background = true) { PreviewSummaries() }
+}
+
+@Preview(widthDp = 360, name = "Dark")
+@Composable
+private fun LikeSummaryDarkPreview() {
+    PreviewTheme(darkTheme = true, background = true) { PreviewSummaries() }
+}
