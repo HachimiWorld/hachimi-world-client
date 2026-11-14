@@ -10,13 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -29,10 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
-import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.common_refresh_cd
 import hachimiworld.composeapp.generated.resources.home_recent_title
-import hachimiworld.composeapp.generated.resources.play_all
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
@@ -51,7 +47,6 @@ import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardGridSkeleton
 import world.hachimi.app.ui.component.ErrorPage
 import world.hachimi.app.ui.component.ScreenScaffold
-import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -100,10 +95,11 @@ fun RecentPublishScreen(
 
 @Composable
 private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
-    // On phones the button sits by the title
+    // The fan of covers plays them all: by the title on phones, in the header row on wide screens
     val covers = remember(vm.songs) { vm.songs.asSequence().flatMap { it.songs }.take(3).map { it.coverUrl }.toList() }
+    val playAll: () -> Unit = { vm.playAllRecent() }
     val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
-        PlayAllCovers(covers = covers, folded = folded, onClick = { vm.playAllRecent() })
+        PlayAllCovers(covers = covers, folded = folded, onClick = playAll)
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val constraintMaxWidth = maxWidth
@@ -144,14 +140,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
 
                         Spacer(Modifier.weight(1f))
 
-                        Button(
-                            modifier = Modifier,
-                            onClick = { vm.playAllRecent() }
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
-                            Spacer(Modifier.width(8.dp))
-                            Text(stringResource(Res.string.play_all))
-                        }
+                        PlayAllCovers(covers = covers, folded = false, onClick = playAll)
                     }
                 }
                 vm.songs.fastForEach {

@@ -35,7 +35,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MusicOff
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -57,9 +56,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
-import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.nav_recent_like
-import hachimiworld.composeapp.generated.resources.play_all
 import hachimiworld.composeapp.generated.resources.player_unlike
 import hachimiworld.composeapp.generated.resources.unavailable_song
 import hachimiworld.composeapp.generated.resources.unavailable_unlike
@@ -73,7 +70,6 @@ import world.hachimi.app.model.RecentLikeViewModel
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Surface
 import world.hachimi.app.ui.design.components.Text
@@ -180,7 +176,7 @@ private fun RecentLikeList(
 			verticalArrangement = Arrangement.spacedBy(8.dp),
 		) {
 			if (!playAllInTitle) item {
-				Header(onPlayAll)
+				Header(covers, onPlayAll)
 			}
 			item(contentType = "summary") {
 				LikeSummary(
@@ -240,7 +236,7 @@ private fun RecentLikeList(
 }
 
 @Composable
-private fun Header(onPlayAll: () -> Unit) {
+private fun Header(covers: List<String>, onPlayAll: () -> Unit) {
 	Row(
 		modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
 		verticalAlignment = Alignment.CenterVertically,
@@ -250,11 +246,7 @@ private fun Header(onPlayAll: () -> Unit) {
 			style = MaterialTheme.typography.titleLarge,
 		)
 		Spacer(Modifier.weight(1f))
-		Button(onClick = onPlayAll) {
-			Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
-			Spacer(Modifier.size(8.dp))
-			Text(stringResource(Res.string.play_all))
-		}
+		PlayAllCovers(covers = covers, folded = false, onClick = onPlayAll)
 	}
 }
 

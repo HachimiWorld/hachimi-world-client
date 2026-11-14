@@ -91,7 +91,7 @@ fun UserTileSkeleton(modifier: Modifier = Modifier, avatarSize: Dp = 120.dp) {
 
 /**
  * A page-wide list of [SongRowSkeleton]s with the page's margins. [playAll] leaves the header row's
- * play-all button in place and [dateLabel] a day heading over the rows, for the pages that have them.
+ * fan of covers in place and [dateLabel] a day heading over the rows, for the pages that have them.
  *
  * @since 261112
  */
@@ -111,9 +111,9 @@ fun SongListSkeleton(
         ) {
             listHeadInsetsSpacerItem()
             if (playAll) item(contentType = "header") {
-                Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Spacer(Modifier.weight(1f))
-                    Box(Modifier.size(104.dp, 36.dp).placeholder(true, CircleShape))
+                    CoverFanPlaceholder()
                 }
             }
             if (dateLabel) item(contentType = "date") {

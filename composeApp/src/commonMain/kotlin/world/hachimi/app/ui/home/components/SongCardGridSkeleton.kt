@@ -9,15 +9,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import world.hachimi.app.ui.component.CoverFanPlaceholder
 import world.hachimi.app.ui.design.components.placeholder
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
@@ -29,7 +28,7 @@ import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
  * Stands in for a page-wide grid of [SongCard]s: the same columns and margins, the header row with
  * its play-all button, then cards to the bottom of the screen. It doesn't scroll.
  *
- * [playAll] leaves room for the play-all button; [dateLabel] adds a short bar over the cards, for
+ * [playAll] leaves room for the fan of covers that plays them all; [dateLabel] adds a short bar over the cards, for
  * the pages that group songs by day. Playlist grids use it too, without the button.
  *
  * @since 261112
@@ -47,10 +46,10 @@ fun SongCardGridSkeleton(modifier: Modifier = Modifier, playAll: Boolean = true,
         ) {
             listHeadInsetsSpacerItem()
             if (playAll) item(span = { GridItemSpan(maxLineSpan) }, contentType = "header") {
-                // The play-all button sits at the end of the header row
-                Row(Modifier.fillMaxWidth().height(HeaderHeight), verticalAlignment = Alignment.CenterVertically) {
+                // The fan of covers sits at the end of the header row
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Spacer(Modifier.weight(1f))
-                    Box(Modifier.size(PlayAllWidth, HeaderHeight).placeholder(true, CircleShape))
+                    CoverFanPlaceholder()
                 }
             }
             if (dateLabel) item(span = { GridItemSpan(maxLineSpan) }, contentType = "date") {
@@ -65,6 +64,4 @@ fun SongCardGridSkeleton(modifier: Modifier = Modifier, playAll: Boolean = true,
     }
 }
 
-private val HeaderHeight = 36.dp
-private val PlayAllWidth = 104.dp
 private const val SkeletonCards = 18

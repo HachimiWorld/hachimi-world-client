@@ -41,6 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.api.CoilHeaders
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Icon
+import world.hachimi.app.ui.design.components.placeholder
 import world.hachimi.app.ui.theme.PreviewTheme
 
 /**
@@ -103,12 +104,24 @@ fun CoverFan(
     )
 }
 
-/** The fan at a given [spread], from 0 (at rest) to 1 (pressed). */
+/**
+ * Stands in for [PlayAllCovers] while the page loads: three blank covers in the same fan.
+ * @since 261114
+ */
+@Composable
+fun CoverFanPlaceholder(modifier: Modifier = Modifier) {
+    CoverFanLayout(count = MaxCovers, spread = 0f, mark = false, modifier = modifier) {
+        Box(Modifier.fillMaxSize().placeholder(true))
+    }
+}
+
+/** The fan at a given [spread], from 0 (at rest) to 1 (pressed), with the play [mark] on top. */
 @Composable
 private fun CoverFanLayout(
     count: Int,
     spread: Float,
     modifier: Modifier = Modifier,
+    mark: Boolean = true,
     cover: @Composable (index: Int) -> Unit,
 ) {
     val shown = count.coerceIn(1, MaxCovers)
@@ -133,7 +146,7 @@ private fun CoverFanLayout(
                 contentAlignment = Alignment.Center,
             ) {
                 cover(depth)
-                if (depth == 0) PlayMark()
+                if (mark && depth == 0) PlayMark()
             }
         }
     }
@@ -184,6 +197,8 @@ private fun PreviewFans() {
         CoverFanLayout(count = 3, spread = 1f) { Box(Modifier.fillMaxSize().background(PreviewCovers[it])) }
         // Folded into the bar
         PlayAllCovers(covers = emptyList(), folded = true, onClick = {})
+        // Loading
+        CoverFanPlaceholder()
     }
 }
 
