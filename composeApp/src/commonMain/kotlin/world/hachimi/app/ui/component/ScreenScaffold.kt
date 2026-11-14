@@ -266,7 +266,13 @@ private fun PhoneScaffold(
     val colors = HachimiTheme.colorScheme
     val density = LocalDensity.current
     val large = titleStyle == TitleStyle.Large
-    val state = remember(large) { TitleScroll(if (large) with(density) { LargeTitleHeight.toPx() } else 0f) }
+    val actionSlot = remember { TitleActionSlot() }
+    val titleAction = actionSlot.content
+    // A page action beside the large title (such as a fan of covers) gets a taller row
+    val largeTitleHeight = if (titleAction != null) LargeTitleWithActionHeight else LargeTitleHeight
+    val state = remember(large, largeTitleHeight) {
+        TitleScroll(if (large) with(density) { largeTitleHeight.toPx() } else 0f)
+    }
     val connection = remember(state, large) { TitleScrollConnection(state, folds = large) }
     val revealAt = with(density) { RevealAfter.toPx() }
 
@@ -280,8 +286,6 @@ private fun PhoneScaffold(
     // The line under the bar only once something is under it
     val lineShown = if (large) state.fraction >= 1f && state.scrolled > 0f else state.scrolled > 0f
     val lineAlpha by animateFloatAsState(if (lineShown) 1f else 0f)
-    val actionSlot = remember { TitleActionSlot() }
-    val titleAction = actionSlot.content
 
     Column(modifier.fillMaxSize()) {
         Box(
@@ -348,7 +352,7 @@ private fun PhoneScaffold(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .height(LargeTitleHeight)
+                        .height(largeTitleHeight)
                         .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
                         .graphicsLayer { alpha = (1f - state.fraction * 1.4f).coerceIn(0f, 1f) },
                     verticalAlignment = Alignment.Bottom,
@@ -379,6 +383,7 @@ private fun PhoneScaffold(
 
 private val BarHeight = 56.dp
 private val LargeTitleHeight = 52.dp
+private val LargeTitleWithActionHeight = 64.dp
 /** How far a [TitleStyle.Revealed] page scrolls before its name comes into the bar. */
 private val RevealAfter = 160.dp
 private val SmallTitleStyle = TextStyle(fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)

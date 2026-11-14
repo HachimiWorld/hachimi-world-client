@@ -100,15 +100,15 @@ fun PlayAllCovers(
                 if (depth == 0) {
                     Box(
                         Modifier
-                            .size(18.dp)
-                            .clip(RoundedCornerShape(5.dp))
+                            .size(22.dp)
+                            .clip(RoundedCornerShape(6.dp))
                             .background(colors.primary),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             Icons.Default.PlayArrow,
                             contentDescription = null,
-                            modifier = Modifier.size(14.dp),
+                            modifier = Modifier.size(16.dp),
                             tint = colors.onSurfaceReverse,
                         )
                     }
@@ -118,10 +118,10 @@ fun PlayAllCovers(
     }
 }
 
-private val CoverSize = 34.dp
-private val CoverStep = 13.dp
-private val SpreadShift = 4.dp
-private val CoverShape = RoundedCornerShape(7.dp)
+private val CoverSize = 46.dp
+private val CoverStep = 17.dp
+private val SpreadShift = 5.dp
+private val CoverShape = RoundedCornerShape(9.dp)
 
 /** Degrees for the top cover, the one under it, and the one at the back. */
 private val Tilts = floatArrayOf(6f, -3f, -11f)
