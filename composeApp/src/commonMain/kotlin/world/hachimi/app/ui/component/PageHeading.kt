@@ -2,6 +2,7 @@ package world.hachimi.app.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
+import world.hachimi.app.ui.util.AdaptiveScreenMargin
 
 /**
  * A page's heading drawn in its own content: the [title] large, a quiet [caption] under it, and the
@@ -59,6 +61,26 @@ fun PageHeading(
         action?.invoke()
     }
 }
+
+/**
+ * Padding for a list that opens with a [PageHeading] under a toolbar: the page margin on the
+ * sides and at the bottom, and only [PageHeadingTopGap] at the top, so the heading sits under the
+ * bar as the large title does on phones. With no heading ([headingInPage] false) it's the margin
+ * all round.
+ *
+ * @since 261114
+ */
+@Composable
+fun headingListPadding(headingInPage: Boolean): PaddingValues {
+    val margin = AdaptiveScreenMargin
+    return PaddingValues(start = margin, end = margin, bottom = margin, top = if (headingInPage) PageHeadingTopGap else margin)
+}
+
+/**
+ * Space over a [PageHeading] right under a toolbar.
+ * @since 261114
+ */
+val PageHeadingTopGap = 8.dp
 
 /**
  * The quiet line under a page title: counts, how the list is made.

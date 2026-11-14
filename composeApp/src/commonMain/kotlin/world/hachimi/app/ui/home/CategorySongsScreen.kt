@@ -29,6 +29,7 @@ import world.hachimi.app.ui.component.PageHeading
 import world.hachimi.app.ui.component.PageTitleAction
 import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.headingListPadding
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
@@ -74,6 +75,7 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
     // The fan of covers plays them all: by the title on phones, in the header row on wide screens
     val covers = remember(vm.songs) { vm.songs.take(3).map { it.coverArtUrl } }
     val playAll: () -> Unit = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromSearchSongItem(it) }) }
+    val headingInScaffold = titleActionPlaced
     val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
         PlayAllCovers(covers = covers, folded = folded, onClick = playAll)
     }
@@ -83,14 +85,14 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
         } else LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
-            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
+            contentPadding = contentPaddingForMaxWidth(headingListPadding(headingInPage = !headingInScaffold), maxWidth),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 PageHeading(
                     // On phones the scaffold shows the title large, and the fan by it
-                    title = if (titleActionPlaced) null else category,
+                    title = if (headingInScaffold) null else category,
                     caption = stringResource(Res.string.home_category_title),
                     action = if (playAllInTitle) null else {
                         { PlayAllCovers(covers = covers, folded = false, onClick = playAll) }

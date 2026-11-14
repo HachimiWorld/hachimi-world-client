@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import world.hachimi.app.ui.component.CoverFanPlaceholder
+import world.hachimi.app.ui.component.headingListPadding
 import world.hachimi.app.ui.design.components.placeholder
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
@@ -39,7 +40,8 @@ fun SongCardGridSkeleton(modifier: Modifier = Modifier, playAll: Boolean = true,
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
             columns = calculateGridColumns(maxWidth),
-            contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), maxWidth),
+            // The play-all header is the wide heading, which sits close under the toolbar
+            contentPadding = contentPaddingForMaxWidth(headingListPadding(headingInPage = playAll), maxWidth),
             horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             userScrollEnabled = false,

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -461,7 +460,7 @@ private fun PreviewScreenScaffoldHeadingInPage() {
             LocalWindowSize provides DpSize(960.dp, 400.dp),
         ) {
             ScreenScaffold(title = { Text("每日推荐") }, showBack = true, onBack = {}, headingInPageOnWide = true) {
-                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp)) {
+                LazyColumn(Modifier.fillMaxSize(), contentPadding = headingListPadding(headingInPage = true)) {
                     item {
                         PageHeading(
                             title = "每日推荐",

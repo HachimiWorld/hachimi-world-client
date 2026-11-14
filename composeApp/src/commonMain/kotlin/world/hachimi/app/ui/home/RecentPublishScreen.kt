@@ -41,6 +41,7 @@ import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.PageHeading
 import world.hachimi.app.ui.component.PageTitleAction
 import world.hachimi.app.ui.component.PlayAllCovers
+import world.hachimi.app.ui.component.headingListPadding
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardGridSkeleton
@@ -121,7 +122,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 modifier = Modifier.fillMaxSize(),
                 state = state,
                 columns = calculateGridColumns(constraintMaxWidth),
-                contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintMaxWidth),
+                contentPadding = contentPaddingForMaxWidth(headingListPadding(headingInPage = !headingInScaffold), constraintMaxWidth),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
