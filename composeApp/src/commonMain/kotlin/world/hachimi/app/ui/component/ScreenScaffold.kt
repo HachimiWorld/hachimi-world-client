@@ -104,14 +104,15 @@ private val LocalInScaffold = compositionLocalOf { false }
 /** Where the page under a phone scaffold puts its main action, through [PageTitleAction]. */
 @Stable
 private class TitleActionSlot {
-    var content by mutableStateOf<(@Composable () -> Unit)?>(null)
+    var content by mutableStateOf<(@Composable (folded: Boolean) -> Unit)?>(null)
 }
 
 private val LocalTitleActionSlot = compositionLocalOf<TitleActionSlot?> { null }
 
 /**
  * Puts the page's main action, such as playing everything, beside its large title on phones; once
- * the title has folded away it waits in the bar. Call it outside any lazy list, which would drop it
+ * the title has folded away it waits in the bar, where [content] gets `folded` and should keep to
+ * the bar's size. Call it outside any lazy list, which would drop it
  * as it scrolls by.
  *
  * Returns false, and puts nothing anywhere, when no phone scaffold above holds the page (wide
@@ -129,11 +130,11 @@ val titleActionPlaced: Boolean
     @Composable @ReadOnlyComposable get() = LocalTitleActionSlot.current != null
 
 @Composable
-fun PageTitleAction(content: @Composable () -> Unit): Boolean {
+fun PageTitleAction(content: @Composable (folded: Boolean) -> Unit): Boolean {
     val slot = LocalTitleActionSlot.current ?: return false
     val latest by rememberUpdatedState(content)
     DisposableEffect(slot) {
-        val shown: @Composable () -> Unit = { latest() }
+        val shown: @Composable (Boolean) -> Unit = { folded -> latest(folded) }
         slot.content = shown
         onDispose { if (slot.content === shown) slot.content = null }
     }
@@ -316,7 +317,7 @@ private fun PhoneScaffold(
                     // Beside the large title while it shows, in the bar once it has folded
                     AnimatedVisibility(!large || smallTitleShown, enter = fadeIn(), exit = fadeOut()) {
                         // In line with where it stood by the large title (16dp in, past the bar's own 4dp)
-                        Box(Modifier.padding(start = 8.dp, end = 12.dp)) { titleAction() }
+                        Box(Modifier.padding(start = 8.dp, end = 12.dp)) { titleAction(true) }
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, content = actions)
@@ -358,7 +359,7 @@ private fun PhoneScaffold(
                             title()
                         }
                     }
-                    if (titleAction != null && !smallTitleShown) titleAction()
+                    if (titleAction != null && !smallTitleShown) titleAction(false)
                 }
             }
         }

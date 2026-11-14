@@ -33,7 +33,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.PageTitleAction
-import world.hachimi.app.ui.component.PlayAllButton
+import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.design.components.Button
@@ -80,8 +80,9 @@ fun CategorySongsScreen(
 @Composable
 private fun Content(category: String, vm: CategorySongsViewModel, global: GlobalStore) {
     // On phones the button sits by the title
-    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction {
-        PlayAllButton(onClick = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromSearchSongItem(it) }) })
+    val covers = remember(vm.songs) { vm.songs.take(3).map { it.coverArtUrl } }
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
+        PlayAllCovers(covers = covers, folded = folded, onClick = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromSearchSongItem(it) }) })
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -1,7 +1,9 @@
 package world.hachimi.app.ui.likes
 
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import world.hachimi.app.ui.component.PageTitleAction
-import world.hachimi.app.ui.component.PlayAllButton
+import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.SongListSkeleton
 import world.hachimi.app.ui.component.LocalPageTitleShown
 import androidx.compose.foundation.background
@@ -116,7 +118,18 @@ private fun Content(vm: RecentLikeViewModel) {
 		return
 	}
 
-	val playAllInTitle = PageTitleAction { PlayAllButton(onClick = { vm.playAllLoaded() }) }
+	val covers = remember(vm.songs) {
+		vm.songs.asSequence()
+			.flatMap { it.entries }
+			.filterIsInstance<RecentLikeViewModel.LikeEntry.Song>()
+			.map { it.item.songData.coverUrl }
+			.take(3)
+			.toList()
+	}
+	val playAllInTitle = PageTitleAction { folded ->
+		PlayAllCovers(covers = covers, folded = folded, onClick = { vm.playAllLoaded() })
+	}
+	val scope = rememberCoroutineScope()
 
 	BoxWithConstraints {
 		LazyColumn(
@@ -127,6 +140,23 @@ private fun Content(vm: RecentLikeViewModel) {
 		) {
 			if (!playAllInTitle) item {
 				Header(vm)
+			}
+			item(contentType = "summary") {
+				LikeSummary(
+					total = vm.total,
+					rhythm = vm.rhythm,
+					onDayClick = { day ->
+						// Each day is its date line and then its songs
+						var index = if (playAllInTitle) 1 else 2
+						for (group in vm.songs) {
+							if (group.date == day) {
+								scope.launch { state.animateScrollToItem(index) }
+								break
+							}
+							index += 1 + group.entries.size
+						}
+					},
+				)
 			}
 
 			vm.songs.forEach { group ->

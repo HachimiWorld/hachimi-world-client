@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,7 +37,7 @@ import world.hachimi.app.model.RecommendViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.PageTitleAction
-import world.hachimi.app.ui.component.PlayAllButton
+import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardGridSkeleton
@@ -86,8 +87,9 @@ fun RecommendScreen(
 @Composable
 private fun Content(vm: RecommendViewModel, global: GlobalStore) {
     // On phones the button sits by the title
-    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction {
-        PlayAllButton(onClick = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromPublicDetail(it) }) })
+    val covers = remember(vm.songs) { vm.songs.take(3).map { it.coverUrl } }
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
+        PlayAllCovers(covers = covers, folded = folded, onClick = { global.player.playAll(vm.songs.map { GlobalStore.MusicQueueItem.fromPublicDetail(it) }) })
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (vm.songs.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

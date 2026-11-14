@@ -5,13 +5,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import org.koin.core.annotation.KoinViewModel
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
@@ -41,6 +46,30 @@ class RecentLikeViewModel(
     private var flatUnavailable: List<SongModule.UnavailableLikeItem> = emptyList()
     private var nextPageIndex = 0L
     private val pageSize = 20L
+
+    /**
+     * How many songs the user has liked, as the server counts them.
+     * @since 261114
+     */
+    var total by mutableStateOf<Long?>(null)
+        private set
+
+    /**
+     * Songs liked each day, up to today. Derived from the likes loaded so far, and covers only the
+     * days they fully account for.
+     * @since 261114
+     */
+    var rhythm by mutableStateOf<LikeRhythm?>(null)
+        private set
+
+    /**
+     * Songs liked each day from [firstDay] to today, oldest first.
+     * @since 261114
+     */
+    data class LikeRhythm(val firstDay: LocalDate, val counts: List<Int>) {
+        val days: Int get() = counts.size
+        val liked: Int get() = counts.sum()
+    }
 
     data class SongGroup(
         val date: LocalDate,
@@ -77,7 +106,23 @@ class RecentLikeViewModel(
     }
 
     fun refresh() {
-        fetch(clear = true)
+        viewModelScope.launch {
+            fetch(clear = true).join()
+            fillRhythm()
+        }
+    }
+
+    /** Loads further pages until the last [RhythmDays] days are all counted, within a few pages. */
+    private suspend fun fillRhythm() {
+        var pages = 0
+        while (hasMore && pages < RhythmMaxPages && initializeStatus == InitializeStatus.LOADED) {
+            val oldest = oldestLoadedDate() ?: break
+            if (oldest < rhythmStart()) break
+            val before = nextPageIndex
+            fetch(clear = false).join()
+            if (nextPageIndex == before) break
+            pages++
+        }
     }
 
     fun loadMore() {
@@ -168,6 +213,7 @@ class RecentLikeViewModel(
                 flatLikes = mergedLikes
                 flatUnavailable = mergedUnavailable
                 nextPageIndex = data.pageIndex + 1
+                total = data.total
                 val pageCount = data.data.size + data.unavailable.size
                 hasMore = mergedLikes.size + mergedUnavailable.size < data.total && pageCount > 0
                 rebuildSongs()
@@ -219,6 +265,7 @@ class RecentLikeViewModel(
                 mergedLikes += data.data
                 mergedUnavailable += data.unavailable
                 latestNextPageIndex = data.pageIndex + 1
+                total = data.total
                 val pageCount = data.data.size + data.unavailable.size
                 latestHasMore = mergedLikes.size + mergedUnavailable.size < data.total && pageCount > 0
 
@@ -253,10 +300,35 @@ class RecentLikeViewModel(
             .map { (date, items) ->
                 SongGroup(date, items)
             }
+        rhythm = countRhythm()
+    }
+
+    private fun today(): LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+
+    private fun rhythmStart(): LocalDate = today().minus(RhythmDays - 1, DateTimeUnit.DAY)
+
+    private fun oldestLoadedDate(): LocalDate? = songs.lastOrNull()?.date
+
+    private fun countRhythm(): LikeRhythm? {
+        val today = today()
+        val start = rhythmStart()
+        val oldest = oldestLoadedDate()
+        // With more to load, the oldest loaded day may be missing likes from the next page
+        val firstDay = when {
+            !hasMore || oldest == null -> start
+            oldest < start -> start
+            else -> oldest.plus(1, DateTimeUnit.DAY)
+        }
+        if (firstDay > today) return null
+        val byDay = songs.associate { it.date to it.entries.size }
+        val days = (today.toEpochDays() - firstDay.toEpochDays()).toInt() + 1
+        return LikeRhythm(firstDay, List(days) { byDay[firstDay.plus(it, DateTimeUnit.DAY)] ?: 0 })
     }
 
     private companion object {
         const val TAG = "recent-like"
+        const val RhythmDays = 30
+        const val RhythmMaxPages = 8
     }
 }
 

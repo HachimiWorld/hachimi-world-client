@@ -45,7 +45,7 @@ import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.PageTitleAction
-import world.hachimi.app.ui.component.PlayAllButton
+import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.util.loadStateTransition
 import world.hachimi.app.ui.home.components.SongCardGridSkeleton
@@ -101,8 +101,9 @@ fun RecentPublishScreen(
 @Composable
 private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
     // On phones the button sits by the title
-    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction {
-        PlayAllButton(onClick = { vm.playAllRecent() })
+    val covers = remember(vm.songs) { vm.songs.asSequence().flatMap { it.songs }.take(3).map { it.coverUrl }.toList() }
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
+        PlayAllCovers(covers = covers, folded = folded, onClick = { vm.playAllRecent() })
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val constraintMaxWidth = maxWidth
