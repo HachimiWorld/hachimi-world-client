@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.model.MomentShare
+import world.hachimi.app.model.MomentComposer
 import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -117,7 +119,8 @@ fun PublicPlaylistScreen(
 
 @Composable
 private fun Header(
-    vm: PublicPlaylistViewModel
+    vm: PublicPlaylistViewModel,
+    composer: MomentComposer = koinInject(),
 ) {
     val navigator = LocalNavigator.current
     val playlistInfo = vm.playlistInfo
@@ -152,7 +155,7 @@ private fun Header(
                     }
                 },
                 extraActions = {
-                    ShareToMomentButton(onClick = { navigator.push(Route.Root.CreateMoment(playlistId = playlistInfo.id)) })
+                    ShareToMomentButton(onClick = { composer.open(MomentShare.Playlist(playlistInfo.id)) })
                 }
             )
         } else {
@@ -175,7 +178,7 @@ private fun Header(
                             operating = vm.operating
                         )
                     }
-                    ShareToMomentButton(onClick = { navigator.push(Route.Root.CreateMoment(playlistId = playlistInfo.id)) })
+                    ShareToMomentButton(onClick = { composer.open(MomentShare.Playlist(playlistInfo.id)) })
                 }
             )
         }

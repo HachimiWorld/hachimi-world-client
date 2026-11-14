@@ -106,7 +106,7 @@ import world.hachimi.app.ui.creation.publish.PublishScreen
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.ElevatedCard
 import world.hachimi.app.ui.events.EventDetailScreen
-import world.hachimi.app.ui.moment.CreateMomentScreen
+import world.hachimi.app.ui.moment.MomentComposerHost
 import world.hachimi.app.ui.moment.MomentDetailScreen
 import world.hachimi.app.ui.square.SquareScreen
 import world.hachimi.app.ui.square.SquareTab
@@ -198,6 +198,7 @@ fun RootScreen() {
         )
     }
     ReportDialogHost()
+    MomentComposerHost()
 }
 
 // region Nested NavDisplays
@@ -348,9 +349,6 @@ private fun secondaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Na
         is Route.Root.Events.Detail -> NavEntry(key) { EventDetailScreen(key.postId, key.atComments) }
 
         is Route.Root.MomentDetail -> NavEntry(key) { MomentDetailScreen(key.momentId, key.atComments) }
-        is Route.Root.CreateMoment -> NavEntry(key) {
-            if (global.isLoggedIn) CreateMomentScreen(key) else NeedLoginScreen()
-        }
 
         is Route.Root.Search -> NavEntry(key) { SearchScreen(key.query, key.type) }
 

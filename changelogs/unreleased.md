@@ -1,3 +1,3 @@
 ## Enhancements 改进
 
-1. Songs and playlists are now shared to moments from their share actions, instead of being added while writing a moment. 歌曲和歌单改为从分享入口分享到动态，不再在发动态时添加。
+1. Moments are written in a dialog (a bottom sheet on phones), and songs and playlists are shared to moments from their share actions. 发动态改为在对话框（手机上为底部面板）中进行，歌曲和歌单可从分享入口分享到动态。

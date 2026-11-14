@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.square
 
+import world.hachimi.app.model.MomentComposer
 import world.hachimi.app.ui.component.SectionErrorPage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -227,8 +228,9 @@ private fun MomentsFeed(
     val actions = rememberMomentActions()
     LaunchedEffect(pager) { pager.ensureLoaded() }
     LoadMoreMomentsEffect(listState, pager)
+    val momentComposer = koinInject<MomentComposer>()
     val create = {
-        if (global.isLoggedIn) navigator.push(Route.Root.CreateMoment())
+        if (global.isLoggedIn) momentComposer.open()
         else navigator.push(Route.Auth(false))
     }
 

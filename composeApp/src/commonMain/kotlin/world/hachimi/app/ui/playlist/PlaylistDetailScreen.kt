@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.model.MomentShare
+import world.hachimi.app.model.MomentComposer
 import world.hachimi.app.ui.component.RefreshingIndicator
 import world.hachimi.app.ui.component.ErrorPage
 import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
@@ -314,8 +316,7 @@ private fun Header(
 
 /** Sharing, editing and deleting the playlist, behind one button so the header keeps to playing. */
 @Composable
-private fun MoreButton(vm: PlaylistDetailViewModel) {
-    val navigator = LocalNavigator.current
+private fun MoreButton(vm: PlaylistDetailViewModel, composer: MomentComposer = koinInject()) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         Button(onClick = { expanded = true }, contentPadding = PaddingValues(8.dp)) {
@@ -327,7 +328,7 @@ private fun MoreButton(vm: PlaylistDetailViewModel) {
             if (info != null && info.isPublic && !info.isHidden) DropdownMenuItem(
                 onClick = {
                     expanded = false
-                    navigator.push(Route.Root.CreateMoment(playlistId = info.id))
+                    composer.open(MomentShare.Playlist(info.id))
                 },
                 text = { Text(stringResource(Res.string.moment_share)) },
                 leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
