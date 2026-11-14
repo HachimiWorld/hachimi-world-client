@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -68,6 +69,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -212,6 +214,7 @@ fun RootScreen() {
 private fun RootNavDisplay(
     global: GlobalStore,
     navigator: Navigator,
+    primaryPage: PrimaryPage = PrimaryPage.Plain,
     shell: @Composable (primaryContent: @Composable () -> Unit) -> Unit,
 ) {
     val slideDistance = rememberSlideDistance()
@@ -234,7 +237,7 @@ private fun RootNavDisplay(
                 RootShellNavKey -> NavEntry(key) {
                     CompositionLocalProvider(LocalViewModelStoreOwner provides appStoreOwner) {
                         shell {
-                            PrimaryNavDisplay(global, navigator)
+                            PrimaryNavDisplay(global, navigator, primaryPage)
                         }
                     }
                 }
@@ -247,20 +250,62 @@ private fun RootNavDisplay(
     )
 }
 
+/**
+ * How a shell lays out its primary pages.
+ * @since 261114
+ */
+private interface PrimaryPage {
+    /** Draws [route]'s page around its [content]. Each page draws its own, so it moves with the page. */
+    @Composable
+    fun Frame(route: Route.Root, content: @Composable () -> Unit)
+
+    /** Whether going from [from] to [to] opens a page over another (or goes back from it), rather than switching tabs. */
+    fun isOpening(from: Route.Root, to: Route.Root): Boolean
+
+    /** The page as it is, switched with a fade. */
+    object Plain : PrimaryPage {
+        @Composable
+        override fun Frame(route: Route.Root, content: @Composable () -> Unit) = content()
+        override fun isOpening(from: Route.Root, to: Route.Root) = false
+    }
+}
+
 /** Nested NavDisplay inside the shell: SideNav destinations only. */
 @Composable
-private fun PrimaryNavDisplay(global: GlobalStore, navigator: Navigator) {
+private fun PrimaryNavDisplay(global: GlobalStore, navigator: Navigator, page: PrimaryPage) {
+    val slideDistance = rememberSlideDistance()
     NavDisplay(
         backStack = navigator.primaryBackStack,
         onBack = navigator::back,
         sharedTransitionScope = LocalSharedTransitionScope.current,
         modifier = Modifier.fillMaxSize(),
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        // Switching a primary page replaces it on the stack, so the direction comes from the routes
+        transitionSpec = {
+            val from = initialState.primaryRoute()
+            val to = targetState.primaryRoute()
+            when {
+                from == null || to == null || !page.isOpening(from, to) -> fadeIn() togetherWith fadeOut()
+                // Into a page under another, or back out of it
+                else -> materialSharedAxisY(forward = to.depth() > from.depth(), slideDistance)
+            }
+        },
         popTransitionSpec = { fadeIn() togetherWith fadeOut() },
         predictivePopTransitionSpec = { fadeIn() togetherWith fadeOut() },
-        entryProvider = { key -> primaryNavEntry(key, global) },
+        entryProvider = { key ->
+            val entry = primaryNavEntry(key, global)
+            NavEntry(key, metadata = mapOf(PrimaryRouteKey to key)) {
+                page.Frame(key) { entry.Content() }
+            }
+        },
     )
 }
+
+private const val PrimaryRouteKey = "primary_route"
+
+private fun Scene<*>.primaryRoute(): Route.Root? = entries.lastOrNull()?.metadata?.get(PrimaryRouteKey) as? Route.Root
+
+/** 1 for the pages kept under Me, 0 for the rest. */
+private fun Route.Root.depth(): Int = if (meSubpageTitle() != null) 1 else 0
 
 private fun primaryNavEntry(key: Route.Root, global: GlobalStore): NavEntry<Route.Root> =
     when (key) {
@@ -452,6 +497,7 @@ private fun CompactScreen(
                 RootNavDisplay(
                     global = global,
                     navigator = navigator,
+                    primaryPage = remember(navigator) { CompactPrimaryPage(navigator) },
                     shell = { primaryContent ->
                         // Root shell: banners, then the nested primary NavDisplay, with the status bar faded
                         // over it and the tab bar under it. A page opened from here covers all of this.
@@ -475,22 +521,7 @@ private fun CompactScreen(
                                 PlatformBackHandler(enabled = navigator.isAtRootShell && currentPrimary != Route.Root.Default) {
                                     navigator.switchPrimary(if (underMe) Route.Root.Me else Route.Root.Default)
                                 }
-                                val underMeTitle = if (underMe) currentPrimary.meSubpageTitle() else null
-                                if (underMeTitle != null) {
-                                    // Pages kept under Me read as pages of their own: a bar with the way
-                                    // back to Me, and their title large at the top, folding into it
-                                    ScreenScaffold(
-                                        title = { Text(stringResource(underMeTitle), maxLines = 1) },
-                                        showBack = true,
-                                        onBack = { navigator.switchPrimary(Route.Root.Me) },
-                                    ) {
-                                        CompositionLocalProvider(LocalPageTitleShown provides true) {
-                                            Box(Modifier.weight(1f)) { primaryContent() }
-                                        }
-                                    }
-                                } else {
-                                    Box(Modifier.weight(1f)) { primaryContent() }
-                                }
+                                Box(Modifier.weight(1f)) { primaryContent() }
                             }
                         }
                         }
@@ -522,6 +553,34 @@ private fun CompactScreen(
             CompactMiniPlayer(modifier = Modifier.fillMaxWidth(), hazeState = hazeState)
         }
     }
+}
+
+/**
+ * The phone's primary pages. The ones kept under Me read as pages of their own: a bar with the way
+ * back to Me, and their title large at the top, folding into it. They slide in from Me and back to
+ * it like any page opened over another, while the tab bar stays.
+ */
+private class CompactPrimaryPage(private val navigator: Navigator) : PrimaryPage {
+    @Composable
+    override fun Frame(route: Route.Root, content: @Composable () -> Unit) {
+        val title = route.meSubpageTitle()
+        if (title == null) {
+            content()
+            return
+        }
+        ScreenScaffold(
+            title = { Text(stringResource(title), maxLines = 1) },
+            showBack = true,
+            onBack = { navigator.switchPrimary(Route.Root.Me) },
+        ) {
+            CompositionLocalProvider(LocalPageTitleShown provides true) {
+                Box(Modifier.weight(1f)) { content() }
+            }
+        }
+    }
+
+    override fun isOpening(from: Route.Root, to: Route.Root) =
+        (from == Route.Root.Me && to.depth() > 0) || (to == Route.Root.Me && from.depth() > 0)
 }
 
 private val MiniPlayerGapAbove = 12.dp
