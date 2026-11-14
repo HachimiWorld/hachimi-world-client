@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.committee
 
+import world.hachimi.app.ui.component.DetailSkeleton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,6 +62,7 @@ import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.ReportCaseViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Card
@@ -95,6 +97,8 @@ fun ReportCaseScreen(
     LaunchedEffect(targetType, targetId) { vm.mounted(targetType, targetId) }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.report_case_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
@@ -104,6 +108,7 @@ fun ReportCaseScreen(
             isLoading = false,
             onRetryClick = vm::retry,
             modifier = Modifier.fillMaxSize(),
+            initPage = { DetailSkeleton() },
         ) {
             val case = vm.case ?: return@InitStatusScaffold
             val showDecision = vm.canResolve && case.verdicts.isNotEmpty()

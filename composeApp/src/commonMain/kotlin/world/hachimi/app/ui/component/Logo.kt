@@ -73,8 +73,9 @@ fun BrandLogo(
             modifier = Modifier
                 .size(32.dp)
                 .graphicsLayer {
-                    scaleX = scale.value
-                    scaleY = scale.value
+                    // The picture fills only the middle half of its square, so draw it larger to meet the wordmark
+                    scaleX = scale.value * BrandIconScale
+                    scaleY = scale.value * BrandIconScale
                     rotationZ = rotation.value
                 },
             bitmap = imageResource(Res.drawable.icon_3d_512x),
@@ -96,6 +97,9 @@ fun BrandLogo(
         }
     }
 }
+
+/** How much larger than its box [BrandLogo] draws the icon; see the comment where it is used. */
+private const val BrandIconScale = 1.5f
 
 @Composable
 fun Logo(

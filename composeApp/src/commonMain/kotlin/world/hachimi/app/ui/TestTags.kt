@@ -18,6 +18,8 @@ object TestTags {
     const val NAV_COMMITTEE = "nav_committee"
     const val NAV_CONTRIBUTOR = "nav_contributor"
     const val NAV_SETTINGS = "nav_settings"
+    /** @since 261110 */
+    const val NAV_ME = "nav_me"
 
     const val HOME_FEED = "home_feed"
     const val HOME_RECENT_SECTION = "home_recent_section"

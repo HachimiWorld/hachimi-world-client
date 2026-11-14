@@ -44,6 +44,7 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.creation.publish.components.FormItem
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.Button
@@ -68,6 +69,8 @@ fun CreatePostScreen(global: GlobalStore = koinInject(), vm: CreatePostViewModel
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.post_create_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back

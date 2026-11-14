@@ -77,7 +77,8 @@ class MomentDetailViewModel(
                         notFound = true
                         status = InitializeStatus.LOADED
                     } else {
-                        global.alert(err.msg)
+                        // The page shows the failure and the way to retry
+                        Logger.w("moment_detail", "Failed to load a moment: ${err.msg}")
                         status = InitializeStatus.FAILED
                     }
                 }
@@ -85,7 +86,6 @@ class MomentDetailViewModel(
                 throw e
             } catch (e: Throwable) {
                 Logger.e("moment_detail", "Failed to load a moment", e)
-                global.alert(e.message)
                 status = InitializeStatus.FAILED
             }
         }

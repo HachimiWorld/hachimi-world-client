@@ -49,6 +49,13 @@ class SongCommentsViewModel(
     private fun load() {
         val songDisplayId = songDisplayId ?: return
         loadJob?.cancel()
+        // Usually opened from the player, which already has the song: no wait for it then
+        val playing = global.player.playerState.songInfo?.takeIf { it.displayId == songDisplayId }
+        if (playing != null) {
+            song = playing
+            status = InitializeStatus.LOADED
+            return
+        }
         song = null
         status = InitializeStatus.INIT
         loadJob = viewModelScope.launch {

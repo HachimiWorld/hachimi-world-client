@@ -18,4 +18,8 @@
     <string name="playlist_description_rejected">This description contains inappropriate content. Change it and try again.</string>
     <string name="playlist_cover_rejected">This cover contains inappropriate content. Pick another image and try again.</string>
     <string name="playlist_cover_rate_limited">Too many cover uploads. Try again later</string>
+    <string name="playlist_delete">Delete playlist</string>
+    <string name="playlist_delete_confirm_title">Delete this playlist?</string>
+    <string name="playlist_delete_confirm_text">The songs in it aren't affected. This can't be undone.</string>
+    <string name="playlist_reorder_failed">Couldn't save the order. Try again later.</string>
 </resources>

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_not_logged_in
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -35,6 +36,15 @@ class UserSpaceViewModel(
     var loadingProfile by mutableStateOf(false)
         private set
     var loadingSongs by mutableStateOf(false)
+        private set
+    /** The profile didn't load; the page has nothing to show but the way to try again. @since 261112 */
+    var profileFailed by mutableStateOf(false)
+        private set
+    /** The works didn't load. @since 261112 */
+    var songsFailed by mutableStateOf(false)
+        private set
+    /** The public playlists didn't load. @since 261112 */
+    var playlistsFailed by mutableStateOf(false)
         private set
     var myself by mutableStateOf(false)
         private set
@@ -91,9 +101,21 @@ class UserSpaceViewModel(
 
     }
 
+    /** Loads the whole page again, after the profile failed. @since 261112 */
+    fun retry() {
+        uid?.let { initialize(it) }
+    }
+
+    /** @since 261112 */
+    fun retrySongs() = viewModelScope.launch { loadSongs() }
+
+    /** @since 261112 */
+    fun retryPlaylists() = viewModelScope.launch { loadPublicPlaylists() }
+
     private fun initialize(uid: Long?) {
         initializeStatus = InitializeStatus.INIT
         profile = null
+        profileFailed = false
         songs.clear()
         privateConnections.clear()
         publicPlaylists.clear()
@@ -145,6 +167,7 @@ class UserSpaceViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to follow user $targetUid", e)
             global.alert(e.message)
         } finally {
@@ -176,6 +199,7 @@ class UserSpaceViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to unfollow user $targetUid", e)
             global.alert(e.message)
         } finally {
@@ -199,6 +223,7 @@ class UserSpaceViewModel(
 
     private suspend fun refreshProfile() {
         loadingProfile = true
+        profileFailed = false
         try {
             val resp = api.userModule.profile(uid!!)
             if (resp.ok) {
@@ -209,12 +234,13 @@ class UserSpaceViewModel(
                     global.setLoginUser(data.uid, data.username, data.avatarUrl, true)
                 }
             } else {
-                val err = resp.err()
-                global.alert(err.msg)
+                Logger.w(TAG, "Failed to fetch profile: ${resp.err().msg}")
+                profileFailed = true
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to fetch profile", e)
-            global.alert(e.message)
+            profileFailed = true
         } finally {
             loadingProfile = false
         }
@@ -222,6 +248,7 @@ class UserSpaceViewModel(
 
     private suspend fun loadSongs() {
         loadingSongs = true
+        songsFailed = false
         try {
             val resp = api.songModule.pageByUser(SongModule.PageByUserReq(
                 userId = uid!!,
@@ -234,12 +261,13 @@ class UserSpaceViewModel(
                 songs.addAll(data.songs)
                 total = data.total
             } else {
-                val err = resp.err()
-                global.alert(err.msg)
+                Logger.w(TAG, "Failed to fetch songs: ${resp.err().msg}")
+                songsFailed = true
             }
         } catch (e: Throwable) {
-            Logger.e("userspace", "Failed to fetch songs", e)
-            global.alert(e.message)
+            if (e is CancellationException) throw e
+            Logger.e(TAG, "Failed to fetch songs", e)
+            songsFailed = true
         } finally {
             loadingSongs = false
         }
@@ -264,6 +292,7 @@ class UserSpaceViewModel(
 
     private suspend fun loadPublicPlaylists() {
         loadingPlaylists = true
+        playlistsFailed = false
         try {
             val resp = api.playlistModule.listPublicByUser(PlaylistModule.ListPublicByUserReq(userId = uid!!))
             if (resp.ok) {
@@ -273,9 +302,12 @@ class UserSpaceViewModel(
             } else {
                 val err = resp.err()
                 Logger.e(TAG, "Failed to load public playlists: ${err.msg}")
+                playlistsFailed = true
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to load public playlists", e)
+            playlistsFailed = true
         } finally {
             loadingPlaylists = false
         }
@@ -294,6 +326,7 @@ class UserSpaceViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to load connections", e)
             global.alert(e.message)
         } finally {

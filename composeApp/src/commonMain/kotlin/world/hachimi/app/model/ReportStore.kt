@@ -10,6 +10,7 @@ import hachimiworld.composeapp.generated.resources.report_already_reviewed
 import hachimiworld.composeapp.generated.resources.report_rate_limited
 import hachimiworld.composeapp.generated.resources.report_submit_failed
 import hachimiworld.composeapp.generated.resources.report_submitted
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -83,6 +84,7 @@ class ReportStore(
                     }
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to submit report", e)
                 global.alert(Res.string.report_submit_failed)
             } finally {

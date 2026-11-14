@@ -1,0 +1,5 @@
+<resources>
+    <string name="likes_total">%1$d songs</string>
+    <string name="likes_rhythm">%2$d in the last %1$d days</string>
+    <string name="likes_rhythm_cd">Songs liked each day over the last %1$d days</string>
+</resources>

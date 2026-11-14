@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.change_email_cancelled
 import hachimiworld.composeapp.generated.resources.change_email_failed
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -97,6 +98,7 @@ class ChangeEmailViewModel(
                 if (initializeStatus != InitializeStatus.LOADED) initializeStatus = InitializeStatus.FAILED
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to load email info", e)
             if (initializeStatus != InitializeStatus.LOADED) initializeStatus = InitializeStatus.FAILED
         } finally {
@@ -173,6 +175,7 @@ class ChangeEmailViewModel(
         try {
             block()
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to $action", e)
             global.alert(Res.string.change_email_failed)
         } finally {

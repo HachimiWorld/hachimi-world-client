@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -17,10 +18,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.math.abs
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.theme.PreviewTheme
 
@@ -67,6 +71,57 @@ fun TabBar(
         }
     }
 }
+
+/**
+ * Tabs set as the page's own title, for a page with no bar over it: the names in a row at
+ * headline size, the one in view at full strength and the others faint. Nothing else marks the
+ * choice; as the pager moves, the strength passes from one name to the next.
+ *
+ * @param position The page in view and how far it is toward the next, such as
+ *   `pagerState.currentPage + pagerState.currentPageOffsetFraction`. Read while drawing.
+ * @since 261111
+ */
+@Composable
+fun HeadlineTabRow(
+    tabs: List<String>,
+    position: () -> Float,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HachimiTheme.colorScheme
+    Row(
+        modifier.height(HeadlineTabRowHeight).padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        tabs.forEachIndexed { index, title ->
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .clickable(indication = null, interactionSource = null) { onTabSelected(index) }
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = title,
+                    modifier = Modifier.graphicsLayer {
+                        val nearness = (1f - abs(position() - index)).coerceIn(0f, 1f)
+                        alpha = HeadlineTabFaint + (1f - HeadlineTabFaint) * nearness
+                    },
+                    color = colors.onSurface,
+                    fontSize = 22.sp,
+                    lineHeight = 28.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+/** How tall a [HeadlineTabRow] is. @since 261111 */
+val HeadlineTabRowHeight = 56.dp
+
+private const val HeadlineTabFaint = 0.32f
 
 @Preview
 @Composable

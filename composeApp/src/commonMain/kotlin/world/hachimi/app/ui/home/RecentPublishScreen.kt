@@ -6,17 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -29,10 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_empty
-import hachimiworld.composeapp.generated.resources.common_play_cd
 import hachimiworld.composeapp.generated.resources.common_refresh_cd
 import hachimiworld.composeapp.generated.resources.home_recent_title
-import hachimiworld.composeapp.generated.resources.play_all
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
@@ -44,10 +38,15 @@ import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.PageHeading
+import world.hachimi.app.ui.component.PageTitleAction
+import world.hachimi.app.ui.component.PlayAllCovers
+import world.hachimi.app.ui.component.headingListPadding
+import world.hachimi.app.ui.component.titleActionPlaced
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.home.components.SongCardGridSkeleton
+import world.hachimi.app.ui.component.ErrorPage
 import world.hachimi.app.ui.component.ScreenScaffold
-import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -56,7 +55,6 @@ import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.ListTailSpacer
-import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
@@ -78,11 +76,16 @@ fun RecentPublishScreen(
         title = { Text(stringResource(Res.string.home_recent_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
+        headingInPageOnWide = true,
     ) {
-        AnimatedContent(vm.initializeStatus, modifier = Modifier.fillMaxSize()) {
+        AnimatedContent(
+            vm.initializeStatus,
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = { loadStateTransition() },
+        ) {
             when (it) {
-                InitializeStatus.INIT -> LoadingPage()
-                InitializeStatus.FAILED -> ReloadPage(onReloadClick = { vm.retry() })
+                InitializeStatus.INIT -> SongCardGridSkeleton(playAll = !titleActionPlaced, dateLabel = true)
+                InitializeStatus.FAILED -> ErrorPage(onRetry = { vm.retry() })
                 InitializeStatus.LOADED -> Content(vm, global)
             }
         }
@@ -92,6 +95,13 @@ fun RecentPublishScreen(
 
 @Composable
 private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
+    // The fan of covers plays them all: by the title on phones, in the header row on wide screens
+    val covers = remember(vm.songs) { vm.songs.asSequence().flatMap { it.songs }.take(3).map { it.coverUrl }.toList() }
+    val playAll: () -> Unit = { vm.playAllRecent() }
+    val headingInScaffold = titleActionPlaced
+    val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
+        PlayAllCovers(covers = covers, folded = folded, onClick = playAll)
+    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val constraintMaxWidth = maxWidth
         AdaptivePullToRefreshBox(
@@ -112,34 +122,24 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 modifier = Modifier.fillMaxSize(),
                 state = state,
                 columns = calculateGridColumns(constraintMaxWidth),
-                contentPadding = contentPaddingForMaxWidth(PaddingValues(AdaptiveScreenMargin), constraintMaxWidth),
+                contentPadding = contentPaddingForMaxWidth(headingListPadding(headingInPage = !headingInScaffold), constraintMaxWidth),
                 horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 listHeadInsetsSpacerItem()
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (constraintMaxWidth >= WindowSize.COMPACT) {
-                            HachimiIconButton(
-                                modifier = Modifier.padding(start = 8.dp),
-                                enabled = !vm.loading,
-                                onClick = { vm.fakeRefresh() }
-                            ) {
-                                Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.common_refresh_cd))
+                // On phones the scaffold shows the title large, and the fan by it
+                if (!headingInScaffold) item(span = { GridItemSpan(maxLineSpan) }) {
+                    PageHeading(
+                        title = stringResource(Res.string.home_recent_title),
+                        action = {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                HachimiIconButton(enabled = !vm.loading, onClick = { vm.fakeRefresh() }) {
+                                    Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.common_refresh_cd))
+                                }
+                                PlayAllCovers(covers = covers, folded = false, onClick = playAll)
                             }
-                        }
-
-                        Spacer(Modifier.weight(1f))
-
-                        Button(
-                            modifier = Modifier,
-                            onClick = { vm.playAllRecent() }
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.common_play_cd))
-                            Spacer(Modifier.width(8.dp))
-                            Text(stringResource(Res.string.play_all))
-                        }
-                    }
+                        },
+                    )
                 }
                 vm.songs.fastForEach {
                     item(

@@ -334,6 +334,7 @@ class UpdateManager(
         try {
             if (platform.installOnExit(state.pkg)) installerStarted = true
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to start installing update on exit", e)
         }
     }

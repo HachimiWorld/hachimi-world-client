@@ -102,6 +102,7 @@ class NotificationStore(
                     unreadCount = resp.ok().unreadCount
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to refresh unread count", e)
             }
         }
@@ -232,6 +233,7 @@ class NotificationStore(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to mark all notifications read", e)
                 if (gen == generation) global.alert(e.message)
             } finally {

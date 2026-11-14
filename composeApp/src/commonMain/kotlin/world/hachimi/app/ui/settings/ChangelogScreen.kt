@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.settings
 
+import world.hachimi.app.ui.component.DetailSkeleton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,7 +64,8 @@ fun ChangelogScreen(
             initializeStatus = vm.initializeStatus,
             isLoading = vm.loading,
             onRetryClick = { vm.retry() },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            initPage = { DetailSkeleton() },
         ) {
             if (vm.items.isEmpty()) {
                 Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {

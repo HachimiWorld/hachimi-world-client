@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.message
 
+import world.hachimi.app.ui.component.ErrorPage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,6 @@ import hachimiworld.composeapp.generated.resources.follow_empty_followers_subtit
 import hachimiworld.composeapp.generated.resources.follow_mutual
 import hachimiworld.composeapp.generated.resources.message_channel_followers
 import hachimiworld.composeapp.generated.resources.message_load_error
-import hachimiworld.composeapp.generated.resources.notification_retry
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -49,7 +49,6 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.design.HachimiTheme
-import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.message.components.RemoteImage
 import world.hachimi.app.ui.message.components.cardItems
@@ -99,15 +98,10 @@ fun NewFollowersContent(
 
     when (vm.initializeStatus) {
         InitializeStatus.INIT -> NotificationListSkeleton(modifier)
-        InitializeStatus.FAILED -> NotificationMessageState(
-            title = stringResource(Res.string.message_load_error),
-            modifier = modifier.listTailPadding(),
-            icon = Icons.Default.PersonAdd,
-            action = {
-                AccentButton(onClick = { vm.retry() }) {
-                    Text(stringResource(Res.string.notification_retry))
-                }
-            },
+        InitializeStatus.FAILED -> ErrorPage(
+            onRetry = { vm.retry() },
+            modifier = modifier.fillMaxSize().listTailPadding(),
+            message = stringResource(Res.string.message_load_error),
         )
         InitializeStatus.LOADED -> if (vm.followerItems.isEmpty()) {
             NotificationMessageState(

@@ -8,6 +8,28 @@ import hachimiworld.composeapp.generated.resources.common_menu_cd
 import hachimiworld.composeapp.generated.resources.message_entry_cd
 import hachimiworld.composeapp.generated.resources.message_entry_unread_cd
 import hachimiworld.composeapp.generated.resources.user_space_user_avatar_cd
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Velocity
+import hachimiworld.composeapp.generated.resources.common_search_cd
+import world.hachimi.app.ui.design.HachimiTheme
+import world.hachimi.app.ui.design.components.HachimiIconButton
+import world.hachimi.app.util.PlatformBackHandler
+import kotlin.math.roundToInt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +82,7 @@ import world.hachimi.app.model.MessageCenterStore
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.TestTags
+import world.hachimi.app.ui.component.BrandLogo
 import world.hachimi.app.ui.component.Logo
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.CardShadow
@@ -70,54 +93,6 @@ import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.insets.multiplatformSafeDrawing
 import world.hachimi.app.ui.notification.components.NotificationBell
 import world.hachimi.app.ui.notification.components.formatBadgeCount
-
-@Composable
-fun CompactTopAppBar(
-    global: GlobalStore,
-    onExpandNavClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val navigator = LocalNavigator.current
-
-    Surface(modifier.dropShadow(RectangleShape, CardShadow)) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                .windowInsetsPadding(WindowInsets.multiplatformSafeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(
-                onClick = onExpandNavClick,
-                modifier = Modifier.testTag(TestTags.NAV_MENU),
-            ) {
-                Icon(Icons.Default.Menu, contentDescription = stringResource(Res.string.common_menu_cd))
-            }
-            var searchText by remember { mutableStateOf("") }
-            SearchBox(
-                modifier = Modifier.weight(1f),
-                searchText = searchText,
-                onSearchTextChange = { searchText = it },
-                onSearch = {
-                    navigator.push(Route.Root.Search(searchText))
-                }
-            )
-            if (global.isLoggedIn) {
-                MessageEntryButton(onClick = { navigator.push(Route.Root.Messages) })
-            }
-            if (global.isLoggedIn) {
-                val userInfo = global.userInfo!!
-                AvatarOnly(
-                    avatarUrl = userInfo.avatarUrl,
-                    onClick = { navigator.push(Route.Root.UserSpace) },
-                )
-            } else {
-                AvatarOnly(
-                    avatarUrl = null,
-                    onClick = { navigator.push(Route.Auth()) },
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun ExpandedTopAppBar(
@@ -210,54 +185,5 @@ private fun NameAvatar(
                 contentScale = ContentScale.Crop
             )
         }
-    }
-}
-
-@Composable
-private fun AvatarOnly(
-    avatarUrl: String?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val avatarCd = stringResource(Res.string.user_space_user_avatar_cd)
-    Box(
-        modifier = modifier
-            .padding(start = 8.dp)
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(LocalContentColor.current.copy(0.12f))
-            // testTag + contentDescription on the clickable node so UI Automator can find it
-            // even when AsyncImage has no bitmap (guest blank avatar).
-            .semantics { contentDescription = avatarCd }
-            .testTag(TestTags.PROFILE_AVATAR)
-            .clickable(onClick = onClick)
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalPlatformContext.current)
-                .httpHeaders(CoilHeaders)
-                .data(avatarUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-    }
-}
-
-@Composable
-private fun MessageEntryButton(onClick: () -> Unit) {
-    val store = koinInject<MessageCenterStore>()
-    val unread = store.totalUnread
-    val description = if (unread != null && unread > 0) {
-        stringResource(Res.string.message_entry_unread_cd, formatBadgeCount(unread))
-    } else {
-        stringResource(Res.string.message_entry_cd)
-    }
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier.semantics { contentDescription = description },
-    ) {
-        NotificationBell(unreadCount = unread)
     }
 }

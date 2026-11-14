@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,6 +69,7 @@ class DeviceManagementViewModel(
         try {
             load()
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to refresh devices", e)
         }
     }
@@ -78,6 +80,7 @@ class DeviceManagementViewModel(
                 load()
                 initializeStatus = InitializeStatus.LOADED
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to load devices", e)
                 error = e.message
                 initializeStatus = InitializeStatus.FAILED
@@ -118,6 +121,7 @@ class DeviceManagementViewModel(
                     global.alert(resp.err().msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to logout device $deviceId", e)
                 global.alert(e.message)
             } finally {

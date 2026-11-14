@@ -213,6 +213,7 @@ class PlayerService(
                     api.playHistoryModule.touchAnonymous(songId)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e(TAG, "Failed to touch song", e)
             }
         }
@@ -238,6 +239,7 @@ class PlayerService(
                     skipUnavailable(item)
                     return
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     lastError = e
                     attempt++
                     if (attempt == maxAttempts) {
@@ -721,6 +723,7 @@ class PlayerService(
                     cacheQueue.removeFirstOrNull()?.cancel()
                     Logger.d(TAG, "Cancelled background downloading task")
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.w(TAG, "Failed to cancel background downloading task", e)
                 }
             }
@@ -782,6 +785,7 @@ class PlayerService(
                 Logger.i(TAG, "Metadata already up to date")
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e(TAG, "Failed to refresh song metadata", e)
         }
     }
@@ -900,6 +904,7 @@ class PlayerService(
         val result = try {
             Json.decodeFromString<PlayerStatePersistence>(data)
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.w(TAG, "Failed to restore music queue", e)
             return
         }

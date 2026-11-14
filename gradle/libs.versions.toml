@@ -41,6 +41,7 @@ mp3spi = "1.9.5.4"
 jflac = "1.5.2"
 
 haze = "1.7.3"
+reorderable = "3.1.0"
 jna = "5.19.1"
 composeNativeTray = "2.1.7"
 kmpalette = "3.1.0"
@@ -127,6 +128,7 @@ jetbrains-material3-adaptiveNavigation3 = { module = "org.jetbrains.compose.mate
 jetbrains-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "compose-multiplatform-lifecycle" }
 navigation3-browser = { module = "com.github.terrakok:navigation3-browser", version.ref = "navigation3-browser" }
 
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 
 jna-platform = { module = "net.java.dev.jna:jna-platform-jpms", version.ref = "jna" }

@@ -1,5 +1,13 @@
 package world.hachimi.app.ui.search
 
+import world.hachimi.app.ui.component.UserTileSkeleton
+import world.hachimi.app.ui.component.MediaRowSkeleton
+import world.hachimi.app.ui.component.ErrorPage
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_sort_cd
 import hachimiworld.composeapp.generated.resources.search_no_results
@@ -7,7 +15,6 @@ import hachimiworld.composeapp.generated.resources.search_result_title
 import hachimiworld.composeapp.generated.resources.search_tab_playlists
 import hachimiworld.composeapp.generated.resources.search_tab_songs
 import hachimiworld.composeapp.generated.resources.search_tab_users
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -40,15 +47,14 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import soup.compose.material.motion.animation.materialFadeThrough
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.SearchViewModel
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Navigator
 import world.hachimi.app.nav.Route
-import world.hachimi.app.ui.component.LoadingPage
 import world.hachimi.app.ui.component.ScreenScaffold
+import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.DropdownMenu
 import world.hachimi.app.ui.design.components.DropdownMenuItem
@@ -78,20 +84,17 @@ fun SearchScreen(
     }
 
     ScreenScaffold(
+
+        titleStyle = TitleStyle.Compact,
         title = { Text(stringResource(Res.string.search_result_title), maxLines = 1) },
-        subtitle = if (!vm.loading) {
+        subtitle = if (!vm.loading && !vm.failed) {
             { Text("${vm.searchProcessingTimeMs} ms", maxLines = 1) }
         } else null,
         showBack = true,
         onBack = navigator::back,
     ) {
-        AnimatedContent(
-            targetState = vm.loading,
-            modifier = Modifier.fillMaxSize(),
-            transitionSpec = { materialFadeThrough() }
-        ) { loading ->
-            if (loading) LoadingPage() else Content(vm, global, navigator)
-        }
+        // The tabs stay put while a search runs; only the results below them turn into stand-ins
+        Content(vm, global, navigator)
     }
 }
 
@@ -116,68 +119,79 @@ private fun Content(vm: SearchViewModel, global: GlobalStore, navigator: Navigat
                 )
             }
 
-            val showEmpty = when (vm.searchType) {
-                SearchViewModel.SearchType.SONG -> vm.songData.isEmpty()
-                SearchViewModel.SearchType.USER -> vm.userData.isEmpty()
-                SearchViewModel.SearchType.PLAYLIST -> vm.playlistData.isEmpty()
-                else -> false
-            }
-
-            if (showEmpty) item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                    Modifier.fillMaxWidth().padding(vertical = 128.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(stringResource(Res.string.search_no_results))
+            when {
+                vm.loading -> searchSkeleton(vm.searchType)
+                vm.failed -> item(key = "failed", span = { GridItemSpan(maxLineSpan) }) {
+                    ErrorPage(
+                        onRetry = { vm.search() },
+                        modifier = Modifier.fillMaxWidth().height(FailedHeight).animateItem(ResultFadeIn, null, ResultFadeOut),
+                    )
                 }
-            }
+                else -> {
+                    val showEmpty = when (vm.searchType) {
+                        SearchViewModel.SearchType.SONG -> vm.songData.isEmpty()
+                        SearchViewModel.SearchType.USER -> vm.userData.isEmpty()
+                        SearchViewModel.SearchType.PLAYLIST -> vm.playlistData.isEmpty()
+                        else -> false
+                    }
 
-            when (vm.searchType) {
-                SearchViewModel.SearchType.SONG -> items(
-                    items = vm.songData,
-                    key = { item -> item.info.id },
-                    contentType = { _ -> "song" }
-                ) { item ->
-                    SearchSongItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        data = item,
-                        onClick = {
-                            global.player.insertToQueue(
-                                GlobalStore.MusicQueueItem.fromSearchSongItem(item.info),
-                                true,
-                                false
+                    if (showEmpty) item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            Modifier.fillMaxWidth().padding(vertical = 128.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(Res.string.search_no_results))
+                        }
+                    }
+
+                    when (vm.searchType) {
+                        SearchViewModel.SearchType.SONG -> items(
+                            items = vm.songData,
+                            key = { item -> item.info.id },
+                            contentType = { _ -> "song" }
+                        ) { item ->
+                            SearchSongItem(
+                                modifier = Modifier.fillMaxWidth().animateItem(ResultFadeIn, null, ResultFadeOut),
+                                data = item,
+                                onClick = {
+                                    global.player.insertToQueue(
+                                        GlobalStore.MusicQueueItem.fromSearchSongItem(item.info),
+                                        true,
+                                        false
+                                    )
+                                }
                             )
                         }
-                    )
-                }
-                SearchViewModel.SearchType.USER -> items(
-                    items = vm.userData,
-                    key = { item -> item.uid },
-                    contentType = { _ -> "user" }
-                ) { item ->
-                    SearchUserItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        name = item.username,
-                        avatarUrl = item.avatarUrl,
-                        onClick = { navigator.push(Route.Root.PublicUserSpace(item.uid)) },
-                    )
-                }
-                SearchViewModel.SearchType.ALBUM -> {}
-                SearchViewModel.SearchType.PLAYLIST -> items(
-                    items = vm.playlistData,
-                    key = { it.id },
-                    contentType = { _ -> "playlist" }
-                ) { item ->
-                    SearchPlaylistItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        title = item.name,
-                        username = item.userName,
-                        coverUrl = item.coverUrl,
-                        avatarUrl = item.userAvatarUrl,
-                        songCount = item.songsCount,
-                        onClick = { navigator.push(Route.Root.PublicPlaylist(item.id)) },
-                        description = item.description
-                    )
+                        SearchViewModel.SearchType.USER -> items(
+                            items = vm.userData,
+                            key = { item -> item.uid },
+                            contentType = { _ -> "user" }
+                        ) { item ->
+                            SearchUserItem(
+                                modifier = Modifier.fillMaxWidth().animateItem(ResultFadeIn, null, ResultFadeOut),
+                                name = item.username,
+                                avatarUrl = item.avatarUrl,
+                                onClick = { navigator.push(Route.Root.PublicUserSpace(item.uid)) },
+                            )
+                        }
+                        SearchViewModel.SearchType.ALBUM -> {}
+                        SearchViewModel.SearchType.PLAYLIST -> items(
+                            items = vm.playlistData,
+                            key = { it.id },
+                            contentType = { _ -> "playlist" }
+                        ) { item ->
+                            SearchPlaylistItem(
+                                modifier = Modifier.fillMaxWidth().animateItem(ResultFadeIn, null, ResultFadeOut),
+                                title = item.name,
+                                username = item.userName,
+                                coverUrl = item.coverUrl,
+                                avatarUrl = item.userAvatarUrl,
+                                songCount = item.songsCount,
+                                onClick = { navigator.push(Route.Root.PublicPlaylist(item.id)) },
+                                description = item.description
+                            )
+                        }
+                    }
                 }
             }
 
@@ -241,3 +255,23 @@ private fun Tab(
         }
     }
 }
+
+/** Stand-ins for the results of [type] while a search runs, in the shape of its rows or tiles. */
+private fun LazyGridScope.searchSkeleton(type: SearchViewModel.SearchType) {
+    if (type == SearchViewModel.SearchType.USER) {
+        items(SkeletonCount, key = { "skeleton_$it" }, contentType = { "skeleton_user" }) {
+            UserTileSkeleton(Modifier.fillMaxWidth().animateItem(ResultFadeIn, null, ResultFadeOut))
+        }
+    } else {
+        items(SkeletonCount, key = { "skeleton_$it" }, contentType = { "skeleton_row" }) {
+            MediaRowSkeleton(Modifier.animateItem(ResultFadeIn, null, ResultFadeOut), index = it)
+        }
+    }
+}
+
+// The fade through of the other loading pages, done per item since the tabs above don't change:
+// the old rows go over the first 35% and the new ones come in over the rest
+private val ResultFadeOut = tween<Float>(105, easing = FastOutLinearInEasing)
+private val ResultFadeIn = tween<Float>(195, delayMillis = 105, easing = LinearOutSlowInEasing)
+private val FailedHeight = 360.dp
+private const val SkeletonCount = 10

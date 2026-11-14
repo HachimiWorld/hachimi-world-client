@@ -1,0 +1,5 @@
+<resources>
+    <string name="likes_total">共 %1$d 首</string>
+    <string name="likes_rhythm">近 %1$d 天点赞 %2$d 首</string>
+    <string name="likes_rhythm_cd">近 %1$d 天每日点赞的歌曲数</string>
+</resources>

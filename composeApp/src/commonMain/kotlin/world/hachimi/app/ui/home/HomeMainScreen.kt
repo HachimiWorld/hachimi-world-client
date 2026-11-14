@@ -1,11 +1,15 @@
 package world.hachimi.app.ui.home
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,9 +36,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.CircleShape
+import world.hachimi.app.ui.design.HachimiTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import world.hachimi.app.ui.component.BrandLogo
+import world.hachimi.app.ui.root.component.SearchBox
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onVisibilityChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -60,8 +71,9 @@ import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
 import world.hachimi.app.ui.TestTags
-import world.hachimi.app.ui.component.LoadingPage
-import world.hachimi.app.ui.component.ReloadPage
+import world.hachimi.app.ui.component.SectionErrorPage
+import world.hachimi.app.ui.util.loadStateTransition
+import world.hachimi.app.ui.home.components.SongCardSkeleton
 import world.hachimi.app.ui.design.components.Button
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
@@ -88,6 +100,8 @@ fun HomeMainScreen(
         vm.mounted()
         onDispose { vm.unmount() }
     }
+    // The phone has no bar over its pages, so the logo and search open the page and scroll with it
+    val phone = LocalWindowSize.current.width < WindowSize.COMPACT
     AdaptivePullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
         isRefreshing = vm.recentStatus != InitializeStatus.INIT && vm.refreshing,
@@ -101,6 +115,9 @@ fun HomeMainScreen(
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             listHeadInsetsSpacerItem()
+            if (phone) item(key = "header", contentType = "header") {
+                HomeHeader(onSearch = { navigator.push(Route.Root.Search(it)) })
+            }
             item(key = "square_intro", contentType = "square_intro") {
                 SquareIntroCard(
                     intro = squareIntro,
@@ -175,6 +192,43 @@ fun HomeMainScreen(
     }
 }
 
+/** The logo and the search field, at the head of the phone's home page. */
+@Composable
+private fun HomeHeader(onSearch: (String) -> Unit) {
+    var searchText by rememberSaveable { mutableStateOf("") }
+    var focused by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    // While searching, the logo steps aside for the field. The clear button stays for as long as the
+    // field is in use and doubles as the way out: it empties the field, lets go of it and drops the keyboard.
+    Row(
+        Modifier.fillMaxWidth().padding(start = AdaptiveScreenMargin, end = AdaptiveScreenMargin, bottom = 20.dp).height(40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AnimatedVisibility(
+            visible = !focused,
+            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+        ) {
+            BrandLogo(Modifier.padding(end = 12.dp))
+        }
+        SearchBox(
+            searchText = searchText,
+            onSearchTextChange = { searchText = it },
+            onSearch = { onSearch(searchText) },
+            modifier = Modifier.weight(1f).height(40.dp).onFocusChanged { focused = it.isFocused },
+            containerColor = HachimiTheme.colorScheme.surface,
+            shape = CircleShape,
+            onClear = {
+                searchText = ""
+                focusManager.clearFocus()
+                keyboard?.hide()
+            },
+            clearVisible = focused || searchText.isNotEmpty(),
+        )
+    }
+}
+
 @Composable
 private fun Segment(
     label: String,
@@ -203,6 +257,7 @@ private fun Segment(
             val cardSize = calculateCardSizeInGrid(maxWidth)
 
             LoadableContent(
+                cardSize = cardSize,
                 modifier = Modifier.fillMaxWidth()
                     .height(cardSize.height * 2 + AdaptiveListSpacing),
                 initializeStatus = status,
@@ -272,6 +327,7 @@ private fun CategorySegment(
             val status = state?.status?.value ?: InitializeStatus.INIT
             val loading = state?.loading?.value ?: false
             LoadableContent(
+                cardSize = cardSize,
                 modifier = Modifier.fillMaxWidth()
                     .height(cardSize.height * 2 + AdaptiveListSpacing),
                 initializeStatus = status,
@@ -374,6 +430,7 @@ private fun SegmentHeader(
 
 @Composable
 private fun LoadableContent(
+    cardSize: DpSize,
     loading: Boolean,
     initializeStatus: InitializeStatus,
     onRefresh: () -> Unit,
@@ -383,32 +440,39 @@ private fun LoadableContent(
     onDispose: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    val slideOffset = with(LocalDensity.current) {
-        32.dp.roundToPx()
-    }
     AnimatedContent(
         initializeStatus,
         modifier = modifier.onVisibilityChanged { visible ->
             if (visible) onLoad()
         },
-        transitionSpec = {
-            if (targetState == InitializeStatus.LOADED) {
-                (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                        slideInVertically(
-                            initialOffsetY = { slideOffset },
-                            animationSpec = tween(220, delayMillis = 90)
-                        ))
-                    .togetherWith(fadeOut(animationSpec = tween(90)))
-            } else {
-                (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-                        scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90)))
-                    .togetherWith(fadeOut(animationSpec = tween(90)))
-            }
-        }) {
+        transitionSpec = { loadStateTransition() },
+    ) {
         when (it) {
-            InitializeStatus.INIT -> LoadingPage()
-            InitializeStatus.FAILED -> ReloadPage(onRetryClick)
+            InitializeStatus.INIT -> SongGridSkeleton(cardSize)
+            // The failed section keeps the cards' footprint
+            InitializeStatus.FAILED -> SectionErrorPage(
+                onRetry = onRetryClick,
+                modifier = Modifier.fillMaxSize().padding(horizontal = AdaptiveScreenMargin),
+            )
             InitializeStatus.LOADED -> content()
         }
     }
 }
+
+/** Two rows of card stand-ins, laid out like the section's grid. */
+@Composable
+private fun SongGridSkeleton(cardSize: DpSize) {
+    LazyHorizontalGrid(
+        modifier = Modifier.fillMaxSize()
+            .horizontalFadingEdges(startEdgeWidth = AdaptiveScreenMargin, endEdgeWidth = AdaptiveScreenMargin),
+        rows = GridCells.Fixed(2),
+        contentPadding = PaddingValues(horizontal = AdaptiveScreenMargin),
+        horizontalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
+        userScrollEnabled = false,
+    ) {
+        items(SkeletonCardCount) { SongCardSkeleton(Modifier.size(cardSize)) }
+    }
+}
+
+private const val SkeletonCardCount = 12

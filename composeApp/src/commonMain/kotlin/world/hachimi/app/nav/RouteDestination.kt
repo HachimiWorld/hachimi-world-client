@@ -13,6 +13,7 @@ fun Route.Root.isSideNavDestination(): Boolean = when (this) {
     Route.Root.Square,
     Route.Root.Events.Feed,
     Route.Root.Home.Main,
+    Route.Root.Me,
     Route.Root.RecentPlay,
     Route.Root.RecentLike,
     Route.Root.MySubscribe,
@@ -23,4 +24,27 @@ fun Route.Root.isSideNavDestination(): Boolean = when (this) {
     -> true
 
     else -> false
+}
+
+/**
+ * The three tabs of the phone's bottom bar.
+ *
+ * @since 261110
+ */
+enum class BottomTab(val route: Route.Root) {
+    HOME(Route.Root.Home.Main),
+    SQUARE(Route.Root.Square),
+    ME(Route.Root.Me),
+}
+
+/**
+ * The tab a primary destination belongs to. Everything that is neither the home page nor the
+ * square is reached from [BottomTab.ME].
+ *
+ * @since 261110
+ */
+fun Route.Root.bottomTab(): BottomTab = when (this) {
+    Route.Root.Home.Main -> BottomTab.HOME
+    Route.Root.Square, Route.Root.Events.Feed -> BottomTab.SQUARE
+    else -> BottomTab.ME
 }

@@ -284,6 +284,7 @@ class PublishViewModel(
                     return@launch
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("publish", "Failed to get origin data", e)
                 global.alert(e.message)
                 if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
@@ -355,6 +356,7 @@ class PublishViewModel(
                     return@launch
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("publish", "Failed to get review draft data", e)
                 global.alert(e.message)
                 if (initializeStatus == InitializeStatus.INIT) initializeStatus = InitializeStatus.FAILED
@@ -435,6 +437,7 @@ class PublishViewModel(
                     }
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("publish", "Failed to get jmid prefix", e)
                 global.alert(e.message)
                 return@launch
@@ -478,6 +481,7 @@ class PublishViewModel(
 
                     resp.ok()
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("creation", "Failed to upload audio file", e)
                     global.alert(e.message)
                     return@launch
@@ -534,6 +538,7 @@ class PublishViewModel(
 
                     resp.ok()
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("creation", "Failed to upload cover image", e)
                     global.alert(e.message)
                     return@launch
@@ -648,6 +653,7 @@ class PublishViewModel(
                         global.alert(resp.err().msg)
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("publish", "Failed to create tag", e)
                     global.alert(e.message)
                 } finally {
@@ -798,6 +804,7 @@ class PublishViewModel(
                 }
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("creation", "Failed to publish song", e)
             global.alert(e.message)
         } finally {
@@ -843,6 +850,7 @@ class PublishViewModel(
                         return@launch
                     }
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("publish", "Failed to get user info", e)
                     global.alert(Res.string.publish_fetch_user_failed)
                     return@launch
@@ -1012,6 +1020,7 @@ class PublishViewModel(
                                     }
                                 }
                             } catch (e: Throwable) {
+                                if (e is CancellationException) throw e
                                 Logger.e("publish", "Failed to check jmid", e)
                                 initJmidValid = false
                                 initJmidSupportText = e.message
@@ -1092,6 +1101,7 @@ class PublishViewModel(
                                     }
                                 }
                             } catch (e: Throwable) {
+                                if (e is CancellationException) throw e
                                 Logger.e("publish", "Failed to check jmid", e)
                                 jmidValid = false
                                 jmidSupportText = e.message

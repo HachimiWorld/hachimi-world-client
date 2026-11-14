@@ -1,5 +1,8 @@
 package world.hachimi.app.ui.userspace.component
 
+import world.hachimi.app.ui.design.components.placeholder
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -107,5 +110,20 @@ private fun Preview() {
             playlist = mockPlaylist,
             onClick = {}
         )
+    }
+}
+
+/** Stands in for a [PublicPlaylistCard] while the playlists load. @since 261112 */
+@Composable
+fun PublicPlaylistCardSkeleton(modifier: Modifier = Modifier) {
+    Surface(modifier = modifier, shape = RoundedCornerShape(12.dp)) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(56.dp).placeholder(true, RoundedCornerShape(8.dp)))
+            Spacer(Modifier.width(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Box(Modifier.width(140.dp).height(12.dp).placeholder(true))
+                Box(Modifier.width(48.dp).height(10.dp).placeholder(true))
+            }
+        }
     }
 }

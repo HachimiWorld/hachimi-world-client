@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.auth_invalid_email
 import hachimiworld.composeapp.generated.resources.auth_password_too_short
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -116,6 +117,7 @@ class AuthViewModel(
                 }
                 regCodeRemainSecs = 60
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 Logger.e("auth", "Failed to send email code", e)
                 global.alert(e.message)
             } finally {
@@ -167,6 +169,7 @@ class AuthViewModel(
                     if (message != null) global.alert(message) else global.alert(err.msg)
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 global.alert(e.message)
             } finally {
                 isOperating = false
@@ -214,6 +217,7 @@ class AuthViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("auth", "Failed to login", e)
             global.alert(e.message)
         } finally {
@@ -255,6 +259,7 @@ class AuthViewModel(
                 global.alert(resp.err().msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("auth", "Failed to register", e)
             global.alert(e.message)
         } finally {
@@ -276,6 +281,7 @@ class AuthViewModel(
                 try {
                     getPlatform().openUrl(data.url)
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     Logger.e("auth", "Failed to open captcha url", e)
                     return
                 }
@@ -284,6 +290,7 @@ class AuthViewModel(
                 global.alert(err.msg)
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             Logger.e("auth", "Failed to generate captcha captcha", e)
             global.alert(e.message)
         } finally {
