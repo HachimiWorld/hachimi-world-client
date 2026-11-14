@@ -10,6 +10,7 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.component.PageHeading
 import world.hachimi.app.ui.component.PageTitleAction
 import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.ScreenScaffold
@@ -23,7 +24,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -176,12 +176,14 @@ private fun RecentLikeList(
 			verticalArrangement = Arrangement.spacedBy(8.dp),
 		) {
 			if (!playAllInTitle) item {
-				Header(covers, onPlayAll)
+				Header(covers, likeSummaryLine(total, rhythm), onPlayAll)
 			}
 			item(contentType = "summary") {
 				LikeSummary(
 					total = total,
 					rhythm = rhythm,
+					// The heading on wide screens carries the counts
+					showLine = playAllInTitle,
 					onDayClick = { day ->
 						// Each day is its date line and then its songs
 						var index = if (playAllInTitle) 1 else 2
@@ -236,18 +238,13 @@ private fun RecentLikeList(
 }
 
 @Composable
-private fun Header(covers: List<String>, onPlayAll: () -> Unit) {
-	Row(
-		modifier = Modifier.fillMaxWidth().multiplatformStatusBarsPadding(),
-		verticalAlignment = Alignment.CenterVertically,
-	) {
-		if (!LocalPageTitleShown.current) Text(
-			text = stringResource(Res.string.nav_recent_like),
-			style = MaterialTheme.typography.titleLarge,
-		)
-		Spacer(Modifier.weight(1f))
-		PlayAllCovers(covers = covers, folded = false, onClick = onPlayAll)
-	}
+private fun Header(covers: List<String>, caption: String?, onPlayAll: () -> Unit) {
+	PageHeading(
+		title = if (LocalPageTitleShown.current) null else stringResource(Res.string.nav_recent_like),
+		modifier = Modifier.multiplatformStatusBarsPadding(),
+		caption = caption,
+		action = { PlayAllCovers(covers = covers, folded = false, onClick = onPlayAll) },
+	)
 }
 
 @Composable

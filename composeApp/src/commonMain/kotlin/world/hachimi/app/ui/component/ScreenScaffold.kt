@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -160,6 +161,12 @@ fun ScreenScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     /** @since 261111 */
     titleStyle: TitleStyle = TitleStyle.Large,
+    /**
+     * On wide screens, the page draws its own [PageHeading], so the toolbar keeps its title (and
+     * the line under it) out of sight until the page has scrolled. Phones are unaffected.
+     * @since 261114
+     */
+    headingInPageOnWide: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // Already inside a scaffold that shows this page's bar
@@ -186,6 +193,12 @@ fun ScreenScaffold(
         return
     }
 
+    // Only tracks how far the page has scrolled; nothing folds on wide screens
+    val scroll = remember { TitleScroll(0f) }
+    val scrollConnection = remember(scroll) { TitleScrollConnection(scroll, folds = false) }
+    val revealAt = with(LocalDensity.current) { WideRevealAfter.toPx() }
+    val titleAlpha by animateFloatAsState(if (!headingInPageOnWide || scroll.scrolled > revealAt) 1f else 0f)
+    val lineAlpha by animateFloatAsState(if (!headingInPageOnWide || scroll.scrolled > 0f) 1f else 0f)
     Column(modifier.fillMaxSize()) {
         ScreenToolbar(
             title = title,
@@ -195,6 +208,8 @@ fun ScreenScaffold(
             onBack = onBack,
             onMenuClick = onMenuClick,
             actions = actions,
+            titleAlpha = { titleAlpha },
+            lineAlpha = { lineAlpha },
         )
         // Toolbar applied multiplatform top insets; body must not re-apply them.
         Column(
@@ -202,6 +217,7 @@ fun ScreenScaffold(
                 .weight(1f)
                 .fillMaxSize()
                 .consumeWindowInsets(WindowInsets.multiplatformStatusBars)
+                .then(if (headingInPageOnWide) Modifier.nestedScroll(scrollConnection) else Modifier)
         ) {
             CompositionLocalProvider(LocalInScaffold provides true) {
                 content()
@@ -387,9 +403,12 @@ private val LargeTitleHeight = 52.dp
 private val LargeTitleWithActionHeight = 64.dp
 /** How far a [TitleStyle.Revealed] page scrolls before its name comes into the bar. */
 private val RevealAfter = 160.dp
+/** Roughly a [PageHeading] and the margin over it: once it's scrolled away the toolbar shows the title. */
+private val WideRevealAfter = 88.dp
 private val SmallTitleStyle = TextStyle(fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)
 private val SubtitleStyle = TextStyle(fontSize = 13.sp, lineHeight = 18.sp)
-private val LargeTitleStyle = TextStyle(fontSize = 26.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold)
+/** The large title, here and in [PageHeading]. */
+internal val LargeTitleStyle = TextStyle(fontSize = 26.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold)
 
 @Preview(widthDp = 360, name = "Compact · Secondary")
 @Composable
@@ -428,6 +447,33 @@ private fun PreviewScreenScaffoldTitleAction() {
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(30) { Text("Row $it", Modifier.padding(16.dp)) }
+                }
+            }
+        }
+    }
+}
+
+@Preview(widthDp = 960, heightDp = 400, name = "Expanded · Heading in page")
+@Composable
+private fun PreviewScreenScaffoldHeadingInPage() {
+    PreviewTheme(background = true) {
+        CompositionLocalProvider(
+            LocalWindowSize provides DpSize(960.dp, 400.dp),
+        ) {
+            ScreenScaffold(title = { Text("每日推荐") }, showBack = true, onBack = {}, headingInPageOnWide = true) {
+                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp)) {
+                    item {
+                        PageHeading(
+                            title = "每日推荐",
+                            caption = "并非根据你的口味进行推荐",
+                            action = {
+                                CoverFan(count = 3, onClick = {}) { index ->
+                                    Box(Modifier.fillMaxSize().background(listOf(Color(0xFFF2C14E), Color(0xFFE88FB0), Color(0xFF5DB3A0))[index]))
+                                }
+                            },
+                        )
+                    }
+                    items(30) { Text("Row $it", Modifier.padding(vertical = 16.dp)) }
                 }
             }
         }

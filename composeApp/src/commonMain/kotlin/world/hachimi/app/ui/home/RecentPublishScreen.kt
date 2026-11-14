@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -40,6 +38,7 @@ import world.hachimi.app.model.RecentPublishViewModel
 import world.hachimi.app.model.fromPublicDetail
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.ui.component.LoadMoreItem
+import world.hachimi.app.ui.component.PageHeading
 import world.hachimi.app.ui.component.PageTitleAction
 import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.titleActionPlaced
@@ -55,7 +54,6 @@ import world.hachimi.app.ui.home.components.SongCard
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.ListTailSpacer
-import world.hachimi.app.ui.util.WindowSize
 import world.hachimi.app.ui.util.calculateGridColumns
 import world.hachimi.app.ui.util.contentPaddingForMaxWidth
 import world.hachimi.app.ui.util.listHeadInsetsSpacerItem
@@ -77,6 +75,7 @@ fun RecentPublishScreen(
         title = { Text(stringResource(Res.string.home_recent_title), maxLines = 1) },
         showBack = true,
         onBack = navigator::back,
+        headingInPageOnWide = true,
     ) {
         AnimatedContent(
             vm.initializeStatus,
@@ -98,6 +97,7 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
     // The fan of covers plays them all: by the title on phones, in the header row on wide screens
     val covers = remember(vm.songs) { vm.songs.asSequence().flatMap { it.songs }.take(3).map { it.coverUrl }.toList() }
     val playAll: () -> Unit = { vm.playAllRecent() }
+    val headingInScaffold = titleActionPlaced
     val playAllInTitle = vm.songs.isNotEmpty() && PageTitleAction { folded ->
         PlayAllCovers(covers = covers, folded = folded, onClick = playAll)
     }
@@ -126,22 +126,19 @@ private fun Content(vm: RecentPublishViewModel, global: GlobalStore) {
                 verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing),
             ) {
                 listHeadInsetsSpacerItem()
-                if (!playAllInTitle) item(span = { GridItemSpan(maxLineSpan) }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (constraintMaxWidth >= WindowSize.COMPACT) {
-                            HachimiIconButton(
-                                modifier = Modifier.padding(start = 8.dp),
-                                enabled = !vm.loading,
-                                onClick = { vm.fakeRefresh() }
-                            ) {
-                                Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.common_refresh_cd))
+                // On phones the scaffold shows the title large, and the fan by it
+                if (!headingInScaffold) item(span = { GridItemSpan(maxLineSpan) }) {
+                    PageHeading(
+                        title = stringResource(Res.string.home_recent_title),
+                        action = {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                HachimiIconButton(enabled = !vm.loading, onClick = { vm.fakeRefresh() }) {
+                                    Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.common_refresh_cd))
+                                }
+                                PlayAllCovers(covers = covers, folded = false, onClick = playAll)
                             }
-                        }
-
-                        Spacer(Modifier.weight(1f))
-
-                        PlayAllCovers(covers = covers, folded = false, onClick = playAll)
-                    }
+                        },
+                    )
                 }
                 vm.songs.fastForEach {
                     item(

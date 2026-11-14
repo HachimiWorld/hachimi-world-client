@@ -26,7 +26,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.likes_rhythm
 import hachimiworld.composeapp.generated.resources.likes_rhythm_cd
@@ -37,6 +36,8 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
 import world.hachimi.app.model.RecentLikeViewModel.LikeRhythm
+import world.hachimi.app.ui.component.PageCaptionStyle
+import world.hachimi.app.ui.component.PageHeading
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.theme.PreviewTheme
@@ -54,25 +55,35 @@ internal fun LikeSummary(
     rhythm: LikeRhythm?,
     onDayClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    /** Whether to write the counts; false when a [PageHeading] above carries them as its caption. */
+    showLine: Boolean = true,
 ) {
     val counted = rhythm?.takeIf { it.days >= MinDays }
-    val line = buildList {
+    val line = likeSummaryLine(total, rhythm)
+    if (line == null && counted == null) return
+    Column(modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+        if (showLine && line != null) {
+            Text(line, style = PageCaptionStyle.copy(color = HachimiTheme.colorScheme.onSurfaceVariant))
+        }
+        if (counted != null) {
+            // Kept to a phone's width on wide screens, where 30 days spread thin
+            RhythmBars(counted, onDayClick, Modifier.padding(top = if (showLine) 12.dp else 4.dp).widthIn(max = 480.dp).fillMaxWidth().height(BarsHeight))
+        }
+    }
+}
+
+/**
+ * The counts over the likes: the total, and the days counted with how many were liked in them.
+ * @since 261114
+ */
+@Composable
+internal fun likeSummaryLine(total: Long?, rhythm: LikeRhythm?): String? {
+    val counted = rhythm?.takeIf { it.days >= MinDays }
+    val parts = buildList {
         total?.let { add(stringResource(Res.string.likes_total, it.toInt())) }
         counted?.let { add(stringResource(Res.string.likes_rhythm, it.days, it.liked)) }
     }
-    if (line.isEmpty()) return
-    Column(modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-        Text(
-            line.joinToString(" · "),
-            color = HachimiTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-        )
-        if (counted != null) {
-            // Kept to a phone's width on wide screens, where 30 days spread thin
-            RhythmBars(counted, onDayClick, Modifier.padding(top = 12.dp).widthIn(max = 480.dp).fillMaxWidth().height(BarsHeight))
-        }
-    }
+    return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ")
 }
 
 @Composable

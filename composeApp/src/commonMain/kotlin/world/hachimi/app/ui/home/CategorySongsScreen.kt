@@ -3,15 +3,12 @@ package world.hachimi.app.ui.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -28,13 +25,13 @@ import world.hachimi.app.model.CategorySongsViewModel
 import world.hachimi.app.model.GlobalStore
 import world.hachimi.app.model.fromSearchSongItem
 import world.hachimi.app.nav.LocalNavigator
+import world.hachimi.app.ui.component.PageHeading
 import world.hachimi.app.ui.component.PageTitleAction
 import world.hachimi.app.ui.component.PlayAllCovers
 import world.hachimi.app.ui.component.ScreenScaffold
 import world.hachimi.app.ui.component.titleActionPlaced
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.home.components.SongCard
-import world.hachimi.app.ui.insets.multiplatformStatusBarsPadding
 import world.hachimi.app.ui.util.AdaptiveListSpacing
 import world.hachimi.app.ui.util.AdaptiveScreenMargin
 import world.hachimi.app.ui.util.InitStatusScaffold
@@ -56,9 +53,10 @@ fun CategorySongsScreen(
         onDispose { vm.unmount() }
     }
     ScreenScaffold(
-        title = { Text(stringResource(Res.string.home_category_title), maxLines = 1) },
+        title = { Text(category, maxLines = 1) },
         showBack = true,
-        onBack = navigator::back
+        onBack = navigator::back,
+        headingInPageOnWide = true
     ) {
         InitStatusScaffold(
             initializeStatus = vm.initializeStatus,
@@ -90,23 +88,14 @@ private fun Content(category: String, vm: CategorySongsViewModel, global: Global
             verticalArrangement = Arrangement.spacedBy(AdaptiveListSpacing)
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                FlowRow(
-                    modifier = Modifier.multiplatformStatusBarsPadding(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        text = category,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Spacer(Modifier.weight(1f))
-
-                    if (!playAllInTitle) PlayAllCovers(
-                        covers = covers,
-                        folded = false,
-                        onClick = playAll,
-                        modifier = Modifier.align(Alignment.Top),
-                    )
-                }
+                PageHeading(
+                    // On phones the scaffold shows the title large, and the fan by it
+                    title = if (titleActionPlaced) null else category,
+                    caption = stringResource(Res.string.home_category_title),
+                    action = if (playAllInTitle) null else {
+                        { PlayAllCovers(covers = covers, folded = false, onClick = playAll) }
+                    },
+                )
             }
             items(vm.songs, key = { item -> item.id }) { item ->
                 SongCard(
