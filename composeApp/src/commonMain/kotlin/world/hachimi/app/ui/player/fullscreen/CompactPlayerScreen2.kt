@@ -292,6 +292,7 @@ fun CompactPlayerScreen2(
                 jmid = info.displayId,
                 title = info.title,
                 author = info.uploaderName,
+                coverUrl = info.coverUrl,
                 onShareToMoment = if (global.isLoggedIn) ({
                     showShareDialog = false
                     composer.open(MomentShare.Song(info.id))
