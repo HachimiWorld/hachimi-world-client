@@ -2,8 +2,10 @@ package world.hachimi.app.ui.share
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +68,7 @@ import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
+import world.hachimi.app.ui.design.components.HachimiIconButton
 import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
@@ -183,7 +188,15 @@ fun SharePosterDialog(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(stringResource(Res.string.share_poster_title)) },
+        title = {
+            // Closes from here, so the bottom row keeps to the two actions
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(Res.string.share_poster_title), Modifier.weight(1f))
+                HachimiIconButton(onClick = onDismissRequest) {
+                    Icon(Icons.Default.Close, stringResource(Res.string.common_close))
+                }
+            }
+        },
         text = {
             // Records what it draws, so the picture saved is the card itself
             Box(Modifier.drawWithContent {
@@ -194,7 +207,11 @@ fun SharePosterDialog(
             }
         },
         confirmButton = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // The dialog spaces what it is given 8dp apart, so these two space themselves
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 // Kept beside saving: pasting the card straight into a chat is often what's wanted
                 if (posterClipboardSupported) TextButton(onClick = {
                     scope.launch {
@@ -203,8 +220,8 @@ fun SharePosterDialog(
                         }.getOrNull() == true
                         global.alert(if (copied) Res.string.share_image_copied else Res.string.share_image_copy_failed)
                     }
-                }) {
-                    Text(stringResource(Res.string.share_copy_image))
+                }, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
+                    Text(stringResource(Res.string.share_copy_image), maxLines = 1, softWrap = false)
                 }
                 AccentButton(
                     onClick = {
@@ -227,20 +244,17 @@ fun SharePosterDialog(
                         }
                     },
                     enabled = !saving,
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     if (saving) {
                         CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Text(stringResource(Res.string.share_save_image))
+                        Text(stringResource(Res.string.share_save_image), maxLines = 1, softWrap = false)
                     }
                 }
             }
         },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(Res.string.common_close))
-            }
-        },
+        dismissButton = null,
     )
 }
 
