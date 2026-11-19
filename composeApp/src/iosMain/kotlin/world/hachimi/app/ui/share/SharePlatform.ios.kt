@@ -22,3 +22,14 @@ actual suspend fun savePosterImage(context: PlatformContext, bytes: ByteArray, f
     UIImageWriteToSavedPhotosAlbum(image, null, null, null)
     return true
 }
+
+actual val posterClipboardSupported: Boolean = true
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun copyPosterToClipboard(context: PlatformContext, bytes: ByteArray): Boolean {
+    if (bytes.isEmpty()) return false
+    val data = bytes.usePinned { NSData.create(bytes = it.addressOf(0), length = bytes.size.toULong()) }
+    val image = UIImage.imageWithData(data) ?: return false
+    UIPasteboard.generalPasteboard().image = image
+    return true
+}

@@ -16,3 +16,9 @@ expect fun encodePng(image: ImageBitmap): ByteArray?
  * @since 261119
  */
 expect suspend fun savePosterImage(context: PlatformContext, bytes: ByteArray, fileName: String): Boolean
+
+/** Whether a picture can be put on the clipboard here. @since 261119 */
+expect val posterClipboardSupported: Boolean
+
+/** Puts a PNG on the clipboard. Returns whether it got there. @since 261119 */
+expect fun copyPosterToClipboard(context: PlatformContext, bytes: ByteArray): Boolean

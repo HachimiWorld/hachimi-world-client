@@ -42,6 +42,9 @@ import coil3.compose.LocalPlatformContext
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_close
 import hachimiworld.composeapp.generated.resources.share_brand
+import hachimiworld.composeapp.generated.resources.share_copy_image
+import hachimiworld.composeapp.generated.resources.share_image_copied
+import hachimiworld.composeapp.generated.resources.share_image_copy_failed
 import hachimiworld.composeapp.generated.resources.share_image_save_failed
 import hachimiworld.composeapp.generated.resources.share_image_saved
 import hachimiworld.composeapp.generated.resources.share_poster_hint
@@ -191,31 +194,45 @@ fun SharePosterDialog(
             }
         },
         confirmButton = {
-            AccentButton(
-                onClick = {
-                    if (saving) return@AccentButton
-                    saving = true
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Kept beside saving: pasting the card straight into a chat is often what's wanted
+                if (posterClipboardSupported) TextButton(onClick = {
                     scope.launch {
-                        try {
-                            val bytes = encodePng(layer.toImageBitmap())
-                            val saved = bytes != null && savePosterImage(context, bytes, "hachimi-${jmid.lowercase()}.png")
-                            global.alert(if (saved) Res.string.share_image_saved else Res.string.share_image_save_failed)
-                            if (saved) onDismissRequest()
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (e: Throwable) {
-                            global.alert(Res.string.share_image_save_failed)
-                        } finally {
-                            saving = false
-                        }
+                        val copied = runCatching {
+                            encodePng(layer.toImageBitmap())?.let { copyPosterToClipboard(context, it) }
+                        }.getOrNull() == true
+                        global.alert(if (copied) Res.string.share_image_copied else Res.string.share_image_copy_failed)
                     }
-                },
-                enabled = !saving,
-            ) {
-                if (saving) {
-                    CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                } else {
-                    Text(stringResource(Res.string.share_save_image))
+                }) {
+                    Text(stringResource(Res.string.share_copy_image))
+                }
+                AccentButton(
+                    onClick = {
+                        if (saving) return@AccentButton
+                        saving = true
+                        scope.launch {
+                            try {
+                                val bytes = encodePng(layer.toImageBitmap())
+                                val saved = bytes != null &&
+                                    savePosterImage(context, bytes, "hachimi-${jmid.lowercase()}.png")
+                                global.alert(if (saved) Res.string.share_image_saved else Res.string.share_image_save_failed)
+                                if (saved) onDismissRequest()
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Throwable) {
+                                global.alert(Res.string.share_image_save_failed)
+                            } finally {
+                                saving = false
+                            }
+                        }
+                    },
+                    enabled = !saving,
+                ) {
+                    if (saving) {
+                        CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(stringResource(Res.string.share_save_image))
+                    }
                 }
             }
         },

@@ -31,3 +31,7 @@ actual suspend fun savePosterImage(context: PlatformContext, bytes: ByteArray, f
         false
     }
 }
+
+actual val posterClipboardSupported: Boolean = false
+
+actual fun copyPosterToClipboard(context: PlatformContext, bytes: ByteArray): Boolean = false
