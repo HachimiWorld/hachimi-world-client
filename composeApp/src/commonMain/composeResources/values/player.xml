@@ -72,6 +72,6 @@
     <string name="share_save_image">Save image</string>
     <string name="share_image_saved">Image saved</string>
     <string name="share_image_save_failed">Couldn't save the image</string>
-    <string name="share_poster_hint">Scan to listen on Hachimi World</string>
+    <string name="share_poster_hint">Scan to listen</string>
     <string name="share_brand">Hachimi World</string>
 </resources>

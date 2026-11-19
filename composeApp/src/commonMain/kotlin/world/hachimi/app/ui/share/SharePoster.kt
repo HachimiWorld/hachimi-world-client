@@ -131,6 +131,8 @@ internal fun SharePoster(
                         Modifier.padding(top = 2.dp),
                         fontSize = 11.sp,
                         color = Color.White.copy(alpha = 0.7f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
