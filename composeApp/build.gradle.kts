@@ -120,6 +120,7 @@ kotlin {
             implementation(libs.compose.ui.toolingPreview)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.components.uiToolingPreview)
+            implementation(libs.qrcode.kotlin)
 
             implementation(libs.compose.material3)
             implementation(libs.compose.materialIconsExtended)

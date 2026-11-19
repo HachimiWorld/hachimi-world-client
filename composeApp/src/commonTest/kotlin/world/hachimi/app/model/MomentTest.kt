@@ -231,7 +231,7 @@ class MomentTest {
 
     @Test
     fun routesRoundTrip() {
-        for (route in listOf(Route.Root.Square, Route.Root.CreateMoment, Route.Root.MomentDetail(5, atComments = true))) {
+        for (route in listOf(Route.Root.Square, Route.Root.MomentDetail(5, atComments = true))) {
             val path = encodeToBrowserPath(route).encodeToString()
             assertEquals(route, decodeFromBrowserPathString(path))
         }

@@ -66,4 +66,15 @@
     <string name="player_interlude_cd">Interlude</string>
 
     <string name="player_playing_cd">Now playing</string>
+    <string name="share_copy_link">Copy link</string>
+    <string name="share_save_poster">Save as image</string>
+    <string name="share_poster_title">Save as image</string>
+    <string name="share_save_image">Save image</string>
+    <string name="share_image_saved">Image saved</string>
+    <string name="share_image_save_failed">Couldn't save the image</string>
+    <string name="share_poster_hint">Scan to listen</string>
+    <string name="share_brand">Hachimi World</string>
+    <string name="share_copy_image">Copy image</string>
+    <string name="share_image_copied">Image copied</string>
+    <string name="share_image_copy_failed">Couldn't copy the image</string>
 </resources>

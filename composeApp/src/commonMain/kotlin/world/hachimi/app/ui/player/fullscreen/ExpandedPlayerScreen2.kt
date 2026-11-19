@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.player.fullscreen
 
+import world.hachimi.app.model.MomentShare
+import world.hachimi.app.model.MomentComposer
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.common_pause_cd
 import hachimiworld.composeapp.generated.resources.common_play_cd
@@ -226,6 +228,7 @@ private fun Content(
         onDismiss = { tobeAddedSong = null },
     )
 
+    val composer = koinInject<MomentComposer>()
     if (showShareDialog) {
         uiState.readySongInfo?.let { info ->
             ShareDialog(
@@ -233,6 +236,11 @@ private fun Content(
                 jmid = info.displayId,
                 title = info.title,
                 author = info.uploaderName,
+                coverUrl = info.coverUrl,
+                onShareToMoment = if (global.isLoggedIn) ({
+                    showShareDialog = false
+                    composer.open(MomentShare.Song(info.id))
+                }) else null,
             )
         }
     }

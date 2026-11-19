@@ -7,6 +7,7 @@ import io.ktor.util.toMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -33,7 +34,12 @@ fun encodeToBrowserPath(route: Route): BrowserPath {
     val type = json[ClassDiscriminator]?.jsonPrimitive?.content // type is path
     val parameters = json.filterKeys { it != ClassDiscriminator }
         .mapValues {
-            (it.value as JsonPrimitive?)?.content ?: Json.encodeToString(it.value)
+            when (val value = it.value) {
+                // Left out of the URL, so it decodes to its default
+                is JsonNull -> null
+                is JsonPrimitive -> value.content
+                else -> Json.encodeToString(value)
+            }
         }
     return BrowserPath(type ?: "", parameters)
 }

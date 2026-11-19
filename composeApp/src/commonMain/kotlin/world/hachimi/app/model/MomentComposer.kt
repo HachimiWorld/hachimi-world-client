@@ -4,8 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import hachimiworld.composeapp.generated.resources.Res
 import hachimiworld.composeapp.generated.resources.moment_create_failed
 import hachimiworld.composeapp.generated.resources.moment_create_pending
@@ -17,6 +15,7 @@ import hachimiworld.composeapp.generated.resources.moment_err_rejected
 import hachimiworld.composeapp.generated.resources.moment_err_user_banned
 import hachimiworld.composeapp.generated.resources.moment_image_too_large
 import hachimiworld.composeapp.generated.resources.moment_too_many_images
+import hachimiworld.composeapp.generated.resources.need_login_message
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitMode
@@ -29,20 +28,19 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Buffer
 import org.jetbrains.compose.resources.StringResource
-import org.koin.core.annotation.KoinViewModel
+import org.koin.core.annotation.Singleton
 import world.hachimi.app.api.ApiClient
 import world.hachimi.app.api.err
+import world.hachimi.app.api.module.MomentAttachment
 import world.hachimi.app.api.module.MomentModule
-import world.hachimi.app.api.module.PlayHistoryModule
 import world.hachimi.app.api.module.PlaylistModule
-import world.hachimi.app.api.module.SongModule
 import world.hachimi.app.api.ok
 import world.hachimi.app.logging.Logger
 
@@ -65,28 +63,75 @@ class DraftImage(
     }
 }
 
-/** What a new moment links to. @since 261106 */
-sealed interface DraftAttachment {
-    data class Song(val song: SongModule.PublicSongDetail) : DraftAttachment
-    data class Playlist(val playlist: PlaylistModule.PlaylistItem) : DraftAttachment
+/** What a moment is written to share. @since 261114 */
+sealed interface MomentShare {
+    data class Song(val songId: Long) : MomentShare
+    data class Playlist(val playlistId: Long) : MomentShare
 }
 
-/** Writing a moment: text, images and an attachment. @since 261106 */
-@KoinViewModel
-class CreateMomentViewModel(
+/**
+ * The moment being written. It opens over the current page, from the square or from a song's or playlist's share
+ * action, and the root screen draws it once.
+ *
+ * @since 261114
+ */
+@Singleton
+class MomentComposer(
     private val api: ApiClient,
     private val global: GlobalStore,
     private val store: MomentStore,
-) : ViewModel(CoroutineScope(Dispatchers.Default)) {
+) {
+    /** Non-null while the composer is shown. */
+    var draft by mutableStateOf<MomentDraft?>(null)
+        private set
+
+    fun open(share: MomentShare? = null) {
+        if (!global.isLoggedIn) {
+            global.alert(Res.string.need_login_message)
+            return
+        }
+        draft?.dispose()
+        draft = MomentDraft(share, api, global, store, onPosted = ::close)
+    }
+
+    /** Drops the draft, uploads included. */
+    fun close() {
+        draft?.dispose()
+        draft = null
+    }
+}
+
+/**
+ * Writing a moment: text and images, plus the song or playlist it shares.
+ *
+ * @since 261106
+ */
+class MomentDraft internal constructor(
+    /** The song or playlist it was opened to share. */
+    val share: MomentShare?,
+    private val api: ApiClient,
+    private val global: GlobalStore,
+    private val store: MomentStore,
+    private val onPosted: () -> Unit,
+) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     var content by mutableStateOf("")
     val images = mutableStateListOf<DraftImage>()
-    var attachment by mutableStateOf<DraftAttachment?>(null)
     var publishing by mutableStateOf(false)
         private set
 
-    private val _done = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    /** Sent once it's posted, to leave the page. */
-    val done: SharedFlow<Unit> = _done
+    /**
+     * The shared song or playlist as the moment will show it: null while it loads, [MomentAttachment.Unavailable]
+     * when it can't be shared (deleted, hidden or private).
+     *
+     * @since 261114
+     */
+    var shared by mutableStateOf<MomentAttachment?>(null)
+        private set
+    /** @since 261114 */
+    var sharedLoadFailed by mutableStateOf(false)
+        private set
 
     /** Uploads go one at a time, as the server checks a user's images one at a time. */
     private val uploadLock = Mutex()
@@ -98,13 +143,49 @@ class CreateMomentViewModel(
     val canPublish: Boolean
         get() = !publishing &&
             images.all { it.state is DraftImage.State.Uploaded } &&
-            (content.isNotBlank() || images.isNotEmpty() || attachment != null)
+            if (share != null) shared.let { it is MomentAttachment.Song || it is MomentAttachment.Playlist }
+            else content.isNotBlank() || images.isNotEmpty()
 
     /** Whether leaving would lose something. */
-    val hasDraft: Boolean get() = content.isNotBlank() || images.isNotEmpty() || attachment != null
+    val hasDraft: Boolean get() = content.isNotBlank() || images.isNotEmpty()
+
+    init {
+        loadShared()
+    }
+
+    /** Loads the shared song or playlist, to show it before posting. */
+    fun loadShared() {
+        if (share == null) return
+        sharedLoadFailed = false
+        scope.launch {
+            try {
+                when (share) {
+                    is MomentShare.Song -> {
+                        val resp = api.songModule.detailById(share.songId, auth = true)
+                        shared = if (resp.ok) MomentAttachment.Song(resp.ok())
+                        else MomentAttachment.Unavailable(MomentAttachment.TYPE_SONG)
+                    }
+                    is MomentShare.Playlist -> {
+                        val resp = api.playlistModule.detail(PlaylistModule.PlaylistIdReq(share.playlistId))
+                        val detail = if (resp.ok) resp.ok<PlaylistModule.DetailResp>() else null
+                        shared = if (detail != null && detail.playlistInfo.isPublic && !detail.playlistInfo.isHidden) {
+                            MomentAttachment.Playlist(detail.toMetadata())
+                        } else {
+                            MomentAttachment.Unavailable(MomentAttachment.TYPE_PLAYLIST)
+                        }
+                    }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Logger.e(TAG, "Failed to load what's being shared", e)
+                sharedLoadFailed = true
+            }
+        }
+    }
 
     fun pickImages() {
-        viewModelScope.launch {
+        scope.launch {
             val room = MomentModule.MAX_IMAGES - images.size
             if (room <= 0) {
                 global.alert(Res.string.moment_too_many_images, MomentModule.MAX_IMAGES.toString())
@@ -137,7 +218,7 @@ class CreateMomentViewModel(
 
     private fun upload(image: DraftImage, filename: String) {
         image.state = DraftImage.State.Uploading(0f)
-        image.job = viewModelScope.launch {
+        image.job = scope.launch {
             uploadLock.withLock {
                 try {
                     val size = image.bytes.size.toDouble()
@@ -183,16 +264,16 @@ class CreateMomentViewModel(
 
     fun publish() {
         if (!canPublish) return
-        viewModelScope.launch {
+        scope.launch {
             publishing = true
             try {
                 val req = MomentModule.CreateReq(
                     content = content.trim(),
                     imageIds = images.map { (it.state as DraftImage.State.Uploaded).imageId },
                     attachments = listOfNotNull(
-                        when (val x = attachment) {
-                            is DraftAttachment.Song -> MomentModule.AttachmentInput.song(x.song.id)
-                            is DraftAttachment.Playlist -> MomentModule.AttachmentInput.playlist(x.playlist.id)
+                        when (share) {
+                            is MomentShare.Song -> MomentModule.AttachmentInput.song(share.songId)
+                            is MomentShare.Playlist -> MomentModule.AttachmentInput.playlist(share.playlistId)
                             null -> null
                         }
                     ),
@@ -206,10 +287,7 @@ class CreateMomentViewModel(
                     } else {
                         global.alert(Res.string.moment_create_pending)
                     }
-                    content = ""
-                    images.clear()
-                    attachment = null
-                    _done.tryEmit(Unit)
+                    onPosted()
                 } else {
                     val err = resp.err()
                     if (err.code == MomentModule.ERR_IMAGE_NOT_FOUND) {
@@ -230,45 +308,9 @@ class CreateMomentViewModel(
         }
     }
 
-    // region Attachment picker
-
-    var recentSongs by mutableStateOf<List<SongModule.PublicSongDetail>?>(null)
-        private set
-    var myPlaylists by mutableStateOf<List<PlaylistModule.PlaylistItem>?>(null)
-        private set
-    var pickerFailed by mutableStateOf(false)
-        private set
-
-    /** Loads what the picker lists: recently played songs and the user's playlists. */
-    fun loadPickerSources() {
-        pickerFailed = false
-        viewModelScope.launch {
-            try {
-                if (recentSongs == null) {
-                    val resp = api.playHistoryModule.cursor(PlayHistoryModule.CursorReq(cursor = null, size = 50))
-                    if (resp.ok) {
-                        recentSongs = resp.ok<PlayHistoryModule.CursorResp>().list
-                            .map { it.songInfo }
-                            .distinctBy { it.id }
-                    } else {
-                        pickerFailed = true
-                    }
-                }
-                if (myPlaylists == null) {
-                    val resp = api.playlistModule.list()
-                    if (resp.ok) myPlaylists = resp.ok<PlaylistModule.ListResp>().playlists
-                    else pickerFailed = true
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                Logger.e(TAG, "Failed to load what can be attached", e)
-                pickerFailed = true
-            }
-        }
+    internal fun dispose() {
+        scope.cancel()
     }
-
-    // endregion
 
     companion object {
         private const val TAG = "create_moment"
@@ -283,3 +325,16 @@ class CreateMomentViewModel(
         }
     }
 }
+
+private fun PlaylistModule.DetailResp.toMetadata() = PlaylistModule.PlaylistMetadata(
+    id = playlistInfo.id,
+    userId = creatorProfile.uid,
+    userName = creatorProfile.username,
+    userAvatarUrl = creatorProfile.avatarUrl,
+    name = playlistInfo.name,
+    description = playlistInfo.description,
+    coverUrl = playlistInfo.coverUrl,
+    songsCount = playlistInfo.songsCount.toLong(),
+    createTime = playlistInfo.createTime,
+    updateTime = playlistInfo.updateTime,
+)
