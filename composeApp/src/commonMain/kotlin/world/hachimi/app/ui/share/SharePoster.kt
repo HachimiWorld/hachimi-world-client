@@ -95,7 +95,6 @@ internal fun SharePoster(
         modifier
             .width(PosterWidth)
             .height(PosterHeight)
-            .clip(RoundedCornerShape(20.dp))
             .background(Color(0xFF1B1B1B)),
     ) {
         RemoteImage(coverUrl, Modifier.fillMaxSize())
