@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -64,6 +65,7 @@ import world.hachimi.app.model.SquareViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -243,7 +245,7 @@ private fun MomentsFeed(
         ) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().testTag(TestTags.SQUARE_MOMENTS),
                 contentPadding = padding,
             ) {
                 if (composer) {

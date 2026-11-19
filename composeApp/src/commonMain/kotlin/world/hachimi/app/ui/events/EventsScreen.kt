@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -60,6 +61,7 @@ import world.hachimi.app.model.EventsListViewModel
 import world.hachimi.app.model.InitializeStatus
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.component.LoadMoreItem
 import world.hachimi.app.ui.component.ReloadPage
 import world.hachimi.app.ui.design.components.LocalContentColor
@@ -146,7 +148,7 @@ private fun EventsListCompact(
 
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag(TestTags.SQUARE_ANNOUNCEMENTS),
         verticalArrangement = Arrangement.spacedBy(20.dp),
         contentPadding = padding,
         userScrollEnabled = !skeleton,
@@ -201,7 +203,7 @@ private fun EventsGridExpanded(
 
     LazyVerticalGrid(
         state = gridState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag(TestTags.SQUARE_ANNOUNCEMENTS),
         columns = GridCells.Fixed(columns),
         contentPadding = padding,
         horizontalArrangement = Arrangement.spacedBy(spacing),
