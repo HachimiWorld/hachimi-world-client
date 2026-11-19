@@ -46,6 +46,8 @@ import hachimiworld.composeapp.generated.resources.share_save_image
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
+import hachimiworld.composeapp.generated.resources.brand
 import org.koin.compose.koinInject
 import qrcode.raw.QRCodeProcessor
 import world.hachimi.app.model.GlobalStore
@@ -53,6 +55,7 @@ import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.AlertDialog
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
+import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.message.components.RemoteImage
@@ -125,7 +128,12 @@ internal fun SharePoster(
                     QrCode(songLink(jmid), Modifier.size(64.dp))
                 }
                 Column(Modifier.padding(start = 12.dp)) {
-                    Text(stringResource(Res.string.share_brand), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
+                    Icon(
+                        vectorResource(Res.drawable.brand),
+                        contentDescription = stringResource(Res.string.share_brand),
+                        modifier = Modifier.size(width = 78.dp, height = 20.dp),
+                        tint = Color.White,
+                    )
                     Text(
                         stringResource(Res.string.share_poster_hint),
                         Modifier.padding(top = 2.dp),
