@@ -50,6 +50,7 @@ import world.hachimi.app.ui.message.components.RemoteImage
 import world.hachimi.app.ui.share.SharePosterDialog
 import world.hachimi.app.ui.share.copyToClipboard
 import world.hachimi.app.ui.share.songLink
+import world.hachimi.app.ui.share.systemShareSupported
 import world.hachimi.app.ui.theme.PreviewTheme
 
 /** Where a song goes, beside the platform's own share sheet: above the song, so what's shared is clear. */
@@ -141,7 +142,8 @@ fun ShareDialog(
                         onClick = onShareToMoment,
                         modifier = Modifier.weight(1f),
                     )
-                    ShareOption(
+                    // Only where it opens the system sheet; elsewhere it would just copy, as the link does
+                    if (systemShareSupported) ShareOption(
                         icon = Icons.Default.Share,
                         label = stringResource(Res.string.share),
                         onClick = {

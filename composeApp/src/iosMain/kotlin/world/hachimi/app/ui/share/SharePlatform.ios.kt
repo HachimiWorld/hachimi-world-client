@@ -33,3 +33,5 @@ actual fun copyPosterToClipboard(context: PlatformContext, bytes: ByteArray): Bo
     UIPasteboard.generalPasteboard().image = image
     return true
 }
+
+actual val systemShareSupported: Boolean = false

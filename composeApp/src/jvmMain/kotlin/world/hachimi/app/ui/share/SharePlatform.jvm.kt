@@ -63,3 +63,5 @@ private fun reveal(file: File): Boolean {
     }
     return runCatching { ProcessBuilder(command).start() }.isSuccess
 }
+
+actual val systemShareSupported: Boolean = false

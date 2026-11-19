@@ -22,3 +22,11 @@ expect val posterClipboardSupported: Boolean
 
 /** Puts a PNG on the clipboard. Returns whether it got there. @since 261119 */
 expect fun copyPosterToClipboard(context: PlatformContext, bytes: ByteArray): Boolean
+
+/**
+ * Whether [share] reaches a system share sheet. Where it doesn't, the share sheet leaves that option out and
+ * keeps to copying.
+ *
+ * @since 261119
+ */
+expect val systemShareSupported: Boolean
