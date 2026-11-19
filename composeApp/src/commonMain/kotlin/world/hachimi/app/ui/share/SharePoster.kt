@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -45,9 +49,11 @@ import hachimiworld.composeapp.generated.resources.share_poster_title
 import hachimiworld.composeapp.generated.resources.share_save_image
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import hachimiworld.composeapp.generated.resources.brand
+import hachimiworld.composeapp.generated.resources.icon_3d_512x
+import hachimiworld.composeapp.generated.resources.logo_text
 import org.koin.compose.koinInject
 import qrcode.raw.QRCodeProcessor
 import world.hachimi.app.model.GlobalStore
@@ -128,12 +134,21 @@ internal fun SharePoster(
                     QrCode(songLink(jmid), Modifier.size(64.dp))
                 }
                 Column(Modifier.padding(start = 12.dp)) {
-                    Icon(
-                        vectorResource(Res.drawable.brand),
-                        contentDescription = stringResource(Res.string.share_brand),
-                        modifier = Modifier.size(width = 78.dp, height = 20.dp),
-                        tint = Color.White,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // The picture fills only the middle of its square, as in the app's own lockup
+                        Image(
+                            modifier = Modifier.size(28.dp).graphicsLayer { scaleX = 1.5f; scaleY = 1.5f },
+                            bitmap = imageResource(Res.drawable.icon_3d_512x),
+                            contentDescription = null,
+                            filterQuality = FilterQuality.High,
+                        )
+                        Image(
+                            modifier = Modifier.padding(start = 4.dp).height(16.dp),
+                            imageVector = vectorResource(Res.drawable.logo_text),
+                            contentDescription = stringResource(Res.string.share_brand),
+                            colorFilter = ColorFilter.tint(Color.White),
+                        )
+                    }
                     Text(
                         stringResource(Res.string.share_poster_hint),
                         Modifier.padding(top = 2.dp),
