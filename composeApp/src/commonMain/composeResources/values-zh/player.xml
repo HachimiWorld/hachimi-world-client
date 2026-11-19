@@ -66,4 +66,12 @@
     <string name="player_interlude_cd">间奏</string>
 
     <string name="player_playing_cd">正在播放</string>
+    <string name="share_copy_link">复制链接</string>
+    <string name="share_save_poster">保存海报</string>
+    <string name="share_poster_title">保存海报</string>
+    <string name="share_save_image">保存图片</string>
+    <string name="share_image_saved">已保存图片</string>
+    <string name="share_image_save_failed">图片保存失败</string>
+    <string name="share_poster_hint">扫码在基米天堂收听</string>
+    <string name="share_brand">基米天堂</string>
 </resources>

@@ -6,6 +6,8 @@ import hachimiworld.composeapp.generated.resources.moment_share
 import hachimiworld.composeapp.generated.resources.player_share_copied_clipboard
 import hachimiworld.composeapp.generated.resources.player_share_text
 import hachimiworld.composeapp.generated.resources.share
+import hachimiworld.composeapp.generated.resources.share_copy_link
+import hachimiworld.composeapp.generated.resources.share_save_poster
 import hachimiworld.composeapp.generated.resources.share_share_music_title
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,8 +19,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +47,9 @@ import world.hachimi.app.ui.design.components.Icon
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.design.components.TextButton
 import world.hachimi.app.ui.message.components.RemoteImage
+import world.hachimi.app.ui.share.SharePosterDialog
+import world.hachimi.app.ui.share.copyToClipboard
+import world.hachimi.app.ui.share.songLink
 import world.hachimi.app.ui.theme.PreviewTheme
 
 /** Where a song goes, beside the platform's own share sheet: above the song, so what's shared is clear. */
@@ -52,14 +59,16 @@ fun ShareDialog(
     jmid: String,
     title: String,
     author: String,
-    /** Shown above the options. @since 261114 */
+    /** Shown above the options, and on the poster. @since 261114 */
     coverUrl: String? = null,
     /** Writes a moment sharing the song; null hides the option. @since 261114 */
     onShareToMoment: (() -> Unit)? = null,
 ) {
     val ctx = LocalPlatformContext.current
-    val text = stringResource(Res.string.player_share_text, title, author, "https://hachimi.world/song/${jmid.lowercase()}")
+    val link = songLink(jmid)
+    val text = stringResource(Res.string.player_share_text, title, author, link)
     var copied by remember { mutableStateOf(false) }
+    var posterShown by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -104,10 +113,46 @@ fun ShareDialog(
                             copied = true
                         },
                     )
+                    ShareOption(
+                        icon = Icons.Outlined.Download,
+                        label = stringResource(Res.string.share_save_poster),
+                        onClick = { posterShown = true },
+                    )
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(HachimiTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                            .padding(horizontal = 10.dp, vertical = 8.dp)
+                    ) {
+                        SelectionContainer {
+                            Text(
+                                link,
+                                fontSize = 12.sp,
+                                color = HachimiTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            copyToClipboard(ctx, link)
+                            copied = true
+                        },
+                        modifier = Modifier.padding(start = 4.dp),
+                    ) {
+                        Text(stringResource(Res.string.share_copy_link))
+                    }
                 }
                 if (copied) Text(
                     stringResource(Res.string.player_share_copied_clipboard),
-                    modifier = Modifier.padding(top = 16.dp),
+                    modifier = Modifier.padding(top = 8.dp),
                     fontSize = 12.sp,
                     color = HachimiTheme.colorScheme.onSurfaceVariant,
                 )
@@ -119,6 +164,14 @@ fun ShareDialog(
                 Text(stringResource(Res.string.common_close))
             }
         }
+    )
+
+    if (posterShown) SharePosterDialog(
+        onDismissRequest = { posterShown = false },
+        title = title,
+        author = author,
+        coverUrl = coverUrl,
+        jmid = jmid,
     )
 }
 
