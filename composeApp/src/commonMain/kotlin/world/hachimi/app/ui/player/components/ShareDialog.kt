@@ -97,32 +97,6 @@ fun ShareDialog(
                     }
                 }
                 Row(
-                    Modifier.fillMaxWidth().padding(top = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    if (onShareToMoment != null) ShareOption(
-                        icon = Icons.Outlined.DynamicFeed,
-                        label = stringResource(Res.string.moment_share),
-                        onClick = onShareToMoment,
-                        modifier = Modifier.weight(1f),
-                    )
-                    ShareOption(
-                        icon = Icons.Default.Share,
-                        label = stringResource(Res.string.share),
-                        onClick = {
-                            share(ctx, text)
-                            copied = true
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
-                    ShareOption(
-                        icon = Icons.Outlined.Download,
-                        label = stringResource(Res.string.share_save_poster),
-                        onClick = { posterShown = true },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                Row(
                     Modifier.fillMaxWidth().padding(top = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -157,6 +131,32 @@ fun ShareDialog(
                     fontSize = 12.sp,
                     color = HachimiTheme.colorScheme.onSurfaceVariant,
                 )
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (onShareToMoment != null) ShareOption(
+                        icon = Icons.Outlined.DynamicFeed,
+                        label = stringResource(Res.string.moment_share),
+                        onClick = onShareToMoment,
+                        modifier = Modifier.weight(1f),
+                    )
+                    ShareOption(
+                        icon = Icons.Default.Share,
+                        label = stringResource(Res.string.share),
+                        onClick = {
+                            share(ctx, text)
+                            copied = true
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
+                    ShareOption(
+                        icon = Icons.Outlined.Download,
+                        label = stringResource(Res.string.share_save_poster),
+                        onClick = { posterShown = true },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         },
         confirmButton = {},
