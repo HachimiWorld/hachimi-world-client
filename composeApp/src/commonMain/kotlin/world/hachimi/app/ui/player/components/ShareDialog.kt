@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Download
@@ -34,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -98,12 +98,13 @@ fun ShareDialog(
                 }
                 Row(
                     Modifier.fillMaxWidth().padding(top = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (onShareToMoment != null) ShareOption(
                         icon = Icons.Outlined.DynamicFeed,
                         label = stringResource(Res.string.moment_share),
                         onClick = onShareToMoment,
+                        modifier = Modifier.weight(1f),
                     )
                     ShareOption(
                         icon = Icons.Default.Share,
@@ -112,11 +113,13 @@ fun ShareDialog(
                             share(ctx, text)
                             copied = true
                         },
+                        modifier = Modifier.weight(1f),
                     )
                     ShareOption(
                         icon = Icons.Outlined.Download,
                         label = stringResource(Res.string.share_save_poster),
                         onClick = { posterShown = true },
+                        modifier = Modifier.weight(1f),
                     )
                 }
                 Row(
@@ -130,15 +133,13 @@ fun ShareDialog(
                             .background(HachimiTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                             .padding(horizontal = 10.dp, vertical = 8.dp)
                     ) {
-                        SelectionContainer {
-                            Text(
-                                link,
-                                fontSize = 12.sp,
-                                color = HachimiTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                        Text(
+                            link,
+                            fontSize = 12.sp,
+                            color = HachimiTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                     TextButton(
                         onClick = {
@@ -177,8 +178,8 @@ fun ShareDialog(
 
 /** One way to share, as an icon on a tile with its name under it. */
 @Composable
-private fun ShareOption(icon: ImageVector, label: String, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun ShareOption(icon: ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             Modifier
                 .size(56.dp)
@@ -191,10 +192,13 @@ private fun ShareOption(icon: ImageVector, label: String, onClick: () -> Unit) {
         }
         Text(
             label,
-            Modifier.padding(top = 8.dp),
+            Modifier.padding(top = 8.dp, start = 2.dp, end = 2.dp),
             fontSize = 12.sp,
+            lineHeight = 15.sp,
             color = HachimiTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
