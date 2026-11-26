@@ -362,7 +362,11 @@ private fun Guest(onLogin: () -> Unit, onRegister: () -> Unit) {
             }
         }
         Row(Modifier.padding(top = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AccentButton(onClick = onLogin, modifier = Modifier.weight(1f), shape = CircleShape) {
+            AccentButton(
+                onClick = onLogin,
+                modifier = Modifier.weight(1f).testTag(TestTags.ME_GUEST_LOGIN),
+                shape = CircleShape,
+            ) {
                 Text(stringResource(Res.string.auth_login), fontWeight = FontWeight.Medium)
             }
             SubtleButton(onClick = onRegister, modifier = Modifier.weight(1f), shape = CircleShape) {

@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.model.MomentShare
+import world.hachimi.app.model.MomentComposer
 import world.hachimi.app.ui.component.RefreshingIndicator
 import world.hachimi.app.ui.component.ErrorPage
 import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
@@ -31,6 +33,8 @@ import world.hachimi.app.ui.design.HachimiTheme
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Share
+import hachimiworld.composeapp.generated.resources.moment_share
 import hachimiworld.composeapp.generated.resources.common_more
 import hachimiworld.composeapp.generated.resources.playlist_delete
 import hachimiworld.composeapp.generated.resources.playlist_edit_title
@@ -310,15 +314,25 @@ private fun Header(
     }
 }
 
-/** Editing and deleting the playlist, behind one button so the header keeps to playing. */
+/** Sharing, editing and deleting the playlist, behind one button so the header keeps to playing. */
 @Composable
-private fun MoreButton(vm: PlaylistDetailViewModel) {
+private fun MoreButton(vm: PlaylistDetailViewModel, composer: MomentComposer = koinInject()) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         Button(onClick = { expanded = true }, contentPadding = PaddingValues(8.dp)) {
             Icon(Icons.Default.MoreHoriz, contentDescription = stringResource(Res.string.common_more))
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            // Only public playlists can be shared
+            val info = vm.playlistInfo
+            if (info != null && info.isPublic && !info.isHidden) DropdownMenuItem(
+                onClick = {
+                    expanded = false
+                    composer.open(MomentShare.Playlist(info.id))
+                },
+                text = { Text(stringResource(Res.string.moment_share)) },
+                leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
+            )
             DropdownMenuItem(
                 onClick = {
                     expanded = false

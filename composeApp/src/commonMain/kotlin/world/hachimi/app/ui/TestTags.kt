@@ -7,7 +7,6 @@ package world.hachimi.app.ui
  * accessibility `resource-id` (use [simpleViewResourceName] / [viewIdResourceName] in tests).
  */
 object TestTags {
-    const val NAV_MENU = "nav_menu"
     const val NAV_HOME = "nav_home"
     const val NAV_EVENTS = "nav_events"
     const val NAV_RECENT_PLAY = "nav_recent_play"
@@ -32,6 +31,10 @@ object TestTags {
 
     const val SONG_CARD = "song_card"
 
+    /** The square's moments, and the announcements tab beside them. @since 261119 */
+    const val SQUARE_MOMENTS = "square_moments"
+    const val SQUARE_ANNOUNCEMENTS = "square_announcements"
+
     const val MINI_PLAYER = "mini_player"
     const val MINI_PLAYER_PLAY = "mini_player_play"
     const val MINI_PLAYER_NEXT = "mini_player_next"
@@ -43,6 +46,8 @@ object TestTags {
 
     /** Top bar avatar (guest → Auth, logged-in → UserSpace) */
     const val PROFILE_AVATAR = "profile_avatar"
+    /** The sign-in button standing in for the identity while nobody is signed in. @since 261119 */
+    const val ME_GUEST_LOGIN = "me_guest_login"
     const val AUTH_SCREEN = "auth_screen"
     const val AUTH_BACK = "auth_back"
 }

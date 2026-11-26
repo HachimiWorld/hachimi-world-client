@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.userspace
 
+import world.hachimi.app.model.MomentComposer
 import androidx.compose.runtime.saveable.rememberSaveable
 import world.hachimi.app.ui.userspace.component.PublicPlaylistCardSkeleton
 import world.hachimi.app.ui.home.components.SongCardSkeleton
@@ -111,6 +112,7 @@ fun UserSpaceScreen(
     vm: UserSpaceViewModel = koinViewModel(),
     global: GlobalStore = koinInject(),
     reports: ReportStore = koinInject(),
+    composer: MomentComposer = koinInject(),
 ) {
     DisposableEffect(vm, uid) {
         vm.mounted(uid)
@@ -169,7 +171,7 @@ fun UserSpaceScreen(
             when (selectedTab) {
                 0 -> artworkTabContents(vm, global)
                 1 -> playlistsTabContents(vm, navigator)
-                MOMENTS_TAB -> momentsTabContents(vm, momentActions, bleed = screenMargin, onCreate = { navigator.push(Route.Root.CreateMoment) })
+                MOMENTS_TAB -> momentsTabContents(vm, momentActions, bleed = screenMargin, onCreate = { composer.open() })
             }
 
             listTailSpacerItem()

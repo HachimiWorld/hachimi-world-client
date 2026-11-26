@@ -43,11 +43,6 @@ sealed interface Route : NavKey {
             val atComments: Boolean = false,
         ) : Root
 
-        /** @since 261106 */
-        @Serializable
-        @SerialName("/moment/create")
-        data object CreateMoment : Root
-
         @Serializable
         sealed interface Home : Root {
             @Serializable

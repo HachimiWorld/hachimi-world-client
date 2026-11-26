@@ -35,7 +35,9 @@ fun AlertDialog(
     icon: @Composable (() -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
     text: @Composable (() -> Unit)? = null,
-    properties: DialogProperties = DialogProperties()
+    properties: DialogProperties = DialogProperties(),
+    /** False when the dialog closes from its title and needs no button row. @since 261119 */
+    showButtons: Boolean = true,
 ) {
     Dialog(onDismissRequest = onDismissRequest, properties = properties) {
         ElevatedCard(
@@ -71,7 +73,7 @@ fun AlertDialog(
                 }
 
 
-                Row(
+                if (showButtons) Row(
                     modifier = Modifier.align(Alignment.End).padding(top = 24.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {

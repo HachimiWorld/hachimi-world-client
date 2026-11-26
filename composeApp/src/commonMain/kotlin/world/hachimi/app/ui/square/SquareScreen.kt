@@ -1,5 +1,6 @@
 package world.hachimi.app.ui.square
 
+import world.hachimi.app.model.MomentComposer
 import world.hachimi.app.ui.component.SectionErrorPage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -63,6 +65,7 @@ import world.hachimi.app.model.SquareViewModel
 import world.hachimi.app.nav.LocalNavigator
 import world.hachimi.app.nav.Route
 import world.hachimi.app.ui.LocalWindowSize
+import world.hachimi.app.ui.TestTags
 import world.hachimi.app.ui.design.HachimiTheme
 import world.hachimi.app.ui.design.components.AccentButton
 import world.hachimi.app.ui.design.components.CircularProgressIndicator
@@ -227,8 +230,9 @@ private fun MomentsFeed(
     val actions = rememberMomentActions()
     LaunchedEffect(pager) { pager.ensureLoaded() }
     LoadMoreMomentsEffect(listState, pager)
+    val momentComposer = koinInject<MomentComposer>()
     val create = {
-        if (global.isLoggedIn) navigator.push(Route.Root.CreateMoment)
+        if (global.isLoggedIn) momentComposer.open()
         else navigator.push(Route.Auth(false))
     }
 
@@ -241,7 +245,7 @@ private fun MomentsFeed(
         ) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().testTag(TestTags.SQUARE_MOMENTS),
                 contentPadding = padding,
             ) {
                 if (composer) {

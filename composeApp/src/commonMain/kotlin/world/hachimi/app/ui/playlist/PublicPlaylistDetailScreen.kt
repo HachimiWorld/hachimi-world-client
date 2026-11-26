@@ -1,5 +1,7 @@
 package world.hachimi.app.ui.playlist
 
+import world.hachimi.app.model.MomentShare
+import world.hachimi.app.model.MomentComposer
 import world.hachimi.app.ui.playlist.components.PlaylistDetailSkeleton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import world.hachimi.app.ui.component.TitleStyle
 import world.hachimi.app.ui.design.components.Text
 import world.hachimi.app.ui.playlist.components.CompactHeader
 import world.hachimi.app.ui.playlist.components.FavoriteButton
+import world.hachimi.app.ui.playlist.components.ShareToMomentButton
 import world.hachimi.app.ui.playlist.components.Header
 import world.hachimi.app.ui.playlist.components.SongItem
 import world.hachimi.app.ui.playlist.components.UnavailableSongItem
@@ -116,7 +119,8 @@ fun PublicPlaylistScreen(
 
 @Composable
 private fun Header(
-    vm: PublicPlaylistViewModel
+    vm: PublicPlaylistViewModel,
+    composer: MomentComposer = koinInject(),
 ) {
     val navigator = LocalNavigator.current
     val playlistInfo = vm.playlistInfo
@@ -149,6 +153,9 @@ private fun Header(
                             operating = vm.operating
                         )
                     }
+                },
+                extraActions = {
+                    ShareToMomentButton(onClick = { composer.open(MomentShare.Playlist(playlistInfo.id)) })
                 }
             )
         } else {
@@ -171,6 +178,7 @@ private fun Header(
                             operating = vm.operating
                         )
                     }
+                    ShareToMomentButton(onClick = { composer.open(MomentShare.Playlist(playlistInfo.id)) })
                 }
             )
         }
